@@ -1,4 +1,4 @@
-package config;
+package com.gorani.vroom.config;
 
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.ibatis.annotations.Mapper;
@@ -23,7 +23,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @MapperScan(basePackages = { "com.gorani.vroom" }, annotationClass = Mapper.class)
-@ComponentScan(basePackages = { "com.gorani.vroom", "util" })
+@ComponentScan(basePackages = { "com.gorani.vroom" })
 @EnableWebMvc
 @EnableTransactionManagement
 public class MvcConfig implements WebMvcConfigurer {

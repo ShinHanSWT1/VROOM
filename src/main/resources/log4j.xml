@@ -33,7 +33,9 @@
 		<level value="info" />
 	</logger>
 
-	<logger name="jdbc.sqlonly" level="DEBUG"/>
+	<logger name="jdbc.sqlonly">
+		<level value="info"/>
+	</logger>
 
 	<!-- Root Logger -->
 	<root>
