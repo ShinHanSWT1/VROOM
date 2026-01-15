@@ -1,7 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
-         pageEncoding="UTF-8"%>
+         pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <!DOCTYPE html>
 <html lang="ko">
@@ -9,8 +9,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js">
-    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <title>VROOM - 관리자 대시보드</title>
     <style>
         :root {
@@ -65,12 +64,13 @@
         }
 
         .sidebar-header {
-            padding: 1.5rem;
+            padding: 1rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             display: flex;
             align-items: center;
             justify-content: space-between;
             height: var(--header-height);
+            transition: all 0.3s ease;
         }
 
         .sidebar-logo {
@@ -80,17 +80,39 @@
             transition: opacity 0.3s ease;
         }
 
+        .sidebar-logo > img {
+            width: 150px;
+            height: 37.5px;
+        }
+
+        .sidebar.collapsed .sidebar-header {
+            justify-content: center;
+            padding: 1rem 0;
+        }
+
         .sidebar.collapsed .sidebar-logo {
-            opacity: 0;
+            display: none;
+        }
+
+        .sidebar.collapsed .nav-item {
+            justify-content: center;
+            padding: 1rem 0;
+        }
+
+        .sidebar.collapsed .nav-item-icon {
+            margin-right: 0;
+            min-width: unset;
         }
 
         .sidebar-toggle {
-            background: rgba(255, 255, 255, 0.15);
+            z-index: 1001;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
             border: none;
             color: var(--color-white);
+            min-width: 36px;
             width: 36px;
             height: 36px;
-            border-radius: 8px;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -189,6 +211,9 @@
         }
 
         .header-user {
+            position: relative;
+            cursor: pointer;
+            user-select: none;
             display: flex;
             align-items: center;
             gap: 0.5rem;
@@ -197,6 +222,39 @@
             border-radius: 8px;
             color: var(--color-white);
             font-weight: 600;
+        }
+
+        /* 드롭다운 메뉴 스타일 */
+        .user-dropdown {
+            display: none; /* 기본적으로 숨김 */
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            background-color: var(--color-white);
+            min-width: 150px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+            overflow: hidden;
+            z-index: 1001;
+        }
+
+        .user-dropdown.show {
+            display: block; /* 클릭 시 표시 */
+        }
+
+        .dropdown-item {
+            padding: 0.75rem 1rem;
+            color: var(--color-dark);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background-color: var(--color-light-gray);
+            color: var(--color-warm);
         }
 
         /* Dashboard Content */
@@ -457,7 +515,9 @@
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <div class="sidebar-logo">VROOM 관리자</div>
+            <div class="sidebar-logo">
+                <img src="${pageContext.request.contextPath}/resources/img/logo2.png" alt="VROOM" srcset="">
+            </div>
             <button class="sidebar-toggle" id="sidebarToggle">☰</button>
         </div>
         <nav class="sidebar-nav">
@@ -503,9 +563,15 @@
             <div class="header-container">
                 <h1 class="header-title">관리자 페이지</h1>
                 <div class="header-actions">
-                    <div class="header-user">
+                    <div class="header-user" id="adminDropdownTrigger">
                         <span>👤</span>
-                        <span>관리자</span>
+                        <span>${sessionScope.loginAdmin.name}</span>
+                        <span style="font-size: 0.8rem; margin-left: 5px;">▼</span>
+                        <div class="user-dropdown" id="adminDropdown">
+                            <a href="${pageContext.request.contextPath}/admin/logout" class="dropdown-item">
+                                <span>🚪</span> 로그아웃
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -524,17 +590,17 @@
                         <div class="kpi-change positive">(+12)</div>
                     </div>
                     <div class="kpi-card">
-                        <div class="kpi-label">[DAU (일간 활성 사용자 수)]</div>
+                        <div class="kpi-label">[일간 활성 사용자 수]</div>
                         <div class="kpi-value">3,421</div>
                         <div class="kpi-change positive">(+12)</div>
                     </div>
                     <div class="kpi-card">
-                        <div class="kpi-label">[오늘 주문]</div>
+                        <div class="kpi-label">[오늘 심부름 수]</div>
                         <div class="kpi-value">96</div>
                         <div class="kpi-change positive">(+18%)</div>
                     </div>
                     <div class="kpi-card">
-                        <div class="kpi-label">[완료율]</div>
+                        <div class="kpi-label">[심부름 완료율]</div>
                         <div class="kpi-value">91%</div>
                         <div class="kpi-change neutral"></div>
                     </div>
@@ -643,20 +709,42 @@
 </div>
 
 <script>
-    // Sidebar Toggle
-    const sidebar = document.getElementById('sidebar');
-    const sidebarToggle = document.getElementById('sidebarToggle');
+    $(document).ready(function () {
+        console.log('${loginAdmin}');
 
-    sidebarToggle.addEventListener('click', function () {
-        sidebar.classList.toggle('collapsed');
-    });
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const adminDropdownTrigger = document.getElementById('adminDropdownTrigger');
+        const adminDropdown = document.getElementById('adminDropdown');
 
-    // Navigation Active State
-    const navItems = document.querySelectorAll('.nav-item');
-    navItems.forEach(item => {
-        item.addEventListener('click', function (e) {
-            navItems.forEach(nav => nav.classList.remove('active'));
-            this.classList.add('active');
+        // 1. 사이드바 토글 (이미 구현된 로직 보강)
+        sidebarToggle.addEventListener('click', function (e) {
+            e.stopPropagation(); // 이벤트 버블링 방지
+            sidebar.classList.toggle('collapsed');
+
+            console.log("사이드바 상태:", sidebar.classList.contains('collapsed') ? "접힘" : "펼쳐짐");
+        });
+
+        // 2. 관리자 드롭다운 토글
+        adminDropdownTrigger.addEventListener('click', function (e) {
+            e.stopPropagation();
+            adminDropdown.classList.toggle('show');
+        });
+
+        // 3. 외부 클릭 시 드롭다운 닫기
+        window.addEventListener('click', function () {
+            if (adminDropdown.classList.contains('show')) {
+                adminDropdown.classList.remove('show');
+            }
+        });
+
+        // 4. 메뉴 활성화 상태 유지
+        const currentPath = window.location.hash || '#dashboard';
+        $('.nav-item').each(function () {
+            if ($(this).attr('href') === currentPath) {
+                $('.nav-item').removeClass('active');
+                $(this).addClass('active');
+            }
         });
     });
 </script>

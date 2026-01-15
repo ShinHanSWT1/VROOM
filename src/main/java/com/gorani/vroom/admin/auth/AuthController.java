@@ -42,8 +42,14 @@ public class AuthController {
             model.addAttribute("url", "login");
         }
 
-
         return "common/return";
+    }
+
+    @GetMapping("/admin/logout")
+    public String logout(HttpSession session) {
+        session.invalidate();
+
+        return "redirect:/admin/login";
     }
 
 }

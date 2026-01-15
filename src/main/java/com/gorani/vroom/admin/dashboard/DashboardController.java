@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Slf4j
 @Controller
 @RequiredArgsConstructor
-public class AdminDashboardController {
+public class DashboardController {
 
     @GetMapping("/admin/dashboard")
     public String dashbaord(){

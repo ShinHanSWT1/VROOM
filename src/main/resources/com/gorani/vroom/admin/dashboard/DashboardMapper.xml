@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gorani.vroom.admin.dashboard.DashboardMapper">
+
+    <select id="getKpi"
+            resultType="com.gorani.vroom.admin.dashboard.DashboardSummaryVO">
+
+        SELECT
+            -- 총 사용자
+            (SELECT COUNT(*) FROM MEMBERS WHERE status != 'DELETED') AS total_user_count,
+            -- 오늘 가입자
+            (SELECT COUNT(*) FROM MEMBERS WHERE status != 'DELETED'
+                                            AND created_at >= CURDATE()
+                                            AND created_at < CURDATE() + INTERVAL 1 DAY
+            ) AS total_user_delta,
+
+            -- 일간 활성 사용자
+            (SELECT COUNT(*) FROM MEMBERS WHERE last_login_at >= CURDATE()
+                                            AND last_login_at < CURDATE() + INTERVAL 1 DAY
+                                            AND status = 'ACTIVE'
+            ) AS dau_today,
+            -- 어제 사용자
+            (SELECT COUNT(*) FROM MEMBERS WHERE last_login_at >= CURDATE() - INTERVAL 1 DAY
+                                          AND last_login_at < CURDATE()
+                                          AND status = 'ACTIVE'
+            ) AS dau_yesterday,
+            -- 차이
+            (
+                (SELECT COUNT(*) FROM MEMBERS WHERE last_login_at >= CURDATE()
+                                                AND last_login_at < CURDATE() + INTERVAL 1 DAY
+                                                AND status = 'ACTIVE')
+                -
+                (SELECT COUNT(*) FROM MEMBERS WHERE last_login_at >= CURDATE() - INTERVAL 1 DAY
+                                                AND last_login_at < CURDATE()
+                                                AND status = 'ACTIVE'
+                )
+            ) AS dau_delta,
+
+            -- 오늘 심부름 수
+            (SELECT COUNT(*) FROM ERRANDS WHERE created_at >= CURDATE()
+                                            AND created_at <  CURDATE() + INTERVAL 1 DAY
+            ) AS errands_today,
+            -- 어제 심부름 수
+            (SELECT COUNT(*) FROM ERRANDS WHERE created_at >= CURDATE() - INTERVAL 1 DAY
+                                            AND created_at <  CURDATE()
+            ) AS errands_yesterday,
+            -- 주문 증감률
+            CASE
+                WHEN (SELECT COUNT(*) FROM ERRANDS
+                       WHERE created_at >= CURDATE() - INTERVAL 1 DAY
+                       AND created_at <  CURDATE()
+                       ) = 0
+                THEN NULL
+                ELSE ROUND(
+                    (
+                        (SELECT COUNT(*) FROM ERRANDS WHERE created_at >= CURDATE()
+                            AND created_at <  CURDATE() + INTERVAL 1 DAY
+                        )
+                        -
+                        (SELECT COUNT(*) FROM ERRANDS WHERE created_at >= CURDATE() - INTERVAL 1 DAY
+                            AND created_at <  CURDATE()
+                        )
+                    ) * 100.0 /
+                    (SELECT COUNT(*) FROM ERRANDS WHERE created_at >= CURDATE() - INTERVAL 1 DAY
+                        AND created_at <  CURDATE()
+                    )
+                , 0)
+            END AS errands_diff_rate,
+
+            -- 심부름 완료율
+            CASE
+                WHEN (SELECT COUNT(*) FROM ERRANDS WHERE created_at >= CURDATE()
+                        AND created_at <  CURDATE() + INTERVAL 1 DAY
+                      ) = 0
+                THEN 0
+                ELSE ROUND(
+                    (SELECT COUNT(*) FROM ERRANDS WHERE created_at >= CURDATE()
+                        AND created_at <  CURDATE() + INTERVAL 1 DAY
+                        AND status = 'DONE'
+                    ) * 100.0 /
+                    (SELECT COUNT(*) FROM ERRANDS WHERE created_at >= CURDATE()
+                        AND created_at <  CURDATE() + INTERVAL 1 DAY
+                    )
+                , 0)
+            END AS completion_rate,
+
+            -- 활성 부름이
+            (SELECT COUNT(*) FROM ERRANDER_PROFILES WHERE last_active_at >= CURDATE()
+                AND last_active_at <  CURDATE() + INTERVAL 1 DAY
+                AND status = 'ACTIVE'
+            ) AS active_errander_today,
+
+            (SELECT COUNT(*) FROM ERRANDER_PROFILES WHERE last_active_at >= CURDATE() - INTERVAL 1 DAY
+                AND last_active_at <  CURDATE()
+                AND status = 'ACTIVE'
+            ) AS active_errander_yesterday,
+
+            (
+                (SELECT COUNT(*) FROM ERRANDER_PROFILES WHERE last_active_at >= CURDATE()
+                AND last_active_at <  CURDATE() + INTERVAL 1 DAY
+                AND status = 'ACTIVE'
+                )
+                -
+                (SELECT COUNT(*) FROM ERRANDER_PROFILES WHERE last_active_at >= CURDATE() - INTERVAL 1 DAY
+                    AND last_active_at <  CURDATE()
+                    AND status = 'ACTIVE'
+                )
+            ) AS active_errander_delta
+
+
+
+    </select>
+</mapper>
