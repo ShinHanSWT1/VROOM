@@ -530,33 +530,6 @@
         this.textContent = type === 'password' ? '👁️' : '🙈';
     });
 
-    // Form Submission
-    const loginForm = document.getElementById('loginForm');
-    const alertMessage = document.getElementById('alertMessage');
-
-    loginForm.addEventListener('submit', function(e) {
-        // e.preventDefault();
-
-        const adminId = document.getElementById('adminId').value;
-        const adminPassword = document.getElementById('adminPassword').value;
-
-        // Simple validation (replace with actual authentication)
-        if (adminId && adminPassword) {
-            // Show success message
-            alertMessage.className = 'alert alert-success show';
-            alertMessage.textContent = '로그인 성공! 관리자 페이지로 이동합니다...';
-
-            // Redirect to dashboard after 1.5 seconds
-            setTimeout(function() {
-                window.location.href = 'admin-dashboard.html';
-            }, 1500);
-        } else {
-            // Show error message
-            alertMessage.className = 'alert alert-error show';
-            alertMessage.textContent = 'ID와 비밀번호를 모두 입력해주세요.';
-        }
-    });
-
     // Hide alert on input
     document.querySelectorAll('.form-input').forEach(input => {
         input.addEventListener('input', function() {

@@ -1,7 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
-         pageEncoding="UTF-8"%>
+         pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <!DOCTYPE html>
 <html lang="ko">
@@ -51,10 +51,9 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-image:
-                linear-gradient(30deg, transparent 48%, rgba(255, 255, 255, 0.03) 48%, rgba(255, 255, 255, 0.03) 52%, transparent 52%),
-                linear-gradient(150deg, transparent 48%, rgba(255, 255, 255, 0.03) 48%, rgba(255, 255, 255, 0.03) 52%, transparent 52%),
-                linear-gradient(90deg, transparent 48%, rgba(255, 255, 255, 0.03) 48%, rgba(255, 255, 255, 0.03) 52%, transparent 52%);
+            background-image: linear-gradient(30deg, transparent 48%, rgba(255, 255, 255, 0.03) 48%, rgba(255, 255, 255, 0.03) 52%, transparent 52%),
+            linear-gradient(150deg, transparent 48%, rgba(255, 255, 255, 0.03) 48%, rgba(255, 255, 255, 0.03) 52%, transparent 52%),
+            linear-gradient(90deg, transparent 48%, rgba(255, 255, 255, 0.03) 48%, rgba(255, 255, 255, 0.03) 52%, transparent 52%);
             background-size: 80px 138px;
             animation: honeycombMove 20s linear infinite;
         }
@@ -94,8 +93,8 @@
         }
 
         .bee-icon-img {
-                width: 80px;
-                height: 60px;
+            width: 80px;
+            height: 60px;
         }
 
         @keyframes beeFloat {
@@ -278,7 +277,7 @@
             opacity: 0.6;
         }
 
-        .flying-bee>img {
+        .flying-bee > img {
             width: 50px;
             height: 50px;
 
@@ -360,60 +359,63 @@
     <!-- 글꼴 -->
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="stylesheet" as="style"
-        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
 </head>
 
 <body>
-    <!-- Flying Bees -->
-    <div class="flying-bee flying-bee-1"><img src="${pageContext.request.contextPath}/resources/img/common/bee1.png" alt="" srcset=""></div>
-    <div class="flying-bee flying-bee-2"><img src="${pageContext.request.contextPath}/resources/img/common/bee1.png" alt="" srcset=""></div>
-    <div class="flying-bee flying-bee-3"><img src="${pageContext.request.contextPath}/resources/img/common/bee1.png" alt="" srcset=""></div>
+<!-- Flying Bees -->
+<div class="flying-bee flying-bee-1"><img src="${pageContext.request.contextPath}/resources/img/common/bee1.png" alt=""
+                                          srcset=""></div>
+<div class="flying-bee flying-bee-2"><img src="${pageContext.request.contextPath}/resources/img/common/bee1.png" alt=""
+                                          srcset=""></div>
+<div class="flying-bee flying-bee-3"><img src="${pageContext.request.contextPath}/resources/img/common/bee1.png" alt=""
+                                          srcset=""></div>
 
-    <!-- Loading Container -->
-    <div class="loading-container">
-        <!-- Bee Animation with Hexagon Spinner -->
-        <div class="bee-container">
-            <div class="hexagon-spinner">
-                <div class="hexagon"></div>
-                <div class="hexagon"></div>
-                <div class="hexagon"></div>
-                <div class="hexagon"></div>
-                <div class="hexagon"></div>
-                <div class="hexagon"></div>
-            </div>
-            <div class="bee-icon">
-                <img src="${pageContext.request.contextPath}/resources/img/logo4.png" alt="" class="bee-icon-img" />
-            </div>
+<!-- Loading Container -->
+<div class="loading-container">
+    <!-- Bee Animation with Hexagon Spinner -->
+    <div class="bee-container">
+        <div class="hexagon-spinner">
+            <div class="hexagon"></div>
+            <div class="hexagon"></div>
+            <div class="hexagon"></div>
+            <div class="hexagon"></div>
+            <div class="hexagon"></div>
+            <div class="hexagon"></div>
         </div>
-        <!-- Loading Text -->
-        <h1 class="loading-text">
-            잠시만 기다려주세요
-            <span class="loading-dots">
-                <span>.</span><span>.</span><span>.</span>
-            </span>
-        </h1>
-        <p class="loading-subtitle">페이지를 불러오고 있습니다</p>
-
-        <!-- Progress Bar -->
-        <div class="progress-container">
-            <div class="progress-bar"></div>
+        <div class="bee-icon">
+            <img src="${pageContext.request.contextPath}/resources/img/logo4.png" alt="" class="bee-icon-img"/>
         </div>
     </div>
+    <!-- Loading Text -->
+    <h1 class="loading-text">
+        ${message}
+        <span class="loading-dots">
+                <span>.</span><span>.</span><span>.</span>
+        </span>
+    </h1>
+    <p class="loading-subtitle">${subMessage}</p>
 
-    <script>
-        <c:if test="${result == 'success'}">
-            setTimeout(function() {
-                location.href = '${url}'
-            }, 3000);
-        </c:if>
-        <c:if test="${result == 'fail'}">
-            console.log('${errorMsg}');
+    <!-- Progress Bar -->
+    <div class="progress-container">
+        <div class="progress-bar"></div>
+    </div>
+</div>
 
-            alert('${errorMsg}');
+<script>
+    <c:if test="${result == 'success'}">
+        setTimeout(function () {
             location.href = '${url}'
-        </c:if>
+        }, 3000);
+    </c:if>
+    <c:if test="${result == 'fail'}">
+        console.log('${errorMsg}');
+        setTimeout(function () {
+            location.href = '${url}'
+        }, 2000);
+    </c:if>
 
-    </script>
+</script>
 </body>
 
 </html>
