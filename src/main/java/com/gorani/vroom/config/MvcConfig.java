@@ -69,6 +69,14 @@ public class MvcConfig implements WebMvcConfigurer {
         SqlSessionFactoryBean ssf = new SqlSessionFactoryBean();
         ssf.setDataSource(dataSource()); // 데이터소스객체 주입(setter방식)
 
+        org.apache.ibatis.session.Configuration configuration = new org.apache.ibatis.session.Configuration();
+
+        // 'login_id' (DB) -> 'loginId' (Java) 자동 매핑 옵션 활성화
+        configuration.setMapUnderscoreToCamelCase(true);
+
+        // 설정 객체를 SqlSessionFactoryBean에 주입
+        ssf.setConfiguration(configuration);
+
         return ssf.getObject();
     }
 
