@@ -1,9 +1,17 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+         pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <!DOCTYPE html>
+
 <html lang="ko">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script
+            src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js">
+    </script>
     <title>VROOM - 관리자 로그인</title>
     <style>
         :root {
@@ -99,7 +107,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 2rem;
+            padding: 1rem;
             position: relative;
             z-index: 1;
         }
@@ -453,14 +461,14 @@
         <div class="alert alert-error" id="alertMessage"></div>
 
         <!-- Login Form -->
-        <form class="login-form" id="loginForm">
+        <form action="${pageContext.request.contextPath}/admin/login" method="post" class="login-form" id="loginForm">
             <div class="form-group">
                 <label for="adminId" class="form-label">관리자 ID</label>
                 <div class="form-input-wrapper">
                     <input
                             type="text"
                             id="adminId"
-                            name="adminId"
+                            name="loginId"
                             class="form-input"
                             placeholder="관리자 ID를 입력하세요"
                             required
@@ -475,7 +483,7 @@
                     <input
                             type="password"
                             id="adminPassword"
-                            name="adminPassword"
+                            name="password"
                             class="form-input"
                             placeholder="비밀번호를 입력하세요"
                             required
@@ -527,7 +535,7 @@
     const alertMessage = document.getElementById('alertMessage');
 
     loginForm.addEventListener('submit', function(e) {
-        e.preventDefault();
+        // e.preventDefault();
 
         const adminId = document.getElementById('adminId').value;
         const adminPassword = document.getElementById('adminPassword').value;
