@@ -1,5 +1,7 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -9,10 +11,11 @@
     
     <!-- CSS -->
     <link rel="stylesheet" href="<c:url value='/static/community/css/common.css'/>">
-    <c:if test="${pageCss != null}">
-        <link rel="stylesheet" href="<c:url value='/static/community/css/${pageCss}.css'/>">
-    </c:if>
-    
+    <link rel="stylesheet" href="<c:url value='/static/community/css/main.css'/>">
+    <link rel="stylesheet" href="<c:url value='/static/community/css/community.css'/>">
+    <link rel="stylesheet" href="<c:url value='/static/community/css/community-detail.css'/>">
+
+
     <!-- jQuery (AJAX 사용 시) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     

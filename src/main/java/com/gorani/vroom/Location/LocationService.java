@@ -1,4 +1,4 @@
-package com.gorani.vroom.community;
+package com.gorani.vroom.Location;
 
 import java.util.List;
 

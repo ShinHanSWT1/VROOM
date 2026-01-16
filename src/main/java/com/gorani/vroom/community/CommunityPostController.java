@@ -1,5 +1,6 @@
 package com.gorani.vroom.community;
 
+import com.gorani.vroom.Location.LocationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,37 +17,38 @@ public class CommunityPostController {
     @Autowired
     private LocationService locationService;
 
+    @Autowired
+    private CommunityService communityService;
+
     // 커뮤니티 게시글 목록 페이지
     @GetMapping("/list")
-    public String list(Model model,
-                       @RequestParam(value = "category_name", required = false, defaultValue = "전체")
-                       String categoryName) {
+    public String list(@RequestParam(required = false)  String dongCode,
+                       @RequestParam(required = false)  Long categortId,
+                       @RequestParam(required = false)  String searchKeyword,
+                       Model model) {
         List<String> gunguList = locationService.getGuList();
         model.addAttribute("gunguList", gunguList);
 
-        // 검색 조건 데이터
-        Map<String, String> searchVO = new HashMap<>();
-        searchVO.put("gungu_name", "금천구"); // legal_dong 테이블 기준
-        searchVO.put("dong_name", "가산동");  // legal_dong 테이블 기준
-        searchVO.put("category_name", categoryName);
+        // 사이드바 카테고리 불러오기
+        List<CategoryVO> categoryList = communityService.getCategoryList();
+        model.addAttribute("categoryList", categoryList);
 
-        model.addAttribute("searchVO", searchVO);
+        model.addAttribute("selectedCategoryId", categortId);
+
 
         // 게시글 목록
         List<Map<String, Object>> postList = new ArrayList<>();
-
         for (int i = 1; i <= 5; i++) {
             Map<String, Object> post = new HashMap<>();
-            post.put("post_id", i); // postNo -> post_id
-            post.put("title", "가산동 소식 " + i);
-            post.put("content", "DB 컬럼명과 맞춘 테스트 내용입니다.");
-            post.put("nickname", "고라니" + i); // MEMBERS 테이블 조인 결과 가정
-            post.put("dong_name", "가산동");  // legal_dong 조인 결과 가정
-            post.put("category_name", categoryName.equals("전체") ? "맛집" : categoryName);
-            post.put("created_at", new Date()); // regDate -> created_at
-            post.put("like_count", 10 + i);    // likeCount -> like_count
-            post.put("view_count", 100 + i);   // viewCount -> view_count
-
+            post.put("post_id", i);
+            post.put("title", "테스트 게시글 " + i);
+            post.put("content", "내용입니다.");
+            post.put("nickname", "사용자" + i);
+            post.put("dong_name", "가산동");
+            post.put("created_at", new Date());
+            post.put("like_count", 10 + i);
+            post.put("view_count", 100 + i);
+            post.put("category_name", "맛집");
             postList.add(post);
         }
         model.addAttribute("postList", postList);
@@ -61,7 +63,7 @@ public class CommunityPostController {
         post.put("title", "DB 컬럼명을 사용한 제목");
         post.put("content", "내용입니다.");
         post.put("nickname", "작성자");
-        post.put("manner_score", 36.5); // temperature -> manner_score (MEMBERS 테이블)
+        post.put("manner_score", 36.5);
         post.put("dong_name", "가산동");
         post.put("category_name", "맛집");
         post.put("created_at", new Date());

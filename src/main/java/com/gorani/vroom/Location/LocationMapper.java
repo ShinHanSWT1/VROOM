@@ -1,4 +1,4 @@
-package com.gorani.vroom.community;
+package com.gorani.vroom.Location;
 
 import org.apache.ibatis.annotations.Mapper;
 

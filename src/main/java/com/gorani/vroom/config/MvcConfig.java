@@ -51,8 +51,11 @@ public class MvcConfig implements WebMvcConfigurer {
     // CSS 경로
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // Static 리소스 매핑 추가
         registry.addResourceHandler("/static/**")
-                .addResourceLocations("/static/");
+                .addResourceLocations("/static/")
+                .setCachePeriod(3600)
+                .resourceChain(true);
     }
 
     // hikaricp
