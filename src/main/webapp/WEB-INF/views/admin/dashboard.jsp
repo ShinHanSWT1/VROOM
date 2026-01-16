@@ -310,6 +310,18 @@
             margin-bottom: 0.5rem;
         }
 
+        .kpi-value.positive {
+            color: #27AE60;
+        }
+
+        .kpi-value.negative {
+            color: #E74C3C;
+        }
+
+        .kpi-value.neutral {
+            color: var(--color-accent);
+        }
+
         .kpi-change {
             font-size: 0.875rem;
             font-weight: 600;
@@ -578,7 +590,7 @@
         </header>
 
         <!-- Dashboard Content -->
-        <main class="dashboard-content">
+        <main class="dashboard-content*">
             <h2 class="page-title">대시보드</h2>
 
             <!-- KPI Cards -->
@@ -586,28 +598,54 @@
                 <div class="kpi-grid">
                     <div class="kpi-card">
                         <div class="kpi-label">[총 사용자]</div>
-                        <div class="kpi-value">3,421</div>
-                        <div class="kpi-change positive">(+12)</div>
+                        <div class="kpi-value">${dashSummary.totalUserCount}</div>
+                        <div class="kpi-change ${dashSummary.totalUserDelta > 0 ? 'positive' : (dashSummary.totalUserDelta < 0 ? 'negative' : 'neutral')}">
+                            <c:choose>
+                                <c:when test="${dashSummary.totalUserDelta > 0}">(+${dashSummary.totalUserDelta})</c:when>
+                                <c:when test="${dashSummary.totalUserDelta < 0}">(${dashSummary.totalUserDelta})</c:when>
+                                <c:otherwise>0</c:otherwise>
+                            </c:choose>
+                        </div>
                     </div>
                     <div class="kpi-card">
                         <div class="kpi-label">[일간 활성 사용자 수]</div>
-                        <div class="kpi-value">3,421</div>
-                        <div class="kpi-change positive">(+12)</div>
+                        <div class="kpi-value">${dashSummary.dauToday}</div>
+                        <div class="kpi-change ${dashSummary.dauDelta > 0 ? 'positive' : (dashSummary.dauDelta < 0 ? 'negative' : 'neutral')}">
+                            <c:choose>
+                                <c:when test="${dashSummary.dauDelta > 0}">(+${dashSummary.dauDelta})</c:when>
+                                <c:when test="${dashSummary.dauDelta < 0}">(${dashSummary.dauDelta})</c:when>
+                                <c:otherwise>0</c:otherwise>
+                            </c:choose>
+                        </div>
                     </div>
                     <div class="kpi-card">
                         <div class="kpi-label">[오늘 심부름 수]</div>
-                        <div class="kpi-value">96</div>
-                        <div class="kpi-change positive">(+18%)</div>
+                        <div class="kpi-value">${dashSummary.errandsToday}</div>
+                        <div class="kpi-change ${dashSummary.errandsDiffRate > 0 ? 'positive' : (dashSummary.errandsDiffRate < 0 ? 'negative' : 'neutral')}">
+                            <c:choose>
+                                <c:when test="${dashSummary.errandsDiffRate > 0}">(+${dashSummary.errandsDiffRate}%)</c:when>
+                                <c:when test="${dashSummary.errandsDiffRate < 0}">(${dashSummary.errandsDiffRate}%)</c:when>
+                                <c:otherwise>0</c:otherwise>
+                            </c:choose>
+                        </div>
                     </div>
                     <div class="kpi-card">
                         <div class="kpi-label">[심부름 완료율]</div>
-                        <div class="kpi-value">91%</div>
+                        <div class="kpi-value ${dashSummary.activeErranderDelta > 60 ? 'positive' : (dashSummary.activeErranderDelta < 40 ? 'negative' : 'neutral')}">
+                            ${dashSummary.completionRate}%
+                        </div>
                         <div class="kpi-change neutral"></div>
                     </div>
                     <div class="kpi-card">
                         <div class="kpi-label">[활성 부름이]</div>
-                        <div class="kpi-value">182</div>
-                        <div class="kpi-change negative">(-3)</div>
+                        <div class="kpi-value">${dashSummary.activeErranderToday}</div>
+                        <div class="kpi-change ${dashSummary.activeErranderDelta > 0 ? 'positive' : (dashSummary.activeErranderDelta < 0 ? 'negative' : 'neutral')}">
+                            <c:choose>
+                                <c:when test="${dashSummary.activeErranderDelta > 0}">(+${dashSummary.activeErranderDelta})</c:when>
+                                <c:when test="${dashSummary.activeErranderDelta < 0}">(${dashSummary.activeErranderDelta})</c:when>
+                                <c:otherwise>0</c:otherwise>
+                            </c:choose>
+                        </div>
                     </div>
                 </div>
             </section>

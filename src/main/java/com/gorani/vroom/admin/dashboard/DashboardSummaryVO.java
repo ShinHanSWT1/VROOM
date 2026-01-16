@@ -12,7 +12,7 @@ public class DashboardSummaryVO {
     // 일간 활성 사용자 수
     private int dauToday;
     private int dauYesterday;
-    private int dayDelta;
+    private int dauDelta;
 
     // 오늘 주문
     private int errandsToday;

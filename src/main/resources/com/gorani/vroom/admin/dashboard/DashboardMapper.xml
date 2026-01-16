@@ -2,9 +2,9 @@
 <!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.gorani.vroom.admin.dashboard.DashboardMapper">
 
-    <select id="getKpi"
+    <select id="getSummary"
             resultType="com.gorani.vroom.admin.dashboard.DashboardSummaryVO">
-
+        <![CDATA[
         SELECT
             -- 총 사용자
             (SELECT COUNT(*) FROM MEMBERS WHERE status != 'DELETED') AS total_user_count,
@@ -106,8 +106,9 @@
                     AND status = 'ACTIVE'
                 )
             ) AS active_errander_delta
-
-
-
+        ]]>
     </select>
+
+
+
 </mapper>
