@@ -109,6 +109,35 @@
         ]]>
     </select>
 
+    <!-- 상태별 심부름 수 조회 -->
+    <select id="getErrandsStatusCount"
+            resultType="map">
+        <![CDATA[
+        SELECT status, count(*) AS cnt FROM ERRANDS GROUP BY status
+        ]]>
+    </select>
+
+    <!-- 최근 7일 상태별 심부름 수 조회 -->
+    <select id="getErrandsStatusRecentCount"
+            resultType="map">
+        <![CDATA[
+        SELECT status, count(*) AS cnt FROM ERRANDS WHERE created_at >= CURRENT_DATE()
+            AND created_at < CURRENT_DATE() + INTERVAL 1 DAY
+            GROUP BY status
+        ]]>
+    </select>
+
+    <!-- 카테고리별 심부름수 조회 -->
+    <select id="getErrandsCategoryCount"
+            resultType="map">
+        <![CDATA[
+        SELECT E.category_id AS category, C.name, COUNT(*) AS cnt
+            FROM ERRANDS E, CATEGORIES C WHERE E.category_id = C.id
+            GROUP BY category_id ORDER BY cnt;
+        ]]>
+    </select>
+
+
 
 
 </mapper>

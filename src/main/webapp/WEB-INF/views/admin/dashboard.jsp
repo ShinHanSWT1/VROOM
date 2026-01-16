@@ -10,6 +10,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <title>VROOM - 관리자 대시보드</title>
     <style>
         :root {
@@ -380,6 +381,19 @@
             color: var(--color-warm);
         }
 
+        .no-data-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--color-gray);
+            font-size: 1rem;
+            font-weight: 600;
+            text-align: center;
+            z-index: 10;
+            pointer-events: none;
+        }
+
         /* Chart Placeholder */
         .chart-placeholder {
             background: linear-gradient(135deg, var(--color-light-gray) 0%, #E0E0E0 100%);
@@ -390,6 +404,12 @@
             justify-content: center;
             color: var(--color-gray);
             font-size: 3rem;
+            position: relative;
+        }
+
+        .chart-placeholder canvas {
+            max-width: 100%;
+            max-height: 100%;
         }
 
         /* Stats List */
@@ -655,10 +675,15 @@
                 <!-- 심부름 상태 -->
                 <div class="dashboard-card">
                     <div class="dashboard-card-header">
-                        <h3 class="dashboard-card-title">심부름 상태<br>(도넛 | 막대그래프)</h3>
+                        <h3 class="dashboard-card-title">심부름 상태</h3>
                         <a href="#" class="dashboard-card-action">상세보기 →</a>
                     </div>
-                    <div class="chart-placeholder">📊</div>
+                    <div class="chart-placeholder">
+                        <canvas id="errandStatusChart"></canvas>
+                        <div id="noDataText" class="no-data-text" style="display:none;">
+                            데이터가 없습니다
+                        </div>
+                    </div>
                 </div>
 
                 <!-- 지역별 정보 -->
@@ -784,7 +809,76 @@
                 $(this).addClass('active');
             }
         });
+
     });
+
+    fetch('${pageContext.request.contextPath}/api/admin/dashboard/errand-status')
+        .then(res => res.json())
+        .then(data => {
+            const statusColorMap = {
+                WAITING: '#FFC107',
+                MATCHED: '#03A9F4',
+                CONFIRMED: '#4CAF50',
+                IN_PROGRESS: '#FF9800',
+                COMPLETED: '#9E9E9E',
+                CANCELED: '#F44336'
+            };
+
+            const ctx = document.getElementById('errandStatusChart');
+
+            const total = data.values.reduce((a, b) => a + b, 0);
+
+            let chartLabels;
+            let chartValues;
+            let chartColors;
+
+            if (total === 0) {
+                // 데이터 없음
+                chartLabels = ['데이터 없음'];
+                chartValues = [1];               // 도넛을 채우기 위한 더미값
+                chartColors = ['#E0E0E0'];        // 연한 회색
+                showNoDataText();                // 옆 텍스트 표시
+            } else {
+                chartLabels = data.labels;
+                chartValues = data.values;
+                chartColors = data.labels.map(status => statusColorMap[status]);
+                hideNoDataText();
+            }
+
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        data: chartValues,
+                        backgroundColor: chartColors,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    cutout: '65%',
+                    plugins: {
+                        legend: {
+                            display: total !== 0   // 데이터 없으면 범례 숨김
+                        },
+                        tooltip: {
+                            enabled: total !== 0   // 데이터 없으면 툴팁 숨김
+                        }
+                    }
+                }
+            });
+        });
+
+    function showNoDataText() {
+        document.getElementById('noDataText').style.display = 'block';
+    }
+
+    function hideNoDataText() {
+        document.getElementById('noDataText').style.display = 'none';
+    }
+
+
+
 </script>
 </body>
 
