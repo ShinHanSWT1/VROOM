@@ -40,4 +40,19 @@ public class SampleController {
         log.info("===== DB 연결 테스트 종료 =====");
         return "DB CONNECT OK";
     }
+    
+    @GetMapping("/errand/list")
+    public String errandList() {
+        return "errand_list";
+    }
+
+    @GetMapping("/errand/detail")
+    public String errandDetail() {
+        return "errand_detail";
+    }
+
+    @GetMapping("/errand/create")
+    public String errandCreate() {
+        return "errand_create";
+    }
 }
