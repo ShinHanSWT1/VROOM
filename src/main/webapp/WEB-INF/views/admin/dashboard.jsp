@@ -680,7 +680,7 @@
                     </div>
                     <div class="chart-placeholder">
                         <canvas id="errandStatusChart"></canvas>
-                        <div id="noDataText" class="no-data-text" style="display:none;">
+                        <div id="noDataTextErrandStatus" class="no-data-text" style="display:none;">
                             데이터가 없습니다
                         </div>
                     </div>
@@ -711,7 +711,12 @@
                         <h3 class="dashboard-card-title">카테고리 분포</h3>
                         <a href="#" class="dashboard-card-action">상세보기 →</a>
                     </div>
-                    <div class="chart-placeholder">📈</div>
+                    <div class="chart-placeholder">
+                        <canvas id="errandCategoryChart"></canvas>
+                        <div id="noDataTextErrandCategory" class="no-data-text" style="display:none;">
+                            데이터가 없습니다
+                        </div>
+                    </div>
                 </div>
 
                 <!-- 시간대별 트렌드 -->
@@ -720,7 +725,12 @@
                         <h3 class="dashboard-card-title">시간대별 트렌드</h3>
                         <a href="#" class="dashboard-card-action">상세보기 →</a>
                     </div>
-                    <div class="chart-placeholder">📉</div>
+                    <div class="chart-placeholder">
+                        <canvas id="hourlyTrendChart"></canvas>
+                        <div id="noDataTexthourlyTrendChart" class="no-data-text" style="display:none;">
+                            데이터가 없습니다
+                        </div>
+                    </div>
                 </div>
 
                 <!-- 신고/이슈 요약 -->
@@ -732,15 +742,15 @@
                     <ul class="stats-list">
                         <li class="stats-item">
                             <span class="stats-label">미처리 신고</span>
-                            <span class="stats-value">12</span>
+                            <span id="issuePending" class="stats-value" style="color: #E74C3C;">-</span>
                         </li>
                         <li class="stats-item">
                             <span class="stats-label">처리중</span>
-                            <span class="stats-value">8</span>
+                            <span id="issueProcessing" class="stats-value" style="color: #F2A007;">-</span>
                         </li>
                         <li class="stats-item">
                             <span class="stats-label">처리완료</span>
-                            <span class="stats-value">45</span>
+                            <span id="issueCompleted" class="stats-value" style="color: #27AE60;">-</span>
                         </li>
                     </ul>
                 </div>
@@ -754,15 +764,15 @@
                     <ul class="stats-list">
                         <li class="stats-item">
                             <span class="stats-label">오늘 정산 예정</span>
-                            <span class="stats-value">1,234,000원</span>
+                            <span id="settleToday" class="stats-value">-</span>
                         </li>
                         <li class="stats-item">
                             <span class="stats-label">정산 대기</span>
-                            <span class="stats-value">23건</span>
+                            <span id="settleWaiting" class="stats-value">-</span>
                         </li>
                         <li class="stats-item">
                             <span class="stats-label">이번 달 총 정산</span>
-                            <span class="stats-value">45,678,000원</span>
+                            <span id="settleMonth" class="stats-value">-</span>
                         </li>
                     </ul>
                 </div>
@@ -837,12 +847,12 @@
                 chartLabels = ['데이터 없음'];
                 chartValues = [1];               // 도넛을 채우기 위한 더미값
                 chartColors = ['#E0E0E0'];        // 연한 회색
-                showNoDataText();                // 옆 텍스트 표시
+                showNoDataText('noDataTextErrandStatus');                // 옆 텍스트 표시
             } else {
                 chartLabels = data.labels;
                 chartValues = data.values;
                 chartColors = data.labels.map(status => statusColorMap[status]);
-                hideNoDataText();
+                hideNoDataText('noDataTextErrandStatus');
             }
 
             new Chart(ctx, {
@@ -869,12 +879,127 @@
             });
         });
 
-    function showNoDataText() {
-        document.getElementById('noDataText').style.display = 'block';
+    fetch('${pageContext.request.contextPath}/api/admin/dashboard/errand-category')
+        .then(res => res.json())
+        .then(data => {
+            const statusColorMap = {
+                WAITING: '#FFC107',
+                MATCHED: '#03A9F4',
+                CONFIRMED: '#4CAF50',
+                IN_PROGRESS: '#FF9800',
+                COMPLETED: '#9E9E9E',
+                CANCELED: '#F44336'
+            };
+
+            const ctx = document.getElementById('errandCategoryChart');
+
+            const total = data.values.reduce((a, b) => a + b, 0);
+
+            let chartLabels;
+            let chartValues;
+            let chartColors;
+
+            if (total === 0) {
+                // 데이터 없음
+                chartLabels = ['데이터 없음'];
+                chartValues = [1];               // 도넛을 채우기 위한 더미값
+                chartColors = ['#E0E0E0'];        // 연한 회색
+                showNoDataText('noDataTextErrandCategory');                // 옆 텍스트 표시
+            } else {
+                chartLabels = data.labels;
+                chartValues = data.values;
+                chartColors = data.labels.map(status => statusColorMap[status]);
+                hideNoDataText('noDataTextErrandCategory');
+            }
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        data: chartValues,
+                        backgroundColor: chartColors,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    cutout: '65%',
+                    plugins: {
+                        legend: {
+                            display: total !== 0   // 데이터 없으면 범례 숨김
+                        },
+                        tooltip: {
+                            enabled: total !== 0   // 데이터 없으면 툴팁 숨김
+                        }
+                    }
+                }
+            });
+        });
+
+    fetch('${pageContext.request.contextPath}/api/admin/dashboard/errand-hourly-trend')
+        .then(res => res.json())
+        .then(data => {
+            const ctx = document.getElementById('hourlyTrendChart');
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: '시간대별 심부름 등록',
+                        data: data.values,
+                        borderColor: '#FFC107',
+                        backgroundColor: 'rgba(255,193,7,0.2)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+        });
+
+    fetch('${pageContext.request.contextPath}/api/admin/dashboard/issue-summary')
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('issuePending').innerText = data.pending || 0;
+            document.getElementById('issueProcessing').innerText = data.processing || 0;
+            document.getElementById('issueCompleted').innerText = data.completed || 0;
+        })
+        .catch(err => console.error('이슈 요약 로드 실패:', err));
+
+    fetch('${pageContext.request.contextPath}/api/admin/dashboard/settlement-summary')
+        .then(res => res.json())
+        .then(data => {
+            const formatMoney = (num) => (num || 0).toLocaleString() + '원';
+            const formatCount = (num) => (num || 0).toLocaleString() + '건';
+
+            document.getElementById('settleToday').innerText = formatMoney(data.today_amount);
+            document.getElementById('settleWaiting').innerText = formatCount(data.pending_count);
+            document.getElementById('settleMonth').innerText = formatMoney(data.month_amount);
+        })
+        .catch(err => console.error('정산 요약 로드 실패:', err));
+
+    function showNoDataText(element) {
+        document.getElementById(element).style.display = 'block';
     }
 
-    function hideNoDataText() {
-        document.getElementById('noDataText').style.display = 'none';
+    function hideNoDataText(element) {
+        document.getElementById(element).style.display = 'none';
     }
 
 

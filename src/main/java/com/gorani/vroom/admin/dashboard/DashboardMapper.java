@@ -10,4 +10,7 @@ public interface DashboardMapper {
     DashboardSummaryVO getSummary();
     List<Map<String, Object>> getErrandsStatusCount();
     List<Map<String, Object>> getErrandsCategoryCount();
+    List<Map<String, Object>> getErrandsHourlyTrend();
+    Map<String, Object> getSettlementSummary();
+    Map<String, Object> getReportSummary();
 }
