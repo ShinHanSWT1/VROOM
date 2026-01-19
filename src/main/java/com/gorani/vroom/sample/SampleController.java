@@ -1,14 +1,21 @@
 package com.gorani.vroom.sample;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.sql.DataSource;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.sql.DataSource;
-import java.sql.Connection;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Controller
 @RequiredArgsConstructor
@@ -39,20 +46,5 @@ public class SampleController {
 
         log.info("===== DB 연결 테스트 종료 =====");
         return "DB CONNECT OK";
-    }
-    
-    @GetMapping("/errand/list")
-    public String errandList() {
-        return "errand_list";
-    }
-
-    @GetMapping("/errand/detail")
-    public String errandDetail() {
-        return "errand_detail";
-    }
-
-    @GetMapping("/errand/create")
-    public String errandCreate() {
-        return "errand_create";
     }
 }
