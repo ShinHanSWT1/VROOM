@@ -70,18 +70,18 @@
                                     <p class="post-description">${post.content}</p>
 
                                     <div class="post-meta">
-                                        <span class="post-meta-item">${post.dong_name}</span>
+                                        <span class="post-meta-item">${post.dongName}</span>
                                         <span class="post-meta-item">•</span>
-                                        <span class="post-category-badge">${post.category_name}</span>
+                                        <span class="post-category-badge">${post.categoryName}</span>
                                         <span class="post-meta-item">•</span>
                                         <span class="post-meta-item">
-                                            <fmt:formatDate value="${post.created_at}" pattern="MM.dd"/>
+                                            <fmt:formatDate value="${post.createdAt}" pattern="MM.dd"/>
                                         </span>
                                     </div>
 
                                     <div class="post-stats">
-                                        <span class="post-stat">👍 ${post.like_count}</span>
-                                        <span class="post-stat">👁 ${post.view_count}</span>
+                                        <span class="post-stat">👍 ${post.likeCount}</span>
+                                        <span class="post-stat">👁 ${post.viewCount}</span>
                                     </div>
                                 </div>
                             </div>

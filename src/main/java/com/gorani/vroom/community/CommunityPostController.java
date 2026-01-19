@@ -21,9 +21,9 @@ public class CommunityPostController {
     private CommunityService communityService;
 
     // 커뮤니티 게시글 목록 페이지
-    @GetMapping("/list")
+    @GetMapping("")
     public String list(@RequestParam(required = false)  String dongCode,
-                       @RequestParam(required = false)  Long categortId,
+                       @RequestParam(required = false)  Long categoryId,
                        @RequestParam(required = false)  String searchKeyword,
                        Model model) {
         List<String> gunguList = locationService.getGuList();
@@ -32,26 +32,31 @@ public class CommunityPostController {
         // 사이드바 카테고리 불러오기
         List<CategoryVO> categoryList = communityService.getCategoryList();
         model.addAttribute("categoryList", categoryList);
+        model.addAttribute("selectedCategoryId", categoryId);
 
-        model.addAttribute("selectedCategoryId", categortId);
+        // 게시글 목록 ( 필터링)
+        List<CommunityPostVO> postList = communityService.getPostList(dongCode, categoryId, searchKeyword);
+        model.addAttribute("postList", postList);
 
+        // 검색 조건
+        model.addAttribute("categoryId", categoryId);
+        model.addAttribute("searchKeyword", searchKeyword);
 
         // 게시글 목록
-        List<Map<String, Object>> postList = new ArrayList<>();
-        for (int i = 1; i <= 5; i++) {
-            Map<String, Object> post = new HashMap<>();
-            post.put("post_id", i);
-            post.put("title", "테스트 게시글 " + i);
-            post.put("content", "내용입니다.");
-            post.put("nickname", "사용자" + i);
-            post.put("dong_name", "가산동");
-            post.put("created_at", new Date());
-            post.put("like_count", 10 + i);
-            post.put("view_count", 100 + i);
-            post.put("category_name", "맛집");
-            postList.add(post);
-        }
-        model.addAttribute("postList", postList);
+//        List<Map<String, Object>> postList = new ArrayList<>();
+//        for (int i = 1; i <= 5; i++) {
+//            Map<String, Object> post = new HashMap<>();
+//            post.put("post_id", i);
+//            post.put("title", "테스트 게시글 " + i);
+//            post.put("content", "내용입니다.");
+//            post.put("nickname", "사용자" + i);
+//            post.put("dong_name", "가산동");
+//            post.put("created_at", new Date());
+//            post.put("like_count", 10 + i);
+//            post.put("view_count", 100 + i);
+//            post.put("category_name", "맛집");
+//            postList.add(post);
+//        }
         return "community/list";
     }
 
@@ -87,7 +92,7 @@ public class CommunityPostController {
         return "community/detail";
     }
     @GetMapping("/write")
-    public String writeFomr(Model model) {
+    public String writeForm(Model model) {
         return "community/write";
     }
 

@@ -9,4 +9,38 @@
         ORDER BY category_id;
     </select>
 
+    <select id = "selectPostList" resultType = "com.gorani.vroom.community.CommunityPostVO">
+        SELECT
+            c.post_id,
+            c.title,
+            c.content,
+            c.view_count,
+            c.like_count,
+            c.created_at,
+            c.updated_at,
+            c.user_id,
+            m.nickname,
+            c.dong_code,
+            d.dong_name,
+            cc.category_id,
+            cc.category_name
+        FROM COMMUNITY c
+        LEFT JOIN COMMUNITY_CATEGORY cc ON c.category_id = cc.category_id
+        LEFT JOIN MEMBERS m ON c.user_id = m.user_id
+        LEFT JOIN LEGAL_DONG d ON c.dong_code = d.dong_code
+        <where>
+            <if test="dongCode != null and dongCode != ''">
+                AND c.dong_code = #{dongCode}
+            </if>
+            <if test="categoryId != null">
+                AND c.category_id = #{categoryId}
+            </if>
+            <if test="searchKeyword != null and searchKeyword != ''">
+                AND (c.title LIKE CONCAT('%', #{searchKeyword}, '%')
+                OR c.content LIKE CONCAT('%', #{searchKeyword}, '%'))
+            </if>
+        </where>
+        ORDER BY c.created_at DESC
+    </select>
+
 </mapper>
