@@ -10,4 +10,5 @@ public interface AdminUsersMapper {
     Map<String, Object> getSummary();
     List<Map<String, Object>> searchUsers(Map<String, Object> param);
     int countUsers(Map<String, Object> param);
+    void updateUserStatus(Map<String, Object> param);
 }

@@ -8,8 +8,8 @@
                 COUNT(*) AS total,
                 SUM(CASE WHEN status = 'ACTIVE' THEN 1 ELSE 0 END) AS activated,
                 SUM(CASE WHEN status = 'ACTIVE' AND last_login_at >= CURRENT_DATE - INTERVAL 7 DAY THEN 1 ELSE 0 END) AS recent7_activated,
-                SUM(CASE WHEN status IN ('SUSPEND', 'BANNED')  THEN 1 ELSE 0 END) AS banned,
-                SUM(CASE WHEN status = 'SUSPEND' THEN 1 ELSE 0 END) AS suspended,
+                SUM(CASE WHEN status IN ('SUSPENDED', 'BANNED')  THEN 1 ELSE 0 END) AS banned,
+                SUM(CASE WHEN status = 'SUSPENDED' THEN 1 ELSE 0 END) AS suspended,
                 SUM(CASE WHEN status = 'DELETED' THEN 1 ELSE 0 END) AS unsubscribed,
                 SUM(CASE WHEN DATE(created_at) = CURRENT_DATE THEN 1 ELSE 0 END) AS today_joined
             FROM MEMBERS;
@@ -19,7 +19,7 @@
     <select id="searchUsers" parameterType="map" resultType="map">
         <![CDATA[
             SELECT
-                m.user_id, m.email, m.nickname, m.status, m.role, m.created_at, m.last_login_at,
+                m.user_id, m.email, m.nickname, m.status, m.role, m.created_at, m.last_login_at, m.suspension_end_at,
                 COUNT(r.id) AS report_count
             FROM MEMBERS m LEFT JOIN ISSUE_TICKETS r ON r.target_user_id = m.user_id
             WHERE 1=1
@@ -47,7 +47,7 @@
             ) >= #{reportCount}
         </if>
 
-        GROUP BY m.user_id, m.email, m.nickname, m.status, m.role, m.created_at, m.last_login_at
+        GROUP BY m.user_id, m.email, m.nickname, m.status, m.role, m.created_at, m.last_login_at, m.suspension_end_at
         ORDER BY m.created_at DESC
         LIMIT #{limit} OFFSET #{offset}
     </select>
@@ -89,5 +89,13 @@
             ]]>
     </select>
 
+    <update id="updateUserStatus" parameterType="map">
+        UPDATE MEMBERS
+        SET
+            status = #{status},
+            suspension_end_at = #{suspensionEndAt},
+            suspension_note = #{suspensionNote}
+        WHERE user_id = #{userId}
+    </update>
 
 </mapper>

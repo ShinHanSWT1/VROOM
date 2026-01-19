@@ -266,13 +266,13 @@
         .page-title {
             font-size: 2rem;
             font-weight: 700;
-            margin-bottom: 2rem;
+            margin-left: 15px;
             color: var(--color-dark);
         }
 
         /* KPI Cards */
         .kpi-section {
-            margin-bottom: 2rem;
+            margin: 10px;
         }
 
         .kpi-grid {

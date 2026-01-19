@@ -4,8 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,5 +57,34 @@ public class AdminUsersServiceImpl implements AdminUsersService {
         dataMap.put("pageInfo", pageInfo);
 
         return dataMap;
+    }
+
+    @Override
+    public void updateUserStatus(Map<String, Object> params) {
+        String status = (String) params.get("status");
+
+        // 일시정지인 경우 추가 로직
+        if ("SUSPENDED".equals(status)) {
+            Map<String, Object> extraData = (Map<String, Object>) params.get("extraData");
+
+            if (extraData != null && extraData.containsKey("days")) {
+                int days = Integer.parseInt(String.valueOf(extraData.get("days")));
+                String reason = (String) extraData.get("reason");
+
+                // 종료일 계산 (현재 시간 + 일수)
+                LocalDateTime endDate = LocalDateTime.now().plusDays(days);
+
+                // 파라미터에 추가
+                params.put("suspensionEndAt", endDate);
+                params.put("suspensionNote", reason);
+            }
+        } else {
+            // 정상이나 영구정지로 바꿀 땐 정지 정보를 초기화
+            params.put("suspensionEndAt", null);
+            params.put("suspensionNote", null);
+        }
+
+        // DB 업데이트 호출
+        mapper.updateUserStatus(params);
     }
 }

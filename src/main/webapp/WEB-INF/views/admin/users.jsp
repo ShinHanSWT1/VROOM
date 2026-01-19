@@ -488,17 +488,17 @@
             font-weight: 600;
         }
 
-        .status-badge.normal {
+        .status-badge.ACTIVE {
             background: #E8F5E9;
             color: #27AE60;
         }
 
-        .status-badge.suspended {
+        .status-badge.BANNED {
             background: #FDEAEA;
             color: #E74C3C;
         }
 
-        .status-badge.temp-suspended {
+        .status-badge.SUSPENDED {
             background: #FFF9E6;
             color: var(--color-accent);
         }
@@ -854,7 +854,7 @@
 
             <!-- Summary Section -->
             <section class="summary-section">
-                <h3 class="summary-title">상단 요약 제공</h3>
+<%--                <h3 class="summary-title">상단 요약 제공</h3>--%>
                 <div class="summary-grid">
                     <div class="summary-card">
                         <div class="summary-label">전체 사용자</div>
@@ -893,9 +893,9 @@
                         <label class="filter-label">상태</label>
                         <select class="filter-select" id="filterStatus">
                             <option value="">전체</option>
-                            <option value="normal">정상</option>
-                            <option value="temp-suspended">일시정지</option>
-                            <option value="suspended">정지</option>
+                            <option value="ACTIVE">정상</option>
+                            <option value="SUSPENDED">일시정지</option>
+                            <option value="BANNED">정지</option>
                         </select>
                     </div>
                     <div class="filter-group">
@@ -929,10 +929,12 @@
                         <thead>
                         <tr>
                             <th>ID</th>
+                            <th>이메일</th>
                             <th>닉네임</th>
                             <th>역할</th>
                             <th>상태</th>
                             <th>신고</th>
+                            <th>정지 종료일</th>
                             <th>최근 로그인</th>
                             <th>관리</th>
                         </tr>
@@ -944,13 +946,7 @@
                 </div>
 
                 <!-- Pagination -->
-                <div class="pagination">
-                    <button class="pagination-button">이전</button>
-                    <button class="pagination-button active">1</button>
-                    <button class="pagination-button">2</button>
-                    <button class="pagination-button">3</button>
-                    <button class="pagination-button">다음</button>
-                </div>
+                <div class="pagination"></div>
             </section>
         </main>
     </div>
@@ -980,18 +976,29 @@
 </div>
 
 <script>
+    let targetUserId = null;       // 정지 대상 ID
+    let targetElement = null;      // UI 업데이트할 배지 요소
+
     $(document).ready(function () {
         // Sidebar Toggle
         const sidebar = document.getElementById('sidebar');
         const sidebarToggle = document.getElementById('sidebarToggle');
         const adminDropdownTrigger = document.getElementById('adminDropdownTrigger');
         const adminDropdown = document.getElementById('adminDropdown');
-
+        const savedState = localStorage.getItem('sidebarState');
+        if (savedState === 'collapsed') {
+            sidebar.classList.add('collapsed');
+        }
         // 1. 사이드바 토글
         sidebarToggle.addEventListener('click', function (e) {
             e.stopPropagation(); // 이벤트 버블링 방지
             sidebar.classList.toggle('collapsed');
+
             console.log("사이드바 상태:", sidebar.classList.contains('collapsed') ? "접힘" : "펼쳐짐");
+
+            // 상태 저장 로직 추가
+            const isCollapsed = sidebar.classList.contains('collapsed');
+            localStorage.setItem('sidebarState', isCollapsed ? 'collapsed' : 'expanded');
         });
 
         // 2. 관리자 드롭다운 토글
@@ -1042,54 +1049,78 @@
         event.stopPropagation();
     }
 
-    // Close dropdowns when clicking outside
+    // 외부 창 클릭 시 드롭다운 접기
     document.addEventListener('click', function () {
         const allDropdowns = document.querySelectorAll('.status-dropdown-menu');
         allDropdowns.forEach(d => d.classList.remove('show'));
     });
 
-    // Change Status
+    // 상태 변환
     let currentStatusElement = null;
 
-    function changeStatus(element, newStatus) {
-        const statusBadge = element.closest('.status-dropdown').querySelector('.status-badge');
+    // 상태 변경 함수
+    function changeStatus(element, newStatus, extraData, userId) {
+        // 1. 상태 배지 UI 업데이트
+        const dropdown = element.closest('.status-dropdown');
+        const statusBadge = dropdown.querySelector('.status-badge');
 
-        // Update badge class and text
         statusBadge.className = 'status-badge ' + newStatus;
 
-        if (newStatus === 'normal') {
-            statusBadge.textContent = '정상';
-        } else if (newStatus === 'suspended') {
-            statusBadge.textContent = '정지';
-        } else if (newStatus === 'temp-suspended') {
-            statusBadge.textContent = '일시정지';
+        // 텍스트 변경 로직
+        if (newStatus === 'ACTIVE') statusBadge.textContent = '정상';
+        else if (newStatus === 'BANNED') statusBadge.textContent = '정지';
+        else if (newStatus === 'SUSPENDED') statusBadge.textContent = '일시정지';
+
+        // 드롭다운 메뉴 닫기
+        const menu = dropdown.querySelector('.status-dropdown-menu');
+        if (menu) {
+            menu.classList.remove('show');
         }
 
-        // Close dropdown
-        element.closest('.status-dropdown-menu').classList.remove('show');
+        // API 호출 데이터 구성
+        const payload = {
+            userId: userId,
+            status: newStatus,
+            extraData: extraData
+        };
 
-        // Show confirmation
-        alert('상태가 변경되었습니다.');
+        // API 전송
+        fetch('${pageContext.request.contextPath}/api/admin/users/status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.result === 'success') {
+                    alert('상태가 변경되었습니다.');
+                    window.location.reload(); // 새로고침
+                } else {
+                    alert('상태 변경 실패');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('서버 통신 중 오류가 발생했습니다.');
+            });
     }
 
-    // Show Suspension Modal
-    function showSuspensionModal(element, status) {
-        currentStatusElement = element.closest('.status-dropdown').querySelector('.status-badge');
+
+    // 일시정지 모달 열기
+    function showSuspensionModal(element, status, userId) {
+        targetElement = element.closest('.status-dropdown').querySelector('.status-dropdown-toggle');
+        targetUserId = userId;
+
         const modal = document.getElementById('suspensionModal');
         modal.classList.add('show');
 
-        // Close dropdown
         element.closest('.status-dropdown-menu').classList.remove('show');
+
+        document.getElementById('suspensionDays').value = 7;
+        document.getElementById('suspensionReason').value = '';
     }
 
-    // Close Suspension Modal
-    function closeSuspensionModal() {
-        const modal = document.getElementById('suspensionModal');
-        modal.classList.remove('show');
-        currentStatusElement = null;
-    }
-
-    // Apply Suspension
+    // 일시정지 적용
     function applySuspension() {
         const days = document.getElementById('suspensionDays').value;
         const reason = document.getElementById('suspensionReason').value;
@@ -1099,25 +1130,31 @@
             return;
         }
 
-        if (currentStatusElement) {
-            currentStatusElement.className = 'status-badge temp-suspended';
-            currentStatusElement.textContent = '일시정지';
-
-            <%--alert(`${days}일 동안 일시정지 처리되었습니다.${reason ? '\n사유: ' + reason : ''}`);--%>
-        }
+        console.log(targetElement, { days: days, reason: reason }, targetUserId);
+        changeStatus(targetElement, 'SUSPENDED', { days: days, reason: reason }, targetUserId);
 
         closeSuspensionModal();
     }
 
+    // 일시정지 모달 close
+    function closeSuspensionModal() {
+        const modal = document.getElementById('suspensionModal');
+        modal.classList.remove('show');
+        currentStatusElement = null;
+    }
 
-    // Go to Detail Page
+
+
+
+
+    // 상세 페이지 이동
     function goToDetail(userId) {
         alert('사용자 ID ' + userId + '의 상세 페이지로 이동합니다.\n(admin-user-detail.html?id=' + userId + ')');
         // window.location.href = 'admin-user-detail.html?id=' + userId;
     }
 
     // 페이지 로드 시 초기 목록 조회
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         loadUserList(1);
     });
 
@@ -1127,11 +1164,11 @@
     }
 
     // 엔터키 입력 시 검색
-    document.getElementById('searchInput').addEventListener('keyup', function(e) {
+    document.getElementById('searchInput').addEventListener('keyup', function (e) {
         if (e.key === 'Enter') searchUsers();
     });
 
-    // 필터 변경 시 자동 검색 (선택 사항)
+    // 필터 변경 시 자동 검색
     document.getElementById('filterStatus').addEventListener('change', () => loadUserList(1));
     document.getElementById('filterRole').addEventListener('change', () => loadUserList(1));
     document.getElementById('filterReports').addEventListener('change', () => loadUserList(1));
@@ -1183,17 +1220,35 @@
             const roleBadgeClass = user.role === 'ERRANDER' ? 'role-badge errander' : 'role-badge';
 
             // 상태 뱃지 스타일 결정
-            let statusClass = 'normal';
+            let statusClass = 'ACTIVE';
             let statusText = '정상';
-            if (user.status === 'BANNED') { statusClass = 'suspended'; statusText = '정지'; }
-            else if (user.status === 'SUSPENDED') { statusClass = 'temp-suspended'; statusText = '일시정지'; }
+            if (user.status === 'BANNED') {
+                statusClass = 'BANNED';
+                statusText = '정지';
+            } else if (user.status === 'SUSPENDED') {
+                statusClass = 'SUSPENDED';
+                statusText = '일시정지';
+            }
 
             // 날짜 포맷팅 (예: 01-07 13:22)
-            const lastLogin = user.last_login_at ? new Date(user.last_login_at).toLocaleString('ko-KR', {month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit'}) : '-';
+            const lastLogin = user.last_login_at ? new Date(user.last_login_at).toLocaleString('ko-KR', {
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            }) : '-';
+
+            const suspensionEnd = user.suspension_end_at ? new Date(user.suspension_end_at).toLocaleString('ko-KR', {
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            }) : '-';
 
             const row = `
             <tr>
                 <td>${'${'}user.user_id}</td>
+                <td>${'${'}user.email}</td>
                 <td>${'${'}user.nickname}</td>
                 <td><span class="${'${'}roleBadgeClass}">${'${'}user.role}</span></td>
                 <td>
@@ -1203,13 +1258,14 @@
                             <span>▼</span>
                         </button>
                         <div class="status-dropdown-menu">
-                            <div class="status-dropdown-item" onclick="changeStatus(this, 'normal')">정상</div>
-                            <div class="status-dropdown-item" onclick="showSuspensionModal(this, 'temp-suspended')">일시정지</div>
-                            <div class="status-dropdown-item" onclick="changeStatus(this, 'suspended')">정지</div>
+                            <div class="status-dropdown-item" onclick="changeStatus(this, 'ACTIVE', null, ${'${'}user.user_id})">정상</div>
+                            <div class="status-dropdown-item" onclick="showSuspensionModal(this, 'SUSPENDED', ${'${'}user.user_id})">일시정지</div>
+                            <div class="status-dropdown-item" onclick="changeStatus(this, 'BANNED', null, ${'${'}user.user_id})">정지</div>
                         </div>
                     </div>
                 </td>
                 <td>${'${'}user.report_count || 0}</td>
+                <td>${'${'}suspensionEnd}</td>
                 <td>${'${'}lastLogin}</td>
                 <td><button class="action-button" onclick="goToDetail(${'${'}user.user_id})">상세</button></td>
             </tr>
@@ -1218,10 +1274,54 @@
         });
     }
 
-    // 페이지네이션 렌더링 (간단 예시)
+    // 페이지네이션 렌더링
     function renderPagination(pageInfo) {
-        // pageInfo 객체 구조에 맞춰 버튼 HTML 생성 후 .pagination div에 넣는 로직 필요
-        // 예: pageInfo.startPage, pageInfo.endPage, pageInfo.currentPage 등 활용
+        const pagination = document.querySelector('.pagination');
+        pagination.innerHTML = ''; // 기존 버튼 제거
+
+        const {currentPage, startPage, endPage, totalPage} = pageInfo;
+
+        // 이전 버튼
+        const prevBtn = document.createElement('button');
+        prevBtn.className = 'pagination-button';
+        prevBtn.innerText = '이전';
+
+        if (currentPage > 1) {
+            prevBtn.onclick = () => loadUserList(currentPage - 1);
+        } else {
+            prevBtn.disabled = true;
+            prevBtn.classList.add('disabled');
+        }
+        pagination.appendChild(prevBtn);
+
+        // 페이지 번호 버튼
+        for (let i = startPage; i <= endPage; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'pagination-button';
+            btn.innerText = i;
+
+            if (i === currentPage) {
+                btn.classList.add('active');
+            } else {
+                btn.onclick = () => loadUserList(i);
+            }
+
+            pagination.appendChild(btn);
+        }
+
+        // 다음 버튼
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'pagination-button';
+        nextBtn.innerText = '다음';
+
+        if (currentPage < totalPage) {
+            nextBtn.onclick = () => loadUserList(currentPage + 1);
+        } else {
+            nextBtn.disabled = true;
+            nextBtn.classList.add('disabled');
+        }
+
+        pagination.appendChild(nextBtn);
     }
 </script>
 </body>

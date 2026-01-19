@@ -4,11 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -37,5 +34,17 @@ public class AdminUsersController {
     ) {
 
         return service.searchUsers(keyword, status, role, reportCount, page);
+    }
+
+    @PostMapping("/api/admin/users/status")
+    @ResponseBody
+    public Map<String, String> updateUserStatus(@RequestBody Map<String, Object> payload) {
+        Long userId = Long.valueOf(payload.get("userId").toString());
+        String status = (String) payload.get("status");
+
+        // 필요 시 정지 사유나 기간 등 추가 데이터 처리 로직 구현
+        service.updateUserStatus(payload);
+
+        return Map.of("result", "success");
     }
 }
