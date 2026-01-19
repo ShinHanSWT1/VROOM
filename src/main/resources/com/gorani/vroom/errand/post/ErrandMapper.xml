@@ -69,5 +69,27 @@
         FROM ERRANDS e
         <include refid="ErrandListWhere"/>
     </select>
+    
+    <!-- 심부름 게시글 상세 조회 -->
+    <select id="selectErrandDetail"
+            parameterType="long"
+            resultType="com.gorani.vroom.errand.post.ErrandDetailVO">
+
+        SELECT
+            e.errands_id     AS errandsId,
+            e.user_id        AS userId,
+            e.title          AS title,
+            e.description    AS description,
+            e.reward_amount  AS rewardAmount,
+            e.expense_amount AS expenseAmount,
+            e.desired_at     AS desiredAt,
+            e.created_at     AS createdAt,
+            e.status         AS status,
+            e.category_id    AS categoryId,
+            e.dong_code      AS dongCode
+        FROM ERRANDS e
+        WHERE e.errands_id = #{errandsId}
+
+    </select>
 
 </mapper>

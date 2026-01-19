@@ -1,9 +1,10 @@
 package com.gorani.vroom.errand.post;
 
-import org.apache.ibatis.annotations.Mapper;
-
 import java.util.List;
 import java.util.Map;
+
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 @Mapper
 public interface ErrandMapper {
@@ -21,4 +22,6 @@ public interface ErrandMapper {
      * @return 총 개수
      */
     int countErrandList(Map<String, Object> param);
+    
+    ErrandDetailVO selectErrandDetail(@Param("errandsId") Long errandsId);
 }

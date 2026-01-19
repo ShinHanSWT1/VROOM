@@ -44,7 +44,18 @@ public class ErrandController {
      * 심부름 게시글 상세
      */
     @GetMapping("/errand/detail")
-    public String errandDetail() {
+    public String errandDetail(
+            @RequestParam("errandsId") Long errandsId,
+            Model model
+    ) {
+        ErrandDetailVO errand = errandService.getErrandDetail(errandsId);
+
+        if (errand == null) {
+            // 존재하지 않는 글이면 목록으로 돌려보냄
+            return "redirect:/errand/list";
+        }
+
+        model.addAttribute("errand", errand);
         return "errand_detail";
     }
 

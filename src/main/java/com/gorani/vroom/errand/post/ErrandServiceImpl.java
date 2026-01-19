@@ -50,6 +50,12 @@ public class ErrandServiceImpl implements ErrandService {
 //        return errandMapper.countErrandList(param);
 //    }
     
+//    @Override
+//    public ErrandDetailVO getErrandDetail(Long errandsId) {
+//        if (errandsId == null) return null;
+//        return errandMapper.selectErrandDetail(errandsId);
+//    }
+//    
     
     
     
@@ -84,5 +90,11 @@ public class ErrandServiceImpl implements ErrandService {
     @Override
     public int getErrandTotalCount(String q, Long categoryId, String dongCode) {
         return 2;
+    }
+    
+    @Override
+    public ErrandDetailVO getErrandDetail(Long errandsId) {
+        if (errandsId == null) return null;
+        return errandMapper.selectErrandDetail(errandsId);
     }
 }

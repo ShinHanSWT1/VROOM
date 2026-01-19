@@ -18,4 +18,11 @@ public interface ErrandService {
 
     // 심부름 게시글 총 개수(페이징용)
     int getErrandTotalCount(String q, Long categoryId, String dongCode);
+    
+    /**
+     * 심부름 게시글 상세 조회
+     *
+     * @param errandsId 게시글 ID
+     */
+    ErrandDetailVO getErrandDetail(Long errandsId);
 }
