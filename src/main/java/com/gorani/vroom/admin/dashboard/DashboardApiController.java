@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
@@ -18,17 +17,21 @@ public class DashboardApiController {
     private final DashboardService service;
 
     @GetMapping("/errand-status")
-    public Map<String, Object> errandStatus(){
+    public Map<String, Object> errandStatus() {
         return service.getErrandsStatusData();
     }
 
     @GetMapping("/errand-category")
-    public Map<String, Object> errandCategoryStatus(){
+    public Map<String, Object> errandCategoryStatus() {
         return service.getErrandsCategoryData();
     }
 
+    @GetMapping("/errand-region")
+    public Map<String, Object> errandRegionSummary() {
+        return service.getErrandsRegionSummaryData();
+    }
+
     @GetMapping("/errand-hourly-trend")
-    @ResponseBody
     public Map<String, Object> errandHourlyTrend() {
         return service.getErrandsHourlyTrendData();
     }
@@ -42,5 +45,6 @@ public class DashboardApiController {
     public Map<String, Object> getSettlementSummary() {
         return service.getSettlementSummaryData();
     }
+
 
 }

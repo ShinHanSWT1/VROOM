@@ -45,6 +45,7 @@
                 (SELECT COUNT(*) FROM ERRANDS WHERE created_at >= CURDATE() - INTERVAL 1 DAY
                                                 AND created_at <  CURDATE()
                 ) AS errands_yesterday,
+
                 -- 주문 증감률
                 CASE
                     WHEN (SELECT COUNT(*) FROM ERRANDS
@@ -77,8 +78,9 @@
                     ELSE ROUND(
                         (SELECT COUNT(*) FROM ERRANDS WHERE created_at >= CURDATE()
                             AND created_at <  CURDATE() + INTERVAL 1 DAY
-                            AND status = 'DONE'
-                        ) * 100.0 /
+                            AND status = 'COMPLETED'
+                        ) * 100.0
+                        /
                         (SELECT COUNT(*) FROM ERRANDS WHERE created_at >= CURDATE()
                             AND created_at <  CURDATE() + INTERVAL 1 DAY
                         )
@@ -138,6 +140,7 @@
         ]]>
     </select>
 
+    <!-- 시간별 심부르 트렌드 조회 -->
     <select id="getErrandsHourlyTrend"
             resultType="map">
         <![CDATA[
@@ -148,16 +151,19 @@
         ]]>
     </select>
 
-    <select id="getIssueSummary"
+    <!-- 신고/이슈 요약 -->
+    <select id="getReportSummary"
             resultType="map">
         <![CDATA[
             SELECT
                 (SELECT COUNT(*) FROM ISSUE_TICKETS WHERE status = 'RECEIVED') AS pending,
                 (SELECT COUNT(*) FROM ISSUE_TICKETS WHERE status = 'IN_PROGRESS') AS processing,
                 (SELECT COUNT(*) FROM ISSUE_TICKETS WHERE status = 'RESOLVED') AS completed
+            FROM DUAL
         ]]>
     </select>
 
+    <!-- 정산 요약 -->
     <select id="getSettlementSummary"
             resultType="map">
         <![CDATA[
@@ -181,6 +187,25 @@
             WHERE status = 'DONE'
               AND created_at >= DATE_FORMAT(NOW(), '%Y-%m-01')) AS month_amount
             FROM DUAL
+        ]]>
+    </select>
+
+    <!-- 지역별 심부름 정보 -->
+    <select id="getErrandRegionSummaryTop5"
+            resultType="map">
+        <![CDATA[
+            SELECT
+                L.gungu_name                            AS region,
+                COUNT(E.errands_id)                     AS total_cnt,
+                SUM(CASE
+                        WHEN E.status = 'COMPLETED' THEN 1
+                        ELSE 0
+                    END)                                AS completed_cnt,
+                AVG(E.reward_amount)                    AS avg_price
+            FROM LEGAL_DONG L LEFT JOIN ERRANDS E ON E.dong_code = L.dong_code
+            GROUP BY L.gungu_name
+            ORDER BY total_cnt DESC, avg_price DESC, completed_cnt DESC
+            LIMIT 5
         ]]>
     </select>
 

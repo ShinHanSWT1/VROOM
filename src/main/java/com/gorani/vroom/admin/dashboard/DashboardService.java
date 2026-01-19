@@ -32,6 +32,12 @@ public class DashboardService {
         return convErrandCategoryToMapData(rows);
     }
 
+    public Map<String, Object> getErrandsRegionSummaryData() {
+        List<Map<String, Object>> rows = mapper.getErrandRegionSummaryTop5();
+
+        return convErrandRegionToMapData(rows);
+    }
+
     public Map<String, Object> getErrandsHourlyTrendData() {
         List<Map<String, Object>> rows = mapper.getErrandsHourlyTrend();
 
@@ -49,6 +55,86 @@ public class DashboardService {
         return mapData;
     }
 
+    private Map<String, Object> convErrandRegionToMapData(List<Map<String, Object>> data) {
+        Map<String, Object> dataMap = new HashMap<>();
+        /*
+        * {
+              "chart": {
+                "labels": ["강남구", "서초구", "송파구"],
+                "values": [120, 95, 80]
+              },
+              "table": [
+                {
+                  "region": "강남구",
+                  "total": 120,
+                  "completionRate": 92,
+                  "avgPrice": 18000
+                },
+                {
+                  "region": "서초구",
+                  "total": 95,
+                  "completionRate": 88,
+                  "avgPrice": 21000
+                }
+              ]
+            }
+        * */
+
+        List<String> labels = new ArrayList<>();
+        List<Integer> values = new ArrayList<>();
+        List<Map<String, Object>> table = new ArrayList<>();
+
+        if (data == null || data.isEmpty()) {
+            dataMap.put("chart", Map.of(
+                    "labels", List.of("데이터 없음"),
+                    "values", List.of(0)
+            ));
+
+            for (int i = 0; i < 5; i++) {
+                table.add(Map.of(
+                        "region", "-",
+                        "total", 0,
+                        "completionRate", 0,
+                        "avgPrice", 0
+                ));
+            }
+        } else {
+            for (Map<String, Object> row : data) {
+                String region = (String) row.get("region");
+                int totalCnt = ((Number) row.get("total_cnt")).intValue();
+                int completedCnt = ((Number) row.get("completed_cnt")).intValue();
+                int avgPrice = row.get("avg_price") == null
+                        ? 0
+                        : ((Number) row.get("avg_price")).intValue();
+
+                int completionRate = totalCnt == 0
+                        ? 0
+                        : (int) Math.round(completedCnt * 100.0 / totalCnt);
+
+                labels.add(region);
+                values.add(totalCnt);
+
+                table.add(Map.of(
+                        "region", region,
+                        "total", totalCnt,
+                        "completionRate", completionRate,
+                        "avgPrice", avgPrice
+                ));
+
+            }
+        }
+
+        dataMap.put("chart", Map.of(
+                "labels", labels,
+                "values", values
+        ));
+        dataMap.put("table", table);
+
+
+        return dataMap;
+    }
+
+
     public Map<String, Object> getSettlementSummaryData() {
         Map<String, Object> row = mapper.getSettlementSummary();
 
@@ -61,7 +147,6 @@ public class DashboardService {
     }
 
 
-
     private Map<String, Object> convErrandStatusToMapData(List<Map<String, Object>> data) {
 
         // 결과
@@ -69,7 +154,7 @@ public class DashboardService {
 
         // 상태 순서 고정
         List<String> statusOrder = List.of(
-                "WAITING", "MATCHED", "CONFIRMED", "IN_PROGRESS", "COMPLETED", "CANCELED"
+                "WAITING", "MATCHED", "CONFIRMED1", "CONFIRMED2", "COMPLETED", "CANCELED", "HOLD"
         );
 
         Map<String, Integer> countMap = new HashMap<>();
@@ -117,7 +202,8 @@ public class DashboardService {
         } else {
             for (Map<String, Object> row : data) {
                 labels.add((String) row.get("name"));
-                values.add(((Number) row.get("cnt")).intValue());
+                int value = row.get("category") == null ? 0 : ((Number) row.get("cnt")).intValue();
+                values.add(value);
             }
         }
 
@@ -132,7 +218,7 @@ public class DashboardService {
 
         for (Map<String, Object> row : data) {
             int hour = ((Number) row.get("hour")).intValue();
-            int cnt  = ((Number) row.get("cnt")).intValue();
+            int cnt = ((Number) row.get("cnt")).intValue();
             countMap.put(hour, cnt);
         }
 

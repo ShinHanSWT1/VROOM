@@ -345,6 +345,7 @@
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 1.5rem;
+            align-items: stretch;
         }
 
         .dashboard-card {
@@ -352,6 +353,10 @@
             border-radius: 12px;
             padding: 1.5rem;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            position: relative;
         }
 
         .dashboard-card-header {
@@ -361,6 +366,7 @@
             margin-bottom: 1.5rem;
             padding-bottom: 1rem;
             border-bottom: 2px solid var(--color-light-gray);
+            flex-shrink: 0;
         }
 
         .dashboard-card-title {
@@ -398,7 +404,7 @@
         .chart-placeholder {
             background: linear-gradient(135deg, var(--color-light-gray) 0%, #E0E0E0 100%);
             border-radius: 8px;
-            height: 250px;
+            height: 300px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -410,6 +416,24 @@
         .chart-placeholder canvas {
             max-width: 100%;
             max-height: 100%;
+        }
+
+        .region-content-body {
+            display: flex;
+            flex-direction: row;
+            gap: 1.5rem;
+            flex: 1;                /* 남은 높이 채우기 */
+            min-height: 0;          /* 내부 스크롤 버그 방지 */
+        }
+
+        .region-chart-wrapper {
+            position: relative;
+            height: auto;
+        }
+
+        .region-table-wrapper {
+            flex: 1;
+            overflow-y: auto;
         }
 
         /* Stats List */
@@ -477,6 +501,28 @@
 
             .kpi-grid {
                 grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            }
+
+            .dashboard-card.region-card {
+                grid-column: span 2;
+            }
+
+            .region-content-body {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .region-chart-wrapper {
+                flex: 1;     /* 1:1 비율 (필요시 flex: 0 0 40% 등으로 조절 가능) */
+                width: 50%;  /* 차트 리사이징을 위한 명시적 너비 */
+                margin-bottom: 0;
+            }
+
+            .region-table-wrapper {
+                flex: 1;     /* 1:1 비율 */
+                width: 50%;
+                border-left: 1px solid var(--color-light-gray); /* 구분선 추가 */
+                padding-left: 1.5rem;
             }
         }
 
@@ -687,22 +733,34 @@
                 </div>
 
                 <!-- 지역별 정보 -->
-                <div class="dashboard-card">
-                    <div class="dashboard-card-header">
-                        <h3 class="dashboard-card-title">지역별</h3>
-                        <a href="#" class="dashboard-card-action">상세보기 →</a>
+                <div class="dashboard-card region-card"> <div class="dashboard-card-header">
+                    <h3 class="dashboard-card-title">지역별 심부름 등록 수 TOP 5</h3>
+                    <a href="#" class="dashboard-card-action">상세보기 →</a>
+                </div>
+
+                    <div class="region-content-body">
+
+                        <div class="region-chart-wrapper">
+                            <canvas id="errandRegionChart"></canvas>
+                            <div id="noDataTextRegion" class="no-data-text" style="display:none;">
+                                데이터가 없습니다
+                            </div>
+                        </div>
+
+                        <div class="region-table-wrapper">
+                            <table class="region-table data-table"> <thead>
+                            <tr>
+                                <th>지역</th>
+                                <th>등록 수</th>
+                                <th>완료율</th>
+                                <th>평균 금액</th>
+                            </tr>
+                            </thead>
+                                <tbody id="regionSummaryBody">
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                    <ul class="stats-list">
-                        <li class="stats-item">
-                            <span class="stats-label">지역별 심부름 등록 수 TOP 5</span>
-                        </li>
-                        <li class="stats-item">
-                            <span class="stats-label">지역별 완료율</span>
-                        </li>
-                        <li class="stats-item">
-                            <span class="stats-label">지역별 평균 금액</span>
-                        </li>
-                    </ul>
                 </div>
 
                 <!-- 카테고리 분포 -->
@@ -828,10 +886,11 @@
             const statusColorMap = {
                 WAITING: '#FFC107',
                 MATCHED: '#03A9F4',
-                CONFIRMED: '#4CAF50',
-                IN_PROGRESS: '#FF9800',
+                CONFIRMED1: '#4CAF50',
+                CONFIRMED2: '#FF9800',
                 COMPLETED: '#9E9E9E',
-                CANCELED: '#F44336'
+                CANCELED: '#F44336',
+                HOLD: '#4c54af'
             };
 
             const ctx = document.getElementById('errandStatusChart');
@@ -867,6 +926,9 @@
                 },
                 options: {
                     cutout: '65%',
+                    layout: {
+                        padding: 20 // 차트 주변 여백 확보
+                    },
                     plugins: {
                         legend: {
                             display: total !== 0   // 데이터 없으면 범례 숨김
@@ -882,35 +944,42 @@
     fetch('${pageContext.request.contextPath}/api/admin/dashboard/errand-category')
         .then(res => res.json())
         .then(data => {
-            const statusColorMap = {
-                WAITING: '#FFC107',
-                MATCHED: '#03A9F4',
-                CONFIRMED: '#4CAF50',
-                IN_PROGRESS: '#FF9800',
-                COMPLETED: '#9E9E9E',
-                CANCELED: '#F44336'
-            };
+            console.log(data);
+            const CATEGORY_COLORS = [
+                '#FCB9AA',
+                '#FFDBCC',
+                '#ECEAE4',
+                '#A2E1DB',
+                '#55CBCD',
+                '#C6DBDA',
+                '#F6EAC2',
+                '#CCE2CB'
+            ];
 
             const ctx = document.getElementById('errandCategoryChart');
-
             const total = data.values.reduce((a, b) => a + b, 0);
 
             let chartLabels;
             let chartValues;
-            let chartColors;
 
             if (total === 0) {
                 // 데이터 없음
                 chartLabels = ['데이터 없음'];
-                chartValues = [1];               // 도넛을 채우기 위한 더미값
-                chartColors = ['#E0E0E0'];        // 연한 회색
+                chartValues = [0];               // 도넛을 채우기 위한 더미값
                 showNoDataText('noDataTextErrandCategory');                // 옆 텍스트 표시
             } else {
                 chartLabels = data.labels;
                 chartValues = data.values;
-                chartColors = data.labels.map(status => statusColorMap[status]);
                 hideNoDataText('noDataTextErrandCategory');
             }
+
+            const barColors = chartLabels.map((_, index) => {
+                return CATEGORY_COLORS[index % CATEGORY_COLORS.length];
+            });
+
+            const barHoverColors = barColors.map(color => {
+                return color + 'CC'; // 투명도 추가 (HEX + alpha)
+            });
 
             new Chart(ctx, {
                 type: 'bar',
@@ -918,23 +987,184 @@
                     labels: chartLabels,
                     datasets: [{
                         data: chartValues,
-                        backgroundColor: chartColors,
-                        hoverOffset: 8
+                        backgroundColor: barColors,
+                        hoverBackgroundColor: barHoverColors,
+                        borderWidth: 1,
+
+                        borderRadius: 6,          // 둥근 막대
+                        barThickness: 28,         // 막대 두께 고정
+                        maxBarThickness: 32,
+                        categoryPercentage: 0.6,  // 카테고리 간격
+                        barPercentage: 0.8
                     }]
                 },
                 options: {
-                    cutout: '65%',
+                    responsive: true,
+                    maintainAspectRatio: false,
+
                     plugins: {
                         legend: {
-                            display: total !== 0   // 데이터 없으면 범례 숨김
+                            display: false
                         },
                         tooltip: {
-                            enabled: total !== 0   // 데이터 없으면 툴팁 숨김
+                            enabled: total !== 0,
+                            backgroundColor: '#2C3E50',
+                            titleColor: '#FFFFFF',
+                            bodyColor: '#FFFFFF',
+                            padding: 10,
+                            cornerRadius: 6,
+                            callbacks: {
+                                label: function (ctx) {
+                                    console.log(ctx);
+                                    return ` ${'${'}ctx.raw.toLocaleString()}건`;
+                                }
+                            }
+                        }
+                    },
+
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#7F8C8D',
+                                font: {
+                                    size: 11,
+                                    weight: '500'
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0,0,0,0.05)'
+                            },
+                            ticks: {
+                                precision: 0,
+                                color: '#7F8C8D',
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        }
+                    },
+
+                    layout: {
+                        padding: {
+                            top: 10,
+                            left: 8,
+                            right: 8,
+                            bottom: 0
                         }
                     }
                 }
             });
+
         });
+
+    fetch('${pageContext.request.contextPath}/api/admin/dashboard/errand-region')
+        .then(res => res.json())
+        .then(data => {
+            console.log(data);
+            const ctx = document.getElementById('errandRegionChart');
+            const tbody = document.getElementById('regionSummaryBody');
+
+            // 1. 데이터 확인
+            const hasData = data && data.chart && data.chart.labels && data.chart.labels.length > 0;
+
+            // 2. 차트 설정 준비
+            let chartLabels, chartValues, chartTitle;
+
+            if (hasData) {
+                // 데이터 있음
+                chartLabels = data.chart.labels;
+                chartValues = data.chart.values;
+                hideNoDataText('noDataTextRegion');
+            } else {
+                // 데이터 없음: 기본 지역명 표시하되 값은 0
+                chartLabels = ['서울', '경기', '인천', '부산', '대구'];
+                chartValues = [0, 0, 0, 0, 0]; // 막대 높이 0
+
+                // 안내 텍스트 표시
+                showNoDataText('noDataTextRegion');
+                document.getElementById('noDataTextRegion').innerText = "데이터가 집계되지 않았습니다.";
+            }
+
+            // 3. 차트 그리기
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        label: '등록 건수',
+                        data: chartValues,
+                        backgroundColor: hasData ? '#FFC107' : '#F5F5F5', // 데이터 없으면 회색바
+                        borderColor: hasData ? '#FFB300' : '#E0E0E0',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        barPercentage: 0.5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: hasData } // 데이터 없으면 툴팁 끔
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            suggestedMax: hasData ? undefined : 10, // 데이터 없을 때 눈금 0~10 표시
+                            grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                            ticks: { precision: 0, font: { size: 11 } }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { size: 11 } }
+                        }
+                    }
+                }
+            });
+
+            // 4. 테이블 채우기
+            tbody.innerHTML = '';
+            if (hasData) {
+                data.table.forEach((row, index) => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td style="font-weight: 600;">
+                                <span style="color:var(--color-accent); margin-right:4px;">
+                                    ${'${'}index + 1}.
+                                </span> ${'${'}row.region}
+                            </td>
+                            <td>${'${'}row.total.toLocaleString()}건</td>
+                            <td>
+                                <div style="display:flex; align-items:center; gap:5px;">
+                                    <div style="width:50px; height:4px; background:#eee; border-radius:2px;">
+                                        <div style="width:${'${'}row.completionRate}%; height:100%; background:#27AE60; border-radius:2px;"></div>
+                                    </div>
+                                    <span style="font-size:0.8rem">${'${'}row.completionRate}%</span>
+                                </div>
+                            </td>
+                            <td>${'${'}row.avgPrice.toLocaleString()}원</td>
+                        </tr>
+                    `;
+                });
+            } else {
+                // 빈 테이블 표시
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" style="text-align: center; color: var(--color-gray); padding: 2rem 1rem;">
+                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">📭</div>
+                            <div>아직 등록된 심부름 데이터가 없습니다.</div>
+                        </td>
+                    </tr>
+                `;
+            }
+        })
+        .catch(err => console.error('지역별 데이터 로드 실패:', err));
 
     fetch('${pageContext.request.contextPath}/api/admin/dashboard/errand-hourly-trend')
         .then(res => res.json())

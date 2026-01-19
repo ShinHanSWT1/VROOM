@@ -13,4 +13,5 @@ public interface DashboardMapper {
     List<Map<String, Object>> getErrandsHourlyTrend();
     Map<String, Object> getSettlementSummary();
     Map<String, Object> getReportSummary();
+    List<Map<String, Object>> getErrandRegionSummaryTop5();
 }
