@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gorani.vroom.admin.users.AdminUsersMapper">
+
+    <select id="getSummary" resultType="map">
+        <![CDATA[
+            SELECT
+                COUNT(*) AS total,
+                SUM(CASE WHEN status = 'ACTIVE' THEN 1 ELSE 0 END) AS activated,
+                SUM(CASE WHEN status = 'ACTIVE' AND last_login_at >= CURRENT_DATE - INTERVAL 7 DAY THEN 1 ELSE 0 END) AS recent7_activated,
+                SUM(CASE WHEN status IN ('SUSPEND', 'BANNED')  THEN 1 ELSE 0 END) AS banned,
+                SUM(CASE WHEN status = 'SUSPEND' THEN 1 ELSE 0 END) AS suspended,
+                SUM(CASE WHEN status = 'DELETED' THEN 1 ELSE 0 END) AS unsubscribed,
+                SUM(CASE WHEN DATE(created_at) = CURRENT_DATE THEN 1 ELSE 0 END) AS today_joined
+            FROM MEMBERS;
+        ]]>
+    </select>
+
+    <select id="searchUsers" parameterType="map" resultType="map">
+        <![CDATA[
+
+        ]]>
+
+    </select>
+</mapper>

@@ -55,6 +55,17 @@ public class DashboardService {
         return mapData;
     }
 
+    public Map<String, Object> getSettlementSummaryData() {
+        Map<String, Object> row = mapper.getSettlementSummary();
+
+        Map<String, Object> mapData = new HashMap<>();
+        mapData.put("todayAmount", ((Number) row.get("today_amount")).longValue());
+        mapData.put("pendingCount", ((Number) row.get("pending_count")).intValue());
+        mapData.put("monthAmount", ((Number) row.get("month_amount")).longValue());
+
+        return mapData;
+    }
+
     private Map<String, Object> convErrandRegionToMapData(List<Map<String, Object>> data) {
         Map<String, Object> dataMap = new HashMap<>();
         /*
@@ -132,18 +143,6 @@ public class DashboardService {
 
 
         return dataMap;
-    }
-
-
-    public Map<String, Object> getSettlementSummaryData() {
-        Map<String, Object> row = mapper.getSettlementSummary();
-
-        Map<String, Object> mapData = new HashMap<>();
-        mapData.put("todayAmount", ((Number) row.get("today_amount")).longValue());
-        mapData.put("pendingCount", ((Number) row.get("pending_count")).intValue());
-        mapData.put("monthAmount", ((Number) row.get("month_amount")).longValue());
-
-        return mapData;
     }
 
 

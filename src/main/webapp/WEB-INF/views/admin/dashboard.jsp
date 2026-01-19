@@ -346,6 +346,7 @@
             grid-template-columns: repeat(2, 1fr);
             gap: 1.5rem;
             align-items: stretch;
+            margin: 10px;
         }
 
         .dashboard-card {
@@ -599,11 +600,11 @@
             <button class="sidebar-toggle" id="sidebarToggle">☰</button>
         </div>
         <nav class="sidebar-nav">
-            <a href="#dashboard" class="nav-item active">
+            <a href="${pageContext.request.contextPath}/admin/dashboard" class="nav-item active">
                 <span class="nav-item-icon">📊</span>
                 <span class="nav-item-text">대시보드</span>
             </a>
-            <a href="#users" class="nav-item">
+            <a href="${pageContext.request.contextPath}/admin/users" class="nav-item">
                 <span class="nav-item-icon">👥</span>
                 <span class="nav-item-text">사용자 관리</span>
             </a>
