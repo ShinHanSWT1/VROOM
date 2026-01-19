@@ -18,8 +18,76 @@
 
     <select id="searchUsers" parameterType="map" resultType="map">
         <![CDATA[
-
+            SELECT
+                m.user_id, m.email, m.nickname, m.status, m.role, m.created_at, m.last_login_at,
+                COUNT(r.id) AS report_count
+            FROM MEMBERS m LEFT JOIN ISSUE_TICKETS r ON r.target_user_id = m.user_id
+            WHERE 1=1
         ]]>
+        <if test="keyword != null and keyword != ''">
+            AND (
+                m.email LIKE CONCAT('%', #{keyword}, '%')
+                OR m.nickname LIKE CONCAT('%', #{keyword}, '%')
+            )
+        </if>
 
+        <if test="status != null and status != ''">
+            AND m.status = #{status}
+        </if>
+
+        <if test="role != null and role != ''">
+            AND m.role = #{role}
+        </if>
+
+        <if test="reportCount != null">
+            AND (
+                SELECT COUNT(*)
+                FROM ISSUE_TICKETS r2
+                WHERE r2.target_user_id = m.user_id
+            ) >= #{reportCount}
+        </if>
+
+        GROUP BY m.user_id, m.email, m.nickname, m.status, m.role, m.created_at, m.last_login_at
+        ORDER BY m.created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
     </select>
+
+    <select id="countUsers" parameterType="map" resultType="int">
+        <![CDATA[
+            SELECT COUNT(*)
+            FROM (
+                SELECT m.user_id
+                FROM MEMBERS m LEFT JOIN ISSUE_TICKETS r ON r.target_user_id = m.user_id
+                WHERE 1=1
+        ]]>
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    m.email LIKE CONCAT('%', #{keyword}, '%')
+                    OR m.nickname LIKE CONCAT('%', #{keyword}, '%')
+                    )
+            </if>
+
+            <if test="status != null and status != ''">
+                AND m.status = #{status}
+            </if>
+
+            <if test="role != null and role != ''">
+                AND m.role = #{role}
+            </if>
+
+            <if test="reportCount != null">
+                AND (
+                    SELECT COUNT(*)
+                    FROM ISSUE_TICKETS r2
+                    WHERE r2.target_user_id = m.user_id
+                    ) >= #{reportCount}
+            </if>
+
+            <![CDATA[
+                GROUP BY m.user_id
+                ) t
+            ]]>
+    </select>
+
+
 </mapper>

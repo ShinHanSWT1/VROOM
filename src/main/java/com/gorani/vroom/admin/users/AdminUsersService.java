@@ -8,5 +8,5 @@ import java.util.Map;
 public interface AdminUsersService {
     Map<String, Object> getSummary();
 
-    List<Map<String, Object>> searchUsers(String keyword, String status, String role, Integer reportCount, int page);
+    Map<String, Object> searchUsers(String keyword, String status, String role, Integer reportCount, int page);
 }

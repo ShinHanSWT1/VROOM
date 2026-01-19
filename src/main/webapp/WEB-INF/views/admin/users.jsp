@@ -938,174 +938,7 @@
                         </tr>
                         </thead>
                         <tbody id="userTableBody">
-                        <tr>
-                            <td>1023</td>
-                            <td>철수</td>
-                            <td><span class="role-badge">USER</span></td>
-                            <td>
-                                <div class="status-dropdown">
-                                    <button class="status-dropdown-toggle" onclick="toggleStatusDropdown(this)">
-                                        <span class="status-badge normal">정상</span>
-                                        <span>▼</span>
-                                    </button>
-                                    <div class="status-dropdown-menu">
-                                        <div class="status-dropdown-item" onclick="changeStatus(this, 'normal')">정상</div>
-                                        <div class="status-dropdown-item" onclick="showSuspensionModal(this, 'temp-suspended')">일시정지</div>
-                                        <div class="status-dropdown-item" onclick="changeStatus(this, 'suspended')">정지</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>0</td>
-                            <td>01-07 13:22</td>
-                            <td><button class="action-button" onclick="goToDetail(1023)">상세</button></td>
-                        </tr>
-                        <tr>
-                            <td>1182</td>
-                            <td>영희</td>
-                            <td><span class="role-badge errander">ERRANDER</span></td>
-                            <td>
-                                <div class="status-dropdown">
-                                    <button class="status-dropdown-toggle" onclick="toggleStatusDropdown(this)">
-                                        <span class="status-badge normal">정상</span>
-                                        <span>▼</span>
-                                    </button>
-                                    <div class="status-dropdown-menu">
-                                        <div class="status-dropdown-item" onclick="changeStatus(this, 'normal')">정상</div>
-                                        <div class="status-dropdown-item" onclick="showSuspensionModal(this, 'temp-suspended')">일시정지</div>
-                                        <div class="status-dropdown-item" onclick="changeStatus(this, 'suspended')">정지</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>3</td>
-                            <td>01-06 09:10</td>
-                            <td><button class="action-button" onclick="goToDetail(1182)">상세</button></td>
-                        </tr>
-                        <tr>
-                            <td>1205</td>
-                            <td>민수</td>
-                            <td><span class="role-badge">USER</span></td>
-                            <td>
-                                <div class="status-dropdown">
-                                    <button class="status-dropdown-toggle" onclick="toggleStatusDropdown(this)">
-                                        <span class="status-badge temp-suspended">일시정지</span>
-                                        <span>▼</span>
-                                    </button>
-                                    <div class="status-dropdown-menu">
-                                        <div class="status-dropdown-item" onclick="changeStatus(this, 'normal')">정상</div>
-                                        <div class="status-dropdown-item" onclick="showSuspensionModal(this, 'temp-suspended')">일시정지</div>
-                                        <div class="status-dropdown-item" onclick="changeStatus(this, 'suspended')">정지</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>7</td>
-                            <td>01-05 15:45</td>
-                            <td><button class="action-button" onclick="goToDetail(1205)">상세</button></td>
-                        </tr>
-                        <tr>
-                            <td>1298</td>
-                            <td>지영</td>
-                            <td><span class="role-badge errander">ERRANDER</span></td>
-                            <td>
-                                <div class="status-dropdown">
-                                    <button class="status-dropdown-toggle" onclick="toggleStatusDropdown(this)">
-                                        <span class="status-badge suspended">정지</span>
-                                        <span>▼</span>
-                                    </button>
-                                    <div class="status-dropdown-menu">
-                                        <div class="status-dropdown-item" onclick="changeStatus(this, 'normal')">정상</div>
-                                        <div class="status-dropdown-item" onclick="showSuspensionModal(this, 'temp-suspended')">일시정지</div>
-                                        <div class="status-dropdown-item" onclick="changeStatus(this, 'suspended')">정지</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>12</td>
-                            <td>01-03 08:20</td>
-                            <td><button class="action-button" onclick="goToDetail(1298)">상세</button></td>
-                        </tr>
-                        <tr>
-                            <td>1345</td>
-                            <td>동준</td>
-                            <td><span class="role-badge">USER</span></td>
-                            <td>
-                                <div class="status-dropdown">
-                                    <button class="status-dropdown-toggle" onclick="toggleStatusDropdown(this)">
-                                        <span class="status-badge normal">정상</span>
-                                        <span>▼</span>
-                                    </button>
-                                    <div class="status-dropdown-menu">
-                                        <div class="status-dropdown-item" onclick="changeStatus(this, 'normal')">정상</div>
-                                        <div class="status-dropdown-item" onclick="showSuspensionModal(this, 'temp-suspended')">일시정지</div>
-                                        <div class="status-dropdown-item" onclick="changeStatus(this, 'suspended')">정지</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>1</td>
-                            <td>01-07 11:30</td>
-                            <td><button class="action-button" onclick="goToDetail(1345)">상세</button></td>
-                        </tr>
-                        <tr>
-                            <td>1402</td>
-                            <td>서연</td>
-                            <td><span class="role-badge">USER</span></td>
-                            <td>
-                                <div class="status-dropdown">
-                                    <button class="status-dropdown-toggle" onclick="toggleStatusDropdown(this)">
-                                        <span class="status-badge normal">정상</span>
-                                        <span>▼</span>
-                                    </button>
-                                    <div class="status-dropdown-menu">
-                                        <div class="status-dropdown-item" onclick="changeStatus(this, 'normal')">정상</div>
-                                        <div class="status-dropdown-item" onclick="showSuspensionModal(this, 'temp-suspended')">일시정지</div>
-                                        <div class="status-dropdown-item" onclick="changeStatus(this, 'suspended')">정지</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>0</td>
-                            <td>01-07 14:15</td>
-                            <td><button class="action-button" onclick="goToDetail(1402)">상세</button></td>
-                        </tr>
-                        <tr>
-                            <td>1489</td>
-                            <td>태희</td>
-                            <td><span class="role-badge errander">ERRANDER</span></td>
-                            <td>
-                                <div class="status-dropdown">
-                                    <button class="status-dropdown-toggle" onclick="toggleStatusDropdown(this)">
-                                        <span class="status-badge normal">정상</span>
-                                        <span>▼</span>
-                                    </button>
-                                    <div class="status-dropdown-menu">
-                                        <div class="status-dropdown-item" onclick="changeStatus(this, 'normal')">정상</div>
-                                        <div class="status-dropdown-item" onclick="showSuspensionModal(this, 'temp-suspended')">일시정지</div>
-                                        <div class="status-dropdown-item" onclick="changeStatus(this, 'suspended')">정지</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>2</td>
-                            <td>01-06 16:50</td>
-                            <td><button class="action-button" onclick="goToDetail(1489)">상세</button></td>
-                        </tr>
-                        <tr>
-                            <td>1501</td>
-                            <td>현우</td>
-                            <td><span class="role-badge">USER</span></td>
-                            <td>
-                                <div class="status-dropdown">
-                                    <button class="status-dropdown-toggle" onclick="toggleStatusDropdown(this)">
-                                        <span class="status-badge normal">정상</span>
-                                        <span>▼</span>
-                                    </button>
-                                    <div class="status-dropdown-menu">
-                                        <div class="status-dropdown-item" onclick="changeStatus(this, 'normal')">정상</div>
-                                        <div class="status-dropdown-item" onclick="showSuspensionModal(this, 'temp-suspended')">일시정지</div>
-                                        <div class="status-dropdown-item" onclick="changeStatus(this, 'suspended')">정지</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>0</td>
-                            <td>01-07 10:05</td>
-                            <td><button class="action-button" onclick="goToDetail(1501)">상세</button></td>
-                        </tr>
+
                         </tbody>
                     </table>
                 </div>
@@ -1322,7 +1155,8 @@
         fetch(`${pageContext.request.contextPath}/api/admin/users?` + params)
             .then(response => response.json())
             .then(data => {
-                renderTable(data.users);      // 테이블 그리기
+                console.log(data);
+                renderTable(data.userList);      // 테이블 그리기
                 renderPagination(data.pageInfo); // 페이지네이션 그리기 (필요 시 구현)
 
                 // 총 인원 수 업데이트
@@ -1330,59 +1164,59 @@
             })
             .catch(error => {
                 console.error('데이터 로드 실패:', error);
-                // alert('데이터를 불러오는 중 오류가 발생했습니다.');
+                alert('데이터를 불러오는 중 오류가 발생했습니다.');
             });
     }
 
     // 테이블 HTML 생성 함수
-    <%--function renderTable(users) {--%>
-    <%--    const tbody = document.getElementById('userTableBody');--%>
-    <%--    tbody.innerHTML = ''; // 기존 목록 비우기--%>
+    function renderTable(users) {
+        const tbody = document.getElementById('userTableBody');
+        tbody.innerHTML = ''; // 기존 목록 비우기
 
-    <%--    if (!users || users.length === 0) {--%>
-    <%--        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 2rem;">검색 결과가 없습니다.</td></tr>';--%>
-    <%--        return;--%>
-    <%--    }--%>
+        if (!users || users.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 2rem;">검색 결과가 없습니다.</td></tr>';
+            return;
+        }
 
-    <%--    users.forEach(user => {--%>
-    <%--        // 역할 뱃지 스타일 결정--%>
-    <%--        const roleBadgeClass = user.role === 'ERRANDER' ? 'role-badge errander' : 'role-badge';--%>
+        users.forEach(user => {
+            // 역할 뱃지 스타일 결정
+            const roleBadgeClass = user.role === 'ERRANDER' ? 'role-badge errander' : 'role-badge';
 
-    <%--        // 상태 뱃지 스타일 결정--%>
-    <%--        let statusClass = 'normal';--%>
-    <%--        let statusText = '정상';--%>
-    <%--        if (user.status === 'SUSPENDED') { statusClass = 'suspended'; statusText = '정지'; }--%>
-    <%--        else if (user.status === 'TEMP_SUSPENDED') { statusClass = 'temp-suspended'; statusText = '일시정지'; }--%>
+            // 상태 뱃지 스타일 결정
+            let statusClass = 'normal';
+            let statusText = '정상';
+            if (user.status === 'BANNED') { statusClass = 'suspended'; statusText = '정지'; }
+            else if (user.status === 'SUSPENDED') { statusClass = 'temp-suspended'; statusText = '일시정지'; }
 
-    <%--        // 날짜 포맷팅 (예: 01-07 13:22)--%>
-    <%--        const lastLogin = user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString('ko-KR', {month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit'}) : '-';--%>
+            // 날짜 포맷팅 (예: 01-07 13:22)
+            const lastLogin = user.last_login_at ? new Date(user.last_login_at).toLocaleString('ko-KR', {month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit'}) : '-';
 
-    <%--        const row = `--%>
-    <%--        <tr>--%>
-    <%--            <td>${user.userId}</td>--%>
-    <%--            <td>${user.nickname}</td>--%>
-    <%--            <td><span class="${roleBadgeClass}">${user.role}</span></td>--%>
-    <%--            <td>--%>
-    <%--                <div class="status-dropdown">--%>
-    <%--                    <button class="status-dropdown-toggle" onclick="toggleStatusDropdown(this)">--%>
-    <%--                        <span class="status-badge ${statusClass}">${statusText}</span>--%>
-    <%--                        <span>▼</span>--%>
-    <%--                    </button>--%>
-    <%--                    <div class="status-dropdown-menu">--%>
-    <%--                        <div class="status-dropdown-item" onclick="changeStatus(this, 'normal')">정상</div>--%>
-    <%--                        <div class="status-dropdown-item" onclick="showSuspensionModal(this, 'temp-suspended')">일시정지</div>--%>
-    <%--                        <div class="status-dropdown-item" onclick="changeStatus(this, 'suspended')">정지</div>--%>
-    <%--                    </div>--%>
-    <%--                </div>--%>
-    <%--            </td>--%>
-    <%--            <td>${user.reportCount || 0}</td>--%>
-    <%--            <td>${lastLogin}</td>--%>
-    <%--            <td><button class="action-button" onclick="goToDetail(${user.userId})">상세</button></td>--%>
-    <%--        </tr>--%>
-    <%--    `;--%>
-    <%--        tbody.innerHTML += row;--%>
-    <%--    });--%>
-    <%--}--%>
+            const row = `
+            <tr>
+                <td>${'${'}user.user_id}</td>
+                <td>${'${'}user.nickname}</td>
+                <td><span class="${'${'}roleBadgeClass}">${'${'}user.role}</span></td>
+                <td>
+                    <div class="status-dropdown">
+                        <button class="status-dropdown-toggle" onclick="toggleStatusDropdown(this)">
+                            <span class="status-badge ${'${'}statusClass}">${'${'}statusText}</span>
+                            <span>▼</span>
+                        </button>
+                        <div class="status-dropdown-menu">
+                            <div class="status-dropdown-item" onclick="changeStatus(this, 'normal')">정상</div>
+                            <div class="status-dropdown-item" onclick="showSuspensionModal(this, 'temp-suspended')">일시정지</div>
+                            <div class="status-dropdown-item" onclick="changeStatus(this, 'suspended')">정지</div>
+                        </div>
+                    </div>
+                </td>
+                <td>${'${'}user.report_count || 0}</td>
+                <td>${'${'}lastLogin}</td>
+                <td><button class="action-button" onclick="goToDetail(${'${'}user.user_id})">상세</button></td>
+            </tr>
+        `;
+            tbody.innerHTML += row;
+        });
+    }
 
     // 페이지네이션 렌더링 (간단 예시)
     function renderPagination(pageInfo) {
