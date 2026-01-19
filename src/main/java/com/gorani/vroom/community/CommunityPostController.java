@@ -24,40 +24,35 @@ public class CommunityPostController {
     @GetMapping("")
     public String list(@RequestParam(required = false)  String dongCode,
                        @RequestParam(required = false)  Long categoryId,
+                       @RequestParam(required = false)  String guName,
                        @RequestParam(required = false)  String searchKeyword,
                        Model model) {
+        // 구 목록 피터
         List<String> gunguList = locationService.getGuList();
         model.addAttribute("gunguList", gunguList);
 
-        // 사이드바 카테고리 불러오기
+        // 카테고리 목록 필터
         List<CategoryVO> categoryList = communityService.getCategoryList();
         model.addAttribute("categoryList", categoryList);
-        model.addAttribute("selectedCategoryId", categoryId);
 
-        // 게시글 목록 ( 필터링)
-        List<CommunityPostVO> postList = communityService.getPostList(dongCode, categoryId, searchKeyword);
+        // 게시글 목록 ( 필터링 적용 )
+        List<CommunityPostVO> postList;
+        if (categoryId != null && categoryId == 0) {
+            // 인기글
+            postList = communityService.getPopularPostList(dongCode, searchKeyword);
+        } else {
+            // 전체 또는 일반 카테고리
+            postList = communityService.getPostList(dongCode, categoryId, searchKeyword);
+        }
         model.addAttribute("postList", postList);
 
-        // 검색 조건
-        model.addAttribute("categoryId", categoryId);
+        // 현재 필터 상태 유지 (jsp에서 selected/active 표시용)
+        model.addAttribute("selectedDongCode", dongCode);
+        model.addAttribute("selectedCategoryId", categoryId);
         model.addAttribute("searchKeyword", searchKeyword);
+        model.addAttribute("selectedGuName", guName);
 
-        // 게시글 목록
-//        List<Map<String, Object>> postList = new ArrayList<>();
-//        for (int i = 1; i <= 5; i++) {
-//            Map<String, Object> post = new HashMap<>();
-//            post.put("post_id", i);
-//            post.put("title", "테스트 게시글 " + i);
-//            post.put("content", "내용입니다.");
-//            post.put("nickname", "사용자" + i);
-//            post.put("dong_name", "가산동");
-//            post.put("created_at", new Date());
-//            post.put("like_count", 10 + i);
-//            post.put("view_count", 100 + i);
-//            post.put("category_name", "맛집");
-//            postList.add(post);
-//        }
-        return "community/list";
+        return "community/main";
     }
 
     @GetMapping("/detail")

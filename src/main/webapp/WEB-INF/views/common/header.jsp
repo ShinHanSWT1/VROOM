@@ -20,8 +20,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     
     <!-- 공통 JS -->
-    <script src="<c:url value='/static/community/js/common.js'/>"></script>
-    <script src="<c:url value='/static/community/js/location.js'/>"></script>
+
 </head>
 <body>
     <!-- Header -->

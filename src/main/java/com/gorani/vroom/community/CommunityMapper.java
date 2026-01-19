@@ -16,4 +16,9 @@ public interface CommunityMapper {
             @Param("categoryId") Long categoryId,
             @Param("searchKeyword") String searchKeyword
     );
+
+    List<CommunityPostVO> selectPopularPostList(
+            @Param("dongCode") String dongCode,
+            @Param("searchKeyword") String searchKeyword
+    );
 }
