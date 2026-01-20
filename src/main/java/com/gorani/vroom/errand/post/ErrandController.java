@@ -16,9 +16,7 @@ public class ErrandController {
 
     private final ErrandService errandService;
 
-    /**
-     * 심부름 게시글 목록
-     */
+    // 심부름 게시글 목록
     @GetMapping("/errand/list")
     public String errandList(@RequestParam(required = false) String q,
                              @RequestParam(required = false) Long categoryId,
@@ -42,9 +40,7 @@ public class ErrandController {
         return "errand_list";
     }
 
-//    /**
-//     * 심부름 게시글 상세
-//     */
+//    // 심부름 게시글 상세
 //    @GetMapping("/errand/detail")
 //    public String errandDetail(
 //            @RequestParam("errandsId") Long errandsId,
@@ -63,9 +59,7 @@ public class ErrandController {
     
     
     
-    /**
-     * 심부름 게시글 상세
-     */
+    // 심부름 게시글 상세
     @GetMapping("/errand/detail")
     public String errandDetail(
             @RequestParam("errandsId") Long errandsId,
@@ -83,9 +77,7 @@ public class ErrandController {
         return "errand_detail";
     }
 
-    /**
-     * 심부름 게시글 작성 화면
-     */
+    // 심부름 게시글 작성 화면
     @GetMapping("/errand/create")
     public String errandCreate() {
         return "errand_create";
