@@ -90,6 +90,21 @@ public class MvcConfig implements WebMvcConfigurer {
         return resolver;
     }
 
+    // 프로필 이미지 저장 경로 (외부 경로)
+    public static final String UPLOAD_PATH = "C:/uploads/profile/";
+
+    @Override
+    public void addResourceHandlers(org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry registry) {
+        // 정적 리소스 핸들링
+        registry.addResourceHandler("/resources/**")
+                .addResourceLocations("/resources/");
+
+        // 프로필 이미지 (외부 경로 매핑) => 프로젝트 외부에 저장을 해야 배포시 데이터 삭제 방지.
+        registry.addResourceHandler("/uploads/profile/**")
+                .addResourceLocations("file:/" + UPLOAD_PATH);
+    }
+
+
     // 트랜잭션
     @Bean
     public PlatformTransactionManager transactionManager() {
