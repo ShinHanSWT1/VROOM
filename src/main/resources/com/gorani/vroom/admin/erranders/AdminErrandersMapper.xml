@@ -33,153 +33,150 @@
     </select>
 
 
-    <!-- 사용자 검색 -->
-    <select id="searchUsers" parameterType="map" resultType="map">
+    <!-- 부름이 검색 -->
+    <select id="searchErranders" parameterType="map" resultType="map">
         <![CDATA[
             SELECT
-                m.user_id, m.email, m.nickname, m.status, m.role, m.created_at, m.last_login_at, m.suspension_end_at,
-                COUNT(r.id) AS report_count
-            FROM MEMBERS m LEFT JOIN ISSUE_TICKETS r ON r.target_user_id = m.user_id
-            WHERE 1=1
+                m.user_id,
+                m.phone,
+                p.errander_id,
+                m.nickname,
+                p.approval_status,
+                p.active_status,
+                p.complete_rate,
+                p.rating_avg,
+                p.last_active_at
+            FROM MEMBERS m
+            JOIN ERRANDER_PROFILES p ON m.user_id = p.user_id
+            WHERE m.role = 'ERRANDER'
         ]]>
+
+            <if test="keyword != null and keyword != ''">
+                AND (
+                m.nickname LIKE CONCAT('%', #{keyword}, '%')
+                OR p.errander_id LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+
+            <if test="approveStatus != null and approveStatus != ''">
+                AND p.approval_status = #{approveStatus}
+            </if>
+
+            <if test="activeStatus != null and activeStatus != ''">
+                AND p.active_status = #{activeStatus}
+            </if>
+
+            <if test="reviewScope != null">
+                AND p.rating_avg >= #{reviewScope}
+            </if>
+        <![CDATA[
+            ORDER BY p.approved_at DESC
+            LIMIT #{limit} OFFSET #{offset}
+        ]]>
+
+    </select>
+
+    <!-- 검색된 총 부름이 수 -->
+    <select id="countErranders" parameterType="map" resultType="int">
+        <![CDATA[
+            SELECT COUNT(*)
+            FROM MEMBERS m
+            JOIN ERRANDER_PROFILES p ON m.user_id = p.user_id
+            WHERE m.role = 'ERRANDER'
+        ]]>
+
         <if test="keyword != null and keyword != ''">
             AND (
-                m.email LIKE CONCAT('%', #{keyword}, '%')
-                OR m.nickname LIKE CONCAT('%', #{keyword}, '%')
+            m.nickname LIKE CONCAT('%', #{keyword}, '%')
+            OR p.errander_id LIKE CONCAT('%', #{keyword}, '%')
             )
         </if>
 
-        <if test="status != null and status != ''">
-            AND m.status = #{status}
+        <if test="approveStatus != null and approveStatus != ''">
+            AND p.approval_status = #{approveStatus}
         </if>
 
-        <if test="role != null and role != ''">
-            AND m.role = #{role}
+        <if test="activeStatus != null and activeStatus != ''">
+            AND p.active_status = #{activeStatus}
         </if>
 
-        <if test="reportCount != null">
-            AND (
-                SELECT COUNT(*)
-                FROM ISSUE_TICKETS r2
-                WHERE r2.target_user_id = m.user_id
-            ) >= #{reportCount}
+        <if test="reviewScope != null">
+            AND p.rating_avg >= #{reviewScope}
         </if>
-
-        GROUP BY m.user_id, m.email, m.nickname, m.status, m.role, m.created_at, m.last_login_at, m.suspension_end_at
-        ORDER BY m.created_at DESC
-        LIMIT #{limit} OFFSET #{offset}
-    </select>
-
-    <!-- 검색된 총 사용자 수 -->
-    <select id="countUsers" parameterType="map" resultType="int">
-        <![CDATA[
-            SELECT COUNT(*)
-            FROM (
-                SELECT m.user_id
-                FROM MEMBERS m LEFT JOIN ISSUE_TICKETS r ON r.target_user_id = m.user_id
-                WHERE 1=1
-        ]]>
-            <if test="keyword != null and keyword != ''">
-                AND (
-                    m.email LIKE CONCAT('%', #{keyword}, '%')
-                    OR m.nickname LIKE CONCAT('%', #{keyword}, '%')
-                    )
-            </if>
-
-            <if test="status != null and status != ''">
-                AND m.status = #{status}
-            </if>
-
-            <if test="role != null and role != ''">
-                AND m.role = #{role}
-            </if>
-
-            <if test="reportCount != null">
-                AND (
-                    SELECT COUNT(*)
-                    FROM ISSUE_TICKETS r2
-                    WHERE r2.target_user_id = m.user_id
-                    ) >= #{reportCount}
-            </if>
-
-            <![CDATA[
-                GROUP BY m.user_id
-                ) t
-            ]]>
     </select>
 
     <!-- 사용자 상태 변경 -->
-    <update id="updateUserStatus" parameterType="map">
-        UPDATE MEMBERS
-        SET
-            status = #{status},
-            suspension_end_at = #{suspensionEndAt},
-            suspension_note = #{suspensionNote}
-        WHERE user_id = #{userId}
-    </update>
+<!--    <update id="updateErranderStatus" parameterType="map">-->
+<!--        UPDATE ERRANDER_PROFILES-->
+<!--        SET-->
+<!--            active_status = #{status},-->
+<!--            suspension_end_at = #{suspensionEndAt},-->
+<!--            suspension_note = #{suspensionNote}-->
+<!--        WHERE errander_id = #{erranderId}-->
+<!--    </update>-->
 
-    <!-- 상세페이지 사용자 정보 -->
-    <select id="getUserInfoDetail"
-            parameterType="long"
-            resultType="com.gorani.vroom.admin.users.AdminUserDetailDTO">
-        SELECT
-            m.user_id, m.email, m.nickname, m.role, m.status, m.phone, m.cancel_rate,
-            m.profile_image, m.manner_score, m.created_at, m.last_login_at, m.provider,
-            m.admin_memo,
-            d1.full_name AS address1,
-            d2.full_name AS address2,
+<!--    &lt;!&ndash; 상세페이지 사용자 정보 &ndash;&gt;-->
+<!--    <select id="getUserInfoDetail"-->
+<!--            parameterType="long"-->
+<!--            resultType="com.gorani.vroom.admin.users.AdminUserDetailDTO">-->
+<!--        SELECT-->
+<!--            m.user_id, m.email, m.nickname, m.role, m.status, m.phone, m.cancel_rate,-->
+<!--            m.profile_image, m.manner_score, m.created_at, m.last_login_at, m.provider,-->
+<!--            m.admin_memo,-->
+<!--            d1.full_name AS address1,-->
+<!--            d2.full_name AS address2,-->
 
-            -- 심부름 등록 횟수
-            (SELECT COUNT(*) FROM ERRANDS WHERE user_id = m.user_id) AS errand_count,
+<!--            &#45;&#45; 심부름 등록 횟수-->
+<!--            (SELECT COUNT(*) FROM ERRANDS WHERE user_id = m.user_id) AS errand_count,-->
 
-            -- 신고 당한 횟수
-            (SELECT COUNT(*) FROM ISSUE_TICKETS WHERE target_user_id = m.user_id) AS reported_count,
+<!--            &#45;&#45; 신고 당한 횟수-->
+<!--            (SELECT COUNT(*) FROM ISSUE_TICKETS WHERE target_user_id = m.user_id) AS reported_count,-->
 
-            -- 누적 거래 금액
-            (SELECT IFNULL(SUM(amount), 0)
-             FROM PAYMENT_ORDERS
-             WHERE user_id = m.user_id AND status = 'PAID') AS total_tx_amount
+<!--            &#45;&#45; 누적 거래 금액-->
+<!--            (SELECT IFNULL(SUM(amount), 0)-->
+<!--             FROM PAYMENT_ORDERS-->
+<!--             WHERE user_id = m.user_id AND status = 'PAID') AS total_tx_amount-->
 
-        FROM MEMBERS m
-                 LEFT JOIN LEGAL_DONG d1 ON m.dong_code1 = d1.dong_code
-                 LEFT JOIN LEGAL_DONG d2 ON m.dong_code2 = d2.dong_code
-        WHERE m.user_id = #{userId}
-    </select>
+<!--        FROM MEMBERS m-->
+<!--                 LEFT JOIN LEGAL_DONG d1 ON m.dong_code1 = d1.dong_code-->
+<!--                 LEFT JOIN LEGAL_DONG d2 ON m.dong_code2 = d2.dong_code-->
+<!--        WHERE m.user_id = #{userId}-->
+<!--    </select>-->
 
-    <!-- 사용자 신고당한 이력 -->
-    <select id="getUserReportHistory"
-            parameterType="long"
-            resultType="com.gorani.vroom.admin.users.UserReportHistoryVO">
-        SELECT
-            id AS ticket_id,
-            type,
-            status,
-            content AS reason,
-            created_at
-        FROM ISSUE_TICKETS
-        WHERE target_user_id = #{userId}
-        ORDER BY created_at DESC
-    </select>
+<!--    &lt;!&ndash; 사용자 신고당한 이력 &ndash;&gt;-->
+<!--    <select id="getUserReportHistory"-->
+<!--            parameterType="long"-->
+<!--            resultType="com.gorani.vroom.admin.users.UserReportHistoryVO">-->
+<!--        SELECT-->
+<!--            id AS ticket_id,-->
+<!--            type,-->
+<!--            status,-->
+<!--            content AS reason,-->
+<!--            created_at-->
+<!--        FROM ISSUE_TICKETS-->
+<!--        WHERE target_user_id = #{userId}-->
+<!--        ORDER BY created_at DESC-->
+<!--    </select>-->
 
-    <!-- 사용자 활동 히스토리 -->
-    <select id="getUserActivityHistory"
-            parameterType="long"
-            resultType="com.gorani.vroom.admin.users.UserActivityVO">
-        SELECT
-            '심부름 등록' AS type,
-            title AS description,
-            created_at AS occurred_at
-        FROM ERRANDS
-        WHERE user_id = #{userId}
-        ORDER BY created_at DESC
-            LIMIT 10
-    </select>
+<!--    &lt;!&ndash; 사용자 활동 히스토리 &ndash;&gt;-->
+<!--    <select id="getUserActivityHistory"-->
+<!--            parameterType="long"-->
+<!--            resultType="com.gorani.vroom.admin.users.UserActivityVO">-->
+<!--        SELECT-->
+<!--            '심부름 등록' AS type,-->
+<!--            title AS description,-->
+<!--            created_at AS occurred_at-->
+<!--        FROM ERRANDS-->
+<!--        WHERE user_id = #{userId}-->
+<!--        ORDER BY created_at DESC-->
+<!--            LIMIT 10-->
+<!--    </select>-->
 
-    <!-- 관리자 메모 업데이트 -->
-    <update id="updateAdminMemo">
-        UPDATE MEMBERS
-        SET admin_memo = #{memo}
-        WHERE user_id = #{userId}
-    </update>
+<!--    &lt;!&ndash; 관리자 메모 업데이트 &ndash;&gt;-->
+<!--    <update id="updateAdminMemo">-->
+<!--        UPDATE MEMBERS-->
+<!--        SET admin_memo = #{memo}-->
+<!--        WHERE user_id = #{userId}-->
+<!--    </update>-->
 
 </mapper>

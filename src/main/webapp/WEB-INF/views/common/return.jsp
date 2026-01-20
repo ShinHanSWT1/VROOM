@@ -364,11 +364,11 @@
 
 <body>
 <!-- Flying Bees -->
-<div class="flying-bee flying-bee-1"><img src="${pageContext.request.contextPath}/resources/img/common/bee1.png" alt=""
+<div class="flying-bee flying-bee-1"><img src="${pageContext.request.contextPath}/static/img/common/bee1.png" alt=""
                                           srcset=""></div>
-<div class="flying-bee flying-bee-2"><img src="${pageContext.request.contextPath}/resources/img/common/bee1.png" alt=""
+<div class="flying-bee flying-bee-2"><img src="${pageContext.request.contextPath}/static/img/common/bee1.png" alt=""
                                           srcset=""></div>
-<div class="flying-bee flying-bee-3"><img src="${pageContext.request.contextPath}/resources/img/common/bee1.png" alt=""
+<div class="flying-bee flying-bee-3"><img src="${pageContext.request.contextPath}/static/img/common/bee1.png" alt=""
                                           srcset=""></div>
 
 <!-- Loading Container -->

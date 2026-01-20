@@ -11,12 +11,19 @@ import java.util.Map;
 @Mapper
 public interface AdminErrandersMapper {
     Map<String, Object> getSummary();
-    List<Map<String, Object>> searchUsers(Map<String, Object> param);
-    int countUsers(Map<String, Object> param);
+
+    List<Map<String, Object>> searchErranders(Map<String, Object> param);
+
+    int countErranders(Map<String, Object> param);
+
     void updateUserStatus(Map<String, Object> param);
+
     AdminUserDetailDTO getUserInfoDetail(Long id);
+
     List<UserReportHistoryVO> getUserReportHistory(Long id);
+
     List<UserActivityVO> getUserActivityHistory(Long id);
 
     void updateAdminMemo(Long userId, String memo);
+
 }

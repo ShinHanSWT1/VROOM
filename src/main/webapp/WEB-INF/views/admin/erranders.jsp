@@ -944,7 +944,7 @@
                 <div class="search-bar">
                     <input type="text" class="search-input" id="searchInput"
                            placeholder="부름이 검색 (ID/닉네임)">
-                    <button class="search-button" onclick="searchHelpers()">🔍 검색</button>
+                    <button class="search-button" onclick="searchErranders()">🔍 검색</button>
                 </div>
 
                 <!-- Filters -->
@@ -991,21 +991,20 @@
                     <thead>
                     <tr>
                         <th>ID | 닉네임</th>
-                        <th>승인+활동</th>
-                        <th>취소율</th>
+                        <th>승인</th>
+                        <th>활동</th>
+                        <th>완료율</th>
                         <th>평점</th>
                         <th>최근 활동일</th>
                         <th>관리</th>
                     </tr>
                     </thead>
                     <tbody id="helperTableBody">
-                    <!-- 데이터는 JavaScript로 동적 렌더링 -->
                     </tbody>
                 </table>
 
                 <!-- Pagination -->
-                <div class="pagination" id="pagination">
-                    <!-- 페이지네이션 버튼은 JavaScript로 동적 생성 -->
+                <div class="pagination" id="pagination"> 
                 </div>
             </section>
         </main>
@@ -1035,48 +1034,29 @@
                         <span class="modal-info-label">이메일 / 휴대폰</span>
                         <span class="modal-info-value" id="modalContact">-</span>
                     </div>
-                    <div class="modal-info-item">
-                        <span class="modal-info-label">승인 상태(대기 / 승인 / 거절)</span>
-                        <span class="modal-info-value" id="modalApprovalStatus">-</span>
-                    </div>
+<%--                    <div class="modal-info-item">--%>
+<%--                        <span class="modal-info-label">승인 상태(대기 / 승인 / 거절)</span>--%>
+<%--                        <span class="modal-info-value" id="modalApprovalStatus">-</span>--%>
+<%--                    </div>--%>
                     <div class="modal-info-item">
                         <span class="modal-info-label">활동 상태(활성/비활성)</span>
                         <span class="modal-info-value" id="modalActivityStatus">-</span>
                     </div>
-                    <div class="modal-info-item">
-                        <span class="modal-info-label">부름이 승인일</span>
-                        <span class="modal-info-value" id="modalApprovalDate">-</span>
-                    </div>
+<%--                    <div class="modal-info-item">--%>
+<%--                        <span class="modal-info-label">부름이 승인일</span>--%>
+<%--                        <span class="modal-info-value" id="modalApprovalDate">-</span>--%>
+<%--                    </div>--%>
                     <div class="modal-info-item">
                         <span class="modal-info-label">최근 활동일</span>
                         <span class="modal-info-value" id="modalLastActivity">-</span>
                     </div>
                     <div class="modal-info-item">
-                        <span class="modal-info-label">활동 동네 1 / 2</span>
-                        <span class="modal-info-value" id="modalRegions">-</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 활동 요약 -->
-            <div class="modal-section">
-                <div class="modal-section-title">활동 요약 (한눈에 보기)</div>
-                <div class="modal-info-grid">
-                    <div class="modal-info-item">
-                        <span class="modal-info-label">총 수락 건수</span>
-                        <span class="modal-info-value" id="modalAcceptCount">-</span>
+                        <span class="modal-info-label">활동 동네 1</span>
+                        <span class="modal-info-value" id="modalRegions1">-</span>
                     </div>
                     <div class="modal-info-item">
-                        <span class="modal-info-label">원금 건수</span>
-                        <span class="modal-info-value" id="modalCompleteCount">-</span>
-                    </div>
-                    <div class="modal-info-item">
-                        <span class="modal-info-label">취소율</span>
-                        <span class="modal-info-value" id="modalCancelRate">-</span>
-                    </div>
-                    <div class="modal-info-item">
-                        <span class="modal-info-label">누적 수익</span>
-                        <span class="modal-info-value" id="modalTotalEarning">-</span>
+                        <span class="modal-info-label">활동 동네 2</span>
+                        <span class="modal-info-value" id="modalRegions2">-</span>
                     </div>
                 </div>
             </div>
@@ -1085,7 +1065,6 @@
             <div class="modal-section">
                 <div class="modal-section-title">제출 서류</div>
                 <div class="document-list" id="documentList">
-                    <!-- 서류는 JavaScript로 동적 생성 -->
                 </div>
             </div>
         </div>
@@ -1098,433 +1077,275 @@
 </div>
 
 <script>
-    $(document).ready(function () {
-        // Sidebar Toggle
+    // 전역 변수
+    let currentErranderId = null; // 승인/반려 모달용 ID 저장
+
+    $(document).ready(function ()  {
         const sidebar = document.getElementById('sidebar');
         const sidebarToggle = document.getElementById('sidebarToggle');
         const adminDropdownTrigger = document.getElementById('adminDropdownTrigger');
         const adminDropdown = document.getElementById('adminDropdown');
 
-        // 로컬스토리지에서 상태 불러오기
+        // 로컬스토리지 상태 적용
         const savedState = localStorage.getItem('sidebarState');
         if (savedState === 'collapsed') {
             sidebar.classList.add('collapsed');
         }
-        // 1. 사이드바 토글
+
+        // 사이드바 토글
         sidebarToggle.addEventListener('click', function (e) {
-            e.stopPropagation(); // 이벤트 버블링 방지
+            e.stopPropagation();
             sidebar.classList.toggle('collapsed');
-
-            console.log("사이드바 상태:", sidebar.classList.contains('collapsed') ? "접힘" : "펼쳐짐");
-
-            // 상태 저장 로직 추가
-            const isCollapsed = sidebar.classList.contains('collapsed');
-            localStorage.setItem('sidebarState', isCollapsed ? 'collapsed' : 'expanded');
+            localStorage.setItem('sidebarState', sidebar.classList.contains('collapsed') ? 'collapsed' : 'expanded');
         });
 
-        // 2. 관리자 드롭다운 토글
+        // 관리자 드롭다운
         adminDropdownTrigger.addEventListener('click', function (e) {
             e.stopPropagation();
             adminDropdown.classList.toggle('show');
         });
 
-        // 3. 외부 클릭 시 드롭다운 닫기
         window.addEventListener('click', function () {
             if (adminDropdown.classList.contains('show')) {
                 adminDropdown.classList.remove('show');
             }
         });
 
-        // 4. 메뉴 활성화 상태 유지
-        const currentPath = window.location.hash || '#users';
+        // 메뉴 활성화
+        const currentPath = window.location.hash || '#erranders'; // URL에 맞게 조정
         $('.nav-item').each(function () {
-            if ($(this).attr('href') === currentPath) {
-                $('.nav-item').removeClass('active');
+            if ($(this).attr('href').includes('erranders')) {
                 $(this).addClass('active');
+            } else {
+                $(this).removeClass('active');
             }
         });
+
+        // 초기 데이터 로드
+        loadErranderList(1);
+
+        // 이벤트 리스너
+        // 검색 (엔터키 & 버튼)
+        document.querySelector('.search-button').addEventListener('click', () => loadErranderList(1));
+        document.getElementById('searchInput').addEventListener('keyup', function (e) {
+            if (e.key === 'Enter') loadErranderList(1);
+        });
+
+        // 필터 변경 시 자동 검색
+        document.getElementById('filterApprovalStatus').addEventListener('change', () => loadErranderList(1));
+        document.getElementById('filterActivityStatus').addEventListener('change', () => loadErranderList(1));
+        document.getElementById('filterRating').addEventListener('change', () => loadErranderList(1));
     });
 
-    // Mock Data - 실제로는 서버에서 가져올 데이터
-    const mockHelpers = [
-        {
-            id: 'H001',
-            nickname: '빠른배달왕',
-            approvalStatus: 'APPROVED',
-            activityStatus: 'ACTIVE',
-            cancelRate: 2.5,
-            rating: 4.8,
-            lastActivity: '2026-01-20',
-            email: 'helper1@example.com',
-            phone: '010-1234-5678',
-            approvalDate: '2025-12-01',
-            region1: '강남구',
-            region2: '서초구',
-            acceptCount: 150,
-            completeCount: 147,
-            totalEarning: 1500000,
-            documents: [
-                {name: '신분증.jpg', type: '신분증', url: '#'},
-                {name: '통장사본.pdf', type: '통장사본', url: '#'}
-            ]
-        },
-        {
-            id: 'H002',
-            nickname: '친절부름이',
-            approvalStatus: 'APPROVED',
-            activityStatus: 'ACTIVE',
-            cancelRate: 1.2,
-            rating: 4.9,
-            lastActivity: '2026-01-19',
-            email: 'helper2@example.com',
-            phone: '010-2345-6789',
-            approvalDate: '2025-11-15',
-            region1: '송파구',
-            region2: '강동구',
-            acceptCount: 200,
-            completeCount: 198,
-            totalEarning: 2100000,
-            documents: [
-                {name: '신분증_2.jpg', type: '신분증', url: '#'},
-                {name: '계좌정보.pdf', type: '통장사본', url: '#'}
-            ]
-        },
-        {
-            id: 'H003',
-            nickname: '신속심부름',
-            approvalStatus: 'PENDING',
-            activityStatus: 'INACTIVE',
-            cancelRate: 0,
-            rating: 0,
-            lastActivity: '-',
-            email: 'helper3@example.com',
-            phone: '010-3456-7890',
-            approvalDate: '-',
-            region1: '마포구',
-            region2: '서대문구',
-            acceptCount: 0,
-            completeCount: 0,
-            totalEarning: 0,
-            documents: [
-                {name: 'id_card.jpg', type: '신분증', url: '#'},
-                {name: 'bank_account.jpg', type: '통장사본', url: '#'}
-            ]
-        },
-        {
-            id: 'H004',
-            nickname: '믿음직한',
-            approvalStatus: 'APPROVED',
-            activityStatus: 'SUSPENDED',
-            cancelRate: 15.3,
-            rating: 3.2,
-            lastActivity: '2026-01-10',
-            email: 'helper4@example.com',
-            phone: '010-4567-8901',
-            approvalDate: '2025-10-20',
-            region1: '용산구',
-            region2: '중구',
-            acceptCount: 85,
-            completeCount: 72,
-            totalEarning: 850000,
-            documents: [
-                {name: '신분증_4.png', type: '신분증', url: '#'}
-            ]
-        },
-        {
-            id: 'H005',
-            nickname: '성실부름이',
-            approvalStatus: 'APPROVED',
-            activityStatus: 'ACTIVE',
-            cancelRate: 3.1,
-            rating: 4.6,
-            lastActivity: '2026-01-20',
-            email: 'helper5@example.com',
-            phone: '010-5678-9012',
-            approvalDate: '2025-09-05',
-            region1: '은평구',
-            region2: '노원구',
-            acceptCount: 120,
-            completeCount: 116,
-            totalEarning: 1200000,
-            documents: [
-                {name: '신분증.jpeg', type: '신분증', url: '#'},
-                {name: '계좌.pdf', type: '통장사본', url: '#'}
-            ]
-        }
-    ];
+    //  부름이 목록 조회
+    function loadErranderList(page) {
+        const keyword = document.getElementById('searchInput').value;
+        const approveStatus = document.getElementById('filterApprovalStatus').value;
+        const activeStatus = document.getElementById('filterActivityStatus').value;
+        const reviewScope = document.getElementById('filterRating').value;
 
-    let currentPage = 1;
-    let filteredHelpers = [...mockHelpers];
-    const itemsPerPage = 10;
+        // Query String 생성
+        const params = new URLSearchParams({
+            page: page,
+            keyword: keyword,
+            approveStatus: approveStatus,
+            activeStatus: activeStatus,
+            reviewScope: reviewScope
+        });
 
-    // 페이지 로드 시 초기 렌더링
-    $(document).ready(function () {
-        renderHelperTable(currentPage);
-        renderPagination();
-    });
+        fetch('${pageContext.request.contextPath}/api/admin/erranders?' + params)
+            .then(response => response.json())
+            .then(data => {
+                // data = { userList: [...], totalCount: 123, pageInfo: {...} }
+                renderTable(data.userList);       // 테이블 그리기
+                renderPagination(data.pageInfo);  // 페이지네이션 그리기
 
-    // 부름이 테이블 렌더링
-    function renderHelperTable(page) {
+                // 총 개수 업데이트
+                document.getElementById('totalCount').innerText = data.totalCount;
+            })
+            .catch(error => {
+                console.error('데이터 로드 실패:', error);
+                // alert('데이터를 불러오는 중 오류가 발생했습니다.');
+            });
+    }
+
+    // 테이블 HTML 렌더링
+    function renderTable(list) {
         const tbody = document.getElementById('helperTableBody');
-        tbody.innerHTML = '';
+        tbody.innerHTML = ''; // 초기화
 
-        const startIndex = (page - 1) * itemsPerPage;
-        const endIndex = startIndex + itemsPerPage;
-        const pageData = filteredHelpers.slice(startIndex, endIndex);
-
-        if (pageData.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem;">검색 결과가 없습니다.</td></tr>';
+        if (!list || list.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem;">검색 결과가 없습니다.</td></tr>';
             return;
         }
 
-        pageData.forEach(helper => {
-            const approvalBadgeClass = helper.approvalStatus;
-            const approvalBadgeText = helper.approvalStatus === 'APPROVED' ? '승인' :
-                helper.approvalStatus === 'PENDING' ? '승인대기' : '반려';
+        list.forEach(item => {
+            const erranderId = item.errander_id;
+            const nickname = item.nickname;
+            const approvalStatus = item.approval_status;
+            const activeStatus = item.active_status;
+            const completeRate = item.complete_rate || 0;
+            const ratingAvg = item.rating_avg || 0;
 
-            const activityBadgeClass = helper.activityStatus;
-            const activityBadgeText = helper.activityStatus === 'ACTIVE' ? '활성' :
-                helper.activityStatus === 'INACTIVE' ? '비활성' : '일시정지';
+            // 날짜 포맷팅 (Timestamp -> YYYY-MM-DD)
+            let lastActive = '-';
+            if (item.last_active_at) {
+                const date = new Date(item.last_active_at);
+                lastActive = date.toISOString().split('T')[0];
+            }
 
-            const stars = '⭐'.repeat(Math.floor(helper.rating));
-            const ratingDisplay = helper.rating > 0 ?
-                `<div class="rating-display"><span class="rating-stars">${'${'}stars}</span> <span class="rating-value">${'${'}helper.rating}</span></div>` :
-                '-';
+            // 배지 텍스트 및 클래스 설정
+            let approvalText = approvalStatus === 'APPROVED' ? '승인' : (approvalStatus === 'PENDING' ? '승인대기' : '반려');
+            let activityText = '-';
+            if (activeStatus === 'ACTIVE') activityText = '활성';
+            else if (activeStatus === 'INACTIVE') activityText = '비활성';
+            else if (activeStatus === 'SUSPENDED') activityText = '일시정지';
+            else if (activeStatus === 'BANNED') activityText = '정지';
+
+            // 별점 표시
+            const stars = '⭐'.repeat(Math.floor(ratingAvg));
+            const ratingDisplay = ratingAvg > 0 ?
+                `<div class="rating-display"><span class="rating-stars">\${stars}</span> <span class="rating-value">\${ratingAvg}</span></div>` : '-';
+
+            // 액션 버튼 (승인 대기중이면 승인버튼, 아니면 관리버튼)
+            let actionBtnHtml = '';
+            if (approvalStatus === 'PENDING') {
+                // 승인 모달 열기 (item 객체를 통째로 넘기거나 ID만 넘김)
+                actionBtnHtml = `<button class="action-button approve" onclick="openApprovalModal(item)">승인</button>`;
+            } else {
+                actionBtnHtml = `<button class="action-button" onclick="goToDetail(\${erranderId})">관리</button>`;
+            }
 
             const row = `
                 <tr>
-                    <td>${'${'}helper.id} / ${'${'}helper.nickname}</td>
-                    <td>
-                        <span class="status-badge ${'${'}approvalBadgeClass}">${'${'}approvalBadgeText}</span>
-                        <span class="status-badge ${'${'}activityBadgeClass}">${'${'}activityBadgeText}</span>
-                    </td>
-                    <td>${'${'}helper.cancelRate}%</td>
-                    <td>${'${'}ratingDisplay}</td>
-                    <td>${'${'}helper.lastActivity}</td>
-                    <td>
-                        ${'${'}helper.approvalStatus} === 'PENDING' ?
-                <button class="action-button approve" onclick="openApprovalModal('${'${'}helper.id}')">승인</button> :
-                <button class="action-button" onclick="goToHelperDetail('${'${'}helper.id}')">관리</button>
-            }
-                    </td>
+                    <td>\${erranderId} / \${nickname}</td>
+                    <td><span class="status-badge \${approvalStatus}">\${approvalText}</span></td>
+                    <td><span class="status-badge \${activeStatus}">\${activityText}</span></td>
+                    <td>\${completeRate}%</td>
+                    <td>\${ratingDisplay}</td>
+                    <td>\${lastActive}</td>
+                    <td>\${actionBtnHtml}</td>
                 </tr>
             `;
             tbody.innerHTML += row;
         });
-
-        // 총 개수 업데이트
-        document.getElementById('totalCount').textContent = filteredHelpers.length;
     }
 
-    // 페이지네이션 렌더링
-    function renderPagination() {
+    //  페이지네이션 렌더링
+    function renderPagination(pageInfo) {
         const pagination = document.getElementById('pagination');
         pagination.innerHTML = '';
 
-        const totalPages = Math.ceil(filteredHelpers.length / itemsPerPage);
+        if (!pageInfo) return;
 
-        // 이전 버튼
+        const { currentPage, startPage, endPage, totalPage } = pageInfo;
+
+        // [이전] 버튼
         const prevBtn = document.createElement('button');
         prevBtn.className = 'pagination-button';
         prevBtn.innerText = '이전';
-        prevBtn.disabled = currentPage === 1;
-        prevBtn.onclick = () => {
-            if (currentPage > 1) {
-                currentPage--;
-                renderHelperTable(currentPage);
-                renderPagination();
-            }
-        };
+        if (currentPage > 1) {
+            prevBtn.onclick = () => loadErranderList(currentPage - 1);
+        } else {
+            prevBtn.disabled = true;
+            prevBtn.classList.add('disabled');
+        }
         pagination.appendChild(prevBtn);
 
-        // 페이지 번호 버튼
-        const startPage = Math.max(1, currentPage - 2);
-        const endPage = Math.min(totalPages, currentPage + 2);
-
+        // [번호] 버튼
         for (let i = startPage; i <= endPage; i++) {
             const btn = document.createElement('button');
             btn.className = 'pagination-button';
+            btn.innerText = i;
             if (i === currentPage) {
                 btn.classList.add('active');
+            } else {
+                btn.onclick = () => loadErranderList(i);
             }
-            btn.innerText = i;
-            btn.onclick = () => {
-                currentPage = i;
-                renderHelperTable(currentPage);
-                renderPagination();
-            };
             pagination.appendChild(btn);
         }
 
-        // 다음 버튼
+        // [다음] 버튼
         const nextBtn = document.createElement('button');
         nextBtn.className = 'pagination-button';
         nextBtn.innerText = '다음';
-        nextBtn.disabled = currentPage === totalPages;
-        nextBtn.onclick = () => {
-            if (currentPage < totalPages) {
-                currentPage++;
-                renderHelperTable(currentPage);
-                renderPagination();
-            }
-        };
+        if (currentPage < totalPage) {
+            nextBtn.onclick = () => loadErranderList(currentPage + 1);
+        } else {
+            nextBtn.disabled = true;
+            nextBtn.classList.add('disabled');
+        }
         pagination.appendChild(nextBtn);
     }
 
-    // 검색 기능
-    function searchHelpers() {
-        const searchValue = document.getElementById('searchInput').value.toLowerCase();
-        filteredHelpers = mockHelpers.filter(helper =>
-            helper.id.toLowerCase().includes(searchValue) ||
-            helper.nickname.toLowerCase().includes(searchValue)
-        );
-        currentPage = 1;
-        renderHelperTable(currentPage);
-        renderPagination();
-    }
+    //  기타 기능 (모달, 이동 등)
 
-    // Enter 키로 검색
-    document.getElementById('searchInput').addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') {
-            searchHelpers();
-        }
-    });
-
-    // 필터 적용
-    function applyFilters() {
-        const approvalStatus = document.getElementById('filterApprovalStatus').value;
-        const activityStatus = document.getElementById('filterActivityStatus').value;
-        const rating = document.getElementById('filterRating').value;
-        const searchValue = document.getElementById('searchInput').value.toLowerCase();
-
-        filteredHelpers = mockHelpers.filter(helper => {
-            const matchesSearch = helper.id.toLowerCase().includes(searchValue) ||
-                helper.nickname.toLowerCase().includes(searchValue);
-            const matchesApproval = !approvalStatus || helper.approvalStatus === approvalStatus;
-            const matchesActivity = !activityStatus || helper.activityStatus === activityStatus;
-            const matchesRating = !rating || helper.rating >= parseInt(rating);
-
-            return matchesSearch && matchesApproval && matchesActivity && matchesRating;
-        });
-
-        currentPage = 1;
-        renderHelperTable(currentPage);
-        renderPagination();
+    // 상세 페이지 이동
+    function goToDetail(erranderId) {
+        const url = '${pageContext.request.contextPath}/admin/users/detail?id=' + erranderId;
+        window.location.href = url;
     }
 
     // 승인 모달 열기
-    function openApprovalModal(helperId) {
-        const helper = mockHelpers.find(h => h.id === helperId);
-        if (!helper) return;
+    function openApprovalModal(errander) {
+        currentErranderId = erranderId;
 
-        // 모달에 데이터 채우기
-        document.getElementById('modalHelperId').textContent = helper.id;
-        document.getElementById('modalNickname').textContent = helper.nickname;
-        document.getElementById('modalContact').textContent = `${'${'}helper.email} / ${'${'}helper.phone}`;
-        document.getElementById('modalApprovalStatus').textContent =
-            helper.approvalStatus === 'APPROVED' ? '승인' :
-                helper.approvalStatus === 'PENDING' ? '승인 대기' : '반려';
-        document.getElementById('modalActivityStatus').textContent =
-            helper.activityStatus === 'ACTIVE' ? '활성' :
-                helper.activityStatus === 'INACTIVE' ? '비활성' : '일시정지';
-        document.getElementById('modalApprovalDate').textContent = helper.approvalDate;
-        document.getElementById('modalLastActivity').textContent = helper.lastActivity;
-        document.getElementById('modalRegions').textContent = `${'${'}helper.region1} / ${'${'}helper.region2}`;
+        // UI 값 채우기 (목록에 없는 상세 정보는 별도 API 호출 필요)
+        document.getElementById('modalHelperId').textContent = errander.errandId;
+        document.getElementById('modalNickname').textContent = errander.nickname;
+        document.getElementById('modalContact').textContent = errander.phone || '-';
 
-        document.getElementById('modalAcceptCount').textContent = `${'${'}helper.acceptCount}건`;
-        document.getElementById('modalCompleteCount').textContent = `${'${'}helper.completeCount}건`;
-        document.getElementById('modalCancelRate').textContent = `${'${'}helper.cancelRate}%`;
-        document.getElementById('modalTotalEarning').textContent = `${'${'}helper.totalEarning.toLocaleString()}원`;
+        // 나머지 필드는 목록 API에서 가져오지 않았다면 '로딩중' 또는 '-' 처리
+        // TODO: /api/admin/erranders/detail/{id} API를 만들어 호출해야 함
 
-        // 제출 서류 렌더링
-        const documentList = document.getElementById('documentList');
-        documentList.innerHTML = '';
-        helper.documents.forEach(doc => {
-            const docIcon = doc.type.includes('신분증') ? '🪪' : '📄';
-            const docItem = `
-                <div class="document-item">
-                    <div class="document-icon">${'${'}docIcon}</div>
-                    <div class="document-info">
-                        <div class="document-name">${'${'}doc.name}</div>
-                        <div class="document-type">${'${'}doc.type}</div>
-                    </div>
-                    <button class="document-view-btn" onclick="viewDocument('${'${'}doc.url}')">보기</button>
-                </div>
-            `;
-            documentList.innerHTML += docItem;
-        });
-
-        // 현재 승인 중인 helper ID 저장
-        document.getElementById('approvalModal').dataset.helperId = helperId;
-
-        // 모달 표시
+        document.getElementById('approvalModal').dataset.helperId = erranderId;
         document.getElementById('approvalModal').classList.add('show');
     }
 
-    // 승인 모달 닫기
     function closeApprovalModal() {
         document.getElementById('approvalModal').classList.remove('show');
     }
 
-    // 서류 보기
-    function viewDocument(url) {
-        // 실제로는 새 창에서 문서를 열거나 뷰어를 표시
-        alert('서류 보기 기능 (실제로는 파일 뷰어 또는 다운로드)');
-        console.log('Document URL:', url);
-    }
+    // 모달 외부 클릭 닫기
+    document.getElementById('approvalModal').addEventListener('click', function (e) {
+        if (e.target === this) closeApprovalModal();
+    });
 
-    // 부름이 승인
+    // 승인 처리 (API 연동 필요)
     function approveHelper() {
         const helperId = document.getElementById('approvalModal').dataset.helperId;
-        // 실제로는 서버에 승인 요청
-        console.log('부름이 승인:', helperId);
-        alert(`부름이 ID: ${'${'}helperId}를 승인했습니다.`);
+        if(!confirm(helperId + ' 님을 승인하시겠습니까?')) return;
 
-        // Mock 데이터 업데이트
-        const helper = mockHelpers.find(h => h.id === helperId);
-        if (helper) {
-            helper.approvalStatus = 'APPROVED';
-            helper.activityStatus = 'ACTIVE';
-            helper.approvalDate = new Date().toISOString().split('T')[0];
-        }
+        // TODO: 승인 API 구현 후 fetch 호출
+        /*
+        fetch('${pageContext.request.contextPath}/api/admin/erranders/approve', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ id: helperId })
+        }).then(...)
+        */
 
+        alert('승인되었습니다. (API 연동 필요)');
         closeApprovalModal();
-        applyFilters(); // 테이블 새로고침
+        loadErranderList(1); // 목록 갱신
     }
 
-    // 부름이 반려
+    // 반려 처리 (API 연동 필요)
     function rejectHelper() {
         const helperId = document.getElementById('approvalModal').dataset.helperId;
         const reason = prompt('반려 사유를 입력하세요:');
         if (!reason) return;
 
-        // 실제로는 서버에 반려 요청
-        console.log('부름이 반려:', helperId, '사유:', reason);
-        alert(`부름이 ID: ${'${'}helperId}를 반려했습니다.\n사유: ${'${'}reason}`);
+        // TODO: 반려 API 구현 후 fetch 호출
 
-        // Mock 데이터 업데이트
-        const helper = mockHelpers.find(h => h.id === helperId);
-        if (helper) {
-            helper.approvalStatus = 'REJECTED';
-        }
-
+        alert('반려되었습니다. (API 연동 필요)');
         closeApprovalModal();
-        applyFilters(); // 테이블 새로고침
+        loadErranderList(1); // 목록 갱신
     }
 
-    // 부름이 상세 페이지로 이동
-    function goToHelperDetail(helperId) {
-        // 실제로는 상세 페이지로 라우팅
-        console.log('부름이 상세 페이지:', helperId);
-        window.location.href = `${'${'}pageContext.request.contextPath}/admin/helpers/${'${'}helperId}`;
+    function viewDocument(url) {
+        alert('문서 보기: ' + url);
     }
-
-    // 모달 외부 클릭 시 닫기
-    document.getElementById('approvalModal').addEventListener('click', function (e) {
-        if (e.target === this) {
-            closeApprovalModal();
-        }
-    });
 </script>
 </body>
 

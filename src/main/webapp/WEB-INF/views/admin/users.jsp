@@ -1202,7 +1202,7 @@
             });
     }
 
-    // 테이블 HTML 생성 함수
+    // 사용자 테이블 렌더링
     function renderTable(users) {
         const tbody = document.getElementById('userTableBody');
         tbody.innerHTML = ''; // 기존 목록 비우기
