@@ -75,11 +75,38 @@
                 AND c.dong_code = #{dongCode}
             </if>
             <if test="searchKeyword != null and searchKeyword != ''">
-                AND (c.title LIKE CONCAT('%', #{searchKeyword}, '%')
+                AND (c.title LIKE CONCAT('%', #{searchKeyword}, '%')ㅠ
                 OR c.content LIKE CONCAT('%', #{searchKeyword}, '%'))
             </if>
         </where>
         ORDER BY popularity_score DESC, c.created_at DESC
+    </select>
+
+    <select id="selectPostDetail" resultType="com.gorani.vroom.community.CommunityPostVO">
+        SELECT
+            c.post_id,
+            c.dong_code,
+            c.title,
+            c.content,
+            c.view_count,
+            c.like_count,
+            c.created_at,
+            c.updated_at,
+            c.deleted_at,
+            m.user_id,
+            c.category_id,
+            m.nickname,
+            l.dong_name,
+            l.gungu_name,
+            cc.category_name,
+            m.manner_score
+        FROM COMMUNITY c
+        LEFT JOIN MEMBERS m ON m.user_id = c.user_id
+        LEFT JOIN COMMUNITY_CATEGORY cc ON cc.category_id = c.category_id
+        LEFT JOIN LEGAL_DONG l ON l.dong_code = c.dong_code
+        <where>
+            c.post_id = #{postId} AND c.deleted_at IS NULL
+        </where>
     </select>
 
 </mapper>

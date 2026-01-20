@@ -31,7 +31,7 @@
             </div>
             <nav class="nav-menu">
                 <a href="<c:url value='/about'/>" class="nav-item">소개</a>
-                <a href="<c:url value='/community/list'/>" class="nav-item ${pageId == 'community' ? 'active' : ''}">커뮤니티</a>
+                <a href="<c:url value='/community'/>" class="nav-item ${pageId == 'community' ? 'active' : ''}">커뮤니티</a>
                 <a href="<c:url value='/event'/>" class="nav-item">이벤트</a>
                 
                 <c:choose>

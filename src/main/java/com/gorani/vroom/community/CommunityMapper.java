@@ -17,8 +17,12 @@ public interface CommunityMapper {
             @Param("searchKeyword") String searchKeyword
     );
 
+    // 인기 게시글 조회
     List<CommunityPostVO> selectPopularPostList(
             @Param("dongCode") String dongCode,
             @Param("searchKeyword") String searchKeyword
     );
+
+    // 게시글 상세 정보 조회
+    CommunityPostVO selectPostDetail(int postId);
 }
