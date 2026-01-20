@@ -1,4 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+
 <!DOCTYPE html>
 <html lang="ko">
 
@@ -566,7 +569,7 @@
             <div class="footer-content">
                 <div class="footer-info">
                     <h3>(주) 답스미포유</h3>
-                    <p>대표 김동수, 황준호 ㅣ 사업자번호 375-87-00088<br>
+                    <p>대표 허남훈 ㅣ 사업자번호 375-87-00088<br>
                         제2종정보통신판매업 신고번호 JT200C03030C118<br>
                         통신판매업 신고번호 2021-서울노원-2875<br>
                         호스팅 사업자 Amazon Web Service(AWS)<br>

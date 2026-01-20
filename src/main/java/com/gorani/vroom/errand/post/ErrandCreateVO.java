@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class ErrandCreateVO {
+	private Long errandsId;
     private String title; //제목
     private Long categoryId; //카테고리
     private Integer rewardAmount; // 심부름값

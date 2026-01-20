@@ -89,7 +89,40 @@
             e.dong_code      AS dongCode
         FROM ERRANDS e
         WHERE e.errands_id = #{errandsId}
-
     </select>
 
+	<insert id="insertErrand" parameterType="com.gorani.vroom.errand.post.ErrandCreateVO"
+	        useGeneratedKeys="true" keyProperty="errandsId">
+	    INSERT INTO errands (
+	        title,
+	        category_id,
+	        reward_amount,
+	        expense_amount,
+	        description,
+	        dong_code,
+	        desired_at,
+	        status,
+	        created_at
+	    ) VALUES (
+	        #{title},
+	        #{categoryId},
+	        #{rewardAmount},
+	        #{expenseAmount},
+	        #{description},
+	        #{dongCode},
+	        #{desiredAt},
+	        'WAIT',
+	        NOW()
+	    )
+	</insert>
+	
+	<select id="selectCategories"
+	        resultType="com.gorani.vroom.errand.post.CategoryVO">
+	    SELECT
+	        id,
+	        name
+	    FROM categories
+	    ORDER BY id ASC
+	</select>
+	
 </mapper>
