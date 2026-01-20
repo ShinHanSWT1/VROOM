@@ -1,6 +1,7 @@
 package com.gorani.vroom.errand.post;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ErrandService {
 
@@ -30,4 +31,6 @@ public interface ErrandService {
     
     // 작성폼에서 카테고리 셀렉트 옵션용
     List<CategoryVO> getCategories();
+    List<Map<String, Object>> getDongs();
+
 }

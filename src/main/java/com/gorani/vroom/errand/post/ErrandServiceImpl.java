@@ -96,4 +96,9 @@ public class ErrandServiceImpl implements ErrandService {
     public List<CategoryVO> getCategories() {
         return errandMapper.selectCategories();
     }
+    
+    @Override
+    public List<Map<String, Object>> getDongs() {
+        return errandMapper.selectDongs();
+    }
 }

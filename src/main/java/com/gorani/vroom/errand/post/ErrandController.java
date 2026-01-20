@@ -30,6 +30,8 @@ public class ErrandController {
 		int totalCount = errandService.getErrandTotalCount(q, categoryId, dongCode);
 
 		model.addAttribute("errands", errands);
+		model.addAttribute("categories", errandService.getCategories());
+		model.addAttribute("dongs", errandService.getDongs());
 		model.addAttribute("totalCount", totalCount);
 		model.addAttribute("currentPage", page);
 

@@ -27,4 +27,5 @@ public interface ErrandMapper {
     ErrandDetailVO selectErrandDetail(@Param("errandsId") Long errandsId);
     
     List<CategoryVO> selectCategories();
+    List<Map<String, Object>> selectDongs();
 }

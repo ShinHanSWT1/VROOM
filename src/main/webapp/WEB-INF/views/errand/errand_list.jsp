@@ -626,50 +626,68 @@
 
     <section class="main-section">
         <div class="container">
-            <div class="filter-bar">
-                <div class="filter-group">
-                    <span class="filter-label">카테고리</span>
-                    <select class="filter-select" id="categoryFilter">
-                        <option value="all">전체</option>
-                        <option value="delivery">배달</option>
-                        <option value="cleaning">청소</option>
-                        <option value="assembly">설치/조립</option>
-                        <option value="pet">반려동물</option>
-                        <option value="line">줄서기</option>
-                        <option value="other">기타</option>
-                    </select>
-                </div>
+            <!-- 파일 경로: src/main/webapp/WEB-INF/views/errand/errand_list.jsp -->
+			<form id="filterForm"
+			      class="filter-bar"
+			      method="get"
+			      action="${pageContext.request.contextPath}/errand/list">
+			
+			    <div class="filter-group">
+			        <span class="filter-label">카테고리</span>
+			        <!-- 서버 파라미터: categoryId -->
+			        <select class="filter-select" id="categoryFilter" name="categoryId">
+			            <option value="" ${empty param.categoryId ? 'selected' : ''}>전체</option>
+			
+			            <!-- DB 카테고리 테이블(CATEGORIES) 기반 -->
+			            <c:forEach var="c" items="${categories}">
+			                <option value="${c.id}" ${param.categoryId == c.id ? 'selected' : ''}>
+			                    <c:out value="${c.name}" />
+			                </option>
+			            </c:forEach>
+			        </select>
+			    </div>
+			
+			    <div class="filter-group">
+			        <span class="filter-label">정렬</span>
+			        <!-- 서버 파라미터: sort (mapper의 choose 값과 일치해야 함) -->
+			        <select class="filter-select" id="sortFilter" name="sort">
+			            <option value="latest" ${empty param.sort || param.sort == 'latest' ? 'selected' : ''}>최신순</option>
+			            <option value="price_desc" ${param.sort == 'price_desc' ? 'selected' : ''}>높은 가격순</option>
+			            <option value="price_asc" ${param.sort == 'price_asc' ? 'selected' : ''}>낮은 가격순</option>
+			            <option value="desired_at" ${param.sort == 'desired_at' ? 'selected' : ''}>희망일 빠른순</option>
+			        </select>
+			    </div>
+			
+			    <div class="filter-group">
+			        <span class="filter-label">동네</span>
+			        <!-- 서버 파라미터: dongCode -->
+			        <select class="filter-select" id="neighborhoodFilter" name="dongCode">
+			            <option value="" ${empty param.dongCode ? 'selected' : ''}>전체</option>
+			
+			            <!-- 동네 옵션을 서버에서 내려주면 best
+			                 지금은 dongs가 없을 수 있으니, 임시로 하드코딩/또는 삭제 가능 -->
+			            <c:if test="${not empty dongs}">
+			                <c:forEach var="d" items="${dongs}">
+			                    <option value="${d.dongCode}" ${param.dongCode == d.dongCode ? 'selected' : ''}>
+			                        <c:out value="${d.dongFullName}" />
+			                    </option>
+			                </c:forEach>
+			            </c:if>
+			        </select>
+			    </div>
+			
+			    <div class="filter-group">
+			        <span class="filter-label">검색</span>
+			        <!-- 서버 파라미터: q -->
+			        <input type="text" id="searchInput" name="q" placeholder="심부름 검색" value="${param.q}">
+			        <button id="searchButton" type="submit">검색</button>
+			    </div>
+			
+			    <div class="results-info">
+			        총 <span class="results-count">${totalCount}</span>개의 심부름
+			    </div>
+			</form>
 
-                <div class="filter-group">
-                    <span class="filter-label">정렬</span>
-                    <select class="filter-select" id="sortFilter">
-                        <option value="recent">최신순</option>
-                        <option value="price-high">높은 가격순</option>
-                        <option value="price-low">낮은 가격순</option>
-                        <option value="distance">가까운 거리순</option>
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <span class="filter-label">동네</span>
-                    <select class="filter-select" id="neighborhoodFilter">
-                        <option value="all">전체</option>
-                        <option value="songdo">송도동</option>
-                        <option value="yeoksam">역삼동</option>
-                        <option value="seocho">서초동</option>
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <span class="filter-label">검색</span>
-                    <input type="text" id="searchInput" placeholder="심부름 검색">
-                    <button id="searchButton">검색</button>
-                </div>
-
-                <div class="results-info">
-                    총 <span class="results-count">${totalCount}</span>개의 심부름
-                </div>
-            </div>
 
             <div class="tasks-grid">
 			    <c:forEach var="e" items="${errands}">
@@ -767,399 +785,47 @@
     </footer>
 
     <script>
-
-        // 요소 선택
-        const categoryFilter = document.getElementById('categoryFilter');
-        const sortFilter = document.getElementById('sortFilter');
-        const neighborhoodFilter = document.getElementById('neighborhoodFilter');
-        const searchInput = document.getElementById('searchInput'); // 검색어가 있다면
-        const searchButton = document.getElementById('searchButton'); // 검색 버튼이 있다면
-        const resultsCount = document.querySelector('.results-count');
-
-        // 필터 이벤트 리스너
-        categoryFilter.addEventListener('change', applyFilters);
-        sortFilter.addEventListener('change', applyFilters);
-        neighborhoodFilter.addEventListener('change', applyFilters);
-
-        // 검색 기능 (있다면)
-        if (searchInput && searchButton) {
-            searchButton.addEventListener('click', applyFilters);
-            searchInput.addEventListener('keyup', (e) => {
-                if (e.key === 'Enter') applyFilters();
-            });
-        }
-
-        // Dropdown Logic
-        document.addEventListener('DOMContentLoaded', function () {
-            const dropdownBtn = document.getElementById('userDropdownBtn');
-            const dropdownMenu = document.getElementById('userDropdownMenu');
-
-            if (dropdownBtn && dropdownMenu) {
-                dropdownBtn.addEventListener('click', function (e) {
-                    e.stopPropagation();
-                    dropdownMenu.classList.toggle('active');
-                });
-
-                document.addEventListener('click', function (e) {
-                    if (!dropdownMenu.contains(e.target) && !dropdownBtn.contains(e.target)) {
-                        dropdownMenu.classList.remove('active');
-                    }
-                });
-            }
-        });
-
-        function applyFilters() {
-            const category = categoryFilter.value;
-            const sort = sortFilter.value;
-            const neighborhood = neighborhoodFilter.value;
-            const keyword = searchInput ? searchInput.value.trim().toLowerCase() : '';
-
-            // 1. 필터링
-            filteredTasks = mockTasks.filter(task => {
-                // 카테고리
-                let categoryMatch = (category === 'all');
-                if (!categoryMatch) {
-                    if (category === 'delivery' && task.badge === '배달') categoryMatch = true;
-                    else if (category === 'cleaning' && task.badge === '청소') categoryMatch = true;
-                    else if (category === 'assembly' && task.badge === '설치/조립') categoryMatch = true;
-                    else if (category === 'pet' && task.badge === '반려동물') categoryMatch = true;
-                    else if (category === 'line' && task.badge === '줄서기') categoryMatch = true;
-                    else if (category === 'other' && task.badge === '기타') categoryMatch = true;
-                }
-
-                // 동네 (Neighborhood)
-                let neighborhoodMatch = (neighborhood === 'all');
-                if (!neighborhoodMatch) {
-                    if (neighborhood === 'songdo' && task.location.includes('송도동')) neighborhoodMatch = true;
-                    else if (neighborhood === 'yeoksam' && task.location.includes('역삼동')) neighborhoodMatch = true;
-                    else if (neighborhood === 'seocho' && task.location.includes('서초동')) neighborhoodMatch = true;
-                }
-
-                // 검색어
-                let keywordMatch = true;
-                if (keyword) {
-                    keywordMatch = task.title.toLowerCase().includes(keyword) ||
-                        task.location.toLowerCase().includes(keyword) ||
-                        task.badge.toLowerCase().includes(keyword);
-                }
-
-                return categoryMatch && neighborhoodMatch && keywordMatch;
-            });
-
-            // 2. 정렬
-            if (sort === 'price-high') {
-                filteredTasks.sort((a, b) => {
-                    const priceA = parseInt(a.price.replace(/,/g, ''));
-                    const priceB = parseInt(b.price.replace(/,/g, ''));
-                    return priceB - priceA;
-                });
-            } else if (sort === 'price-low') {
-                filteredTasks.sort((a, b) => {
-                    const priceA = parseInt(a.price.replace(/,/g, ''));
-                    const priceB = parseInt(b.price.replace(/,/g, ''));
-                    return priceA - priceB;
-                });
-            } else if (sort === 'recent') {
-                // 시간 파싱이 단순히 텍스트라 어렵지만, mock 데이터 순서를 활용하거나 텍스트 비교
-                // 여기서는 간단히 원래 순서(최신이 위라고 가정) 또는 별도 로직 필요
-                // mockTasks가 이미 최신순이라면 필터링만 해도 됨. 
-                // 임시: 원래 인덱스 순서 유지를 위해 별도 sort 안함 (mockTasks 기준)
-            } else if (sort === 'distance') {
-                // 거리순 파싱 필요 '0.8km' 등.
-                filteredTasks.sort((a, b) => {
-                    const distA = parseFloat(a.time.split('·')[1].replace('km', '').trim());
-                    const distB = parseFloat(b.time.split('·')[1].replace('km', '').trim());
-                    return distA - distB;
-                });
-            }
-
-            // 3. 결과 수 업데이트
-            if (resultsCount) {
-                resultsCount.textContent = filteredTasks.length;
-            }
-
-            // 4. 페이지 초기화 및 렌더링
-            currentPage = 1;
-            renderTasks();
-            renderPagination();
-        }
-        
-     // 서버에서 전달받은 심부름 데이터
-        const myActivities = [
-            <c:forEach var="errand" items="${errands}" varStatus="status">
-            {
-                errandsId: ${errand.errandsId},
-                icon: '📦',
-                badge: '심부름',
-                title: '${errand.title}',
-                description: '${errand.description}',
-                price: '<fmt:formatNumber value="${errand.rewardAmount}" pattern="#,###"/>원',
-                status: '${errand.status}',
-                location: '${errand.gunguName} ${errand.dongName}',
-                createdAt: '${errand.createdAt}'
-            }<c:if test="${!status.last}">,</c:if>
-            </c:forEach>
-        ];
-     
-     	// timrAgo 함수를 추가
-        function timeAgo(dateString) {
-            if (!dateString) return "";
-            const now = new Date();
-            const past = new Date(dateString);
-
-            const diff = now - past;
-
-            const seconds = Math.floor(diff / 1000);
-            const minutes = Math.floor(seconds / 60);
-            const hours = Math.floor(minutes / 60);
-            const days = Math.floor(hours / 24);
-
-            if (seconds < 60) return "방금 전";
-            if (minutes < 60) return minutes + "분 전";
-            if (hours < 24) return hours + "시간 전";
-            if (days < 7) return days + "일 전";
-
-            return dateString.substring(0, 10);
-        }
-     	
-     	// 변수 선언
-        let currentPage = 1;
-        const itemsPerPage = 9;
-        let currentFilter = 'all';
-        let currentReportTask = null;
-        
-     // Function to render activities with pagination
-        function renderActivities(filterType, page = 1) {
-            currentFilter = filterType;
-            currentPage = page;
-            const gridContainer = document.getElementById('activityGrid');
-            gridContainer.innerHTML = ''; // Clear existing
-
-            let filteredData;
-            if (filterType === 'all') {
-                filteredData = myActivities;
-            } else if (filterType === 'waiting') {
-                filteredData = myActivities.filter(task => task.status === 'WAITING');
-            } else if (filterType === 'reserved') {
-                filteredData = myActivities.filter(task =>
-                    task.status === 'MATCHED' || task.status === 'CONFIRMED1' || task.status === 'CONFIRMED2');
-            } else if (filterType === 'completed') {
-                // 완료 탭: COMPLETED와 HOLD 모두 포함
-                filteredData = myActivities.filter(task => task.status === 'COMPLETED' || task.status === 'HOLD');
-            } else {
-                filteredData = myActivities.filter(task => task.status === filterType);
-            }
-
-            if (filteredData.length === 0) {
-                gridContainer.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--color-gray);">해당하는 내역이 없습니다.</div>';
-                renderPagination(0, page);
-                return;
-            }
-
-    // --- 여기부터 붙여넣으세요 ---
-
-            // 1. 페이지네이션 계산
-            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-            const startIndex = (page - 1) * itemsPerPage;
-            const endIndex = startIndex + itemsPerPage;
-            const paginatedData = filteredData.slice(startIndex, endIndex);
-
-            // 2. 리스트 그리기
-            paginatedData.forEach((task, index) => {
-                const taskCard = document.createElement('div');
-                taskCard.className = 'task-card';
-
-                // 상태 배지 로직
-                let statusLabel = '';
-                if (task.status === 'WAITING') {
-                    statusLabel = '<span style="position:absolute; top:10px; right:10px; background:#6B8E23; color:#fff; padding:2px 8px; border-radius:4px; font-size:0.7rem; z-index:2;">부름중</span>';
-                } else if (task.status === 'MATCHED' || task.status === 'CONFIRMED1' || task.status === 'CONFIRMED2') {
-                    statusLabel = '<span style="position:absolute; top:10px; right:10px; background:#F2B807; color:#fff; padding:2px 8px; border-radius:4px; font-size:0.7rem; z-index:2;">예약중</span>';
-                } else if (task.status === 'COMPLETED') {
-                    statusLabel = '<span style="position:absolute; top:10px; right:10px; background:#7F8C8D; color:#fff; padding:2px 8px; border-radius:4px; font-size:0.7rem; z-index:2;">완료</span>';
-                } else if (task.status === 'CANCELED') {
-                    statusLabel = '<span style="position:absolute; top:10px; right:10px; background:#e74c3c; color:#fff; padding:2px 8px; border-radius:4px; font-size:0.7rem; z-index:2;">취소</span>';
-                } else if (task.status === 'HOLD') {
-                    statusLabel = '<span style="position:absolute; top:10px; right:10px; background:#e74c3c; color:#fff; padding:2px 8px; border-radius:4px; font-size:0.7rem; z-index:2;">보류</span>';
-                }
-
-                // 주소 처리 (없으면 공백)
-                const locationText = task.location || '';
-
-                // ★ 시간 변환 함수 적용! (여기서 방금 만든 함수를 씁니다)
-                const displayTime = timeAgo(task.createdAt);
-
-                taskCard.innerHTML = '<div class="task-image">' + task.icon + statusLabel + '</div>' +
-                    '<div class="task-card-content">' +
-                    '<div class="task-card-header">' +
-                    '<span class="task-badge">' + task.badge + '</span>' +
-                    // 변환된 시간(displayTime)을 보여줍니다
-                    '<span class="task-time" style="display:flex; align-items:center;">' + displayTime + reportButton + '</span>' +
-                    '</div>' +
-                    '<h3 class="task-card-title">' + task.title + '</h3>' +
-                    '<div class="task-author-info">' +
-                    '<div class="author-avatar" style="font-size:0.7rem; width:20px; height:20px; margin-right:5px;">👤</div>' +
-                    '<span class="author-name">' + (task.description || '') + '</span>' +
-                    '</div>' +
-                    '<div class="task-meta">' +
-                    '<span class="task-location">' + locationText + '</span>' +
-                    '<span class="task-price">' + task.price + '</span>' +
-                    '</div>' +
-                    '</div>';
-                gridContainer.appendChild(taskCard);
-            });
-
-            // 페이지네이션 그리기
-            renderPagination(totalPages, page);
-        }
-
-
-        function renderTasks() {
-            const tasksGrid = document.getElementById('tasksGrid');
-            tasksGrid.innerHTML = '';
-
-            // 페이징 처리
-            const totalItems = filteredTasks.length;
-            const totalPages = Math.ceil(totalItems / tasksPerPage);
-
-            const start = (currentPage - 1) * tasksPerPage;
-            const end = start + tasksPerPage;
-            const pageTasks = filteredTasks.slice(start, end);
-
-            if (pageTasks.length === 0) {
-                tasksGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 3rem;">검색 결과가 없습니다.</div>';
-                return;
-            }
-
-            pageTasks.forEach(task => {
-                const taskCard = document.createElement('div');
-                taskCard.className = 'task-card';
-                taskCard.innerHTML = `
-                    <div class="task-image">
-                        ${task.icon}
-                    </div>
-                    <div class="task-card-content">
-                        <div class="task-card-header">
-                            <span class="task-badge">${task.badge}</span>
-                            <span class="task-time">${task.time}</span>
-                        </div>
-                        <h3 class="task-card-title">${task.title}</h3>
-                        <div class="task-author-info">
-                            <div class="author-avatar">👤</div>
-                            <span class="author-name">${task.author}</span>
-                            <span class="meta-views">👁 ${task.views}</span>
-                        </div>
-                        <div class="task-meta">
-                            <span class="task-location">${task.location}</span>
-                            <span class="task-price">${task.price}</span>
-                        </div>
-                    </div>
-                `;
-                tasksGrid.appendChild(taskCard);
-            });
-
-            scrollToTop();
-        }
-
-     // Function to render pagination
-        function renderPagination(totalPages, currentPage) {
-            const paginationContainer = document.getElementById('paginationContainer');
-            paginationContainer.innerHTML = '';
-
-            if (totalPages <= 1) {
-                return; // Don't show pagination if only one page
-            }
-
-            // Previous button
-            const prevBtn = document.createElement('button');
-            prevBtn.className = 'pagination-btn';
-            prevBtn.innerHTML = '&laquo;';
-            prevBtn.disabled = currentPage === 1;
-            prevBtn.addEventListener('click', () => {
-                if (currentPage > 1) {
-                    renderActivities(currentFilter, currentPage - 1);
-                }
-            });
-            paginationContainer.appendChild(prevBtn);
-
-            // Page numbers
-            const maxVisiblePages = 5;
-            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-
-            if (endPage - startPage < maxVisiblePages - 1) {
-                startPage = Math.max(1, endPage - maxVisiblePages + 1);
-            }
-
-            for (let i = startPage; i <= endPage; i++) {
-                const pageBtn = document.createElement('button');
-                pageBtn.className = 'pagination-btn';
-                if (i === currentPage) {
-                    pageBtn.classList.add('active');
-                }
-                pageBtn.textContent = i;
-                pageBtn.addEventListener('click', () => {
-                    renderActivities(currentFilter, i);
-                });
-                paginationContainer.appendChild(pageBtn);
-            }
-
-            // Next button
-            const nextBtn = document.createElement('button');
-            nextBtn.className = 'pagination-btn';
-            nextBtn.innerHTML = '&raquo;';
-            nextBtn.disabled = currentPage === totalPages;
-            nextBtn.addEventListener('click', () => {
-                if (currentPage < totalPages) {
-                    renderActivities(currentFilter, currentPage + 1);
-                }
-            });
-            paginationContainer.appendChild(nextBtn);
-        }
-     
-     	// Initialize with all data
-        renderActivities('all', 1);
-
-        // Tab Click Listeners
-        const tabs = document.querySelectorAll('.tab-btn');
-        tabs.forEach(tab => {
-            tab.addEventListener('click', function () {
-                // Remove active class from all
-                tabs.forEach(t => t.classList.remove('active'));
-                // Add active class to clicked
-                this.classList.add('active');
-
-                // Determine filter type based on text content
-                const tabText = this.textContent.trim();
-                let filterType = 'all';
-                if (tabText === '부름') filterType = 'waiting';
-                else if (tabText === '예약') filterType = 'reserved';
-                else if (tabText === '완료') filterType = 'completed';
-
-                renderActivities(filterType, 1);
-            });
-        });
-
-        function changePage(page) {
-            const totalItems = filteredTasks.length;
-            const totalPages = Math.ceil(totalItems / tasksPerPage);
-
-            if (page < 1 || page > totalPages) return;
-            currentPage = page;
-            renderTasks();
-            renderPagination();
-        }
-
-        function scrollToTop() {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        }
-
-        // 초기 실행
-        applyFilters();
-    </script>
+	  document.addEventListener('DOMContentLoaded', function () {
+	
+	    // 1) 필터/검색: 서버 GET 방식 (form submit)
+	    const filterForm = document.getElementById('filterForm');
+	    const categoryFilter = document.getElementById('categoryFilter');
+	    const sortFilter = document.getElementById('sortFilter');
+	    const neighborhoodFilter = document.getElementById('neighborhoodFilter');
+	    const searchInput = document.getElementById('searchInput');
+	
+	    // select 변경 시 자동 submit
+	    if (filterForm) {
+	      if (categoryFilter) categoryFilter.addEventListener('change', () => filterForm.submit());
+	      if (sortFilter) sortFilter.addEventListener('change', () => filterForm.submit());
+	      if (neighborhoodFilter) neighborhoodFilter.addEventListener('change', () => filterForm.submit());
+	
+	      // 검색 input에서 Enter 누르면 submit (기본 submit도 되지만 안전하게)
+	      if (searchInput) {
+	        searchInput.addEventListener('keyup', (e) => {
+	          if (e.key === 'Enter') filterForm.submit();
+	        });
+	      }
+	    }
+	
+	    // 2) 유저 드롭다운 (기존 유지)
+	    const dropdownBtn = document.getElementById('userDropdownBtn');
+	    const dropdownMenu = document.getElementById('userDropdownMenu');
+	
+	    if (dropdownBtn && dropdownMenu) {
+	      dropdownBtn.addEventListener('click', function (e) {
+	        e.stopPropagation();
+	        dropdownMenu.classList.toggle('active');
+	      });
+	
+	      document.addEventListener('click', function (e) {
+	        if (!dropdownMenu.contains(e.target) && !dropdownBtn.contains(e.target)) {
+	          dropdownMenu.classList.remove('active');
+	        }
+	      });
+	    }
+	  });
+	</script>
 </body>
 
 </html>

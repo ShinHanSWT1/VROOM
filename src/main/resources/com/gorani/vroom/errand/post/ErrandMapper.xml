@@ -126,10 +126,16 @@
 	<select id="selectCategories"
 	        resultType="com.gorani.vroom.errand.post.CategoryVO">
 	    SELECT
-	        id,
-	        name
-	    FROM categories
+	        id, name
+	    FROM CATEGORIES
 	    ORDER BY id ASC
 	</select>
 	
+	<select id="selectDongs" resultType="map">
+	    SELECT
+	        d.dong_code  AS dongCode,
+	        d.full_name  AS dongFullName
+	    FROM LEGAL_DONG d
+	    ORDER BY d.full_name ASC
+	</select>
 </mapper>
