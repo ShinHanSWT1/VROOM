@@ -25,4 +25,9 @@ public class CommunityServiceImpl implements CommunityService{
     public List<CommunityPostVO> getPopularPostList(String dongCode, String searchKeyword) {
         return communityMapper.selectPopularPostList(dongCode, searchKeyword);
     }
+
+    @Override
+    public CommunityPostVO getPostDetail(int postId) {
+        return communityMapper.selectPostDetail(postId);
+    }
 }

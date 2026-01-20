@@ -12,4 +12,7 @@ public interface CommunityService {
     // 인기글 조회
     List<CommunityPostVO> getPopularPostList(String dongCode, String searchKeyword);
 
+    // 게시글 상세 데이터 조회
+    CommunityPostVO getPostDetail(int postId);
+
 }
