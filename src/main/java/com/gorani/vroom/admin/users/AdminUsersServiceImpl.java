@@ -87,4 +87,29 @@ public class AdminUsersServiceImpl implements AdminUsersService {
         // DB 업데이트 호출
         mapper.updateUserStatus(params);
     }
+
+    // 사용자 상세 페이지 정보 조회
+    @Override
+    public AdminUserDetailDTO getUserDetail(Long userId) {
+        // 기본 정보 + 통계 조회
+        AdminUserDetailDTO detail = mapper.getUserInfoDetail(userId);
+
+        if (detail != null) {
+            // 신고 이력 리스트 조회 및 저장
+            List<UserReportHistoryVO> reports = mapper.getUserReportHistory(userId);
+            detail.setReportHistory(reports);
+
+            // 최근 활동 리스트 조회 및 저장
+            List<UserActivityVO> activities = mapper.getUserActivityHistory(userId);
+            detail.setActivityHistory(activities);
+        }
+
+        return detail;
+    }
+
+    // 관리자 메모 저장
+    @Override
+    public void updateAdminMemo(Long userId, String memo) {
+        mapper.updateAdminMemo(userId, memo);
+    }
 }

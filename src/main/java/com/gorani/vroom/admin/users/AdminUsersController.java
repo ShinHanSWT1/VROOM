@@ -38,13 +38,26 @@ public class AdminUsersController {
 
     @PostMapping("/api/admin/users/status")
     @ResponseBody
-    public Map<String, String> updateUserStatus(@RequestBody Map<String, Object> payload) {
+    public Map<String, String> updateUserStatus(
+            @RequestBody Map<String, Object> payload
+    ) {
         Long userId = Long.valueOf(payload.get("userId").toString());
         String status = (String) payload.get("status");
 
-        // 필요 시 정지 사유나 기간 등 추가 데이터 처리 로직 구현
         service.updateUserStatus(payload);
 
+        // TODO: 결과 따로 처리하는 로직
         return Map.of("result", "success");
+    }
+
+    // 사용자 상세 페이지 이동
+    @GetMapping("/admin/users/detail")
+    public String userDetail(
+            @RequestParam("id") Long userId, Model model
+    ) {
+        AdminUserDetailDTO userDetail = service.getUserDetail(userId);
+        model.addAttribute("user", userDetail);
+
+        return "admin/user_detail";
     }
 }

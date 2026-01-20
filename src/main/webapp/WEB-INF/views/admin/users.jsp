@@ -854,7 +854,6 @@
 
             <!-- Summary Section -->
             <section class="summary-section">
-<%--                <h3 class="summary-title">상단 요약 제공</h3>--%>
                 <div class="summary-grid">
                     <div class="summary-card">
                         <div class="summary-label">전체 사용자</div>
@@ -985,6 +984,8 @@
         const sidebarToggle = document.getElementById('sidebarToggle');
         const adminDropdownTrigger = document.getElementById('adminDropdownTrigger');
         const adminDropdown = document.getElementById('adminDropdown');
+
+        // 로컬스토리지에서 상태 불러오기
         const savedState = localStorage.getItem('sidebarState');
         if (savedState === 'collapsed') {
             sidebar.classList.add('collapsed');
@@ -1143,14 +1144,10 @@
         currentStatusElement = null;
     }
 
-
-
-
-
     // 상세 페이지 이동
     function goToDetail(userId) {
-        alert('사용자 ID ' + userId + '의 상세 페이지로 이동합니다.\n(admin-user-detail.html?id=' + userId + ')');
-        // window.location.href = 'admin-user-detail.html?id=' + userId;
+        const url = '${pageContext.request.contextPath}/admin/users/detail?id=' + userId;
+        window.location.href = url;
     }
 
     // 페이지 로드 시 초기 목록 조회

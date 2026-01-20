@@ -11,4 +11,9 @@ public interface AdminUsersMapper {
     List<Map<String, Object>> searchUsers(Map<String, Object> param);
     int countUsers(Map<String, Object> param);
     void updateUserStatus(Map<String, Object> param);
+    AdminUserDetailDTO getUserInfoDetail(Long id);
+    List<UserReportHistoryVO> getUserReportHistory(Long id);
+    List<UserActivityVO> getUserActivityHistory(Long id);
+
+    void updateAdminMemo(Long userId, String memo);
 }
