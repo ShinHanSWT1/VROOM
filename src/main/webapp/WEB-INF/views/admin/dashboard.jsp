@@ -266,13 +266,13 @@
         .page-title {
             font-size: 2rem;
             font-weight: 700;
-            margin-bottom: 2rem;
+            margin-left: 15px;
             color: var(--color-dark);
         }
 
         /* KPI Cards */
         .kpi-section {
-            margin-bottom: 2rem;
+            margin: 10px;
         }
 
         .kpi-grid {
@@ -346,6 +346,7 @@
             grid-template-columns: repeat(2, 1fr);
             gap: 1.5rem;
             align-items: stretch;
+            margin: 10px;
         }
 
         .dashboard-card {
@@ -594,16 +595,16 @@
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="sidebar-logo">
-                <img src="${pageContext.request.contextPath}/resources/img/logo2.png" alt="VROOM" srcset="">
+                <img src="${pageContext.request.contextPath}/static/img/logo2.png" alt="VROOM" srcset="">
             </div>
             <button class="sidebar-toggle" id="sidebarToggle">☰</button>
         </div>
         <nav class="sidebar-nav">
-            <a href="#dashboard" class="nav-item active">
+            <a href="${pageContext.request.contextPath}/admin/dashboard" class="nav-item active">
                 <span class="nav-item-icon">📊</span>
                 <span class="nav-item-text">대시보드</span>
             </a>
-            <a href="#users" class="nav-item">
+            <a href="${pageContext.request.contextPath}/admin/users" class="nav-item">
                 <span class="nav-item-icon">👥</span>
                 <span class="nav-item-text">사용자 관리</span>
             </a>

@@ -39,7 +39,7 @@ public class ErrandController {
         model.addAttribute("totalCount", totalCount);
         model.addAttribute("currentPage", page);
 
-        return "errand_list";
+        return "errand/errand_list";
     }
 
 //    /**
@@ -80,7 +80,7 @@ public class ErrandController {
         }
 
         model.addAttribute("errand", errand);
-        return "errand_detail";
+        return "errand/errand_detail";
     }
 
     /**
@@ -88,6 +88,6 @@ public class ErrandController {
      */
     @GetMapping("/errand/create")
     public String errandCreate() {
-        return "errand_create";
+        return "errand/errand_create";
     }
 }

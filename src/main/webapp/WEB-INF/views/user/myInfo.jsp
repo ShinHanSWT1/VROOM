@@ -1421,6 +1421,7 @@
             const locationText = task.location || '';
 
             // ★ 시간 변환 함수 적용! (여기서 방금 만든 함수를 씁니다)
+            console.log(task);
             const displayTime = timeAgo(task.createdAt);
 
             taskCard.innerHTML = '<div class="task-image">' + task.icon + statusLabel + '</div>' +

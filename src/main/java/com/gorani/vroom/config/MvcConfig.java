@@ -20,8 +20,8 @@ import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.config.annotation.*;
 
 @Configuration
-@MapperScan(basePackages = { "com.gorani.vroom" }, annotationClass = Mapper.class)
-@ComponentScan(basePackages = { "com.gorani.vroom" })
+@MapperScan(basePackages = {"com.gorani.vroom"}, annotationClass = Mapper.class)
+@ComponentScan(basePackages = {"com.gorani.vroom"})
 @EnableWebMvc
 @EnableTransactionManagement
 public class MvcConfig implements WebMvcConfigurer {
@@ -37,6 +37,9 @@ public class MvcConfig implements WebMvcConfigurer {
 
     @Value("${db.password}")
     private String password;
+
+    // 프로필 이미지 저장 경로 (외부 경로)
+    public static final String UPLOAD_PATH = "C:/uploads/profile/";
 
     // 정적 리소스는 tomcat에서 처리하도록 핸들링
     public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
@@ -57,7 +60,13 @@ public class MvcConfig implements WebMvcConfigurer {
                 .addResourceLocations("/static/")
                 .setCachePeriod(3600)
                 .resourceChain(true);
-      
+
+
+        // 프로필 이미지 (외부 경로 매핑) => 프로젝트 외부에 저장을 해야 배포시 데이터 삭제 방지.
+        registry.addResourceHandler("/uploads/profile/**")
+                .addResourceLocations("file:/" + UPLOAD_PATH);
+    }
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         // 관리자 전용 인터셉터
@@ -107,19 +116,7 @@ public class MvcConfig implements WebMvcConfigurer {
         return resolver;
     }
 
-    // 프로필 이미지 저장 경로 (외부 경로)
-    public static final String UPLOAD_PATH = "C:/uploads/profile/";
 
-    @Override
-    public void addResourceHandlers(org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry registry) {
-        // 정적 리소스 핸들링
-        registry.addResourceHandler("/resources/**")
-                .addResourceLocations("/resources/");
-
-        // 프로필 이미지 (외부 경로 매핑) => 프로젝트 외부에 저장을 해야 배포시 데이터 삭제 방지.
-        registry.addResourceHandler("/uploads/profile/**")
-                .addResourceLocations("file:/" + UPLOAD_PATH);
-    }
 
 
     // 트랜잭션

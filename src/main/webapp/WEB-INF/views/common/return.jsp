@@ -384,7 +384,7 @@
             <div class="hexagon"></div>
         </div>
         <div class="bee-icon">
-            <img src="${pageContext.request.contextPath}/resources/img/logo4.png" alt="" class="bee-icon-img"/>
+            <img src="${pageContext.request.contextPath}/static/img/logo4.png" alt="" class="bee-icon-img"/>
         </div>
     </div>
     <!-- Loading Text -->
