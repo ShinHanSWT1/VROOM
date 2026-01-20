@@ -1,6 +1,6 @@
 package com.gorani.vroom.community;
 
-import com.gorani.vroom.Location.LocationService;
+import com.gorani.vroom.location.LocationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
