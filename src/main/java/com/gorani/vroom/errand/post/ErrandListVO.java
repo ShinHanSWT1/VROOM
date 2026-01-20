@@ -12,6 +12,7 @@ public class ErrandListVO {
     private Long userId;
 
     private String title;
+    private String description;
     private BigDecimal rewardAmount;
     private BigDecimal expenseAmount;
 
@@ -20,7 +21,8 @@ public class ErrandListVO {
     private String status;
 
     private Long categoryId;
-    private String dongCode;
+    private String gunguName;
+    private String dongName;
     
     private String categoryName;
     private String dongFullName;

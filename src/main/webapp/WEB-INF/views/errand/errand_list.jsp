@@ -45,7 +45,7 @@
         }
 
         .header-container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 1rem 1.5rem;
             display: flex;
@@ -182,22 +182,28 @@
             padding: 0 1.5rem;
         }
         
-        .write-section {
-		    margin: 20px 0;
-		}
-		
-		.write-btn-wrapper {
-		    display: flex;
-		    justify-content: flex-start;
-		}
-		
-		.write-btn {
-		    padding: 10px 18px;
-		    background-color: #2d7df4;
-		    color: #fff;
-		    border-radius: 6px;
-		    text-decoration: none;
-		}
+        .write-btn-container {
+            text-align: right;
+            margin-bottom: 2rem;
+        }
+
+        .write-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+            color: var(--color-white);
+            padding: 0.7rem 1.5rem;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 4px 8px rgba(107, 142, 35, 0.25);
+            transition: all 0.3s ease;
+        }
+
+        .write-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(107, 142, 35, 0.3);
+        }
 
         .main-section {
             padding: 3rem 0;
@@ -258,9 +264,9 @@
 
         .tasks-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 1.5rem;
-            margin-bottom: 3rem;
+            margin-bottom: 4rem;
         }
 
         .task-card {
@@ -281,7 +287,7 @@
 
         .task-image {
             width: 100%;
-            height: 200px;
+            height: 180px;
             background: linear-gradient(135deg, var(--color-light-gray) 0%, var(--color-white) 100%);
             display: flex;
             align-items: center;
@@ -660,25 +666,55 @@
                 </div>
 
                 <div class="results-info">
-                    총 <span class="results-count">127</span>개의 심부름
+                    총 <span class="results-count">${totalCount}</span>개의 심부름
                 </div>
             </div>
 
-
-			<div style="padding:10px; background:#ffe;">
-			  DEBUG: totalCount=${totalCount}, listSize=${errands.size()}
-			</div>
             <div class="tasks-grid">
 			    <c:forEach var="e" items="${errands}">
 			      <a class="task-card"
 			         href="${pageContext.request.contextPath}/errand/detail?errandsId=${e.errandsId}">
-			        <div class="task-title">${e.title}</div>
-			        <div class="task-meta">
-			          <span>${e.dongCode}</span>
-			          <span class="task-reward">
-			            <fmt:formatNumber value="${e.rewardAmount}" type="number" />원
-			          </span>
-			        </div>
+			         
+			        <div class="task-image">
+				      <span style="font-size: 0.95rem; color: var(--color-gray); font-weight: 600;">
+				        이미지 첨부
+				      </span>
+				    </div>
+				    
+				   <div class="task-card-content">
+				      <div class="task-card-header">
+				        <!-- 카테고리명 있으면 badge로 -->
+				        <span class="task-badge">
+				          <c:out value="${empty e.categoryName ? '심부름' : e.categoryName}" />
+				        </span>
+				
+				        <!-- createdAt 내려오면 time 표시 -->
+				        <span class="task-time">
+				          <c:out value="${empty e.createdAt ? '' : e.createdAt}" />
+				        </span>
+				      </div>
+			
+				      <div class="task-card-title">
+				        <c:out value="${e.title}" />
+				      </div>
+				
+				      <div class="task-author-info">
+				        <div class="author-avatar">U</div>
+				        <div class="author-name">
+				          <c:out value="${empty e.writerNickname ? e.userId : e.writerNickname}" />
+				        </div>
+				      </div>
+				
+				      <div class="task-meta">
+				        <div class="task-location">
+				          <c:out value="${empty e.dongFullName ? e.dongName : e.dongFullName}" />
+				        </div>
+				
+			            <div class="task-price">
+				          <fmt:formatNumber value="${e.rewardAmount}" type="number" />원
+				        </div>
+				      </div>
+				    </div>
 			      </a>
 			    </c:forEach>
 			  </div>
@@ -846,6 +882,136 @@
             renderTasks();
             renderPagination();
         }
+        
+     // 서버에서 전달받은 심부름 데이터
+        const myActivities = [
+            <c:forEach var="errand" items="${errands}" varStatus="status">
+            {
+                errandsId: ${errand.errandsId},
+                icon: '📦',
+                badge: '심부름',
+                title: '${errand.title}',
+                description: '${errand.description}',
+                price: '<fmt:formatNumber value="${errand.rewardAmount}" pattern="#,###"/>원',
+                status: '${errand.status}',
+                location: '${errand.gunguName} ${errand.dongName}',
+                createdAt: '${errand.createdAt}'
+            }<c:if test="${!status.last}">,</c:if>
+            </c:forEach>
+        ];
+     
+     	// timrAgo 함수를 추가
+        function timeAgo(dateString) {
+            if (!dateString) return "";
+            const now = new Date();
+            const past = new Date(dateString);
+
+            const diff = now - past;
+
+            const seconds = Math.floor(diff / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+
+            if (seconds < 60) return "방금 전";
+            if (minutes < 60) return minutes + "분 전";
+            if (hours < 24) return hours + "시간 전";
+            if (days < 7) return days + "일 전";
+
+            return dateString.substring(0, 10);
+        }
+     	
+     	// 변수 선언
+        let currentPage = 1;
+        const itemsPerPage = 9;
+        let currentFilter = 'all';
+        let currentReportTask = null;
+        
+     // Function to render activities with pagination
+        function renderActivities(filterType, page = 1) {
+            currentFilter = filterType;
+            currentPage = page;
+            const gridContainer = document.getElementById('activityGrid');
+            gridContainer.innerHTML = ''; // Clear existing
+
+            let filteredData;
+            if (filterType === 'all') {
+                filteredData = myActivities;
+            } else if (filterType === 'waiting') {
+                filteredData = myActivities.filter(task => task.status === 'WAITING');
+            } else if (filterType === 'reserved') {
+                filteredData = myActivities.filter(task =>
+                    task.status === 'MATCHED' || task.status === 'CONFIRMED1' || task.status === 'CONFIRMED2');
+            } else if (filterType === 'completed') {
+                // 완료 탭: COMPLETED와 HOLD 모두 포함
+                filteredData = myActivities.filter(task => task.status === 'COMPLETED' || task.status === 'HOLD');
+            } else {
+                filteredData = myActivities.filter(task => task.status === filterType);
+            }
+
+            if (filteredData.length === 0) {
+                gridContainer.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--color-gray);">해당하는 내역이 없습니다.</div>';
+                renderPagination(0, page);
+                return;
+            }
+
+    // --- 여기부터 붙여넣으세요 ---
+
+            // 1. 페이지네이션 계산
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+            const startIndex = (page - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const paginatedData = filteredData.slice(startIndex, endIndex);
+
+            // 2. 리스트 그리기
+            paginatedData.forEach((task, index) => {
+                const taskCard = document.createElement('div');
+                taskCard.className = 'task-card';
+
+                // 상태 배지 로직
+                let statusLabel = '';
+                if (task.status === 'WAITING') {
+                    statusLabel = '<span style="position:absolute; top:10px; right:10px; background:#6B8E23; color:#fff; padding:2px 8px; border-radius:4px; font-size:0.7rem; z-index:2;">부름중</span>';
+                } else if (task.status === 'MATCHED' || task.status === 'CONFIRMED1' || task.status === 'CONFIRMED2') {
+                    statusLabel = '<span style="position:absolute; top:10px; right:10px; background:#F2B807; color:#fff; padding:2px 8px; border-radius:4px; font-size:0.7rem; z-index:2;">예약중</span>';
+                } else if (task.status === 'COMPLETED') {
+                    statusLabel = '<span style="position:absolute; top:10px; right:10px; background:#7F8C8D; color:#fff; padding:2px 8px; border-radius:4px; font-size:0.7rem; z-index:2;">완료</span>';
+                } else if (task.status === 'CANCELED') {
+                    statusLabel = '<span style="position:absolute; top:10px; right:10px; background:#e74c3c; color:#fff; padding:2px 8px; border-radius:4px; font-size:0.7rem; z-index:2;">취소</span>';
+                } else if (task.status === 'HOLD') {
+                    statusLabel = '<span style="position:absolute; top:10px; right:10px; background:#e74c3c; color:#fff; padding:2px 8px; border-radius:4px; font-size:0.7rem; z-index:2;">보류</span>';
+                }
+
+                // 주소 처리 (없으면 공백)
+                const locationText = task.location || '';
+
+                // ★ 시간 변환 함수 적용! (여기서 방금 만든 함수를 씁니다)
+                const displayTime = timeAgo(task.createdAt);
+
+                taskCard.innerHTML = '<div class="task-image">' + task.icon + statusLabel + '</div>' +
+                    '<div class="task-card-content">' +
+                    '<div class="task-card-header">' +
+                    '<span class="task-badge">' + task.badge + '</span>' +
+                    // 변환된 시간(displayTime)을 보여줍니다
+                    '<span class="task-time" style="display:flex; align-items:center;">' + displayTime + reportButton + '</span>' +
+                    '</div>' +
+                    '<h3 class="task-card-title">' + task.title + '</h3>' +
+                    '<div class="task-author-info">' +
+                    '<div class="author-avatar" style="font-size:0.7rem; width:20px; height:20px; margin-right:5px;">👤</div>' +
+                    '<span class="author-name">' + (task.description || '') + '</span>' +
+                    '</div>' +
+                    '<div class="task-meta">' +
+                    '<span class="task-location">' + locationText + '</span>' +
+                    '<span class="task-price">' + task.price + '</span>' +
+                    '</div>' +
+                    '</div>';
+                gridContainer.appendChild(taskCard);
+            });
+
+            // 페이지네이션 그리기
+            renderPagination(totalPages, page);
+        }
+
 
         function renderTasks() {
             const tasksGrid = document.getElementById('tasksGrid');
@@ -894,78 +1060,84 @@
             scrollToTop();
         }
 
-        function renderPagination() {
-            const pagination = document.getElementById('pagination');
-            pagination.innerHTML = '';
+     // Function to render pagination
+        function renderPagination(totalPages, currentPage) {
+            const paginationContainer = document.getElementById('paginationContainer');
+            paginationContainer.innerHTML = '';
 
-            const totalItems = filteredTasks.length;
-            const totalPages = Math.ceil(totalItems / tasksPerPage);
-
-            if (totalPages <= 1) return; // 1페이지 이하면 숨김
-
-            const prevBtn = document.createElement('button');
-            prevBtn.className = 'pagination-btn';
-            prevBtn.textContent = '이전';
-            prevBtn.disabled = currentPage === 1;
-            prevBtn.onclick = () => changePage(currentPage - 1);
-            pagination.appendChild(prevBtn);
-
-            const maxVisible = 5;
-            let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
-            let endPage = Math.min(totalPages, startPage + maxVisible - 1);
-
-            if (endPage - startPage < maxVisible - 1) {
-                startPage = Math.max(1, endPage - maxVisible + 1);
+            if (totalPages <= 1) {
+                return; // Don't show pagination if only one page
             }
 
-            if (startPage > 1) {
-                const firstPage = document.createElement('div');
-                firstPage.className = 'pagination-number';
-                firstPage.textContent = '1';
-                firstPage.onclick = () => changePage(1);
-                pagination.appendChild(firstPage);
-
-                if (startPage > 2) {
-                    const ellipsis = document.createElement('span');
-                    ellipsis.className = 'pagination-ellipsis';
-                    ellipsis.textContent = '...';
-                    pagination.appendChild(ellipsis);
+            // Previous button
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'pagination-btn';
+            prevBtn.innerHTML = '&laquo;';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    renderActivities(currentFilter, currentPage - 1);
                 }
+            });
+            paginationContainer.appendChild(prevBtn);
+
+            // Page numbers
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+            if (endPage - startPage < maxVisiblePages - 1) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
             }
 
             for (let i = startPage; i <= endPage; i++) {
-                const pageNum = document.createElement('div');
-                pageNum.className = 'pagination-number';
+                const pageBtn = document.createElement('button');
+                pageBtn.className = 'pagination-btn';
                 if (i === currentPage) {
-                    pageNum.classList.add('active');
+                    pageBtn.classList.add('active');
                 }
-                pageNum.textContent = i;
-                pageNum.onclick = () => changePage(i);
-                pagination.appendChild(pageNum);
+                pageBtn.textContent = i;
+                pageBtn.addEventListener('click', () => {
+                    renderActivities(currentFilter, i);
+                });
+                paginationContainer.appendChild(pageBtn);
             }
 
-            if (endPage < totalPages) {
-                if (endPage < totalPages - 1) {
-                    const ellipsis = document.createElement('span');
-                    ellipsis.className = 'pagination-ellipsis';
-                    ellipsis.textContent = '...';
-                    pagination.appendChild(ellipsis);
-                }
-
-                const lastPage = document.createElement('div');
-                lastPage.className = 'pagination-number';
-                lastPage.textContent = totalPages;
-                lastPage.onclick = () => changePage(totalPages);
-                pagination.appendChild(lastPage);
-            }
-
+            // Next button
             const nextBtn = document.createElement('button');
             nextBtn.className = 'pagination-btn';
-            nextBtn.textContent = '다음';
+            nextBtn.innerHTML = '&raquo;';
             nextBtn.disabled = currentPage === totalPages;
-            nextBtn.onclick = () => changePage(currentPage + 1);
-            pagination.appendChild(nextBtn);
+            nextBtn.addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    renderActivities(currentFilter, currentPage + 1);
+                }
+            });
+            paginationContainer.appendChild(nextBtn);
         }
+     
+     	// Initialize with all data
+        renderActivities('all', 1);
+
+        // Tab Click Listeners
+        const tabs = document.querySelectorAll('.tab-btn');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function () {
+                // Remove active class from all
+                tabs.forEach(t => t.classList.remove('active'));
+                // Add active class to clicked
+                this.classList.add('active');
+
+                // Determine filter type based on text content
+                const tabText = this.textContent.trim();
+                let filterType = 'all';
+                if (tabText === '부름') filterType = 'waiting';
+                else if (tabText === '예약') filterType = 'reserved';
+                else if (tabText === '완료') filterType = 'completed';
+
+                renderActivities(filterType, 1);
+            });
+        });
 
         function changePage(page) {
             const totalItems = filteredTasks.length;
