@@ -270,6 +270,7 @@
         }
 
         .task-card {
+        	text-decoration: none;
             background-color: var(--color-white);
             border-radius: 12px;
             overflow: hidden;
