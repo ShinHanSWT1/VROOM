@@ -51,7 +51,6 @@ public class UserProfileController {
     public String editPage(Model model) {
         // TODO: 세션에서 로그인 사용자 ID 가져오기
         // TODO: 프로필 정보 조회 후 model에 담기
-
         return "mypage/profileEdit";
     }
 

@@ -314,44 +314,50 @@
             align-items: center;
         }
 
+        /* 우측 영역 전체 정렬 */
         .item-right {
             display: flex;
             align-items: center;
-            gap: 1.5rem;
+            gap: 1rem;
             padding-left: 2rem;
+            min-width: 150px;
+            justify-content: flex-end;
         }
 
+        /* 썸네일 박스 */
         .item-thumbnail {
-            width: 60px;
-            height: 60px;
+            width: 50px;
+            height: 50px;
             background-color: #f8f9fa;
-            border-radius: 8px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             border: 1px solid var(--color-light-gray);
+            flex-shrink: 0;
         }
 
         .duck-icon {
             font-size: 1.5rem;
         }
 
+        /* 댓글 박스: 가로 정렬(row) 핵심 */
         .item-comment-box {
             display: flex;
-            flex-direction: column;
+            flex-direction: row; /* 가로로 나란히 */
             align-items: center;
-            justify-content: center;
-            min-width: 50px;
+            gap: 0.25rem;
+            color: var(--color-gray);
         }
 
         .comment-count {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: var(--color-primary);
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--color-gray);
         }
 
         .comment-label {
-            font-size: 0.75rem;
+            font-size: 0.95rem;
             color: var(--color-gray);
         }
 
@@ -472,10 +478,10 @@
     // Mock Data
     const activityData = {
         written: [
-            { title: `제 목`, nickname: '닉네임', time: '올린 시간', views: '조회수', comments: 0 },
-            { title: `제 목`, nickname: '닉네임', time: '올린 시간', views: '조회수', comments: 0 },
-            { title: `제 목`, nickname: '닉네임', time: '올린 시간', views: '조회수', comments: 0 },
-            { title: `제 목`, nickname: '닉네임', time: '올린 시간', views: '조회수', comments: 0 }
+            { title: '제 목', nickname: '닉네임', time: '올린 시간', views: '조회수', comments: 0 },
+            { title: '제 목', nickname: '닉네임', time: '올린 시간', views: '조회수', comments: 0 },
+            { title: '제 목', nickname: '닉네임', time: '올린 시간', views: '조회수', comments: 0 },
+            { title: '제 목', nickname: '닉네임', time: '올린 시간', views: '조회수', comments: 0 }
         ],
         commented: [
             { title: '댓글단 글 제목', nickname: '작성자', time: '1시간 전', views: '123', comments: 5 },
@@ -497,49 +503,53 @@
             return;
         }
 
-        data.forEach(item => {
+        // JSP 충돌 방지를 위해 문자열 연결(+) 방식으로 변경
+        data.forEach(function(item) {
             const el = document.createElement('div');
             el.className = 'activity-list-item';
-            el.innerHTML = `
-                    <div class="item-left">
-                        <div class="item-title">${item.title}</div>
-                        <div class="item-meta">
-                            <span>${item.nickname}</span>
-                            <span style="margin: 0 0.5rem">|</span>
-                            <span>${item.time}</span>
-                            <span style="margin: 0 0.5rem">|</span>
-                            <span>${item.views}</span>
-                        </div>
-                    </div>
-                    <div class="item-right">
-                        <!-- item-date removed -->
-                        <div class="item-thumbnail">
-                            <span class="duck-icon">🐥</span>
-                        </div>
-                        <div class="item-comment-box">
-                            <span class="comment-count">${item.comments}</span>
-                            <span class="comment-label">댓글</span>
-                        </div>
-                    </div>
-                `;
+
+            let htmlContent = '';
+            htmlContent += '<div class="item-left">';
+            htmlContent += '    <div class="item-title">' + item.title + '</div>';
+            htmlContent += '    <div class="item-meta">';
+            htmlContent += '        <span>' + item.nickname + '</span>';
+            htmlContent += '        <span style="margin: 0 0.5rem">|</span>';
+            htmlContent += '        <span>' + item.time + '</span>';
+            htmlContent += '        <span style="margin: 0 0.5rem">|</span>';
+            htmlContent += '        <span>' + item.views + '</span>';
+            htmlContent += '    </div>';
+            htmlContent += '</div>';
+
+            // 우측 영역: 2번 사진처럼 가로 배치 구조
+            htmlContent += '<div class="item-right">';
+            htmlContent += '    <div class="item-thumbnail">';
+            htmlContent += '        <span class="duck-icon">🐥</span>';
+            htmlContent += '    </div>';
+            htmlContent += '    <div class="item-comment-box">';
+            htmlContent += '        <span class="comment-count">' + item.comments + '</span>';
+            htmlContent += '        <span class="comment-label">댓글</span>';
+            htmlContent += '    </div>';
+            htmlContent += '</div>';
+
+            el.innerHTML = htmlContent;
             listContainer.appendChild(el);
         });
     }
 
-    // Init
+    // 초기 실행
     renderActivities('written');
 
-    // Tabs
+    // 탭 클릭 이벤트
     const tabs = document.querySelectorAll('.activity-tab-btn');
-    tabs.forEach(tab => {
+    tabs.forEach(function(tab) {
         tab.addEventListener('click', function () {
-            tabs.forEach(t => t.classList.remove('active'));
+            tabs.forEach(function(t) { t.classList.remove('active'); });
             this.classList.add('active');
             renderActivities(this.dataset.type);
         });
     });
 
-    // Dropdown Logic (Reused)
+    // 드롭다운 로직
     document.addEventListener('DOMContentLoaded', function () {
         const dropdownBtn = document.getElementById('userDropdownBtn');
         const dropdownMenu = document.getElementById('userDropdownMenu');
