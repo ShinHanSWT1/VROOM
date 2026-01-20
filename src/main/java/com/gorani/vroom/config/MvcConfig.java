@@ -49,6 +49,15 @@ public class MvcConfig implements WebMvcConfigurer {
         registry.jsp("/WEB-INF/views/", ".jsp");
     }
 
+    // CSS 경로
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // Static 리소스 매핑 추가
+        registry.addResourceHandler("/static/**")
+                .addResourceLocations("/static/")
+                .setCachePeriod(3600)
+                .resourceChain(true);
+      
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         // 관리자 전용 인터셉터
@@ -113,5 +122,7 @@ public class MvcConfig implements WebMvcConfigurer {
         config.setLocation(new ClassPathResource("db.properties"));
         return config;
     }
+
+
 }
 

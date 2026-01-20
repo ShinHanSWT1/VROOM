@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gorani.vroom.Location.LocationMapper">
+
+    <select id="selectGuList" resultType="string">
+        SELECT DISTINCT gungu_name
+        FROM LEGAL_DONG
+        WHERE sido_name = '서울특별시'
+        ORDER BY gungu_name
+    </select>
+    
+    <select id="selectDongList" resultType="com.gorani.vroom.Location.LegalDongVO">
+        SELECT
+            dong_code ,
+            sido_name ,
+            gungu_name ,
+            dong_name ,
+            full_name
+        FROM LEGAL_DONG
+        WHERE gungu_name = #{gunguName}
+    </select>
+
+
+
+</mapper>

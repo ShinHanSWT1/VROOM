@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gorani.vroom.community.CommunityMapper">
+
+    <select id="selectCategoryList" resultType="com.gorani.vroom.community.CategoryVO">
+        SELECT
+            category_id, category_name
+        FROM COMMUNITY_CATEGORY
+        ORDER BY category_id;
+    </select>
+
+    <select id = "selectPostList" resultType = "com.gorani.vroom.community.CommunityPostVO">
+        SELECT
+            c.post_id,
+            c.title,
+            c.content,
+            c.view_count,
+            c.like_count,
+            c.created_at,
+            c.updated_at,
+            c.user_id,
+            m.nickname,
+            c.dong_code,
+            d.dong_name,
+            c.category_id,
+            cc.category_name
+        FROM COMMUNITY c
+        LEFT JOIN COMMUNITY_CATEGORY cc ON c.category_id = cc.category_id
+        LEFT JOIN MEMBERS m ON c.user_id = m.user_id
+        LEFT JOIN LEGAL_DONG d ON c.dong_code = d.dong_code
+        <where>
+            c.deleted_at IS NULL
+            <if test="dongCode != null and dongCode != ''">
+                AND c.dong_code = #{dongCode}
+            </if>
+            <if test="categoryId != null">
+                AND c.category_id = #{categoryId}
+            </if>
+            <if test="searchKeyword != null and searchKeyword != ''">
+                AND (c.title LIKE CONCAT('%', #{searchKeyword}, '%')
+                OR c.content LIKE CONCAT('%', #{searchKeyword}, '%'))
+            </if>
+        </where>
+        ORDER BY c.created_at DESC
+    </select>
+
+    <select id="selectPopularPostList" resultType="com.gorani.vroom.community.CommunityPostVO">
+        SELECT
+        c.post_id,
+        c.title,
+        c.content,
+        c.view_count,
+        c.like_count,
+        c.created_at,
+        m.nickname,
+        c.dong_code,
+        d.dong_name,
+        c.category_id,
+        cc.category_name,
+        (c.like_count * 3 + c.view_count * 1 + IFNULL(cmt.comment_count, 0) * 2) AS popularity_score
+        FROM COMMUNITY c
+        LEFT JOIN COMMUNITY_CATEGORY cc ON c.category_id = cc.category_id
+        LEFT JOIN MEMBERS m ON c.user_id = m.user_id
+        LEFT JOIN LEGAL_DONG d ON c.dong_code = d.dong_code
+        LEFT JOIN (
+        SELECT post_id, COUNT(*) AS comment_count
+        FROM COMMUNITY_COMMENT
+        WHERE deleted_at IS NULL
+        GROUP BY post_id
+        ) cmt ON c.post_id = cmt.post_id
+        <where>
+            c.deleted_at IS NULL
+            AND c.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+            <if test="dongCode != null and dongCode != ''">
+                AND c.dong_code = #{dongCode}
+            </if>
+            <if test="searchKeyword != null and searchKeyword != ''">
+                AND (c.title LIKE CONCAT('%', #{searchKeyword}, '%')
+                OR c.content LIKE CONCAT('%', #{searchKeyword}, '%'))
+            </if>
+        </where>
+        ORDER BY popularity_score DESC, c.created_at DESC
+    </select>
+
+</mapper>
