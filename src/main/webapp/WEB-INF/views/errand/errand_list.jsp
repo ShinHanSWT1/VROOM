@@ -750,8 +750,8 @@
         <div class="container">
             <div class="footer-content">
                 <div class="footer-info">
-                    <h3>우리동네 심부름</h3>
-                    <p>이웃과 함께하는 따뜻한 심부름 커뮤니티</p>
+                    <h3>우리동네 </h3>
+                    <p>이웃과 함께하는 따뜻한  커뮤니티</p>
                 </div>
                 <div class="footer-links">
                     <a href="#">회사소개</a>

@@ -41,8 +41,15 @@
             e.created_at     AS createdAt,
             e.status         AS status,
             e.category_id    AS categoryId,
-            e.dong_code      AS dongCode
+            e.dong_code      AS dongCode,
+            
+            c.name         AS categoryName,
+		    u.nickname     AS writerNickname,
+		    d.full_name    AS dongFullName
         FROM ERRANDS e
+        LEFT JOIN CATEGORIES c ON c.id = e.category_id
+	    LEFT JOIN MEMBERS u      ON u.user_id = e.user_id
+	    LEFT JOIN LEGAL_DONG d       ON d.dong_code = e.dong_code
         <include refid="ErrandListWhere"/>
 
         <choose>
