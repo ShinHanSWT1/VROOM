@@ -1,5 +1,6 @@
 package com.gorani.vroom.config;
 
+import com.gorani.vroom.common.util.AdminLoginInterceptor;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -56,6 +57,15 @@ public class MvcConfig implements WebMvcConfigurer {
                 .addResourceLocations("/static/")
                 .setCachePeriod(3600)
                 .resourceChain(true);
+      
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        // 관리자 전용 인터셉터
+        registry.addInterceptor(new AdminLoginInterceptor())
+                .addPathPatterns("/admin/**")
+                .excludePathPatterns("/admin/login", "/admin/auth/**");
+
+        // TODO: 일반 사용자 전용 인터셉터
     }
 
     // hikaricp
@@ -83,7 +93,7 @@ public class MvcConfig implements WebMvcConfigurer {
 
         // 설정 객체를 SqlSessionFactoryBean에 주입
         ssf.setConfiguration(configuration);
-        
+
         return ssf.getObject();
     }
 
