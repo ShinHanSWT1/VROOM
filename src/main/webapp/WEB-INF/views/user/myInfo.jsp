@@ -1398,6 +1398,10 @@
             const taskCard = document.createElement('div');
             taskCard.className = 'task-card';
 
+            taskCard.addEventListener('click', function() {
+                window.location.href = '${pageContext.request.contextPath}/errand/detail?errandsId=' + task.errandsId;
+            });
+
             // 상태 배지 로직
             let statusLabel = '';
             if (task.status === 'WAITING') {

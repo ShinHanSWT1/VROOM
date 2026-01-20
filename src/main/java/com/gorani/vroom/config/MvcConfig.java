@@ -26,20 +26,23 @@ import org.springframework.web.servlet.config.annotation.*;
 @EnableTransactionManagement
 public class MvcConfig implements WebMvcConfigurer {
 
+    // 프로필 이미지 저장 경로 (외부 경로)
+    public static final String UPLOAD_PATH = "C:/uploads/profile/";
     @Value("${db.driver}")
     private String driver;
-
     @Value("${db.url}")
     private String url;
-
     @Value("${db.username}")
     private String username;
-
     @Value("${db.password}")
     private String password;
 
-    // 프로필 이미지 저장 경로 (외부 경로)
-    public static final String UPLOAD_PATH = "C:/uploads/profile/";
+    @Bean
+    public static PropertyPlaceholderConfigurer properties() {
+        PropertyPlaceholderConfigurer config = new PropertyPlaceholderConfigurer();
+        config.setLocation(new ClassPathResource("db.properties"));
+        return config;
+    }
 
     // 정적 리소스는 tomcat에서 처리하도록 핸들링
     public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
@@ -116,23 +119,12 @@ public class MvcConfig implements WebMvcConfigurer {
         return resolver;
     }
 
-
-
-
     // 트랜잭션
     @Bean
     public PlatformTransactionManager transactionManager() {
         DataSourceTransactionManager dtm = new DataSourceTransactionManager(dataSource());
 
         return dtm;
-    }
-
-
-    @Bean
-    public static PropertyPlaceholderConfigurer properties() {
-        PropertyPlaceholderConfigurer config = new PropertyPlaceholderConfigurer();
-        config.setLocation(new ClassPathResource("db.properties"));
-        return config;
     }
 
 
