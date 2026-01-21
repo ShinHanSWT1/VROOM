@@ -1024,15 +1024,23 @@
                 <div class="modal-info-grid">
                     <div class="modal-info-item">
                         <span class="modal-info-label">사용자 ID / 부름이 ID</span>
-                        <span class="modal-info-value" id="modalHelperId">-</span>
+                        <span class="modal-info-value" id="modalUserId">-</span>
                     </div>
+<%--                    <div class="modal-info-item">--%>
+<%--                        <span class="modal-info-label">부름이 ID</span>--%>
+<%--                        <span class="modal-info-value" id="modalErranderId">-</span>--%>
+<%--                    </div>--%>
                     <div class="modal-info-item">
                         <span class="modal-info-label">닉네임</span>
                         <span class="modal-info-value" id="modalNickname">-</span>
                     </div>
                     <div class="modal-info-item">
-                        <span class="modal-info-label">이메일 / 휴대폰</span>
-                        <span class="modal-info-value" id="modalContact">-</span>
+                        <span class="modal-info-label">이메일</span>
+                        <span class="modal-info-value" id="modalContactEmail">-</span>
+                    </div>
+                    <div class="modal-info-item">
+                        <span class="modal-info-label">휴대폰</span>
+                        <span class="modal-info-value" id="modalContactPhone">-</span>
                     </div>
 <%--                    <div class="modal-info-item">--%>
 <%--                        <span class="modal-info-label">승인 상태(대기 / 승인 / 거절)</span>--%>
@@ -1210,8 +1218,8 @@
             // 액션 버튼 (승인 대기중이면 승인버튼, 아니면 관리버튼)
             let actionBtnHtml = '';
             if (approvalStatus === 'PENDING') {
-                // 승인 모달 열기 (item 객체를 통째로 넘기거나 ID만 넘김)
-                actionBtnHtml = `<button class="action-button approve" onclick="openApprovalModal(item)">승인</button>`;
+                // 승인 모달 열기
+                actionBtnHtml = `<button class="action-button approve" onclick="openApprovalModal(\${erranderId})">승인</button>`;
             } else {
                 actionBtnHtml = `<button class="action-button" onclick="goToDetail(\${erranderId})">관리</button>`;
             }
@@ -1240,7 +1248,7 @@
 
         const { currentPage, startPage, endPage, totalPage } = pageInfo;
 
-        // [이전] 버튼
+        // 이전 버튼
         const prevBtn = document.createElement('button');
         prevBtn.className = 'pagination-button';
         prevBtn.innerText = '이전';
@@ -1252,7 +1260,7 @@
         }
         pagination.appendChild(prevBtn);
 
-        // [번호] 버튼
+        // 번호 버튼
         for (let i = startPage; i <= endPage; i++) {
             const btn = document.createElement('button');
             btn.className = 'pagination-button';
@@ -1265,7 +1273,7 @@
             pagination.appendChild(btn);
         }
 
-        // [다음] 버튼
+        // 다음 버튼
         const nextBtn = document.createElement('button');
         nextBtn.className = 'pagination-button';
         nextBtn.innerText = '다음';
@@ -1282,24 +1290,63 @@
 
     // 상세 페이지 이동
     function goToDetail(erranderId) {
-        const url = '${pageContext.request.contextPath}/admin/users/detail?id=' + erranderId;
-        window.location.href = url;
+        window.location.href = '${pageContext.request.contextPath}/admin/erranders/detail?id=' + erranderId;
     }
 
     // 승인 모달 열기
-    function openApprovalModal(errander) {
+    function openApprovalModal(erranderId) {
         currentErranderId = erranderId;
 
-        // UI 값 채우기 (목록에 없는 상세 정보는 별도 API 호출 필요)
-        document.getElementById('modalHelperId').textContent = errander.errandId;
-        document.getElementById('modalNickname').textContent = errander.nickname;
-        document.getElementById('modalContact').textContent = errander.phone || '-';
+        fetch('${pageContext.request.contextPath}/api/admin/erranders/resume?id=' + 3)
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error('서버 응답 에러: ' + res.status);
+                }
+                return res.json();
+            })
+            .then(data => {
+                // 사용자 id, 심부름 id, 닉네임, 이메일, 휴대폰, 활동 상태, 최근활동일, 활동 동네, 제출 서류
+                console.log(data);
 
-        // 나머지 필드는 목록 API에서 가져오지 않았다면 '로딩중' 또는 '-' 처리
-        // TODO: /api/admin/erranders/detail/{id} API를 만들어 호출해야 함
+                // UI 값 채우기 (목록에 없는 상세 정보는 별도 API 호출 필요)
+                document.getElementById('modalUserId').textContent = data.user_id + ' / ' + erranderId;
+                // document.getElementById('modalErranderId').textContent = data.errandId;
+                document.getElementById('modalNickname').textContent = data.nickname;
+                document.getElementById('modalContactPhone').textContent = data.phone || '-';
+                document.getElementById('modalContactEmail').textContent = data.email || '-';
+                document.getElementById('modalActivityStatus').textContent = data.status || '-';
+                document.getElementById('modalLastActivity').textContent = data.last_login_at || '-';
+                document.getElementById('modalRegions1').textContent = data.address1 || '-';
+                document.getElementById('modalRegions2').textContent = data.address2 || '-';
+
+                // 제출 서류 렌더링
+                const documentList = document.getElementById('documentList');
+                documentList.innerHTML = '';
+                data.documents.forEach(doc => {
+                    const docIcon = doc.doc_type.includes('IDCARD') ? '💳' : '📄';
+                    const docItem = `
+                        <div class="document-item">
+                            <div class="document-icon">${'${'}docIcon}</div>
+                            <div class="document-info">
+                                <div class="document-type">${'${'}doc.doc_type === 'IDCARD' ? '신분증' : '여권' }</div>
+                            </div>
+                            <button class="document-view-btn" onclick="viewDocument('${'${'}doc.file_url}')">보기</button>
+                        </div>
+                    `;
+                    documentList.innerHTML += docItem;
+                });
+                // 나머지 필드는 목록 API에서 가져오지 않았다면 '로딩중' 또는 '-' 처리
+            })
+            .catch(error => {
+                console.error('데이터 로드 실패:', error);
+                // alert('데이터를 불러오는 중 오류가 발생했습니다.');
+            });
+
 
         document.getElementById('approvalModal').dataset.helperId = erranderId;
         document.getElementById('approvalModal').classList.add('show');
+
+
     }
 
     function closeApprovalModal() {
@@ -1344,7 +1391,12 @@
     }
 
     function viewDocument(url) {
-        alert('문서 보기: ' + url);
+        if (!url) {
+            alert('파일 경로가 존재하지 않습니다.');
+            return;
+        }
+        // 새 창에서 해당 URL 열람
+        window.open('${pageContext.request.contextPath}/url', '_blank');
     }
 </script>
 </body>

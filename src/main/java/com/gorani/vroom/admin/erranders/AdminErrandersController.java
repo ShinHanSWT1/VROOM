@@ -1,6 +1,5 @@
 package com.gorani.vroom.admin.erranders;
 
-import com.gorani.vroom.admin.users.AdminUsersService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -39,12 +38,20 @@ public class AdminErrandersController {
         return service.searchErranders(keyword, approveStatus, activeStatus, reviewScope, page);
     }
 
-    // 사용자 상세 페이지 이동
+    // 부름이 상세 페이지 이동
     @GetMapping("/admin/erranders/detail")
-    public String userDetail(
+    public String getErranderDetail(
             @RequestParam("id") Long erranderId, Model model
     ) {
 
         return "admin/errander_detail";
+    }
+
+    @GetMapping("/api/admin/erranders/resume")
+    @ResponseBody
+    public Map<String, Object> getErranderResume(
+            @RequestParam("id") Long erranderId
+    ) {
+        return service.getErranderApprovalDetail(erranderId);
     }
 }

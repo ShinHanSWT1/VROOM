@@ -1,12 +1,10 @@
 package com.gorani.vroom.admin.erranders;
 
-import com.gorani.vroom.admin.users.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +56,22 @@ public class AdminErrandersServiceImpl implements AdminErrandersService {
         dataMap.put("pageInfo", pageInfo);
 
         return dataMap;
+    }
+
+    @Override
+    public Map<String, Object> getErranderApprovalDetail(Long id) {
+
+        // {
+        //  "user_id": 4,
+        //  "nickname": "고라니",
+        //   ...
+        //  "documents": [
+        //    { "file_url": "id_card.jpg" },
+        //    { "file_url": "bank_book.png" },
+        //    { "file_url": "license.pdf" }
+        //  ]
+        //}
+        return mapper.getErranderApprovalDetail(id);
     }
 
 }

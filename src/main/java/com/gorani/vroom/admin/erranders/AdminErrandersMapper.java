@@ -1,8 +1,5 @@
 package com.gorani.vroom.admin.erranders;
 
-import com.gorani.vroom.admin.users.AdminUserDetailDTO;
-import com.gorani.vroom.admin.users.UserActivityVO;
-import com.gorani.vroom.admin.users.UserReportHistoryVO;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -16,14 +13,6 @@ public interface AdminErrandersMapper {
 
     int countErranders(Map<String, Object> param);
 
-    void updateUserStatus(Map<String, Object> param);
-
-    AdminUserDetailDTO getUserInfoDetail(Long id);
-
-    List<UserReportHistoryVO> getUserReportHistory(Long id);
-
-    List<UserActivityVO> getUserActivityHistory(Long id);
-
-    void updateAdminMemo(Long userId, String memo);
+    Map<String, Object> getErranderApprovalDetail(Long id);
 
 }
