@@ -2,7 +2,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
-<c:set var="pageCss" value="community-detail"/>
+<c:set var="pageCss" value="community-detail" scope="request"/>
 <c:set var="pageJs" value="community-ajax"/>
 <c:set var="pageTitle" value="VROOM - 동네생활" scope="request"/>
 <c:set var="pageId" value="community" scope="request"/>

@@ -42,6 +42,7 @@
             </if>
         </where>
         ORDER BY c.created_at DESC
+        LIMIT #{startIdx}, 8
     </select>
 
     <select id="selectPopularPostList" resultType="com.gorani.vroom.community.CommunityPostVO">
@@ -75,11 +76,12 @@
                 AND c.dong_code = #{dongCode}
             </if>
             <if test="searchKeyword != null and searchKeyword != ''">
-                AND (c.title LIKE CONCAT('%', #{searchKeyword}, '%')ㅠ
+                AND (c.title LIKE CONCAT('%', #{searchKeyword}, '%')
                 OR c.content LIKE CONCAT('%', #{searchKeyword}, '%'))
             </if>
         </where>
         ORDER BY popularity_score DESC, c.created_at DESC
+        LIMIT #{startIdx}, 8
     </select>
 
     <select id="selectPostDetail" resultType="com.gorani.vroom.community.CommunityPostVO">
@@ -106,6 +108,29 @@
         LEFT JOIN LEGAL_DONG l ON l.dong_code = c.dong_code
         <where>
             c.post_id = #{postId} AND c.deleted_at IS NULL
+        </where>
+    </select>
+
+    <select id="selectPostCount" resultType="long">
+        SELECT COUNT(*)
+        FROM COMMUNITY c
+        <where>
+            c.deleted_at IS NULL
+            <if test="dongCode != null and dongCode != ''">
+                AND c.dong_code = #{dongCode}
+            </if>
+            <choose>
+                <when test="categoryId != null and categoryId == 0">
+                    AND c.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+                </when>
+                <when test="categoryId != null">
+                    AND c.category_id = #{categoryId}
+                </when>
+            </choose>
+            <if test="searchKeyword != null and searchKeyword != ''">
+                AND (c.title LIKE CONCAT('%', #{searchKeyword}, '%')
+                OR c.content LIKE CONCAT('%', #{searchKeyword}, '%'))
+            </if>
         </where>
     </select>
 

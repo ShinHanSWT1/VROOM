@@ -17,17 +17,22 @@ public class CommunityServiceImpl implements CommunityService{
     }
 
     @Override
-    public List<CommunityPostVO> getPostList(String dongCode, Long categoryId, String searchKeyword) {
-        return communityMapper.selectPostList(dongCode, categoryId, searchKeyword);
+    public List<CommunityPostVO> getPostList(String dongCode, Long categoryId, String searchKeyword, Long startIdx) {
+        return communityMapper.selectPostList(dongCode, categoryId, searchKeyword, startIdx);
     }
 
     @Override
-    public List<CommunityPostVO> getPopularPostList(String dongCode, String searchKeyword) {
-        return communityMapper.selectPopularPostList(dongCode, searchKeyword);
+    public List<CommunityPostVO> getPopularPostList(String dongCode, String searchKeyword, Long startIdx) {
+        return communityMapper.selectPopularPostList(dongCode, searchKeyword, startIdx);
     }
 
     @Override
     public CommunityPostVO getPostDetail(int postId) {
         return communityMapper.selectPostDetail(postId);
+    }
+
+    @Override
+    public Long getPostCount(String dongCode, Long categoryId, String searchKeyword) {
+        return communityMapper.selectPostCount(dongCode, categoryId, searchKeyword);
     }
 }

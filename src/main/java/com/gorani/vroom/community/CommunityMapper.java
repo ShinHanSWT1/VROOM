@@ -14,15 +14,23 @@ public interface CommunityMapper {
     List<CommunityPostVO> selectPostList(
             @Param("dongCode") String dongCode,
             @Param("categoryId") Long categoryId,
-            @Param("searchKeyword") String searchKeyword
+            @Param("searchKeyword") String searchKeyword,
+            @Param("startIdx") Long startIdx
     );
 
     // 인기 게시글 조회
     List<CommunityPostVO> selectPopularPostList(
             @Param("dongCode") String dongCode,
-            @Param("searchKeyword") String searchKeyword
+            @Param("searchKeyword") String searchKeyword,
+            @Param("startIdx") Long startIdx
     );
 
     // 게시글 상세 정보 조회
     CommunityPostVO selectPostDetail(int postId);
+
+    Long selectPostCount(
+            @Param("dongCode") String dongCode,
+            @Param("categoryId") Long categoryId,
+            @Param("searchKeyword") String searchKeyword
+    );
 }

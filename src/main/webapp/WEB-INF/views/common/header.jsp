@@ -9,11 +9,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${pageTitle != null ? pageTitle : 'VROOM'}</title>
     
-    <!-- CSS -->
+    <!-- 공통 CSS -->
     <link rel="stylesheet" href="<c:url value='/static/community/css/common.css'/>">
     <link rel="stylesheet" href="<c:url value='/static/community/css/main.css'/>">
-    <link rel="stylesheet" href="<c:url value='/static/community/css/community.css'/>">
-    <link rel="stylesheet" href="<c:url value='/static/community/css/community-detail.css'/>">
+    <!-- 페이지별 CSS -->
+    <c:if test="${not empty pageCss}">
+        <link rel="stylesheet" href="<c:url value='/static/community/css/${pageCss}.css'/>">
+    </c:if>
 
 
     <!-- jQuery (AJAX 사용 시) -->
@@ -27,7 +29,7 @@
     <header class="header">
         <div class="header-container">
             <div class="logo">
-                <h1 onclick="goToPage('<c:url value="/main"/>')">VROOM</h1>
+                <h1 onclick="goToPage('<c:url value=""/>')">VROOM</h1>
             </div>
             <nav class="nav-menu">
                 <a href="<c:url value='/about'/>" class="nav-item">소개</a>

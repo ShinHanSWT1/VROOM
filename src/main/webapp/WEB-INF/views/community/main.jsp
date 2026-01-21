@@ -4,6 +4,7 @@
 
 <c:set var="pageTitle" value="VROOM - 동네생활" scope="request"/>
 <c:set var="pageId" value="community" scope="request"/>
+<c:set var="pageCss" value="community" scope="request"/>
 
 <jsp:include page="../common/header.jsp"/>
 
@@ -40,7 +41,7 @@
 <main class="main-content">
     <!-- Breadcrumb -->
     <nav class="breadcrumb">
-        <a href="<c:url value='/main'/>">홈</a>
+        <a href="<c:url value='/vroom'/>">홈</a>
         <span class="breadcrumb-separator"> > </span>
         <a href="<c:url value='/community'/>">동네생활</a>
     </nav>
@@ -100,20 +101,20 @@
         </aside>
 
         <!-- Post List -->
-        <div class="post-list">
+        <div class="post-list" id="postList">
             <c:choose>
                 <c:when test="${not empty postList}">
                     <c:forEach var="post" items="${postList}">
                         <a class="post-card" href="<c:url value='/community/detail/${post.postId}'/>" style="text-decoration: none; color: inherit;">
                             <div class="post-content-wrapper">
                                 <div class="post-text-content">
-                                    <h3 class="post-title">${post.title}</h3>
+                                    <h1 class="post-title">${post.title}</h1>
                                     <p class="post-description">${post.content}</p>
 
                                     <div class="post-meta">
                                         <span class="post-meta-item">${post.dongName}</span>
                                         <span class="post-meta-item">•</span>
-                                        <span class="post-category-badge">${post.categoryName}</span>
+                                        <span class="post-meta-item">${post.categoryName}</span>
                                         <span class="post-meta-item">•</span>
                                         <span class="post-meta-item">
                                             <fmt:formatDate value="${post.createdAt}" pattern="MM.dd"/>
@@ -134,6 +135,25 @@
                 </c:otherwise>
             </c:choose>
         </div>
+
+        <!-- Pagination -->
+        <div class="pagination-container">
+            <c:if test="${totalPages > 0}">
+                <div class="pagination" id="pagination">
+                    <button class="pagination-btn prev-btn wide-btn" ${currentPage == 1 ? 'disabled' : ''} data-page="${currentPage - 1}">
+                        <span>이전</span>
+                    </button>
+                    <div class="page-numbers">
+                        <c:forEach var="i" begin="1" end="${totalPages}">
+                            <button class="page-btn ${currentPage == i ? 'active' : ''}" data-page="${i}">${i}</button>
+                        </c:forEach>
+                    </div>
+                    <button class="pagination-btn next-btn wide-btn" ${currentPage == totalPages ? 'disabled' : ''} data-page="${currentPage + 1}">
+                        <span>다음</span>
+                    </button>
+                </div>
+            </c:if>
+        </div>
     </div>
 </main>
 
@@ -143,9 +163,12 @@
         currentDongCode: '${selectedDongCode}',
         selectedGuName: '${selectedGuName}',
         currentCategoryId: '${selectedCategoryId}',
-        currentSearchKeyword: '${searchKeyword}'
+        currentSearchKeyword: '${searchKeyword}',
+        currentPage: ${currentPage},
+        totalPages: ${totalPages}
     };
 </script>
 <script src="<c:url value='/static/community/js/communityFilter.js'/>"></script>
+<script src="<c:url value='/static/community/js/pagination.js'/>"></script>
 
 <jsp:include page="../common/footer.jsp"/>

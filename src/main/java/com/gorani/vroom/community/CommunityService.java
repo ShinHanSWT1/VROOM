@@ -7,12 +7,14 @@ public interface CommunityService {
     List<CategoryVO> getCategoryList();
 
     // 게시글 목록 조회 (필터링 포함)
-    List<CommunityPostVO> getPostList(String dongCode, Long categoryId, String searchKeyword);
+    List<CommunityPostVO> getPostList(String dongCode, Long categoryId, String searchKeyword, Long startIdx);
 
     // 인기글 조회
-    List<CommunityPostVO> getPopularPostList(String dongCode, String searchKeyword);
+    List<CommunityPostVO> getPopularPostList(String dongCode, String searchKeyword, Long startIdx);
 
     // 게시글 상세 데이터 조회
     CommunityPostVO getPostDetail(int postId);
+
+    Long getPostCount(String dongCode, Long categoryId, String searchKeyword);
 
 }

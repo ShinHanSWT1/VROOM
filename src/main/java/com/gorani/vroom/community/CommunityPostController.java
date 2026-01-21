@@ -1,26 +1,22 @@
 package com.gorani.vroom.community;
 
 import com.gorani.vroom.location.LocationService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.List;
 
 @Controller
 @RequestMapping("/community")
+@RequiredArgsConstructor
 public class CommunityPostController {
 
-    @Autowired
-    private LocationService locationService;
+    private static final int PAGE_SIZE = 8;
 
-    @Autowired
-    private CommunityService communityService;
+    private final LocationService locationService;
+    private final CommunityService communityService;
     
     @ModelAttribute
     private void addCommonModel(@RequestParam(required = false)  String dongCode,
@@ -48,23 +44,17 @@ public class CommunityPostController {
                        @RequestParam(required = false)  Long categoryId,
                        @RequestParam(required = false)  String guName,
                        @RequestParam(required = false)  String searchKeyword,
+                       @RequestParam(defaultValue = "1") Long page,
                        Model model) {
         addCommonModel(dongCode, categoryId, guName, model);
         model.addAttribute("searchKeyword", searchKeyword);
 
-        // 게시글 목록 ( 필터링 적용 )
-        List<CommunityPostVO> postList;
-        if (categoryId != null && categoryId == 0) {
-            // 인기글
-            postList = communityService.getPopularPostList(dongCode, searchKeyword);
-        } else {
-            // 전체 또는 일반 카테고리
-            postList = communityService.getPostList(dongCode, categoryId, searchKeyword);
-        }
+        PaginationDataDTO paginationData = getPaginationData(dongCode, categoryId, searchKeyword, page);
 
-        model.addAttribute("postList", postList);
-
-        
+        model.addAttribute("postList", paginationData.getPostList());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", paginationData.getTotalPages());
+        model.addAttribute("totalPosts", paginationData.getTotalCount());
 
         return "community/main";
     }
@@ -92,6 +82,45 @@ public class CommunityPostController {
 
         return "community/detail";
     }
+
+    @ResponseBody
+    @GetMapping("/api/posts")
+    public PaginationVO pagination(
+                             @RequestParam(required = false)  String dongCode,
+                             @RequestParam(required = false)  Long categoryId,
+                             @RequestParam(required = false)  String guName,
+                             @RequestParam(required = false)  String searchKeyword,
+                             @RequestParam(defaultValue = "1") Long page){
+        PaginationDataDTO paginationData = getPaginationData(dongCode, categoryId, searchKeyword, page);
+
+        PaginationVO result = new PaginationVO();
+        result.setContent(paginationData.getPostList());
+        result.setPage(page);
+        result.setTotalPosts(paginationData.getTotalCount());
+        result.setTotalPages(paginationData.getTotalPages());
+        result.setSize((long) PAGE_SIZE);
+
+        return result;
+    }
+
+    private PaginationDataDTO getPaginationData(String dongCode, Long categoryId, String searchKeyword, Long page) {
+        long startIdx = (page - 1) * PAGE_SIZE;
+
+        List<CommunityPostVO> postList;
+        if (categoryId != null && categoryId == 0) {
+            // 인기글
+            postList = communityService.getPopularPostList(dongCode, searchKeyword, startIdx);
+        } else {
+            // 전체 또는 일반 카테고리
+            postList = communityService.getPostList(dongCode, categoryId, searchKeyword, startIdx);
+        }
+
+        long totalCount = communityService.getPostCount(dongCode, categoryId, searchKeyword);
+        long totalPages = (long) Math.ceil((double) totalCount / PAGE_SIZE);
+
+        return new PaginationDataDTO(postList, totalCount, totalPages);
+    }
+
     @GetMapping("/write")
     public String writeForm(Model model) {
         return "community/write";

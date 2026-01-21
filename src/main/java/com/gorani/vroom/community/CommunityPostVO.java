@@ -10,6 +10,8 @@ import java.sql.Timestamp;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CommunityPostVO {
+
+    // --- COMMUNITY 테이블 ---
     private Long postId;
     private String title;
     private String content;
@@ -19,11 +21,17 @@ public class CommunityPostVO {
     private Timestamp updatedAt;
     private Timestamp deletedAt;
     private Long userId;
-    private String nickname;
     private String dongCode;
+    private Long categoryId;
+
+    // --- MEMBERS 테이블 (JOIN) ---
+    private String nickname;
+    private Double mannerScore;
+
+    // --- LEGAL_DONG 테이블 (JOIN) ---
     private String dongName;
     private String gunguName;
-    private Long categoryId;
+
+    // --- COMMUNITY_CATEGORY 테이블 (JOIN) ---
     private String categoryName;
-    private Double mannerScore;
 }
