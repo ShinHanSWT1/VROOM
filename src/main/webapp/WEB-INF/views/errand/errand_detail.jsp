@@ -171,6 +171,8 @@
             grid-template-columns: 1fr 400px;
             gap: 2rem;
             margin-bottom: 3rem;
+            
+            align-items: stretch;
         }
 
         .image-section {
@@ -178,17 +180,20 @@
             border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            
+            height: 100%;
+            height: 455px;
         }
 
         .errand-image {
-            width: 100%;
-            height: 500px;
-            background: linear-gradient(135deg, var(--color-light-gray) 0%, var(--color-white) 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 8rem;
-        }
+		    width: 100%;
+		    height: 100%;
+		    background: linear-gradient(135deg, var(--color-light-gray) 0%, var(--color-white) 100%);
+		    display: flex;
+		    align-items: center;
+		    justify-content: center;
+		    font-size: 8rem;
+		}
 
         .errand-image img {
             width: 100%;
@@ -200,6 +205,8 @@
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
+            
+            height: 455px;
         }
 
         .info-panel {
@@ -207,20 +214,32 @@
             border-radius: 12px;
             padding: 1.5rem;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: left;
         }
+        
+        .info-panel.is-description {
+		    flex: 1;
+		    display: flex;
+		    flex-direction: column;
+		}
+		
+		.info-panel.is-description .panel-content {
+		    flex: 1;              /* 내용영역이 늘어나게 */
+		    overflow: auto;       /* 설명이 길면 스크롤로 처리 (원하면 hidden/ellipsis로 변경 가능) */
+		}
 
         .panel-title {
             font-size: 1.25rem;
             font-weight: 700;
             color: var(--color-dark);
             margin-bottom: 1rem;
-            text-align: center;
+            text-align: left;
         }
 
         .panel-content {
             font-size: 1rem;
             color: var(--color-gray);
-            text-align: center;
+            text-align: left;
             line-height: 1.8;
         }
 
@@ -510,8 +529,15 @@
                 <!-- Left: Image Section -->
                 <div class="image-section">
                     <div class="errand-image">
-                        <img src="https://images.pexels.com/photos/6407393/pexels-photo-6407393.jpeg" 
-                             alt="심부름 사진">
+                        <c:choose>
+				            <c:when test="${not empty mainImageUrl}">
+				                <img src="${mainImageUrl}" alt="심부름 사진">
+				            </c:when>
+				            <c:otherwise>
+				                <img src="${pageContext.request.contextPath}/static/img/errand/noimage.png"
+				                     alt="기본 이미지">
+				            </c:otherwise>
+				        </c:choose>
                     </div>
                 </div>
 
