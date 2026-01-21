@@ -91,12 +91,33 @@
             e.expense_amount AS expenseAmount,
             e.desired_at     AS desiredAt,
             e.created_at     AS createdAt,
+            m.manner_score    AS mannerScore,
             e.status         AS status,
             e.category_id    AS categoryId,
             e.dong_code      AS dongCode
         FROM ERRANDS e
+        JOIN MEMBERS m
+        	ON m.user_id = e.user_id
         WHERE e.errands_id = #{errandsId}
     </select>
+    
+    <select id="selectRelatedErrands" resultType="com.gorani.vroom.errand.post.ErrandListVO">
+	  SELECT
+	      e.errands_id     AS errandsId,
+	      e.title          AS title,
+	      e.reward_amount  AS rewardAmount,
+	      e.created_at     AS createdAt,
+	      e.dong_code      AS dongCode,
+	      e.category_id    AS categoryId,
+	      e.status         AS status
+	  FROM ERRANDS e
+	  WHERE e.errands_id != #{errandsId}
+	    AND e.dong_code = #{dongCode}
+	    AND e.category_id = #{categoryId}
+	    AND e.status = 'WAITING'
+	  ORDER BY e.created_at DESC
+	  LIMIT #{limit}
+	</select>
 
 	<insert id="insertErrand" parameterType="com.gorani.vroom.errand.post.ErrandCreateVO"
 	        useGeneratedKeys="true" keyProperty="errandsId">

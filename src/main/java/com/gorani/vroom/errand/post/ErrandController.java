@@ -47,8 +47,13 @@ public class ErrandController {
 			// 존재하지 않는 글이면 목록으로 돌려보냄
 			return "redirect:/errand/list";
 		}
+		
+		List<ErrandListVO> relatedErrands =
+	            errandService.getRelatedErrands(errandsId, errand.getDongCode(), errand.getCategoryId(), 6);
+
 
 		model.addAttribute("errand", errand);
+		model.addAttribute("relatedErrands", relatedErrands);
 		return "errand/errand_detail";
 	}
 

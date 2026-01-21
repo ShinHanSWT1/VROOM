@@ -38,6 +38,18 @@ public class ErrandServiceImpl implements ErrandService {
 
         return errandMapper.selectErrandList(param);
     }
+    
+    public List<ErrandListVO> getRelatedErrands(ErrandDetailVO errand) {
+        if (errand == null) return List.of();
+        if (errand.getDongCode() == null || errand.getCategoryId() == null) return List.of();
+
+        return errandMapper.selectRelatedErrands(
+            errand.getErrandsId(),
+            errand.getDongCode(),
+            errand.getCategoryId(),
+            6
+        );
+    }
 
     @Override
     public int getErrandTotalCount(String q, Long categoryId, String dongCode) {
@@ -54,6 +66,16 @@ public class ErrandServiceImpl implements ErrandService {
     public ErrandDetailVO getErrandDetail(Long errandsId) {
         if (errandsId == null) return null;
         return errandMapper.selectErrandDetail(errandsId);
+    }
+    
+    @Override
+    public List<ErrandListVO> getRelatedErrands(Long currentErrandsId, String dongCode, Long categoryId, int limit) {
+
+        if (dongCode == null || categoryId == null) return List.of();
+
+        int safeLimit = (limit <= 0) ? 6 : limit;
+
+        return errandMapper.selectRelatedErrands(currentErrandsId, dongCode, categoryId, safeLimit);
     }
     
     @Override

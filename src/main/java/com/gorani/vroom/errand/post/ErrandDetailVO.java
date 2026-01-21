@@ -17,4 +17,5 @@ public class ErrandDetailVO {
     private String status;          // WAIT / IN_PROGRESS / DONE 등
     private Long categoryId;
     private String dongCode;
+    private java.math.BigDecimal mannerScore; // 또는 Double
 }
