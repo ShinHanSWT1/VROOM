@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.bind.annotation.ResponseBody;
+import java.util.List;
+
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -33,44 +36,26 @@ public class AuthController {
     // 회원가입 처리
     @PostMapping("/auth/signup")
     public String signup(UserVO vo,
-                         @RequestParam MultipartFile profile, // DB에 저장할 대상이 아니라, 처리(저장) 후 버려지는 객체
-                         HttpServletResponse res,
-                         Model model,
-                         RedirectAttributes ra,
-                         HttpServletRequest req
-    ) throws Exception {
+                         @RequestParam(required = false) MultipartFile profile,
+                         RedirectAttributes ra) {
 
-        System.out.println("vo:" + vo);
-        int r = authService.signup(vo, profile);
+        log.info("회원가입 요청 UserVO = {}", vo);
 
-        if (r > 0) {
-//			model.addAttribute("msg", "회원가입되었습니다.");
-//			model.addAttribute("cmd", "move");
-//			model.addAttribute("url", "signup");
-            ra.addFlashAttribute("msg", "회원가입되었습니다."); // 일회성
-        } else {
-//			model.addAttribute("msg", "회원가입오류");
-//			model.addAttribute("cmd", "back");
-            ra.addFlashAttribute("msg", "회원가입오류.");
+        try {
+            authService.signup(vo, profile);
+            ra.addFlashAttribute("msg", "회원가입이 완료되었습니다.");
+            return "redirect:/auth/login";
+
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("msg", e.getMessage());
+            return "redirect:/auth/signup";
+        } catch (Exception e) {
+            log.error("회원가입 오류", e);
+            ra.addFlashAttribute("msg", "회원가입 중 오류가 발생했습니다.");
+            return "redirect:/auth/signup";
         }
-
-        //return "common/return";
-
-//		// 서블릿으로 응답
-//		res.setContentType("text/html;charset=utf-8");
-//		PrintWriter out = res.getWriter();
-//		out.print("<script>");
-//		if (r > 0) { // 정상적으로 등록
-//			out.print("alert('회원가입되었습니다.');");
-//			out.print("location.href='signup';");
-//		} else {
-//			out.print("alert('회원가입오류');");
-//			out.print("history.back();");
-//		}
-//		out.print("</script>");
-
-        return "redirect:/auth/login";
     }
+
 
     // ===================== 로그인 =====================
 
@@ -90,7 +75,7 @@ public class AuthController {
             model.addAttribute("message", "아이디 비밀번호가 올바르지 않습니다.");
             model.addAttribute("subMessage", "로그인 창으로 이동합니다.");
             model.addAttribute("result", "fail");
-            model.addAttribute("url", "login");
+            model.addAttribute("url", "/auth/login");
         } else { // 로그인 성공
             log.info("로그인 성공 - userId: {}, email: {}", userVo.getUserId(), userVo.getEmail());
             sess.setAttribute("loginSess", userVo);
@@ -117,4 +102,16 @@ public class AuthController {
         model.addAttribute("url", "/");
         return "common/return";
     }
+
+    // 주소(동) 조회 - AJAX
+
+    @GetMapping("/auth/selectdong")
+    @ResponseBody
+    public List<LegalDongVO> selectDong(@RequestParam String gu) {
+
+        log.info("동 조회 요청 - gu={}", gu);
+
+        return authService.getDongListByGu(gu);
+    }
+
 }
