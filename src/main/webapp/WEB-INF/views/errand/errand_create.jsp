@@ -1,4 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+
 <!DOCTYPE html>
 <html lang="ko">
 
@@ -487,10 +490,14 @@
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label form-label-required">가격</label>
+                            <label class="form-label form-label-required">심부름값</label>
                             <input type="number" class="form-input" placeholder="가격을 입력하세요 (원)" required>
                         </div>
-
+                        <div class="form-group">
+                            <label class="form-label form-label-required">수행비용</label>
+                            <input type="number" class="form-input" placeholder="가격을 입력하세요 (원)" required>
+                        </div>
+                       
                         <div class="form-group">
                             <label class="form-label">심부름 이미지</label>
                             <div class="image-upload-area" id="imageUploadArea">
@@ -508,7 +515,7 @@
                     <div class="form-right">
                         <div class="form-group">
                             <label class="form-label form-label-required">심부름 설명</label>
-                            <textarea class="form-textarea" placeholder="심부름에 대한 자세한 설명을 입력하세요" rows="8" required></textarea>
+                            <textarea class="form-textarea" placeholder="심부름에 대한 자세한 설명을 입력하세요" rows="11" required></textarea>
                         </div>
 
                         <div class="form-group">

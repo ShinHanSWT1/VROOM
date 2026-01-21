@@ -1,4 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+
 <!DOCTYPE html>
 <html lang="ko">
 
@@ -516,20 +519,23 @@
                 <div class="info-panels">
                     <div class="info-panel">
                         <h2 class="panel-title">제목</h2>
-                        <p class="panel-content">스벅 자허블 픽업 해주세요</p>
+                        <p class="panel-content">
+				          <c:out value="${errand.title}" />
+				        </p>
                     </div>
 
                     <div class="info-panel">
                         <h2 class="panel-title">위치</h2>
-                        <p class="panel-content">서울시 강남구 역삼동<br>스타벅스 역삼역점</p>
+                        <p class="panel-content">
+                        	<c:out value="${errand.dongCode}" />
+                        </p>
                     </div>
 
                     <div class="info-panel">
                         <h2 class="panel-title">심부름<br>설명</h2>
-                        <p class="panel-content">자몽 허니 블랙티 픽업 부탁드립니다.<br>
-                            사이즈는 벤티이고,<br>
-                            얼음은 조금만 넣어주세요.<br>
-                            결제는 제가 미리 할게요!</p>
+                        <p class="panel-content">
+                        	<c:out value="${errand.description}" />
+                        </p>
                     </div>
                 </div>
             </div>
@@ -541,8 +547,12 @@
                         <i class="icon-user"></i>
                     </div>
                     <div class="author-details">
-                        <div class="author-name-large">작성자 닉네임</div>
+                        <div class="author-name-large">
+							작성자: <c:out value="${errand.userId}" />
+						</div>
                         <div class="author-meta">10분 전 · 1.2km</div>
+                        <!-- <c:out value="${errand.createdAt}" /> -->
+            			<!-- TODO: '10분 전', '1.2km'는 계산/조인 로직 필요 -->
                     </div>
                 </div>
             </div>
@@ -566,7 +576,7 @@
             <div class="footer-content">
                 <div class="footer-info">
                     <h3>(주) 답스미포유</h3>
-                    <p>대표 김동수, 황준호 ㅣ 사업자번호 375-87-00088<br>
+                    <p>대표 허남훈 ㅣ 사업자번호 375-87-00088<br>
                         제2종정보통신판매업 신고번호 JT200C03030C118<br>
                         통신판매업 신고번호 2021-서울노원-2875<br>
                         호스팅 사업자 Amazon Web Service(AWS)<br>

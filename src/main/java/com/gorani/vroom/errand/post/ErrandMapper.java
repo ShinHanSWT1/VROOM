@@ -22,6 +22,10 @@ public interface ErrandMapper {
      * @return 총 개수
      */
     int countErrandList(Map<String, Object> param);
+    int insertErrand(ErrandCreateVO vo);
     
     ErrandDetailVO selectErrandDetail(@Param("errandsId") Long errandsId);
+    
+    List<CategoryVO> selectCategories();
+    List<Map<String, Object>> selectDongs();
 }
