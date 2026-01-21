@@ -67,4 +67,17 @@ public class ErrandController {
 		Long errandsId = errandService.createErrand(errandCreateVO);
 		return "redirect:/errand/detail?errandsId=" + errandsId;
 	}
+	
+	
+	
+	
+	
+	/**
+     * 내 정보 페이지 경로 리다이렉트
+     * 잘못된 경로(/errand/myInfo)로 들어왔을 때 -> 올바른 경로(/member/myInfo)로 보냄
+     */
+    @GetMapping("/errand/myInfo")
+    public String redirectMyInfo() {
+        return "redirect:/member/myInfo";
+    }
 }

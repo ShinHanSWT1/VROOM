@@ -586,7 +586,7 @@
                 <h1 onclick="location.href='main_updated_2.html'">VROOM</h1>
             </div>
             <nav class="nav-menu">
-                <a href="main_updated_2.html" class="nav-item">홈</a>
+                <a href="main_updated_2" class="nav-item">홈</a>
                 <a href="#" class="nav-item">커뮤니티</a>
                 <a href="#" class="nav-item">심부름꾼 전환</a>
                 <a href="#" class="nav-item nav-login">로그인</a>
@@ -594,9 +594,9 @@
                 <div class="nav-dropdown">
                     <button class="nav-item nav-user" id="userDropdownBtn">유저</button>
                     <div class="dropdown-menu" id="userDropdownMenu">
-                        <a href="my-info.html" class="dropdown-item">나의정보</a>
-                        <a href="vroom-pay.html" class="dropdown-item">부름페이</a>
-                        <a href="my-activity.html" class="dropdown-item">나의 활동</a>
+                        <a href="myInfo" class="dropdown-item">나의정보</a>
+                        <a href="vroomPay" class="dropdown-item">부름페이</a>
+                        <a href="myActivity" class="dropdown-item">나의 활동</a>
                         <a href="#" class="dropdown-item">설정</a>
                         <a href="#" class="dropdown-item">고객지원</a>
                         <div class="dropdown-divider"></div>
