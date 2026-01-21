@@ -139,25 +139,29 @@
 
 	<insert id="insertErrand" parameterType="com.gorani.vroom.errand.post.ErrandCreateVO"
 	        useGeneratedKeys="true" keyProperty="errandsId">
-	    INSERT INTO errands (
+	    INSERT INTO ERRANDS (
+	    	user_id,
 	        title,
 	        category_id,
 	        reward_amount,
 	        expense_amount,
 	        description,
 	        dong_code,
+	        dong_full_name,
 	        desired_at,
 	        status,
 	        created_at
 	    ) VALUES (
+	    	#{userId},
 	        #{title},
 	        #{categoryId},
 	        #{rewardAmount},
 	        #{expenseAmount},
 	        #{description},
 	        #{dongCode},
-	        #{desiredAt},
-	        'WAIT',
+	        #{dongFullName},
+	        COALESCE(#{desiredAt}, NOW()),
+	        'WAITING',
 	        NOW()
 	    )
 	</insert>

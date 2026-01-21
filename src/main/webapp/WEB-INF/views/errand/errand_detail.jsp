@@ -1,4 +1,4 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 
@@ -565,7 +565,7 @@
                     </div>
 
                     <div class="info-panel">
-                        <h2 class="panel-title">심부름<br>설명</h2>
+                        <h2 class="panel-title">심부름 설명</h2>
                         <p class="panel-content">
                         	<c:out value="${errand.description}" />
                         </p>
