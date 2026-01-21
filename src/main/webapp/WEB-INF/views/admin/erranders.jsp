@@ -1079,7 +1079,7 @@
         <div class="modal-footer">
             <button class="modal-button cancel" onclick="closeApprovalModal()">닫기</button>
             <button class="modal-button reject" onclick="rejectHelper()">반려</button>
-            <button class="modal-button approve" onclick="approveHelper()">승인</button>
+            <button class="modal-button approve" onclick="approveErrander()">승인</button>
         </div>
     </div>
 </div>
@@ -1358,19 +1358,23 @@
         if (e.target === this) closeApprovalModal();
     });
 
-    // 승인 처리 (API 연동 필요)
-    function approveHelper() {
-        const helperId = document.getElementById('approvalModal').dataset.helperId;
+    // 승인 처리
+    function approveErrander() {
+        const erranderId = document.getElementById('approvalModal').dataset.helperId;
         if(!confirm(helperId + ' 님을 승인하시겠습니까?')) return;
 
-        // TODO: 승인 API 구현 후 fetch 호출
-        /*
         fetch('${pageContext.request.contextPath}/api/admin/erranders/approve', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ id: helperId })
-        }).then(...)
-        */
+            body: JSON.stringify({
+                erranderId: erranderId,
+                status: "APPROVED"
+            })
+        })
+            .then(res => res.json())
+            .then(data => {})
+
+
 
         alert('승인되었습니다. (API 연동 필요)');
         closeApprovalModal();
@@ -1396,7 +1400,8 @@
             return;
         }
         // 새 창에서 해당 URL 열람
-        window.open('${pageContext.request.contextPath}/url', '_blank');
+        url = '${pageContext.request.contextPath}' + '/' + url;
+        window.open(url, '_blank');
     }
 </script>
 </body>

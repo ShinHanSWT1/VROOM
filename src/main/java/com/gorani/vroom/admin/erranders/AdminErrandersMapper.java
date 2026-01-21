@@ -15,4 +15,5 @@ public interface AdminErrandersMapper {
 
     Map<String, Object> getErranderApprovalDetail(Long id);
 
+    void updateErranderApprovalStatus(Long erranderId, String status);
 }

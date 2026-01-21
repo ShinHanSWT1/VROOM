@@ -74,4 +74,11 @@ public class AdminErrandersServiceImpl implements AdminErrandersService {
         return mapper.getErranderApprovalDetail(id);
     }
 
+    @Override
+    public Map<String, Object> approveErrander(Long erranderId, String status) {
+        mapper.updateErranderApprovalStatus(erranderId, status);
+
+        return Map.of();
+    }
+
 }

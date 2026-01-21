@@ -106,7 +106,7 @@
     </select>
 
 
-    <!-- 부름이 승인 모달 -->
+    <!-- 부름이 승인/반려 모달 -->
     <!-- 사용자 id, 심부름 id, 닉네임, 이메일, 휴대폰, 활동 상태, 최근활동일, 활동 동네, 제출 서류 -->
     <resultMap id="erranderResumeMap" type="map">
         <id property="user_id" column="user_id"/>
@@ -140,4 +140,12 @@
             WHERE e.errander_id = #{erranderId}
         ]]>
     </select>
+
+    <!-- 부름이 승인 -->
+    <update id="updateErranderApprovalStatus">
+        <![CDATA[
+            UPDATE ERRANDER_PROFILES SET approval_status = #{status}
+            WHERE errander_id = #{erranderId}
+        ]]>
+    </update>
 </mapper>
