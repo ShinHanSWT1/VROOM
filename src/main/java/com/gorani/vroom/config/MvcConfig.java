@@ -1,5 +1,6 @@
 package com.gorani.vroom.config;
 
+import com.gorani.vroom.common.util.AdminLoginInterceptor;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -16,29 +17,32 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
-import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.config.annotation.ViewResolverRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.config.annotation.*;
 
 @Configuration
-@MapperScan(basePackages = { "com.gorani.vroom" }, annotationClass = Mapper.class)
-@ComponentScan(basePackages = { "com.gorani.vroom" })
+@MapperScan(basePackages = {"com.gorani.vroom"}, annotationClass = Mapper.class)
+@ComponentScan(basePackages = {"com.gorani.vroom"})
 @EnableWebMvc
 @EnableTransactionManagement
 public class MvcConfig implements WebMvcConfigurer {
 
+    // 프로필 이미지 저장 경로 (외부 경로)
+    public static final String UPLOAD_PATH = "C:/uploads/profile/";
     @Value("${db.driver}")
     private String driver;
-
     @Value("${db.url}")
     private String url;
-
     @Value("${db.username}")
     private String username;
-
     @Value("${db.password}")
     private String password;
+
+    @Bean
+    public static PropertyPlaceholderConfigurer properties() {
+        PropertyPlaceholderConfigurer config = new PropertyPlaceholderConfigurer();
+        config.setLocation(new ClassPathResource("db.properties"));
+        return config;
+    }
 
     // 정적 리소스는 tomcat에서 처리하도록 핸들링
     public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
@@ -49,6 +53,31 @@ public class MvcConfig implements WebMvcConfigurer {
     @Override
     public void configureViewResolvers(ViewResolverRegistry registry) {
         registry.jsp("/WEB-INF/views/", ".jsp");
+    }
+
+    // CSS 경로
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // Static 리소스 매핑 추가
+        registry.addResourceHandler("/static/**")
+                .addResourceLocations("/static/")
+                .setCachePeriod(3600)
+                .resourceChain(true);
+
+
+        // 프로필 이미지 (외부 경로 매핑) => 프로젝트 외부에 저장을 해야 배포시 데이터 삭제 방지.
+        registry.addResourceHandler("/uploads/profile/**")
+                .addResourceLocations("file:/" + UPLOAD_PATH);
+    }
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        // 관리자 전용 인터셉터
+        registry.addInterceptor(new AdminLoginInterceptor())
+                .addPathPatterns("/admin/**")
+                .excludePathPatterns("/admin/login", "/admin/auth/**");
+
+        // TODO: 일반 사용자 전용 인터셉터
     }
 
     // hikaricp
@@ -76,7 +105,7 @@ public class MvcConfig implements WebMvcConfigurer {
 
         // 설정 객체를 SqlSessionFactoryBean에 주입
         ssf.setConfiguration(configuration);
-        
+
         return ssf.getObject();
     }
 
@@ -99,11 +128,5 @@ public class MvcConfig implements WebMvcConfigurer {
     }
 
 
-    @Bean
-    public static PropertyPlaceholderConfigurer properties() {
-        PropertyPlaceholderConfigurer config = new PropertyPlaceholderConfigurer();
-        config.setLocation(new ClassPathResource("db.properties"));
-        return config;
-    }
 }
 

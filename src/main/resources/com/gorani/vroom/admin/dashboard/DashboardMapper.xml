@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gorani.vroom.admin.dashboard.DashboardMapper">
+
+    <!-- 대시보드 상단 요약 -->
+    <select id="getSummary"
+            resultType="com.gorani.vroom.admin.dashboard.DashboardSummaryVO">
+        <![CDATA[
+            SELECT
+                -- 총 사용자
+                (SELECT COUNT(*) FROM MEMBERS WHERE status != 'DELETED') AS total_user_count,
+                -- 오늘 가입자
+                (SELECT COUNT(*) FROM MEMBERS WHERE status != 'DELETED'
+                                                AND created_at >= CURDATE()
+                                                AND created_at < CURDATE() + INTERVAL 1 DAY
+                ) AS total_user_delta,
+
+                -- 일간 활성 사용자
+                (SELECT COUNT(*) FROM MEMBERS WHERE last_login_at >= CURDATE()
+                                                AND last_login_at < CURDATE() + INTERVAL 1 DAY
+                                                AND status = 'ACTIVE'
+                ) AS dau_today,
+                -- 어제 사용자
+                (SELECT COUNT(*) FROM MEMBERS WHERE last_login_at >= CURDATE() - INTERVAL 1 DAY
+                                              AND last_login_at < CURDATE()
+                                              AND status = 'ACTIVE'
+                ) AS dau_yesterday,
+                -- 차이
+                (
+                    (SELECT COUNT(*) FROM MEMBERS WHERE last_login_at >= CURDATE()
+                                                    AND last_login_at < CURDATE() + INTERVAL 1 DAY
+                                                    AND status = 'ACTIVE')
+                    -
+                    (SELECT COUNT(*) FROM MEMBERS WHERE last_login_at >= CURDATE() - INTERVAL 1 DAY
+                                                    AND last_login_at < CURDATE()
+                                                    AND status = 'ACTIVE'
+                    )
+                ) AS dau_delta,
+
+                -- 오늘 심부름 수
+                (SELECT COUNT(*) FROM ERRANDS WHERE created_at >= CURDATE()
+                                                AND created_at <  CURDATE() + INTERVAL 1 DAY
+                ) AS errands_today,
+                -- 어제 심부름 수
+                (SELECT COUNT(*) FROM ERRANDS WHERE created_at >= CURDATE() - INTERVAL 1 DAY
+                                                AND created_at <  CURDATE()
+                ) AS errands_yesterday,
+
+                -- 주문 증감률
+                CASE
+                    WHEN (SELECT COUNT(*) FROM ERRANDS
+                           WHERE created_at >= CURDATE() - INTERVAL 1 DAY
+                           AND created_at <  CURDATE()
+                           ) = 0
+                    THEN NULL
+                    ELSE ROUND(
+                        (
+                            (SELECT COUNT(*) FROM ERRANDS WHERE created_at >= CURDATE()
+                                AND created_at <  CURDATE() + INTERVAL 1 DAY
+                            )
+                            -
+                            (SELECT COUNT(*) FROM ERRANDS WHERE created_at >= CURDATE() - INTERVAL 1 DAY
+                                AND created_at <  CURDATE()
+                            )
+                        ) * 100.0 /
+                        (SELECT COUNT(*) FROM ERRANDS WHERE created_at >= CURDATE() - INTERVAL 1 DAY
+                            AND created_at <  CURDATE()
+                        )
+                    , 0)
+                END AS errands_diff_rate,
+
+                -- 심부름 완료율
+                CASE
+                    WHEN (SELECT COUNT(*) FROM ERRANDS WHERE created_at >= CURDATE()
+                            AND created_at <  CURDATE() + INTERVAL 1 DAY
+                          ) = 0
+                    THEN 0
+                    ELSE ROUND(
+                        (SELECT COUNT(*) FROM ERRANDS WHERE created_at >= CURDATE()
+                            AND created_at <  CURDATE() + INTERVAL 1 DAY
+                            AND status = 'COMPLETED'
+                        ) * 100.0
+                        /
+                        (SELECT COUNT(*) FROM ERRANDS WHERE created_at >= CURDATE()
+                            AND created_at <  CURDATE() + INTERVAL 1 DAY
+                        )
+                    , 0)
+                END AS completion_rate,
+
+                -- 활성 부름이
+                (SELECT COUNT(*) FROM ERRANDER_PROFILES WHERE last_active_at >= CURDATE()
+                    AND last_active_at <  CURDATE() + INTERVAL 1 DAY
+                    AND status = 'ACTIVE'
+                ) AS active_errander_today,
+
+                (SELECT COUNT(*) FROM ERRANDER_PROFILES WHERE last_active_at >= CURDATE() - INTERVAL 1 DAY
+                    AND last_active_at <  CURDATE()
+                    AND status = 'ACTIVE'
+                ) AS active_errander_yesterday,
+
+                (
+                    (SELECT COUNT(*) FROM ERRANDER_PROFILES WHERE last_active_at >= CURDATE()
+                    AND last_active_at <  CURDATE() + INTERVAL 1 DAY
+                    AND status = 'ACTIVE'
+                    )
+                    -
+                    (SELECT COUNT(*) FROM ERRANDER_PROFILES WHERE last_active_at >= CURDATE() - INTERVAL 1 DAY
+                        AND last_active_at <  CURDATE()
+                        AND status = 'ACTIVE'
+                    )
+                ) AS active_errander_delta
+        ]]>
+    </select>
+
+    <!-- 상태별 심부름 수 조회 -->
+    <select id="getErrandsStatusCount"
+            resultType="map">
+        <![CDATA[
+            SELECT status, count(*) AS cnt FROM ERRANDS GROUP BY status
+        ]]>
+    </select>
+
+    <!-- 최근 7일 상태별 심부름 수 조회 -->
+    <select id="getErrandsStatusRecentCount"
+            resultType="map">
+        <![CDATA[
+            SELECT status, count(*) AS cnt FROM ERRANDS WHERE created_at >= CURRENT_DATE()
+                AND created_at < CURRENT_DATE() + INTERVAL 1 DAY
+                GROUP BY status
+        ]]>
+    </select>
+
+    <!-- 카테고리별 심부름수 조회 -->
+    <select id="getErrandsCategoryCount"
+            resultType="map">
+        <![CDATA[
+            SELECT E.category_id AS category, C.name AS name, COUNT(*) AS cnt
+                FROM ERRANDS E RIGHT JOIN CATEGORIES C ON E.category_id = C.id
+                GROUP BY E.category_id, C.name
+        ]]>
+    </select>
+
+    <!-- 시간별 심부르 트렌드 조회 -->
+    <select id="getErrandsHourlyTrend"
+            resultType="map">
+        <![CDATA[
+            SELECT HOUR(created_at) AS hour, COUNT(*) AS cnt FROM ERRANDS
+                WHERE created_at >= CURDATE()
+                GROUP BY HOUR(created_at)
+                ORDER BY hour
+        ]]>
+    </select>
+
+    <!-- 신고/이슈 요약 -->
+    <select id="getReportSummary"
+            resultType="map">
+        <![CDATA[
+            SELECT
+                (SELECT COUNT(*) FROM ISSUE_TICKETS WHERE status = 'RECEIVED') AS pending,
+                (SELECT COUNT(*) FROM ISSUE_TICKETS WHERE status = 'IN_PROGRESS') AS processing,
+                (SELECT COUNT(*) FROM ISSUE_TICKETS WHERE status = 'RESOLVED') AS completed
+            FROM DUAL
+        ]]>
+    </select>
+
+    <!-- 정산 요약 -->
+    <select id="getSettlementSummary"
+            resultType="map">
+        <![CDATA[
+            SELECT
+            -- 오늘 정산 예정 (오늘 생성된 건 중 대기 상태인 금액 합계)
+                (SELECT IFNULL(SUM(net_amount), 0)
+                 FROM SETTLEMENTS
+                 WHERE created_at >= CURDATE()
+                   AND created_at < CURDATE() + INTERVAL 1 DAY
+                    AND status = 'WAITING') AS today_amount,
+
+            -- 정산 대기 (전체 대기 건수)
+                 (SELECT COUNT(*)
+                    FROM SETTLEMENTS
+                    WHERE status = 'WAITING') AS pending_count,
+
+            -- 이번 달 총 정산 (이번 달 완료된 정산 금액 합계)
+                (SELECT IFNULL(SUM(net_amount), 0)
+
+            FROM SETTLEMENTS
+            WHERE status = 'DONE'
+              AND created_at >= DATE_FORMAT(NOW(), '%Y-%m-01')) AS month_amount
+            FROM DUAL
+        ]]>
+    </select>
+
+    <!-- 지역별 심부름 정보 -->
+    <select id="getErrandRegionSummaryTop5"
+            resultType="map">
+        <![CDATA[
+            SELECT
+                L.gungu_name                            AS region,
+                COUNT(E.errands_id)                     AS total_cnt,
+                SUM(CASE
+                        WHEN E.status = 'COMPLETED' THEN 1
+                        ELSE 0
+                    END)                                AS completed_cnt,
+                AVG(E.reward_amount)                    AS avg_price
+            FROM LEGAL_DONG L LEFT JOIN ERRANDS E ON E.dong_code = L.dong_code
+            GROUP BY L.gungu_name
+            ORDER BY total_cnt DESC, avg_price DESC, completed_cnt DESC
+            LIMIT 5
+        ]]>
+    </select>
+
+</mapper>
