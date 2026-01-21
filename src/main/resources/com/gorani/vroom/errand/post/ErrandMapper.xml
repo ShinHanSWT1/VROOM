@@ -43,6 +43,14 @@
             e.category_id    AS categoryId,
             e.dong_code      AS dongCode,
             
+            (
+		      SELECT ei.image_url
+		      FROM ERRANDS_IMAGE ei
+		      WHERE ei.errands_id = e.errands_id
+		      ORDER BY ei.sort_order ASC, ei.image_id ASC
+		      LIMIT 1
+		    ) AS imageUrl,
+            
             c.name         AS categoryName,
 		    u.nickname     AS writerNickname,
 		    d.full_name    AS dongFullName
@@ -76,6 +84,16 @@
         FROM ERRANDS e
         <include refid="ErrandListWhere"/>
     </select>
+    
+    <select id="selectMainImageUrl"
+	        parameterType="long"
+	        resultType="string">
+	    SELECT image_url
+	    FROM ERRANDS_IMAGE
+	    WHERE errands_id = #{errandsId}
+	    ORDER BY sort_order ASC, image_id ASC
+	    LIMIT 1
+	</select>
     
     <!-- 심부름 게시글 상세 조회 -->
     <select id="selectErrandDetail"

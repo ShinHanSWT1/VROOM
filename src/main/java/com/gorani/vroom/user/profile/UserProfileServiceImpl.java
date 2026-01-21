@@ -66,7 +66,7 @@ public class UserProfileServiceImpl implements UserProfileService {
     // [수정됨] 프로필 이미지 파일 저장 및 DB 업데이트 (중복 방지 적용)
     public String saveProfileImage(Long userId, MultipartFile file) throws IOException {
         // 1. 저장 디렉토리 확인
-        File uploadDir = new File(MvcConfig.UPLOAD_PATH);
+        File uploadDir = new File(MvcConfig.PROFILE_UPLOAD_PATH);
         if (!uploadDir.exists()) {
             uploadDir.mkdirs();
         }
@@ -83,7 +83,7 @@ public class UserProfileServiceImpl implements UserProfileService {
             String fileHash = calculateFileHash(file);
             String savedFilename = fileHash + extension; // 예: a1b2c3d4...jpg
 
-            File destFile = new File(MvcConfig.UPLOAD_PATH + savedFilename);
+            File destFile = new File(MvcConfig.PROFILE_UPLOAD_PATH + savedFilename);
 
             // 4. [핵심] 이미 같은 파일이 있는지 확인
             if (destFile.exists()) {

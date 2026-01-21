@@ -32,4 +32,5 @@ public interface ErrandMapper {
     
     List<CategoryVO> selectCategories();
     List<Map<String, Object>> selectDongs();
+    String selectMainImageUrl(@Param("errandsId") Long errandsId);
 }

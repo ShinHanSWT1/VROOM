@@ -538,7 +538,7 @@
                     <div class="errand-image">
                         <c:choose>
 				            <c:when test="${not empty mainImageUrl}">
-				                <img src="${mainImageUrl}" alt="심부름 사진">
+				                <img src="${pageContext.request.contextPath}${errand.mainImageUrl}" alt="심부름 이미지">
 				            </c:when>
 				            <c:otherwise>
 				                <img src="${pageContext.request.contextPath}/static/img/errand/noimage.png"

@@ -6,6 +6,8 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
+import com.gorani.vroom.common.util.CategoryImageUtil;
+
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -35,8 +37,22 @@ public class ErrandServiceImpl implements ErrandService {
         param.put("sort", safeSort);
         param.put("limit", safeSize);
         param.put("offset", offset);
+        
+        List<ErrandListVO> list = errandMapper.selectErrandList(param);
+        
+        if (list != null) {
+            for (ErrandListVO e : list) {
+                String url = e.getImageUrl(); // selectErrandList에서 AS imageUrl 로 내려온 값
 
-        return errandMapper.selectErrandList(param);
+                if (url == null || url.isBlank()) {
+                    url = CategoryImageUtil.getDefaultImage(e.getCategoryId()); // "/static/img/category/xxx.png"
+                }
+
+                e.setDisplayImageUrl(url);
+            }
+        }
+
+        return list;
     }
     
     public List<ErrandListVO> getRelatedErrands(ErrandDetailVO errand) {
@@ -64,8 +80,18 @@ public class ErrandServiceImpl implements ErrandService {
     
     @Override
     public ErrandDetailVO getErrandDetail(Long errandsId) {
-        if (errandsId == null) return null;
-        return errandMapper.selectErrandDetail(errandsId);
+    	ErrandDetailVO errand = errandMapper.selectErrandDetail(errandsId);
+        if (errand == null) return null;
+        String mainImageUrl = errandMapper.selectMainImageUrl(errandsId);
+
+        if (mainImageUrl == null || mainImageUrl.isBlank()) {
+            // 이미지 없으면 카테고리 기본 이미지
+            mainImageUrl = CategoryImageUtil.getDefaultImage(errand.getCategoryId());
+        }
+
+        errand.setMainImageUrl(mainImageUrl);
+
+        return errand;
     }
     
     @Override
