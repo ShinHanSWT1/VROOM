@@ -70,7 +70,7 @@ public class AuthController {
 //		}
 //		out.print("</script>");
 
-        return "redirect:/auth/signup"; // 등록페이지로 리다이렉트
+        return "redirect:/auth/login";
     }
 
     // ===================== 로그인 =====================
@@ -94,8 +94,8 @@ public class AuthController {
         } else { // 로그인 성공
             log.info("로그인 성공 - userId: {}, email: {}", userVo.getUserId(), userVo.getEmail());
             sess.setAttribute("loginSess", userVo);
-            // TODO: 세션에 사용자 관점인거 저장
-            page = "redirect:/user";
+            sess.setAttribute("viewMode", "USER");
+            page = "redirect:/";
         }
         return page;
     }
@@ -104,7 +104,8 @@ public class AuthController {
     @GetMapping("/auth/logout")
     public String logout(Model model, HttpSession sess) {
         //sess.invalidate(); // 세션초기화
-        sess.removeAttribute("loginSess"); // 로그인세션만 삭제
+        sess.removeAttribute("loginSess"); // 로그인세션 삭제
+        sess.removeAttribute("viewMode");
         model.addAttribute("msg", "로그아웃되었습니다.");
         model.addAttribute("cmd", "move");
         model.addAttribute("url", "/test/user");

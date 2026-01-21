@@ -483,8 +483,8 @@
         <nav class="nav-menu">
             <a href="#" class="nav-item">커뮤니티</a>
             <a href="#" class="nav-item">실무블로그 전환</a>
-            <a href="../auth/login.html" class="nav-item nav-login">로그인</a>
-            <a href="../auth/signup.html" class="nav-item nav-signup">회원가입</a>
+            <a href="${pageContext.request.contextPath}/auth/login" class="nav-item nav-login">로그인</a>
+            <a href="${pageContext.request.contextPath}/auth/signup" class="nav-item nav-signup">회원가입</a>
             <a href="#" class="nav-item nav-user">유저</a>
         </nav>
     </div>
@@ -495,7 +495,7 @@
     <div class="auth-card">
         <h2 class="auth-title">로그인</h2>
 
-        <form action="/auth/login" method="post" id="loginForm">
+        <form action="${pageContext.request.contextPath}/auth/login" method="post" id="loginForm">
             <!-- 이메일 입력 -->
             <div class="auth-form-group">
                 <label for="email" class="auth-label">이메일</label>
@@ -515,7 +515,7 @@
                 <input
                         type="password"
                         id="password"
-                        name="password"
+                        name="pwd"
                         class="auth-input password-input"
                         placeholder="비밀번호를 입력하세요"
                         autocomplete="current-password"
@@ -552,7 +552,7 @@
         <!-- 회원가입 링크 -->
         <div class="auth-link-section">
             <p class="auth-link-text">아직 계정이 없으신가요?</p>
-            <a href="../auth/signup.html" class="auth-link">회원가입하기 →</a>
+            <a href="${pageContext.request.contextPath}/auth/signup" class="auth-link">회원가입하기 →</a>
         </div>
     </div>
 </section>

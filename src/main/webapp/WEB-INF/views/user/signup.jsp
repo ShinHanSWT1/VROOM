@@ -483,8 +483,8 @@
         <nav class="nav-menu">
             <a href="#" class="nav-item">커뮤니티</a>
             <a href="#" class="nav-item">실무블로그 전환</a>
-            <a href="../auth/login" class="nav-item nav-login">로그인</a>
-            <a href="../auth/signup" class="nav-item nav-signup">회원가입</a>
+            <a href="${pageContext.request.contextPath}/auth/login" class="nav-item nav-login">로그인</a>
+            <a href="${pageContext.request.contextPath}/auth/signup" class="nav-item nav-signup">회원가입</a>
             <a href="#" class="nav-item nav-user">유저</a>
         </nav>
     </div>
@@ -493,9 +493,9 @@
 <!-- 회원가입 섹션 -->
 <section class="auth-page">
     <div class="auth-card">
-        <h2 class="auth-title">회원가입1</h2>
+        <h2 class="auth-title">회원가입</h2>
 
-        <form action="/auth/signup" method="post" enctype="multipart/form-data" id="signupForm">
+        <form action="${pageContext.request.contextPath}/auth/signup" method="post" enctype="multipart/form-data" id="signupForm">
             <!-- 이메일 입력 -->
             <div class="auth-form-group">
                 <label for="signup-email" class="auth-label">이메일</label>
@@ -515,7 +515,7 @@
                 <input
                         type="password"
                         id="signup-password"
-                        name="password"
+                        name="pwd"
                         class="auth-input password-input"
                         placeholder="비밀번호를 입력하세요"
                         autocomplete="new-password"
@@ -621,7 +621,7 @@
         <!-- 로그인 링크 -->
         <div class="auth-link-section">
             <p class="auth-link-text">이미 계정이 있으신가요?</p>
-            <a href="../auth/login.html" class="auth-link">로그인하기 →</a>
+            <a href="${pageContext.request.contextPath}/auth/login" class="auth-link">로그인하기 →</a>
         </div>
     </div>
 </section>
@@ -716,7 +716,6 @@
     const mockGus = ['강남구', '강동구', '강북구', '강서구', '관악구', '광진구', '구로구', '금천구', '노원구', '도봉구', '동대문구', '동작구', '마포구', '서대문구', '서초구', '성동구', '성북구', '송파구', '양천구', '영등포구', '용산구', '은평구', '종로구', '중구', '중랑구'];
 
     const mockDongs = {
-
         '강북구': [
             { dongCode: '1130510100', dongName: '미아동' },
             { dongCode: '1130510200', dongName: '번동' },
