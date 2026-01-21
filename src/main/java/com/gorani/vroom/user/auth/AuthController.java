@@ -88,8 +88,10 @@ public class AuthController {
         String page = "";
         if (userVo == null) {
             log.warn("로그인 실패 - email: {}", vo.getEmail());// 로그인실패
-            model.addAttribute("msg", "아이디 비밀번호가 올바르지 않습니다.");
-            model.addAttribute("cmd", "back");
+            model.addAttribute("message", "아이디 비밀번호가 올바르지 않습니다.");
+            model.addAttribute("subMessage", "로그인 창으로 이동합니다.");
+            model.addAttribute("result", "fail");
+            model.addAttribute("url", "login");
             page = "common/return";
         } else { // 로그인 성공
             log.info("로그인 성공 - userId: {}, email: {}", userVo.getUserId(), userVo.getEmail());
@@ -106,9 +108,10 @@ public class AuthController {
         //sess.invalidate(); // 세션초기화
         sess.removeAttribute("loginSess"); // 로그인세션 삭제
         sess.removeAttribute("viewMode");
-        model.addAttribute("msg", "로그아웃되었습니다.");
-        model.addAttribute("cmd", "move");
-        model.addAttribute("url", "/test/user");
+        model.addAttribute("message", "로그아웃되었습니다.");
+        model.addAttribute("subMessage", "VROOM으로 이동합니다.");
+        model.addAttribute("result", "success");
+        model.addAttribute("url", "/");
         return "common/return";
     }
 }

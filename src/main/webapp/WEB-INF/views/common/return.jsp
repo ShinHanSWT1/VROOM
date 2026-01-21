@@ -1,21 +1,19 @@
-<%--
-  Created by IntelliJ IDEA.
-  User: fzaca
-  Date: 2026-01-19
-  Time: 오전 10:23
-  To change this template use File | Settings | File Templates.
---%>
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+         pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
-<html>
+<!DOCTYPE html>
+<html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script
+            src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js">
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-
+    </script>
     <title>VROOM - 로딩중</title>
-
     <style>
         :root {
             --color-primary: #6B8E23;
@@ -35,18 +33,12 @@
         }
 
         body {
-            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont,
-            'Segoe UI', 'Malgun Gothic', sans-serif;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(
-                    135deg,
-                    var(--color-primary) 0%,
-                    var(--color-secondary) 50%,
-                    var(--color-accent) 100%
-            );
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 50%, var(--color-accent) 100%);
             overflow: hidden;
             position: relative;
         }
@@ -55,43 +47,32 @@
         body::before {
             content: '';
             position: absolute;
-            inset: 0;
-            background-image:
-                    linear-gradient(
-                            30deg,
-                            transparent 48%,
-                            rgba(255, 255, 255, 0.03) 48%,
-                            rgba(255, 255, 255, 0.03) 52%,
-                            transparent 52%
-                    ),
-                    linear-gradient(
-                            150deg,
-                            transparent 48%,
-                            rgba(255, 255, 255, 0.03) 48%,
-                            rgba(255, 255, 255, 0.03) 52%,
-                            transparent 52%
-                    ),
-                    linear-gradient(
-                            90deg,
-                            transparent 48%,
-                            rgba(255, 255, 255, 0.03) 48%,
-                            rgba(255, 255, 255, 0.03) 52%,
-                            transparent 52%
-                    );
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: linear-gradient(30deg, transparent 48%, rgba(255, 255, 255, 0.03) 48%, rgba(255, 255, 255, 0.03) 52%, transparent 52%),
+            linear-gradient(150deg, transparent 48%, rgba(255, 255, 255, 0.03) 48%, rgba(255, 255, 255, 0.03) 52%, transparent 52%),
+            linear-gradient(90deg, transparent 48%, rgba(255, 255, 255, 0.03) 48%, rgba(255, 255, 255, 0.03) 52%, transparent 52%);
             background-size: 80px 138px;
             animation: honeycombMove 20s linear infinite;
         }
 
         @keyframes honeycombMove {
-            from { background-position: 0 0; }
-            to   { background-position: 80px 138px; }
+            0% {
+                background-position: 0 0;
+            }
+
+            100% {
+                background-position: 80px 138px;
+            }
         }
 
         /* Loading Container */
         .loading-container {
             text-align: center;
-            position: relative;
             z-index: 10;
+            position: relative;
         }
 
         /* Bee Animation */
@@ -103,6 +84,7 @@
         }
 
         .bee-icon {
+            font-size: 5rem;
             position: absolute;
             top: 50%;
             left: 50%;
@@ -116,9 +98,12 @@
         }
 
         @keyframes beeFloat {
-            0%, 100% {
-                transform: translate(-50%, -50%) translateY(0) rotate(0);
+
+            0%,
+            100% {
+                transform: translate(-50%, -50%) translateY(0px) rotate(0deg);
             }
+
             50% {
                 transform: translate(-50%, -50%) translateY(-20px) rotate(10deg);
             }
@@ -139,10 +124,7 @@
             width: 40px;
             height: 40px;
             background: var(--color-white);
-            clip-path: polygon(
-                    30% 0%, 70% 0%, 100% 50%,
-                    70% 100%, 30% 100%, 0% 50%
-            );
+            clip-path: polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%);
             opacity: 0.8;
         }
 
@@ -151,6 +133,7 @@
             left: 50%;
             transform: translateX(-50%);
             animation: hexagonPulse 1.5s ease-in-out infinite;
+            animation-delay: 0s;
         }
 
         .hexagon:nth-child(2) {
@@ -190,10 +173,13 @@
         }
 
         @keyframes hexagonPulse {
-            0%, 100% {
+
+            0%,
+            100% {
                 transform: scale(1);
                 opacity: 0.8;
             }
+
             50% {
                 transform: scale(1.3);
                 opacity: 0.3;
@@ -216,55 +202,178 @@
             margin-bottom: 2rem;
         }
 
+        /* Dots Animation */
+        .loading-dots {
+            display: inline-block;
+        }
+
+        .loading-dots span {
+            animation: dotBounce 1.4s ease-in-out infinite;
+        }
+
+        .loading-dots span:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .loading-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .loading-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes dotBounce {
+
+            0%,
+            60%,
+            100% {
+                transform: translateY(0);
+            }
+
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+
         /* Progress Bar */
         .progress-container {
             width: 300px;
             height: 8px;
-            margin: 0 auto;
             background: rgba(255, 255, 255, 0.2);
             border-radius: 10px;
+            margin: 0 auto;
             overflow: hidden;
+            position: relative;
         }
 
         .progress-bar {
             height: 100%;
-            background: linear-gradient(
-                    90deg,
-                    var(--color-white) 0%,
-                    rgba(255, 255, 255, 0.7) 100%
-            );
+            background: linear-gradient(90deg, var(--color-white) 0%, rgba(255, 255, 255, 0.7) 100%);
+            border-radius: 10px;
             animation: progressAnimation 2s ease-in-out infinite;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
         }
 
         @keyframes progressAnimation {
-            0%   { width: 0%; }
-            50%  { width: 70%; }
-            100% { width: 100%; }
+            0% {
+                width: 0%;
+            }
+
+            50% {
+                width: 70%;
+            }
+
+            100% {
+                width: 100%;
+            }
+        }
+
+        /* Flying Bees */
+        .flying-bee {
+            position: absolute;
+            font-size: 2rem;
+            animation: flyAcross 7s linear infinite;
+            opacity: 0.6;
+        }
+
+        .flying-bee > img {
+            width: 50px;
+            height: 50px;
+
+        }
+
+        .flying-bee-1 {
+            top: 20%;
+            animation-delay: 0s;
+        }
+
+        .flying-bee-2 {
+            top: 60%;
+            animation-delay: 0s;
+            animation-direction: reverse;
+        }
+
+        .flying-bee-3 {
+            top: 80%;
+            animation-delay: 0.3s;
+            animation-direction: alternate;
+        }
+
+        @keyframes flyAcross {
+            0% {
+                left: -60px;
+                transform: rotate(0deg);
+            }
+
+            50% {
+                transform: rotate(10deg);
+            }
+
+            100% {
+                left: calc(100% + 60px);
+                transform: rotate(0deg);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .loading-text {
+                font-size: 1.5rem;
+            }
+
+            .loading-subtitle {
+                font-size: 1rem;
+            }
+
+            .bee-container {
+                width: 150px;
+                height: 150px;
+            }
+
+            .bee-icon {
+                font-size: 4rem;
+            }
+
+            .bee-icon-img {
+                width: 80px;
+                height: 60px;
+            }
+
+            .hexagon-spinner {
+                width: 130px;
+                height: 130px;
+            }
+
+            .hexagon {
+                width: 30px;
+                height: 30px;
+            }
+
+            .progress-container {
+                width: 240px;
+            }
         }
     </style>
 
-    <!-- Font -->
+    <!-- 글꼴 -->
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-    <link rel="stylesheet"
+    <link rel="stylesheet" as="style"
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
 </head>
 
 <body>
-
 <!-- Flying Bees -->
-<div class="flying-bee flying-bee-1">
-    <img src="${pageContext.request.contextPath}/resources/img/common/bee1.png" alt="">
-</div>
-<div class="flying-bee flying-bee-2">
-    <img src="${pageContext.request.contextPath}/resources/img/common/bee1.png" alt="">
-</div>
-<div class="flying-bee flying-bee-3">
-    <img src="${pageContext.request.contextPath}/resources/img/common/bee1.png" alt="">
-</div>
+<div class="flying-bee flying-bee-1"><img src="${pageContext.request.contextPath}/resources/img/common/bee1.png" alt=""
+                                          srcset=""></div>
+<div class="flying-bee flying-bee-2"><img src="${pageContext.request.contextPath}/resources/img/common/bee1.png" alt=""
+                                          srcset=""></div>
+<div class="flying-bee flying-bee-3"><img src="${pageContext.request.contextPath}/resources/img/common/bee1.png" alt=""
+                                          srcset=""></div>
 
 <!-- Loading Container -->
 <div class="loading-container">
-
+    <!-- Bee Animation with Hexagon Spinner -->
     <div class="bee-container">
         <div class="hexagon-spinner">
             <div class="hexagon"></div>
@@ -274,26 +383,23 @@
             <div class="hexagon"></div>
             <div class="hexagon"></div>
         </div>
-
         <div class="bee-icon">
-            <img src="${pageContext.request.contextPath}/resources/img/logo4.png"
-                 class="bee-icon-img" alt="">
+            <img src="${pageContext.request.contextPath}/resources/img/logo4.png" alt="" class="bee-icon-img"/>
         </div>
     </div>
-
+    <!-- Loading Text -->
     <h1 class="loading-text">
         ${message}
         <span class="loading-dots">
-            <span>.</span><span>.</span><span>.</span>
+                <span>.</span><span>.</span><span>.</span>
         </span>
     </h1>
-
     <p class="loading-subtitle">${subMessage}</p>
 
+    <!-- Progress Bar -->
     <div class="progress-container">
         <div class="progress-bar"></div>
     </div>
-
 </div>
 
 <script>
@@ -302,14 +408,14 @@
         location.href = '${url}'
     }, 3000);
     </c:if>
-
     <c:if test="${result == 'fail'}">
     console.log('${errorMsg}');
     setTimeout(function () {
         location.href = '${url}'
     }, 2000);
     </c:if>
-</script>
 
+</script>
 </body>
+
 </html>
