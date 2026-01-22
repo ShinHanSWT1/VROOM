@@ -649,7 +649,7 @@
 					
 					            <div class="task-meta">
 					              <span class="task-location">
-					                <c:out value="${e.dongCode}" />
+					                <c:out value="${e.dongFullName}" />
 					              </span>
 					              <span class="task-price">
 					                <c:out value="${e.rewardAmount}" />원
