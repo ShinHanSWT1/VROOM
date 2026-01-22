@@ -478,7 +478,8 @@
                     <div class="form-left">
                         <div class="form-group">
                             <label class="form-label form-label-required">심부름 제목</label>
-                            <input type="text" class="form-input" name="title" placeholder="제목을 입력하세요" required>
+                            <input type="text" class="form-input" name="title" id="title" placeholder="제목을 입력하세요" maxlength="50" required>
+                            <small id="titleCounter">0 / 50</small>
                         </div>
 
                         <div class="form-group">
@@ -500,7 +501,7 @@
                             <input type="number" class="form-input" name="rewardAmount" placeholder="가격을 입력하세요 (원)" required>
                         </div>
                         <div class="form-group">
-                            <label class="form-label form-label-required"></label>
+                            <label class="form-label form-label-required">재료비</label>
                             <input type="number" class="form-input" name="expenseAmount" placeholder="가격을 입력하세요 (원)" required>
                         </div>
                        
@@ -671,6 +672,23 @@
             }
         });
     </script>
+    <script>
+	document.addEventListener('DOMContentLoaded', function () {
+	  var input = document.querySelector('input[name="title"]');
+	  var counter = document.getElementById('titleCounter');
+	  var MAX = 50;
+	
+	  if (!input || !counter) return;
+	
+	  function render() {
+	    counter.textContent = input.value.length + ' / ' + MAX;
+	  }
+	
+	  input.addEventListener('input', render);
+	  input.addEventListener('compositionend', render); // 한글 조합 입력 대응
+	  render();
+	});
+	</script>
 </body>
 
 </html>

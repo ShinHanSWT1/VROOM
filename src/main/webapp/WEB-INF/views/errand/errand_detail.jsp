@@ -530,6 +530,37 @@
                 grid-template-columns: 1fr;
             }
         }
+        
+        /* 기본: 4줄까지만 보여주고 … */
+		.desc-content{
+		  display: -webkit-box;
+		  -webkit-box-orient: vertical;
+		  -webkit-line-clamp: 4;   /* 보여줄 줄 수: 3~6으로 조절 */
+		  overflow: hidden;
+		  word-break: break-word;
+		}
+		
+		/* 펼친 상태: 전체 표시 */
+		#descPanel.expanded .desc-content{
+		  -webkit-line-clamp: unset;
+		  display: block;
+		  overflow: visible;
+		}
+		
+		/* 더보기 버튼 */
+		.desc-toggle{
+		  margin-top: 10px;
+		  background: transparent;
+		  border: none;
+		  padding: 0;
+		  cursor: pointer;
+		  font-weight: 700;
+		  color: var(--color-primary);
+		  text-align: left;
+		  display: none; /* ✅ 실제로 잘릴 때만 JS가 보여줌 */
+		}
+		        
+        
     </style>
 
     <!-- 글꼴 -->
@@ -621,12 +652,13 @@
                         </p>
                     </div>
 
-                    <div class="info-panel">
-                        <h2 class="panel-title">심부름 설명</h2>
-                        <p class="panel-content">
-                        	<c:out value="${errand.description}" />
-                        </p>
-                    </div>
+                    <div class="info-panel is-description" id="descPanel">
+					  <h2 class="panel-title">심부름 설명</h2>
+					
+					  <p class="panel-content desc-content" id="descContent">
+					    <c:out value="${errand.description}" />
+					  </p>
+					</div>
                 </div>
             </div>
 
