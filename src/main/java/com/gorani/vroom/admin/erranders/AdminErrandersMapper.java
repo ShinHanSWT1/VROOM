@@ -14,7 +14,9 @@ public interface AdminErrandersMapper {
 
     int countErranders(Map<String, Object> param);
 
-    Map<String, Object> getErranderApprovalDetail(Long id);
+    Map<String, Object> getErranderApprovalDetail(
+            @Param("erranderId") Long erranderId
+    );
 
     int updateErranderApprovalStatus(
             @Param("erranderId") Long erranderId,
@@ -24,5 +26,9 @@ public interface AdminErrandersMapper {
     int updateErranderActiveStatus(
             @Param("erranderId") Long erranderId,
             @Param("status") String status
+    );
+
+    Map<String, Object> getActivitySummary(
+            @Param("erranderId") Long erranderId
     );
 }

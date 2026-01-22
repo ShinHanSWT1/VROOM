@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <title>VROOM - 부름이 상세 정보</title>
-    
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
 
     <style>
@@ -28,33 +28,140 @@
             --header-height: 70px;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Pretendard', sans-serif; color: var(--color-dark); background-color: #F8F9FA; line-height: 1.6; }
-        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            color: var(--color-dark);
+            background-color: #F8F9FA;
+            line-height: 1.6;
+        }
+
         /* 레이아웃 */
-        .admin-layout { display: flex; min-height: 100vh; }
-        .sidebar { width: var(--sidebar-width); background: linear-gradient(180deg, var(--color-primary) 0%, #4A6B1A 100%); color: var(--color-white); position: fixed; left: 0; top: 0; height: 100vh; transition: width 0.3s ease; z-index: 1000; overflow: hidden; }
-        .sidebar.collapsed { width: var(--sidebar-collapsed-width); }
-        .sidebar-header { height: var(--header-height); padding: 1rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .sidebar-logo img { width: 150px; }
-        .sidebar.collapsed .sidebar-logo { display: none; }
-        .sidebar.collapsed .sidebar-header { justify-content: center; padding: 1rem 0; }
-        .sidebar-toggle { background: rgba(255,255,255,0.2); border: none; color: white; width: 36px; height: 36px; border-radius: 4px; cursor: pointer; }
-        .nav-item { display: flex; align-items: center; padding: 1rem 1.5rem; color: white; text-decoration: none; transition: 0.3s; border-left: 4px solid transparent; }
-        .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); border-left-color: var(--color-secondary); }
-        .nav-item-icon { margin-right: 10px; font-size: 1.2rem; min-width: 30px; text-align: center; }
-        .sidebar.collapsed .nav-item { justify-content: center; padding: 1rem 0; }
-        .sidebar.collapsed .nav-item-icon { margin-right: 0; }
-        .sidebar.collapsed .nav-item-text { display: none; }
-        
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(180deg, var(--color-primary) 0%, #4A6B1A 100%);
+            color: var(--color-white);
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            transition: width 0.3s ease;
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+        .sidebar.collapsed {
+            width: var(--sidebar-collapsed-width);
+        }
+
+        .sidebar-header {
+            height: var(--header-height);
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-logo img {
+            width: 150px;
+        }
+
+        .sidebar.collapsed .sidebar-logo {
+            display: none;
+        }
+
+        .sidebar.collapsed .sidebar-header {
+            justify-content: center;
+            padding: 1rem 0;
+        }
+
+        .sidebar-toggle {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            color: white;
+            text-decoration: none;
+            transition: 0.3s;
+            border-left: 4px solid transparent;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: rgba(255, 255, 255, 0.1);
+            border-left-color: var(--color-secondary);
+        }
+
+        .nav-item-icon {
+            margin-right: 10px;
+            font-size: 1.2rem;
+            min-width: 30px;
+            text-align: center;
+        }
+
+        .sidebar.collapsed .nav-item {
+            justify-content: center;
+            padding: 1rem 0;
+        }
+
+        .sidebar.collapsed .nav-item-icon {
+            margin-right: 0;
+        }
+
+        .sidebar.collapsed .nav-item-text {
+            display: none;
+        }
+
         /* 메인 컨텐츠 영역 */
-        .main-content { flex: 1; margin-left: var(--sidebar-width); transition: margin-left 0.3s ease; }
-        .sidebar.collapsed ~ .main-content { margin-left: var(--sidebar-collapsed-width); }
-        
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            transition: margin-left 0.3s ease;
+        }
+
+        .sidebar.collapsed ~ .main-content {
+            margin-left: var(--sidebar-collapsed-width);
+        }
+
         /* 헤더 */
-        .admin-header { height: var(--header-height); background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%); display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; position: sticky; top: 0; z-index: 999; box-shadow: 0 4px 8px rgba(0,0,0,0.1); color: white; }
-        .header-title { font-size: 1.5rem; font-weight: 700; }
-        
+        .admin-header {
+            height: var(--header-height);
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            color: white;
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
         .header-user {
             position: relative;
             cursor: pointer;
@@ -100,26 +207,99 @@
             background-color: var(--color-light-gray);
             color: var(--color-warm);
         }
-        
+
         /* 상세 페이지 */
-        .page-content { padding: 2rem; }
-        
+        .page-content {
+            padding: 2rem;
+        }
+
         /* 타이틀 영역 */
-        .page-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-        .page-title { font-size: 1.75rem; font-weight: 700; color: var(--color-dark); margin: 0; }
-        .btn-back { padding: 0.5rem 1.5rem; background: var(--color-white); border: 2px solid var(--color-light-gray); border-radius: 8px; color: var(--color-dark); font-weight: 600; cursor: pointer; transition: 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; }
-        .btn-back:hover { border-color: var(--color-gray); background: #F0F0F0; }
+        .page-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--color-dark);
+            margin: 0;
+        }
+
+        .btn-back {
+            padding: 0.5rem 1.5rem;
+            background: var(--color-white);
+            border: 2px solid var(--color-light-gray);
+            border-radius: 8px;
+            color: var(--color-dark);
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-back:hover {
+            border-color: var(--color-gray);
+            background: #F0F0F0;
+        }
 
         /* 카드 스타일 */
-        .detail-card { background: var(--color-white); border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.08); margin-bottom: 1.5rem; }
-        .card-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 1.2rem; border-left: 4px solid var(--color-secondary); padding-left: 0.8rem; color: var(--color-dark); display: flex; justify-content: space-between; align-items: center; }
+        .detail-card {
+            background: var(--color-white);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 1.2rem;
+            border-left: 4px solid var(--color-secondary);
+            padding-left: 0.8rem;
+            color: var(--color-dark);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
         /* 기본 정보 그리드 */
-        .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem 3rem; }
-        .info-item { display: flex; flex-direction: column; gap: 0.3rem; border-bottom: 1px solid #eee; padding-bottom: 0.5rem; }
-        .info-label { font-size: 0.85rem; color: var(--color-gray); font-weight: 600; }
-        .info-value { font-size: 1rem; font-weight: 500; color: var(--color-dark); }
-        .info-value.highlight { color: var(--color-primary); font-weight: 700; }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem 3rem;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 0.5rem;
+        }
+
+        .info-label {
+            font-size: 0.85rem;
+            color: var(--color-gray);
+            font-weight: 600;
+        }
+
+        .info-value {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--color-dark);
+        }
+
+        .info-value.highlight {
+            color: var(--color-primary);
+            font-weight: 700;
+        }
 
         /* Status Badge */
         .status-badge {
@@ -161,21 +341,76 @@
         }
 
         /* 활동 요약 */
-        .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 1.5rem; }
-        .summary-item { background: #FAFAFA; border-radius: 12px; padding: 1.5rem; text-align: center; border: 1px solid #eee; transition: 0.3s; }
-        .summary-item:hover { transform: translateY(-3px); box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-color: var(--color-secondary); }
-        .summary-label { font-size: 0.9rem; color: var(--color-gray); margin-bottom: 0.5rem; }
-        .summary-value { font-size: 1.8rem; font-weight: 800; color: var(--color-dark); }
-        .summary-unit { font-size: 1rem; font-weight: 400; color: var(--color-gray); margin-left: 2px; }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .summary-item {
+            background: #FAFAFA;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid #eee;
+            transition: 0.3s;
+        }
+
+        .summary-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            border-color: var(--color-secondary);
+        }
+
+        .summary-label {
+            font-size: 0.9rem;
+            color: var(--color-gray);
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--color-dark);
+        }
+
+        .summary-unit {
+            font-size: 1rem;
+            font-weight: 400;
+            color: var(--color-gray);
+            margin-left: 2px;
+        }
 
         /* 3단 그리드 */
-        .three-column-grid { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
-        
+        .three-column-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
         /* 테이블 스타일 */
-        .mini-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-        .mini-table th { background: #F8F9FA; padding: 0.8rem; text-align: left; font-weight: 600; color: var(--color-gray); border-bottom: 2px solid #eee; }
-        .mini-table td { padding: 0.8rem; border-bottom: 1px solid #eee; }
-        
+        .mini-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .mini-table th {
+            background: #F8F9FA;
+            padding: 0.8rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--color-gray);
+            border-bottom: 2px solid #eee;
+        }
+
+        .mini-table td {
+            padding: 0.8rem;
+            border-bottom: 1px solid #eee;
+        }
+
         .btn-more {
             width: 100%;
             padding: 0.75rem;
@@ -195,9 +430,17 @@
 
         /* 반응형 */
         @media (max-width: 1200px) {
-            .three-column-grid { grid-template-columns: 1fr; }
-            .info-grid { grid-template-columns: 1fr; }
-            .summary-grid { grid-template-columns: repeat(2, 1fr); }
+            .three-column-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
     </style>
 </head>
@@ -320,19 +563,23 @@
                 <div class="summary-grid">
                     <div class="summary-item">
                         <div class="summary-label">총 수락 건수 / 완료 건수</div>
-                        <div class="summary-value"><span id="acceptCount">0</span> / <span id="completeCount">0</span><span class="summary-unit">건</span></div>
+                        <div class="summary-value"><span id="acceptCount">0</span> / <span
+                                id="completeCount">0</span><span class="summary-unit">건</span></div>
                     </div>
                     <div class="summary-item">
                         <div class="summary-label">완료율 / 취소율</div>
-                        <div class="summary-value"><span id="completeRate">0</span> / <span id="cancelRate">0</span><span class="summary-unit">%</span></div>
+                        <div class="summary-value"><span id="completeRate">0</span> / <span
+                                id="cancelRate">0</span><span class="summary-unit">%</span></div>
                     </div>
                     <div class="summary-item">
                         <div class="summary-label">평균 평점</div>
-                        <div class="summary-value"><span id="avgRating">0</span><span class="summary-unit">/5.0</span></div>
+                        <div class="summary-value"><span id="avgRating">0</span><span class="summary-unit">/5.0</span>
+                        </div>
                     </div>
                     <div class="summary-item">
                         <div class="summary-label">누적 수익</div>
-                        <div class="summary-value" style="color: var(--color-primary);"><span id="totalEarning">0</span><span class="summary-unit">원</span></div>
+                        <div class="summary-value" style="color: var(--color-primary);"><span id="totalEarning">0</span><span
+                                class="summary-unit">원</span></div>
                     </div>
                 </div>
             </section>
@@ -345,17 +592,17 @@
                     <div style="overflow-x: auto; max-height: 400px; overflow-y: auto;">
                         <table class="mini-table">
                             <thead>
-                                <tr>
-                                    <th>최근 N건</th>
-                                    <th>심부름 ID + 제목</th>
-                                    <th>날짜</th>
-                                    <th>상태</th>
-                                </tr>
+                            <tr>
+                                <th>최근 N건</th>
+                                <th>심부름 ID + 제목</th>
+                                <th>날짜</th>
+                                <th>상태</th>
+                            </tr>
                             </thead>
                             <tbody id="errandListBody">
-                                <tr>
-                                    <td colspan="4" style="text-align:center; padding: 2rem;">데이터가 없습니다.</td>
-                                </tr>
+                            <tr>
+                                <td colspan="4" style="text-align:center; padding: 2rem;">데이터가 없습니다.</td>
+                            </tr>
                             </tbody>
                         </table>
                     </div>
@@ -411,16 +658,16 @@
                     <div style="overflow-x: auto; max-height: 300px; overflow-y: auto;">
                         <table class="mini-table">
                             <thead>
-                                <tr>
-                                    <th>활동 정지 이력</th>
-                                    <th>제한 사유</th>
-                                    <th>처리 관리자</th>
-                                </tr>
+                            <tr>
+                                <th>활동 정지 이력</th>
+                                <th>제한 사유</th>
+                                <th>처리 관리자</th>
+                            </tr>
                             </thead>
                             <tbody id="restrictionHistoryBody">
-                                <tr>
-                                    <td colspan="3" style="text-align:center; padding: 2rem;">제한 이력이 없습니다.</td>
-                                </tr>
+                            <tr>
+                                <td colspan="3" style="text-align:center; padding: 2rem;">제한 이력이 없습니다.</td>
+                            </tr>
                             </tbody>
                         </table>
                     </div>
@@ -429,7 +676,8 @@
                 <!-- 추가 정보 영역 (필요시) -->
                 <section class="detail-card">
                     <div class="card-title">관리자 메모</div>
-                    <textarea class="memo-textarea" id="adminMemo" placeholder="부름이에 대한 특이사항을 입력하세요..." style="width: 100%; height: 150px; padding: 1rem; border: 2px solid var(--color-light-gray); border-radius: 8px; resize: vertical; font-family: inherit; font-size: 0.95rem;"></textarea>
+                    <textarea class="memo-textarea" id="adminMemo" placeholder="부름이에 대한 특이사항을 입력하세요..."
+                              style="width: 100%; height: 150px; padding: 1rem; border: 2px solid var(--color-light-gray); border-radius: 8px; resize: vertical; font-family: inherit; font-size: 0.95rem;"></textarea>
                     <button class="btn-more" onclick="saveMemo()">메모 저장</button>
                 </section>
 
@@ -450,7 +698,7 @@
     $(document).ready(function () {
         const sidebar = document.getElementById('sidebar');
         const sidebarToggle = document.getElementById('sidebarToggle');
-        
+
         const savedState = localStorage.getItem('sidebarState');
         if (savedState === 'collapsed') {
             sidebar.classList.add('collapsed');
@@ -497,9 +745,9 @@
             .then(response => response.json())
             .then(data => {
                 // 기본 정보
-                document.getElementById('helperIdNickname').textContent = 
+                document.getElementById('helperIdNickname').textContent =
                     (data.userId || '-') + ' / ' + (data.erranderId || '-') + ' ' + (data.nickname || '-');
-                document.getElementById('contactInfo').textContent = 
+                document.getElementById('contactInfo').textContent =
                     (data.email || '-') + ' / ' + (data.phone || '-');
                 document.getElementById('approvalDate').textContent = data.approvalDate || '-';
                 document.getElementById('lastActivityDate').textContent = data.lastActivityDate || '-';
@@ -510,14 +758,14 @@
                 if (data.approvalStatus) {
                     const approvalBadge = data.approvalStatus === 'APPROVED' ? '<span class="status-badge APPROVED">승인</span>' :
                         data.approvalStatus === 'PENDING' ? '<span class="status-badge PENDING">승인 대기</span>' :
-                        '<span class="status-badge REJECTED">반려</span>';
+                            '<span class="status-badge REJECTED">반려</span>';
                     document.getElementById('approvalStatus').innerHTML = approvalBadge;
                 }
 
                 if (data.activityStatus) {
                     const activityBadge = data.activityStatus === 'ACTIVE' ? '<span class="status-badge ACTIVE">활성</span>' :
                         data.activityStatus === 'INACTIVE' ? '<span class="status-badge INACTIVE">비활성</span>' :
-                        '<span class="status-badge SUSPENDED">일시정지</span>';
+                            '<span class="status-badge SUSPENDED">일시정지</span>';
                     document.getElementById('activityStatus').innerHTML = activityBadge;
                 }
 

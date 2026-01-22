@@ -35,7 +35,6 @@
 
     <!-- 부름이 검색 -->
     <select id="searchErranders" parameterType="map" resultType="map">
-        <![CDATA[
             SELECT
                 m.user_id,
                 m.phone,
@@ -50,7 +49,6 @@
             FROM MEMBERS m
             JOIN ERRANDER_PROFILES p ON m.user_id = p.user_id
             WHERE m.role = 'ERRANDER'
-        ]]>
 
             <if test="keyword != null and keyword != ''">
                 AND (
@@ -70,21 +68,18 @@
             <if test="reviewScope != null">
                 AND p.rating_avg >= #{reviewScope}
             </if>
-        <![CDATA[
+
             ORDER BY p.approved_at DESC
             LIMIT #{limit} OFFSET #{offset}
-        ]]>
 
     </select>
 
     <!-- 검색된 총 부름이 수 -->
     <select id="countErranders" parameterType="map" resultType="int">
-        <![CDATA[
             SELECT COUNT(*)
             FROM MEMBERS m
             JOIN ERRANDER_PROFILES p ON m.user_id = p.user_id
             WHERE m.role = 'ERRANDER'
-        ]]>
 
         <if test="keyword != null and keyword != ''">
             AND (
@@ -128,7 +123,6 @@
 
     <select id="getErranderApprovalDetail"
             parameterType="long" resultMap="erranderResumeMap">
-        <![CDATA[
             SELECT
                 e.user_id, e.errander_id, m.nickname, m.email, m.phone, m.last_login_at, m.status,
                 l1.full_name AS address1, l2.full_name AS address2,
@@ -139,22 +133,91 @@
                      LEFT JOIN LEGAL_DONG l2 ON e.dong_code2 = l2.dong_code
                      LEFT JOIN ERRANDER_DOCUMENTS d ON e.errander_id = d.errander_id AND d.status = 'SUBMITTED'
             WHERE e.errander_id = #{erranderId}
-        ]]>
     </select>
 
     <!-- 부름이 승인 상태 변경 -->
     <update id="updateErranderApprovalStatus">
-        <![CDATA[
-        UPDATE ERRANDER_PROFILES SET approval_status = #{status}, approved_at = NOW()
-        WHERE errander_id = #{erranderId}
-        ]]>
+            UPDATE ERRANDER_PROFILES SET approval_status = #{status}, approved_at = NOW()
+            WHERE errander_id = #{erranderId}
     </update>
 
     <!-- 부름이 활성화 상태 변경 -->
     <update id="updateErranderActiveStatus">
-        <![CDATA[
             UPDATE ERRANDER_PROFILES SET active_status = #{status}
             WHERE errander_id = #{erranderId}
-        ]]>
     </update>
+
+    <!-- 부름이 상세 정보 조회 (기본정보) -->
+    <!-- 사용자ID, 부름이 ID, 닉네임, 이메일, 휴대폰, 승인상태, 활동상태, 승인날짜, 최근 활동일, 동네12, -->
+    <select id="getErranderDetail" parameterType="long" resultType="map">
+            SELECT e.user_id, e.errander_id, m.nickname, m.email, m.phone,
+                   e.approval_status, e.active_status, e.approved_at, e.last_active_at,
+                   l1.full_name AS address1, l2.full_name AS address2
+                FROM ERRANDER_PROFILES e JOIN MEMBERS m ON e.user_id = m.user_id
+                   LEFT JOIN LEGAL_DONG l1 ON e.dong_code1 = l1.dong_code
+                   LEFT JOIN LEGAL_DONG l2 ON e.dong_code2 = l2.dong_code
+                WHERE e.errander_id = #{erranderId}
+    </select>
+
+    <!-- 부름이 활동 요약 조회 -->
+    <!-- 총 수락(매칭) 건수, 완료 건수, 취소당한 건수, 심부름 완료율, 리뷰 평점, 누적 수익 -->
+    <select id="getActivitySummary"
+            parameterType="long" resultType="map">
+        SELECT p.complete_rate,
+               p.rating_avg,
+               COALESCE(a.matched, 0)       AS matched,
+               COALESCE(a.completed, 0)     AS completed,
+               COALESCE(a.canceled, 0)      AS canceled,
+               COALESCE(e.total_earning, 0) AS total_earning
+        FROM ERRANDER_PROFILES p
+                 LEFT JOIN
+             (SELECT errander_id,
+                     COUNT(*)                                              AS matched,
+                     SUM(CASE WHEN status = 'COMPLETED' THEN 1 ELSE 0 END) AS completed,
+                     SUM(CASE WHEN status = 'CANCELED' THEN 1 ELSE 0 END)  AS canceled
+              FROM ERRAND_ASSIGNMENTS
+              WHERE errander_id = #{erranderId}
+              GROUP BY errander_id) a
+             ON p.errander_id = a.errander_id
+                 LEFT JOIN
+             (SELECT errander_id,
+                     SUM(settlement_amount) AS total_earning
+              FROM ERRANDS
+              WHERE errander_id = #{erranderId}
+              GROUP BY errander_id) e
+             ON p.errander_id = e.errander_id
+        WHERE = p.arrander_id = #{erranderId}
+    </select>
+
+    <!-- 부름이 최근 수행 심부름 목록 -->
+    <select id="getRecentErrands" parameterType="map" resultType="map">
+        SELECT *
+        FROM (SELECT a.errands_id,
+                     a.errander_id,
+                     e.title,
+                     a.status,
+                     a.assigned_at AS event_at,
+                     'ASSIGNMENT'  AS source
+              FROM ERRAND_ASSIGNMENTS a
+                       JOIN ERRANDS e ON e.errands_id = a.errands_id
+              WHERE a.errander_id = #{erranderId}
+                AND a.status IN ('CANCELED', 'COMPLETED')
+
+              UNION ALL
+
+              SELECT e.errands_id,
+                     e.errander_id,
+                     e.title,
+                     e.status,
+                     e.updated_at AS event_at,
+                     'ERRAND'     AS source
+              FROM ERRANDS e
+              WHERE e.errander_id = #{erranderId}
+                AND e.status IN ('WAITING', 'MATCHED', 'CONFIRMED1', 'CONFIRMED2')) t
+        ORDER BY t.event_at DESC
+            LIMIT #{limit};
+    </select>
+
+    <!-- 정산 정보 -->
+
 </mapper>
