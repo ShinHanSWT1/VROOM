@@ -141,10 +141,18 @@
         ]]>
     </select>
 
-    <!-- 부름이 승인 -->
+    <!-- 부름이 승인 상태 변경 -->
     <update id="updateErranderApprovalStatus">
         <![CDATA[
             UPDATE ERRANDER_PROFILES SET approval_status = #{status}
+            WHERE errander_id = #{erranderId}
+        ]]>
+    </update>
+
+    <!-- 부름이 활성화 상태 변경 -->
+    <update id="updateErranderActiveStatus">
+        <![CDATA[
+            UPDATE ERRANDER_PROFILES SET active_status = #{status}
             WHERE errander_id = #{erranderId}
         ]]>
     </update>

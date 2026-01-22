@@ -510,6 +510,56 @@
             color: #E74C3C;
         }
 
+        .status-badge.BANNED {
+            background: #2C3E50;
+            color: #FFFFFF;
+        }
+
+        /* Status Dropdown */
+        .status-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .status-dropdown-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0;
+        }
+
+        .status-dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: var(--color-white);
+            min-width: 120px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+            overflow: hidden;
+            z-index: 100;
+            margin-top: 0.5rem;
+        }
+
+        .status-dropdown-menu.show {
+            display: block;
+        }
+
+        .status-dropdown-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .status-dropdown-item:hover {
+            background-color: var(--color-light-gray);
+        }
+
         /* Rating Display */
         .rating-display {
             display: inline-flex;
@@ -992,7 +1042,7 @@
                     <tr>
                         <th>ID | 닉네임</th>
                         <th>승인</th>
-                        <th>활동</th>
+                        <th>상태</th>
                         <th>완료율</th>
                         <th>평점</th>
                         <th>최근 활동일</th>
@@ -1026,10 +1076,6 @@
                         <span class="modal-info-label">사용자 ID / 부름이 ID</span>
                         <span class="modal-info-value" id="modalUserId">-</span>
                     </div>
-<%--                    <div class="modal-info-item">--%>
-<%--                        <span class="modal-info-label">부름이 ID</span>--%>
-<%--                        <span class="modal-info-value" id="modalErranderId">-</span>--%>
-<%--                    </div>--%>
                     <div class="modal-info-item">
                         <span class="modal-info-label">닉네임</span>
                         <span class="modal-info-value" id="modalNickname">-</span>
@@ -1042,18 +1088,10 @@
                         <span class="modal-info-label">휴대폰</span>
                         <span class="modal-info-value" id="modalContactPhone">-</span>
                     </div>
-<%--                    <div class="modal-info-item">--%>
-<%--                        <span class="modal-info-label">승인 상태(대기 / 승인 / 거절)</span>--%>
-<%--                        <span class="modal-info-value" id="modalApprovalStatus">-</span>--%>
-<%--                    </div>--%>
                     <div class="modal-info-item">
                         <span class="modal-info-label">활동 상태(활성/비활성)</span>
                         <span class="modal-info-value" id="modalActivityStatus">-</span>
                     </div>
-<%--                    <div class="modal-info-item">--%>
-<%--                        <span class="modal-info-label">부름이 승인일</span>--%>
-<%--                        <span class="modal-info-value" id="modalApprovalDate">-</span>--%>
-<%--                    </div>--%>
                     <div class="modal-info-item">
                         <span class="modal-info-label">최근 활동일</span>
                         <span class="modal-info-value" id="modalLastActivity">-</span>
@@ -1215,6 +1253,22 @@
             const ratingDisplay = ratingAvg > 0 ?
                 `<div class="rating-display"><span class="rating-stars">\${stars}</span> <span class="rating-value">\${ratingAvg}</span></div>` : '-';
 
+            // 활동 상태 드롭다운 HTML 생성
+            const activityStatusHtml = `
+                <div class="status-dropdown">
+                    <button class="status-dropdown-toggle" onclick="toggleActivityStatusDropdown(this, event)">
+                        <span class="status-badge \${activeStatus}">\${activityText}</span>
+                        <span>▼</span>
+                    </button>
+                    <div class="status-dropdown-menu">
+                        <div class="status-dropdown-item" onclick="changeActivityStatus(this, 'ACTIVE', \${erranderId}, event)">활성</div>
+                        <div class="status-dropdown-item" onclick="changeActivityStatus(this, 'INACTIVE', \${erranderId}, event)">비활성</div>
+                        <div class="status-dropdown-item" onclick="changeActivityStatus(this, 'SUSPENDED', \${erranderId}, event)">일시정지</div>
+                        <div class="status-dropdown-item" onclick="changeActivityStatus(this, 'BANNED', \${erranderId}, event)">정지</div>
+                    </div>
+                </div>
+            `;
+
             // 액션 버튼 (승인 대기중이면 승인버튼, 아니면 관리버튼)
             let actionBtnHtml = '';
             if (approvalStatus === 'PENDING') {
@@ -1228,7 +1282,7 @@
                 <tr>
                     <td>\${erranderId} / \${nickname}</td>
                     <td><span class="status-badge \${approvalStatus}">\${approvalText}</span></td>
-                    <td><span class="status-badge \${activeStatus}">\${activityText}</span></td>
+                    <td>\${activityStatusHtml}</td>
                     <td>\${completeRate}%</td>
                     <td>\${ratingDisplay}</td>
                     <td>\${lastActive}</td>
@@ -1403,6 +1457,73 @@
         url = '${pageContext.request.contextPath}' + '/' + url;
         window.open(url, '_blank');
     }
+
+    // 활동 상태 드롭다운 토글
+    function toggleActivityStatusDropdown(button, event) {
+        event.stopPropagation();
+        const dropdown = button.nextElementSibling;
+
+        // 다른 열려있는 드롭다운 닫기
+        document.querySelectorAll('.status-dropdown-menu.show').forEach(menu => {
+            if (menu !== dropdown) {
+                menu.classList.remove('show');
+            }
+        });
+
+        dropdown.classList.toggle('show');
+    }
+
+    // 활동 상태 변경
+    function changeActivityStatus(item, newStatus, erranderId, event) {
+        event.stopPropagation();
+
+        let statusText = '';
+        switch(newStatus) {
+            case 'ACTIVE': statusText = '활성'; break;
+            case 'INACTIVE': statusText = '비활성'; break;
+            case 'SUSPENDED': statusText = '일시정지'; break;
+            case 'BANNED': statusText = '정지'; break;
+            default: statusText = newStatus;
+        }
+
+        // if (!confirm(부름이 ID: \${erranderId}의 활동 상태를 '\${statusText}'(으)로 변경하시겠습니까?)) {
+        //     return;
+        // }
+
+        // API 호출
+        fetch('${pageContext.request.contextPath}/api/admin/erranders/status', {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                erranderId: erranderId,
+                activeStatus: newStatus
+            })
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('활동 상태가 변경되었습니다.');
+                    loadErranderList(1); // 목록 새로고침
+                } else {
+                    alert('상태 변경에 실패했습니다.');
+                }
+            })
+            .catch(error => {
+                console.error('상태 변경 실패:', error);
+                alert('활동 상태가 변경되었습니다. (UI 테스트)');
+                loadErranderList(1); // 테스트용으로 목록 새로고침
+            });
+
+        // 드롭다운 닫기
+        item.closest('.status-dropdown-menu').classList.remove('show');
+    }
+
+    // 전역 클릭 이벤트로 드롭다운 닫기
+    document.addEventListener('click', function() {
+        document.querySelectorAll('.status-dropdown-menu.show').forEach(menu => {
+            menu.classList.remove('show');
+        });
+    });
 </script>
 </body>
 

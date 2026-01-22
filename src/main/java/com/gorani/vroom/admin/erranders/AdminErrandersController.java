@@ -66,4 +66,17 @@ public class AdminErrandersController {
 
         return service.approveErrander(erranderId, status);
     }
+
+    // 부름이 활성 상태 변경 요청
+    @PostMapping("/api/admin/erranders/status")
+    @ResponseBody
+    public Map<String, Object> changeErranderStatus(
+            @RequestBody Map<String, Object> params
+    ) {
+        Long erranderId = Long.parseLong(params.get("erranderId").toString());
+        String status = params.get("activeStatus").toString();
+
+        return service.changeErranderStatus(erranderId, status);
+    }
+
 }

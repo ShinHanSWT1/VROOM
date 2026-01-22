@@ -81,4 +81,9 @@ public class AdminErrandersServiceImpl implements AdminErrandersService {
         return Map.of();
     }
 
+    @Override
+    public Map<String, Object> changeErranderStatus(Long erranderId, String status) {
+        return Map.of();
+    }
+
 }
