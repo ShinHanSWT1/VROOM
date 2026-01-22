@@ -587,9 +587,9 @@
                 <div class="nav-dropdown">
                     <button class="nav-item nav-user" id="userDropdownBtn">유저</button>
                     <div class="dropdown-menu" id="userDropdownMenu">
-                        <a href="my-info.html" class="dropdown-item">나의정보</a>
-                        <a href="vroom-pay.html" class="dropdown-item">부름페이</a>
-                        <a href="my-activity.html" class="dropdown-item">나의 활동</a>
+                        <a href="myInfo" class="dropdown-item">나의정보</a>
+                        <a href="vroomPay" class="dropdown-item">부름페이</a>
+                        <a href="myActivity" class="dropdown-item">나의 활동</a>
                         <a href="#" class="dropdown-item">설정</a>
                         <a href="#" class="dropdown-item">고객지원</a>
                         <div class="dropdown-divider"></div>
