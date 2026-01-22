@@ -1,4 +1,4 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 
@@ -45,7 +45,7 @@
         }
 
         .header-container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 1rem 1.5rem;
             display: flex;
@@ -182,22 +182,28 @@
             padding: 0 1.5rem;
         }
         
-        .write-section {
-		    margin: 20px 0;
-		}
-		
-		.write-btn-wrapper {
-		    display: flex;
-		    justify-content: flex-start;
-		}
-		
-		.write-btn {
-		    padding: 10px 18px;
-		    background-color: #2d7df4;
-		    color: #fff;
-		    border-radius: 6px;
-		    text-decoration: none;
-		}
+        .write-btn-container {
+            text-align: right;
+            margin-bottom: 2rem;
+        }
+
+        .write-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+            color: var(--color-white);
+            padding: 0.7rem 1.5rem;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 4px 8px rgba(107, 142, 35, 0.25);
+            transition: all 0.3s ease;
+        }
+
+        .write-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(107, 142, 35, 0.3);
+        }
 
         .main-section {
             padding: 3rem 0;
@@ -258,12 +264,13 @@
 
         .tasks-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 1.5rem;
-            margin-bottom: 3rem;
+            margin-bottom: 4rem;
         }
 
         .task-card {
+        	text-decoration: none;
             background-color: var(--color-white);
             border-radius: 12px;
             overflow: hidden;
@@ -281,8 +288,8 @@
 
         .task-image {
             width: 100%;
-            height: 200px;
-            background: linear-gradient(135deg, var(--color-light-gray) 0%, var(--color-white) 100%);
+            height: 180px;
+            background-color: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -579,7 +586,7 @@
                 <h1 onclick="location.href='main_updated_2.html'">VROOM</h1>
             </div>
             <nav class="nav-menu">
-                <a href="main_updated_2.html" class="nav-item">홈</a>
+                <a href="main_updated_2" class="nav-item">홈</a>
                 <a href="#" class="nav-item">커뮤니티</a>
                 <a href="#" class="nav-item">심부름꾼 전환</a>
                 <a href="#" class="nav-item nav-login">로그인</a>
@@ -619,66 +626,114 @@
 
     <section class="main-section">
         <div class="container">
-            <div class="filter-bar">
-                <div class="filter-group">
-                    <span class="filter-label">카테고리</span>
-                    <select class="filter-select" id="categoryFilter">
-                        <option value="all">전체</option>
-                        <option value="delivery">배달</option>
-                        <option value="cleaning">청소</option>
-                        <option value="assembly">설치/조립</option>
-                        <option value="pet">반려동물</option>
-                        <option value="line">줄서기</option>
-                        <option value="other">기타</option>
-                    </select>
-                </div>
+            <!-- 파일 경로: src/main/webapp/WEB-INF/views/errand/errand_list.jsp -->
+			<form id="filterForm"
+			      class="filter-bar"
+			      method="get"
+			      action="${pageContext.request.contextPath}/errand/list">
+			
+			    <div class="filter-group">
+			        <span class="filter-label">카테고리</span>
+			        <!-- 서버 파라미터: categoryId -->
+			        <select class="filter-select" id="categoryFilter" name="categoryId">
+			            <option value="" ${empty param.categoryId ? 'selected' : ''}>전체</option>
+			
+			            <!-- DB 카테고리 테이블(CATEGORIES) 기반 -->
+			            <c:forEach var="c" items="${categories}">
+			                <option value="${c.id}" ${param.categoryId == c.id ? 'selected' : ''}>
+			                    <c:out value="${c.name}" />
+			                </option>
+			            </c:forEach>
+			        </select>
+			    </div>
+			
+			    <div class="filter-group">
+			        <span class="filter-label">정렬</span>
+			        <!-- 서버 파라미터: sort (mapper의 choose 값과 일치해야 함) -->
+			        <select class="filter-select" id="sortFilter" name="sort">
+			            <option value="latest" ${empty param.sort || param.sort == 'latest' ? 'selected' : ''}>최신순</option>
+			            <option value="price_desc" ${param.sort == 'price_desc' ? 'selected' : ''}>높은 가격순</option>
+			            <option value="price_asc" ${param.sort == 'price_asc' ? 'selected' : ''}>낮은 가격순</option>
+			            <option value="desired_at" ${param.sort == 'desired_at' ? 'selected' : ''}>희망일 빠른순</option>
+			        </select>
+			    </div>
+			
+			    <div class="filter-group">
+			        <span class="filter-label">동네</span>
+			        <!-- 서버 파라미터: dongCode -->
+			        <select class="filter-select" id="neighborhoodFilter" name="dongCode">
+			            <option value="" ${empty param.dongCode ? 'selected' : ''}>전체</option>
+			
+			            <!-- 동네 옵션을 서버에서 내려주면 best
+			                 지금은 dongs가 없을 수 있으니, 임시로 하드코딩/또는 삭제 가능 -->
+			            <c:if test="${not empty dongs}">
+			                <c:forEach var="d" items="${dongs}">
+			                    <option value="${d.dongCode}" ${param.dongCode == d.dongCode ? 'selected' : ''}>
+			                        <c:out value="${d.dongFullName}" />
+			                    </option>
+			                </c:forEach>
+			            </c:if>
+			        </select>
+			    </div>
+			
+			    <div class="filter-group">
+			        <span class="filter-label">검색</span>
+			        <!-- 서버 파라미터: q -->
+			        <input type="text" id="searchInput" name="q" placeholder="심부름 검색" value="${param.q}">
+			        <button id="searchButton" type="submit">검색</button>
+			    </div>
+			
+			    <div class="results-info">
+			        총 <span class="results-count">${totalCount}</span>개의 심부름
+			    </div>
+			</form>
 
-                <div class="filter-group">
-                    <span class="filter-label">정렬</span>
-                    <select class="filter-select" id="sortFilter">
-                        <option value="recent">최신순</option>
-                        <option value="price-high">높은 가격순</option>
-                        <option value="price-low">낮은 가격순</option>
-                        <option value="distance">가까운 거리순</option>
-                    </select>
-                </div>
 
-                <div class="filter-group">
-                    <span class="filter-label">동네</span>
-                    <select class="filter-select" id="neighborhoodFilter">
-                        <option value="all">전체</option>
-                        <option value="songdo">송도동</option>
-                        <option value="yeoksam">역삼동</option>
-                        <option value="seocho">서초동</option>
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <span class="filter-label">검색</span>
-                    <input type="text" id="searchInput" placeholder="심부름 검색">
-                    <button id="searchButton">검색</button>
-                </div>
-
-                <div class="results-info">
-                    총 <span class="results-count">127</span>개의 심부름
-                </div>
-            </div>
-
-
-			<div style="padding:10px; background:#ffe;">
-			  DEBUG: totalCount=${totalCount}, listSize=${errands.size()}
-			</div>
             <div class="tasks-grid">
 			    <c:forEach var="e" items="${errands}">
 			      <a class="task-card"
 			         href="${pageContext.request.contextPath}/errand/detail?errandsId=${e.errandsId}">
-			        <div class="task-title">${e.title}</div>
-			        <div class="task-meta">
-			          <span>${e.dongCode}</span>
-			          <span class="task-reward">
-			            <fmt:formatNumber value="${e.rewardAmount}" type="number" />원
-			          </span>
-			        </div>
+			         
+			        <div class="task-image">
+				      <span style="font-size: 0.95rem; color: var(--color-gray); font-weight: 600;">
+				        <img src="${pageContext.request.contextPath}${e.displayImageUrl}" alt="심부름 이미지">
+				      </span>
+				    </div>
+				    
+				   <div class="task-card-content">
+				      <div class="task-card-header">
+				        <!-- 카테고리명 있으면 badge로 -->
+				        <span class="task-badge">
+				          <c:out value="${empty e.categoryName ? '심부름' : e.categoryName}" />
+				        </span>
+				
+				        <!-- createdAt 내려오면 time 표시 -->
+				        <span class="task-time">
+				          <c:out value="${empty e.createdAt ? '' : e.createdAt}" />
+				        </span>
+				      </div>
+			
+				      <div class="task-card-title">
+				        <c:out value="${e.title}" />
+				      </div>
+				
+				      <div class="task-author-info">
+				        <div class="author-avatar">U</div>
+				        <div class="author-name">
+				          <c:out value="${empty e.writerNickname ? e.userId : e.writerNickname}" />
+				        </div>
+				      </div>
+				
+				      <div class="task-meta">
+				        <div class="task-location">
+				          <c:out value="${empty e.dongFullName ? e.dongName : e.dongFullName}" />
+				        </div>
+				
+			            <div class="task-price">
+				          <fmt:formatNumber value="${e.rewardAmount}" type="number" />원
+				        </div>
+				      </div>
+				    </div>
 			      </a>
 			    </c:forEach>
 			  </div>
@@ -713,8 +768,8 @@
         <div class="container">
             <div class="footer-content">
                 <div class="footer-info">
-                    <h3>우리동네 심부름</h3>
-                    <p>이웃과 함께하는 따뜻한 심부름 커뮤니티</p>
+                    <h3>우리동네 </h3>
+                    <p>이웃과 함께하는 따뜻한  커뮤니티</p>
                 </div>
                 <div class="footer-links">
                     <a href="#">회사소개</a>
@@ -730,263 +785,47 @@
     </footer>
 
     <script>
-
-        // 요소 선택
-        const categoryFilter = document.getElementById('categoryFilter');
-        const sortFilter = document.getElementById('sortFilter');
-        const neighborhoodFilter = document.getElementById('neighborhoodFilter');
-        const searchInput = document.getElementById('searchInput'); // 검색어가 있다면
-        const searchButton = document.getElementById('searchButton'); // 검색 버튼이 있다면
-        const resultsCount = document.querySelector('.results-count');
-
-        // 필터 이벤트 리스너
-        categoryFilter.addEventListener('change', applyFilters);
-        sortFilter.addEventListener('change', applyFilters);
-        neighborhoodFilter.addEventListener('change', applyFilters);
-
-        // 검색 기능 (있다면)
-        if (searchInput && searchButton) {
-            searchButton.addEventListener('click', applyFilters);
-            searchInput.addEventListener('keyup', (e) => {
-                if (e.key === 'Enter') applyFilters();
-            });
-        }
-
-        // Dropdown Logic
-        document.addEventListener('DOMContentLoaded', function () {
-            const dropdownBtn = document.getElementById('userDropdownBtn');
-            const dropdownMenu = document.getElementById('userDropdownMenu');
-
-            if (dropdownBtn && dropdownMenu) {
-                dropdownBtn.addEventListener('click', function (e) {
-                    e.stopPropagation();
-                    dropdownMenu.classList.toggle('active');
-                });
-
-                document.addEventListener('click', function (e) {
-                    if (!dropdownMenu.contains(e.target) && !dropdownBtn.contains(e.target)) {
-                        dropdownMenu.classList.remove('active');
-                    }
-                });
-            }
-        });
-
-        function applyFilters() {
-            const category = categoryFilter.value;
-            const sort = sortFilter.value;
-            const neighborhood = neighborhoodFilter.value;
-            const keyword = searchInput ? searchInput.value.trim().toLowerCase() : '';
-
-            // 1. 필터링
-            filteredTasks = mockTasks.filter(task => {
-                // 카테고리
-                let categoryMatch = (category === 'all');
-                if (!categoryMatch) {
-                    if (category === 'delivery' && task.badge === '배달') categoryMatch = true;
-                    else if (category === 'cleaning' && task.badge === '청소') categoryMatch = true;
-                    else if (category === 'assembly' && task.badge === '설치/조립') categoryMatch = true;
-                    else if (category === 'pet' && task.badge === '반려동물') categoryMatch = true;
-                    else if (category === 'line' && task.badge === '줄서기') categoryMatch = true;
-                    else if (category === 'other' && task.badge === '기타') categoryMatch = true;
-                }
-
-                // 동네 (Neighborhood)
-                let neighborhoodMatch = (neighborhood === 'all');
-                if (!neighborhoodMatch) {
-                    if (neighborhood === 'songdo' && task.location.includes('송도동')) neighborhoodMatch = true;
-                    else if (neighborhood === 'yeoksam' && task.location.includes('역삼동')) neighborhoodMatch = true;
-                    else if (neighborhood === 'seocho' && task.location.includes('서초동')) neighborhoodMatch = true;
-                }
-
-                // 검색어
-                let keywordMatch = true;
-                if (keyword) {
-                    keywordMatch = task.title.toLowerCase().includes(keyword) ||
-                        task.location.toLowerCase().includes(keyword) ||
-                        task.badge.toLowerCase().includes(keyword);
-                }
-
-                return categoryMatch && neighborhoodMatch && keywordMatch;
-            });
-
-            // 2. 정렬
-            if (sort === 'price-high') {
-                filteredTasks.sort((a, b) => {
-                    const priceA = parseInt(a.price.replace(/,/g, ''));
-                    const priceB = parseInt(b.price.replace(/,/g, ''));
-                    return priceB - priceA;
-                });
-            } else if (sort === 'price-low') {
-                filteredTasks.sort((a, b) => {
-                    const priceA = parseInt(a.price.replace(/,/g, ''));
-                    const priceB = parseInt(b.price.replace(/,/g, ''));
-                    return priceA - priceB;
-                });
-            } else if (sort === 'recent') {
-                // 시간 파싱이 단순히 텍스트라 어렵지만, mock 데이터 순서를 활용하거나 텍스트 비교
-                // 여기서는 간단히 원래 순서(최신이 위라고 가정) 또는 별도 로직 필요
-                // mockTasks가 이미 최신순이라면 필터링만 해도 됨. 
-                // 임시: 원래 인덱스 순서 유지를 위해 별도 sort 안함 (mockTasks 기준)
-            } else if (sort === 'distance') {
-                // 거리순 파싱 필요 '0.8km' 등.
-                filteredTasks.sort((a, b) => {
-                    const distA = parseFloat(a.time.split('·')[1].replace('km', '').trim());
-                    const distB = parseFloat(b.time.split('·')[1].replace('km', '').trim());
-                    return distA - distB;
-                });
-            }
-
-            // 3. 결과 수 업데이트
-            if (resultsCount) {
-                resultsCount.textContent = filteredTasks.length;
-            }
-
-            // 4. 페이지 초기화 및 렌더링
-            currentPage = 1;
-            renderTasks();
-            renderPagination();
-        }
-
-        function renderTasks() {
-            const tasksGrid = document.getElementById('tasksGrid');
-            tasksGrid.innerHTML = '';
-
-            // 페이징 처리
-            const totalItems = filteredTasks.length;
-            const totalPages = Math.ceil(totalItems / tasksPerPage);
-
-            const start = (currentPage - 1) * tasksPerPage;
-            const end = start + tasksPerPage;
-            const pageTasks = filteredTasks.slice(start, end);
-
-            if (pageTasks.length === 0) {
-                tasksGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 3rem;">검색 결과가 없습니다.</div>';
-                return;
-            }
-
-            pageTasks.forEach(task => {
-                const taskCard = document.createElement('div');
-                taskCard.className = 'task-card';
-                taskCard.innerHTML = `
-                    <div class="task-image">
-                        ${task.icon}
-                    </div>
-                    <div class="task-card-content">
-                        <div class="task-card-header">
-                            <span class="task-badge">${task.badge}</span>
-                            <span class="task-time">${task.time}</span>
-                        </div>
-                        <h3 class="task-card-title">${task.title}</h3>
-                        <div class="task-author-info">
-                            <div class="author-avatar">👤</div>
-                            <span class="author-name">${task.author}</span>
-                            <span class="meta-views">👁 ${task.views}</span>
-                        </div>
-                        <div class="task-meta">
-                            <span class="task-location">${task.location}</span>
-                            <span class="task-price">${task.price}</span>
-                        </div>
-                    </div>
-                `;
-                tasksGrid.appendChild(taskCard);
-            });
-
-            scrollToTop();
-        }
-
-        function renderPagination() {
-            const pagination = document.getElementById('pagination');
-            pagination.innerHTML = '';
-
-            const totalItems = filteredTasks.length;
-            const totalPages = Math.ceil(totalItems / tasksPerPage);
-
-            if (totalPages <= 1) return; // 1페이지 이하면 숨김
-
-            const prevBtn = document.createElement('button');
-            prevBtn.className = 'pagination-btn';
-            prevBtn.textContent = '이전';
-            prevBtn.disabled = currentPage === 1;
-            prevBtn.onclick = () => changePage(currentPage - 1);
-            pagination.appendChild(prevBtn);
-
-            const maxVisible = 5;
-            let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
-            let endPage = Math.min(totalPages, startPage + maxVisible - 1);
-
-            if (endPage - startPage < maxVisible - 1) {
-                startPage = Math.max(1, endPage - maxVisible + 1);
-            }
-
-            if (startPage > 1) {
-                const firstPage = document.createElement('div');
-                firstPage.className = 'pagination-number';
-                firstPage.textContent = '1';
-                firstPage.onclick = () => changePage(1);
-                pagination.appendChild(firstPage);
-
-                if (startPage > 2) {
-                    const ellipsis = document.createElement('span');
-                    ellipsis.className = 'pagination-ellipsis';
-                    ellipsis.textContent = '...';
-                    pagination.appendChild(ellipsis);
-                }
-            }
-
-            for (let i = startPage; i <= endPage; i++) {
-                const pageNum = document.createElement('div');
-                pageNum.className = 'pagination-number';
-                if (i === currentPage) {
-                    pageNum.classList.add('active');
-                }
-                pageNum.textContent = i;
-                pageNum.onclick = () => changePage(i);
-                pagination.appendChild(pageNum);
-            }
-
-            if (endPage < totalPages) {
-                if (endPage < totalPages - 1) {
-                    const ellipsis = document.createElement('span');
-                    ellipsis.className = 'pagination-ellipsis';
-                    ellipsis.textContent = '...';
-                    pagination.appendChild(ellipsis);
-                }
-
-                const lastPage = document.createElement('div');
-                lastPage.className = 'pagination-number';
-                lastPage.textContent = totalPages;
-                lastPage.onclick = () => changePage(totalPages);
-                pagination.appendChild(lastPage);
-            }
-
-            const nextBtn = document.createElement('button');
-            nextBtn.className = 'pagination-btn';
-            nextBtn.textContent = '다음';
-            nextBtn.disabled = currentPage === totalPages;
-            nextBtn.onclick = () => changePage(currentPage + 1);
-            pagination.appendChild(nextBtn);
-        }
-
-        function changePage(page) {
-            const totalItems = filteredTasks.length;
-            const totalPages = Math.ceil(totalItems / tasksPerPage);
-
-            if (page < 1 || page > totalPages) return;
-            currentPage = page;
-            renderTasks();
-            renderPagination();
-        }
-
-        function scrollToTop() {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        }
-
-        // 초기 실행
-        applyFilters();
-    </script>
+	  document.addEventListener('DOMContentLoaded', function () {
+	
+	    // 1) 필터/검색: 서버 GET 방식 (form submit)
+	    const filterForm = document.getElementById('filterForm');
+	    const categoryFilter = document.getElementById('categoryFilter');
+	    const sortFilter = document.getElementById('sortFilter');
+	    const neighborhoodFilter = document.getElementById('neighborhoodFilter');
+	    const searchInput = document.getElementById('searchInput');
+	
+	    // select 변경 시 자동 submit
+	    if (filterForm) {
+	      if (categoryFilter) categoryFilter.addEventListener('change', () => filterForm.submit());
+	      if (sortFilter) sortFilter.addEventListener('change', () => filterForm.submit());
+	      if (neighborhoodFilter) neighborhoodFilter.addEventListener('change', () => filterForm.submit());
+	
+	      // 검색 input에서 Enter 누르면 submit (기본 submit도 되지만 안전하게)
+	      if (searchInput) {
+	        searchInput.addEventListener('keyup', (e) => {
+	          if (e.key === 'Enter') filterForm.submit();
+	        });
+	      }
+	    }
+	
+	    // 2) 유저 드롭다운 (기존 유지)
+	    const dropdownBtn = document.getElementById('userDropdownBtn');
+	    const dropdownMenu = document.getElementById('userDropdownMenu');
+	
+	    if (dropdownBtn && dropdownMenu) {
+	      dropdownBtn.addEventListener('click', function (e) {
+	        e.stopPropagation();
+	        dropdownMenu.classList.toggle('active');
+	      });
+	
+	      document.addEventListener('click', function (e) {
+	        if (!dropdownMenu.contains(e.target) && !dropdownBtn.contains(e.target)) {
+	          dropdownMenu.classList.remove('active');
+	        }
+	      });
+	    }
+	  });
+	</script>
 </body>
 
 </html>

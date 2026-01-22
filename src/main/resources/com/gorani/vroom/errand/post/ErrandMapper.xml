@@ -41,8 +41,23 @@
             e.created_at     AS createdAt,
             e.status         AS status,
             e.category_id    AS categoryId,
-            e.dong_code      AS dongCode
+            e.dong_code      AS dongCode,
+            
+            (
+		      SELECT ei.image_url
+		      FROM ERRANDS_IMAGE ei
+		      WHERE ei.errands_id = e.errands_id
+		      ORDER BY ei.sort_order ASC, ei.image_id ASC
+		      LIMIT 1
+		    ) AS imageUrl,
+            
+            c.name         AS categoryName,
+		    u.nickname     AS writerNickname,
+		    d.full_name    AS dongFullName
         FROM ERRANDS e
+        LEFT JOIN CATEGORIES c ON c.id = e.category_id
+	    LEFT JOIN MEMBERS u      ON u.user_id = e.user_id
+	    LEFT JOIN LEGAL_DONG d       ON d.dong_code = e.dong_code
         <include refid="ErrandListWhere"/>
 
         <choose>
@@ -70,6 +85,16 @@
         <include refid="ErrandListWhere"/>
     </select>
     
+    <select id="selectMainImageUrl"
+	        parameterType="long"
+	        resultType="string">
+	    SELECT image_url
+	    FROM ERRANDS_IMAGE
+	    WHERE errands_id = #{errandsId}
+	    ORDER BY sort_order ASC, image_id ASC
+	    LIMIT 1
+	</select>
+    
     <!-- 심부름 게시글 상세 조회 -->
     <select id="selectErrandDetail"
             parameterType="long"
@@ -84,12 +109,76 @@
             e.expense_amount AS expenseAmount,
             e.desired_at     AS desiredAt,
             e.created_at     AS createdAt,
+            m.manner_score    AS mannerScore,
             e.status         AS status,
             e.category_id    AS categoryId,
             e.dong_code      AS dongCode
         FROM ERRANDS e
+        JOIN MEMBERS m
+        	ON m.user_id = e.user_id
         WHERE e.errands_id = #{errandsId}
-
     </select>
+    
+    <select id="selectRelatedErrands" resultType="com.gorani.vroom.errand.post.ErrandListVO">
+	  SELECT
+	      e.errands_id     AS errandsId,
+	      e.title          AS title,
+	      e.reward_amount  AS rewardAmount,
+	      e.created_at     AS createdAt,
+	      e.dong_code      AS dongCode,
+	      e.category_id    AS categoryId,
+	      e.status         AS status
+	  FROM ERRANDS e
+	  WHERE e.errands_id != #{errandsId}
+	    AND e.dong_code = #{dongCode}
+	    AND e.category_id = #{categoryId}
+	    AND e.status = 'WAITING'
+	  ORDER BY e.created_at DESC
+	  LIMIT #{limit}
+	</select>
 
+	<insert id="insertErrand" parameterType="com.gorani.vroom.errand.post.ErrandCreateVO"
+	        useGeneratedKeys="true" keyProperty="errandsId">
+	    INSERT INTO ERRANDS (
+	    	user_id,
+	        title,
+	        category_id,
+	        reward_amount,
+	        expense_amount,
+	        description,
+	        dong_code,
+	        dong_full_name,
+	        desired_at,
+	        status,
+	        created_at
+	    ) VALUES (
+	    	#{userId},
+	        #{title},
+	        #{categoryId},
+	        #{rewardAmount},
+	        #{expenseAmount},
+	        #{description},
+	        #{dongCode},
+	        #{dongFullName},
+	        COALESCE(#{desiredAt}, NOW()),
+	        'WAITING',
+	        NOW()
+	    )
+	</insert>
+	
+	<select id="selectCategories"
+	        resultType="com.gorani.vroom.errand.post.CategoryVO">
+	    SELECT
+	        id, name
+	    FROM CATEGORIES
+	    ORDER BY id ASC
+	</select>
+	
+	<select id="selectDongs" resultType="map">
+	    SELECT
+	        d.dong_code  AS dongCode,
+	        d.full_name  AS dongFullName
+	    FROM LEGAL_DONG d
+	    ORDER BY d.full_name ASC
+	</select>
 </mapper>
