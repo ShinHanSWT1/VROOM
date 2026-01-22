@@ -67,6 +67,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="comment-actions">
                         <button class="action-btn">👍 <span>${comment.likeCount || 0}</span></button>
                         <button class="action-btn" onclick="showReplyForm(this, ${comment.commentId}, ${comment.groupId})">답글</button>
+                        ${comment.user ? `
+                            <button class="action-btn edit-btn" onclick="editComment(this, ${comment.commentId})">수정</button>
+                            <button class="action-btn delete-btn" onclick="deleteComment(${comment.commentId})">삭제</button>
+                        ` : ''}
                     </div>
                 </div>
             </div>
@@ -176,6 +180,92 @@ document.addEventListener('DOMContentLoaded', () => {
         if (mainCommentTextarea) {
             mainCommentTextarea.focus();
             mainCommentTextarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    };
+
+    // 댓글 수정 폼 표시
+    window.editComment = (button, commentId) => {
+        if (!isUserLoggedIn) {
+            window.location.href = `${contextPath}/auth/login`;
+            return;
+        }
+
+        const commentWrapper = button.closest('.comment-item-wrapper');
+        const contentDiv = commentWrapper.querySelector('.comment-content');
+        const originalContent = contentDiv.textContent.trim();
+
+        // 이미 수정 모드인 경우 무시
+        if (commentWrapper.querySelector('.edit-form')) {
+            return;
+        }
+
+        // 수정 폼으로 교체
+        contentDiv.innerHTML = `
+            <div class="edit-form">
+                <textarea class="comment-input edit-input">${originalContent}</textarea>
+                <div class="edit-buttons">
+                    <button class="comment-submit-btn" onclick="submitEdit(this, ${commentId})">수정</button>
+                    <button class="cancel-btn" onclick="cancelEdit(this)">취소</button>
+                </div>
+            </div>
+        `;
+        contentDiv.querySelector('.edit-input').focus();
+    };
+
+    // 수정 제출
+    window.submitEdit = async (button, commentId) => {
+        const editForm = button.closest('.edit-form');
+        const textarea = editForm.querySelector('.edit-input');
+        const content = textarea.value.trim();
+
+        if (!content) {
+            textarea.focus();
+            return;
+        }
+
+        try {
+            const response = await fetch(`${contextPath}/community/api/comments/${commentId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ content: content }),
+            });
+
+            if (response.ok) {
+                await fetchComments();
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    // 수정 취소
+    window.cancelEdit = (button) => {
+        fetchComments(); // 댓글 목록 다시 불러오기
+    };
+
+    // 댓글 삭제
+    window.deleteComment = async (commentId) => {
+        if (!isUserLoggedIn) {
+            window.location.href = `${contextPath}/auth/login`;
+            return;
+        }
+
+        if (!confirm('댓글을 삭제하시겠습니까?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`${contextPath}/community/api/comments/${commentId}`, {
+                method: 'DELETE',
+            });
+
+            if (response.ok) {
+                await fetchComments();
+            }
+        } catch (error) {
+            console.error(error);
         }
     };
 });

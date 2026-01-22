@@ -141,7 +141,7 @@
                     </button>
                     <button class="action-btn" onclick="focusCommentForm()">
                         <span>💬</span>
-                        <span>댓글</span>
+                        <span id="comment-count">${totalComments}</span>
                     </button>
                 </div>
                 <div class="views-count">조회 ${postDetail.viewCount}</div>
@@ -149,31 +149,13 @@
 
             <!-- Comments Section -->
             <div class="comments-section">
-                <div class="comments-header">
-                    <h3>댓글 ${totalComments}개</h3>
-                    <div class="comment-sort-tabs">
-                        <button class="sort-btn active" data-sort="latest">최신순</button>
-                        <button class="sort-btn" data-sort="oldest">등록순</button>
-                    </div>
-                </div>
-
                 <!-- Main Comment Form -->
                 <div class="comment-form-container" id="mainCommentForm">
-                    <div class="comment-avatar">
-                        <c:choose>
-                            <c:when test="${not empty sessionScope.user.profileUrl}">
-                                <img src="${sessionScope.user.profileUrl}" alt="profile">
-                            </c:when>
-                            <c:otherwise>
-                                ${sessionScope.user.nickname.substring(0, 1)}
-                            </c:otherwise>
-                        </c:choose>
-                    </div>
-                    <div class="comment-input-wrapper">
-                        <textarea class="comment-input" placeholder="칭찬과 격려의 댓글은 작성자에게 큰 힘이 됩니다."></textarea>
-                        <button class="comment-submit-btn" onclick="submitComment(this)">등록</button>
-                    </div>
+                    <textarea class="comment-input" placeholder="칭찬과 격려의 댓글은 작성자에게 큰 힘이 됩니다."></textarea>
+                    <button class="comment-submit-btn" onclick="submitComment(this)">등록</button>
                 </div>
+
+<%--                <div class="comment-separator"></div>--%>
 
                 <!-- Comment List -->
                 <div class="comment-list" id="commentList">
@@ -242,7 +224,7 @@
     window.communityConfig = {
         contextPath: '${pageContext.request.contextPath}',
         postId: ${postDetail.postId},
-        isUserLoggedIn: ${not empty sessionScope.user}
+        isUserLoggedIn: ${not empty loginUser}
     };
 </script>
 <script src="<c:url value='/static/community/js/communityFilter.js'/>"></script>

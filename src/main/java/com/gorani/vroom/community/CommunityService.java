@@ -27,4 +27,10 @@ public interface CommunityService {
 
     // 댓글 삽입
     boolean addComment(CommunityCommentVO commentVO);
+
+    // 댓글 수정
+    boolean updateComment(Long commentId, String content, Long userId);
+
+    // 댓글 삭제
+    boolean deleteComment(Long commentId, Long userId);
 }

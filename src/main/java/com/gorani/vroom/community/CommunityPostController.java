@@ -1,7 +1,7 @@
 package com.gorani.vroom.community;
 
 import com.gorani.vroom.location.LocationService;
-import com.gorani.vroom.user.profile.UserProfileVO;
+import com.gorani.vroom.user.auth.UserVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,6 +40,12 @@ public class CommunityPostController {
          model.addAttribute("selectedCategoryId", categoryId);
          model.addAttribute("selectedGuName", guName);
         
+    }
+
+    // 모든 커뮤니티 페이지 요청 시 로그인 사용자 정보를 모델에 추가
+    @ModelAttribute("loginUser")
+    public UserVO addLoginUserToModel(HttpSession session) {
+        return (UserVO) session.getAttribute("loginSess");
     }
 
     // 커뮤니티 게시글 목록
@@ -122,7 +128,7 @@ public class CommunityPostController {
             HttpSession session) {
         List<CommunityCommentVO> commentList = communityService.getPostComments(postId);
 
-        UserProfileVO loginUser = (UserProfileVO) session.getAttribute("user");
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
         if(loginUser != null) {
             for(CommunityCommentVO comment : commentList) {
                 if(loginUser.getUserId().equals(comment.getUserId())) {
@@ -141,7 +147,7 @@ public class CommunityPostController {
             @PathVariable Long postId,
             @RequestBody CommunityCommentVO commentVO,
             HttpSession session) {
-        UserProfileVO loginUser = (UserProfileVO) session.getAttribute("user");
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
         if(loginUser == null) {
             return new ResponseEntity<>("로그인이 필요합니다. ", HttpStatus.UNAUTHORIZED);
         }
@@ -157,6 +163,44 @@ public class CommunityPostController {
         }
     }
 
+    // 댓글 수정
+    @ResponseBody
+    @PutMapping("/api/comments/{commentId}")
+    public ResponseEntity<Void> updateComment(
+            @PathVariable Long commentId,
+            @RequestBody CommunityCommentVO commentVO,
+            HttpSession session) {
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
+        if (loginUser == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        boolean isSuccess = communityService.updateComment(commentId, commentVO.getContent(), loginUser.getUserId());
+        if (isSuccess) {
+            return new ResponseEntity<>(HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    // 댓글 삭제
+    @ResponseBody
+    @DeleteMapping("/api/comments/{commentId}")
+    public ResponseEntity<Void> deleteComment(
+            @PathVariable Long commentId,
+            HttpSession session) {
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
+        if (loginUser == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        boolean isSuccess = communityService.deleteComment(commentId, loginUser.getUserId());
+        if (isSuccess) {
+            return new ResponseEntity<>(HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
 
     private PaginationDataDTO getPaginationData(String dongCode, Long categoryId, String searchKeyword, Long page) {
         long startIdx = (page - 1) * PAGE_SIZE;

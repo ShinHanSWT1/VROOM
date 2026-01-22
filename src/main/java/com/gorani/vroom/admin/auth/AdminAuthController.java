@@ -13,9 +13,9 @@ import javax.servlet.http.HttpSession;
 @Slf4j
 @Controller
 @RequiredArgsConstructor
-public class AuthController {
+public class AdminAuthController {
 
-    private final AuthService service;
+    private final AdminAuthService service;
 
     @GetMapping({"/admin/login"})
     public String login() {

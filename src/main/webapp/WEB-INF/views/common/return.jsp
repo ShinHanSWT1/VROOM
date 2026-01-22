@@ -364,11 +364,11 @@
 
 <body>
 <!-- Flying Bees -->
-<div class="flying-bee flying-bee-1"><img src="${pageContext.request.contextPath}/resources/img/common/bee1.png" alt=""
+<div class="flying-bee flying-bee-1"><img src="${pageContext.request.contextPath}/static/img/common/bee1.png" alt=""
                                           srcset=""></div>
-<div class="flying-bee flying-bee-2"><img src="${pageContext.request.contextPath}/resources/img/common/bee1.png" alt=""
+<div class="flying-bee flying-bee-2"><img src="${pageContext.request.contextPath}/static/img/common/bee1.png" alt=""
                                           srcset=""></div>
-<div class="flying-bee flying-bee-3"><img src="${pageContext.request.contextPath}/resources/img/common/bee1.png" alt=""
+<div class="flying-bee flying-bee-3"><img src="${pageContext.request.contextPath}/static/img/common/bee1.png" alt=""
                                           srcset=""></div>
 
 <!-- Loading Container -->
@@ -405,13 +405,13 @@
 <script>
     <c:if test="${result == 'success'}">
         setTimeout(function () {
-            location.href = '${url}'
+            location.href = '${pageContext.request.contextPath}' + '${url}'
         }, 3000);
     </c:if>
     <c:if test="${result == 'fail'}">
         console.log('${errorMsg}');
         setTimeout(function () {
-            location.href = '${url}'
+            location.href = '${pageContext.request.contextPath}' + '${url}'
         }, 2000);
     </c:if>
 

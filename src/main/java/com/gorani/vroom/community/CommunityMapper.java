@@ -49,4 +49,13 @@ public interface CommunityMapper {
 
     // 댓글의 group_id 업데이트
     int updateCommentGroupId(@Param("commentId") Long commentId, @Param("groupId") Long groupId);
+
+    // 댓글 수정
+    int updateComment(@Param("commentId") Long commentId, @Param("content") String content, @Param("userId") Long userId);
+
+    // 댓글 삭제 (soft delete)
+    int deleteComment(@Param("commentId") Long commentId, @Param("userId") Long userId);
+
+    // 댓글의 postId 조회
+    Long selectPostIdByCommentId(@Param("commentId") Long commentId);
 }

@@ -22,6 +22,15 @@ public interface ErrandMapper {
      * @return 총 개수
      */
     int countErrandList(Map<String, Object> param);
+    int insertErrand(ErrandCreateVO vo);
     
     ErrandDetailVO selectErrandDetail(@Param("errandsId") Long errandsId);
+    List<ErrandListVO> selectRelatedErrands(@Param("errandsId") Long errandsId,
+            @Param("dongCode") String dongCode,
+            @Param("categoryId") Long categoryId,
+            @Param("limit") int limit);
+    
+    List<CategoryVO> selectCategories();
+    List<Map<String, Object>> selectDongs();
+    String selectMainImageUrl(@Param("errandsId") Long errandsId);
 }

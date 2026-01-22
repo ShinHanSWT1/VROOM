@@ -199,4 +199,23 @@
         SET group_id = #{groupId}
         WHERE comment_id = #{commentId}
     </update>
+
+    <!-- 댓글 수정 -->
+    <update id="updateComment">
+        UPDATE COMMUNITY_COMMENT
+        SET content = #{content}, updated_at = NOW()
+        WHERE comment_id = #{commentId} AND user_id = #{userId} AND deleted_at IS NULL
+    </update>
+
+    <!-- 댓글 삭제 (soft delete) -->
+    <update id="deleteComment">
+        UPDATE COMMUNITY_COMMENT
+        SET deleted_at = NOW()
+        WHERE comment_id = #{commentId} AND user_id = #{userId} AND deleted_at IS NULL
+    </update>
+
+    <!-- 댓글의 postId 조회 -->
+    <select id="selectPostIdByCommentId" resultType="Long">
+        SELECT post_id FROM COMMUNITY_COMMENT WHERE comment_id = #{commentId}
+    </select>
 </mapper>

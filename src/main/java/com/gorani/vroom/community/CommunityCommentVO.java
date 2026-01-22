@@ -25,6 +25,12 @@ public class CommunityCommentVO {
     private Long groupId;
     private Long depth;
 
+    // 좋아요 수
+    private Long likeCount;
+
+    // 프로필 이미지
+    private String profileUrl;
+
     // 세션 유저 정보 가져와 본인 확인
     private boolean isUser = false;
 }

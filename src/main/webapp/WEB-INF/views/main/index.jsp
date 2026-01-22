@@ -84,7 +84,7 @@
     <div class="container">
         <div class="section-header">
             <h2 class="section-title">진행 중인 부름</h2>
-            <a href="#" class="more-link">더보기 →</a>
+            <a href="${pageContext.request.contextPath}/errand/list" class="more-link">더보기 →</a>
         </div>
         <div class="task-grid">
             <c:forEach var="task" items="${taskList}" begin="0" end="2">
@@ -109,7 +109,7 @@
     <div class="container">
         <div class="section-header">
             <h2 class="section-title">커뮤니티 인기글</h2>
-            <a href="<c:url value='/community/list'/>" class="more-link">더보기 →</a>
+            <a href="${pageContext.request.contextPath}/community/" class="more-link">더보기 →</a>
         </div>
 
         <div class="hot-posts">
@@ -123,7 +123,7 @@
             </ul>
 
             <div class="hot-more-wrap">
-                <a href="<c:url value='/community/list'/>" class="hot-more-btn">전체보기</a>
+                <a href="${pageContext.request.contextPath}/community/" class="hot-more-btn">전체보기</a>
             </div>
         </div>
     </div>

@@ -800,27 +800,27 @@
                 <span class="nav-item-icon">👥</span>
                 <span class="nav-item-text">사용자 관리</span>
             </a>
-            <a href="#helpers" class="nav-item">
+            <a href="${pageContext.request.contextPath}/admin/erranders" class="nav-item">
                 <span class="nav-item-icon">🏃</span>
                 <span class="nav-item-text">부름이 관리</span>
             </a>
-            <a href="#orders" class="nav-item">
+            <a href="${pageContext.request.contextPath}/admin/assign" class="nav-item">
                 <span class="nav-item-icon">📦</span>
                 <span class="nav-item-text">주문/배차 관리</span>
             </a>
-            <a href="#reports" class="nav-item">
+            <a href="${pageContext.request.contextPath}/admin/issue" class="nav-item">
                 <span class="nav-item-icon">⚠️</span>
                 <span class="nav-item-text">신고/이슈 관리</span>
             </a>
-            <a href="#settlement" class="nav-item">
+            <a href="${pageContext.request.contextPath}/admin/settlements" class="nav-item">
                 <span class="nav-item-icon">💰</span>
                 <span class="nav-item-text">정산 관리</span>
             </a>
-            <a href="#content" class="nav-item">
+            <a href="${pageContext.request.contextPath}/admin/notice" class="nav-item">
                 <span class="nav-item-icon">📢</span>
                 <span class="nav-item-text">공지/컨텐츠 관리</span>
             </a>
-            <a href="#settings" class="nav-item">
+            <a href="${pageContext.request.contextPath}/admin/settings" class="nav-item">
                 <span class="nav-item-icon">⚙️</span>
                 <span class="nav-item-text">시스템 설정</span>
             </a>
@@ -1202,7 +1202,7 @@
             });
     }
 
-    // 테이블 HTML 생성 함수
+    // 사용자 테이블 렌더링
     function renderTable(users) {
         const tbody = document.getElementById('userTableBody');
         tbody.innerHTML = ''; // 기존 목록 비우기

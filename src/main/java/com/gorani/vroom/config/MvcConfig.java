@@ -27,7 +27,10 @@ import org.springframework.web.servlet.config.annotation.*;
 public class MvcConfig implements WebMvcConfigurer {
 
     // 프로필 이미지 저장 경로 (외부 경로)
-    public static final String UPLOAD_PATH = "C:/uploads/profile/";
+	// 업로드 저장 경로 (외부 경로)
+	public static final String PROFILE_UPLOAD_PATH = "C:/uploads/profile/";
+	public static final String ERRAND_UPLOAD_PATH  = "C:/uploads/errand/";
+
     @Value("${db.driver}")
     private String driver;
     @Value("${db.url}")
@@ -65,9 +68,13 @@ public class MvcConfig implements WebMvcConfigurer {
                 .resourceChain(true);
 
 
-        // 프로필 이미지 (외부 경로 매핑) => 프로젝트 외부에 저장을 해야 배포시 데이터 삭제 방지.
+        // 프로필 이미지 (외부 경로 매핑)
         registry.addResourceHandler("/uploads/profile/**")
-                .addResourceLocations("file:/" + UPLOAD_PATH);
+                .addResourceLocations("file:/" + PROFILE_UPLOAD_PATH);
+
+        // 심부름(게시글) 이미지 (외부 경로 매핑)
+        registry.addResourceHandler("/uploads/errand/**")
+                .addResourceLocations("file:/" + ERRAND_UPLOAD_PATH);
     }
 
     @Override

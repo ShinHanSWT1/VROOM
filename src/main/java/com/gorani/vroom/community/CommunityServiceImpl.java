@@ -80,4 +80,27 @@ public class CommunityServiceImpl implements CommunityService{
         }
         return false;
     }
+
+    // 댓글 수정
+    @Override
+    public boolean updateComment(Long commentId, String content, Long userId) {
+        int result = communityMapper.updateComment(commentId, content, userId);
+        return result > 0;
+    }
+
+    // 댓글 삭제
+    @Override
+    @Transactional
+    public boolean deleteComment(Long commentId, Long userId) {
+        // 삭제 전에 postId 조회
+        Long postId = communityMapper.selectPostIdByCommentId(commentId);
+
+        int result = communityMapper.deleteComment(commentId, userId);
+        if (result > 0 && postId != null) {
+            // 게시글의 댓글 수 업데이트
+            communityMapper.updatePostCommentCount(postId);
+            return true;
+        }
+        return false;
+    }
 }

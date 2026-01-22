@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gorani.vroom.admin.erranders.AdminErrandersMapper">
+
+    <!-- 상단 요약 -->
+    <!-- 전체 부름이, 활성 부름이(정지 ＋ 일시정지, 승인대기), 오늘 활동(최근 7일 활동), 평균 완료율 -->
+    <select id="getSummary" resultType="map">
+        <![CDATA[
+            SELECT p.total,
+                   p.activated,
+                   p.banned,
+                   p.waiting,
+                   p.today_activated,
+                   p.recent7_activated,
+                   r.avg_complete_rate
+            FROM (SELECT COUNT(*)                                                                          AS total,
+                         SUM(CASE WHEN active_status = 'ACTIVE' THEN 1 ELSE 0 END)                         AS activated,
+                         SUM(CASE WHEN active_status IN ('SUSPENDED', 'BANNED') THEN 1 ELSE 0 END)         AS banned,
+                         SUM(CASE WHEN approval_status = 'PENDING' THEN 1 ELSE 0 END)                      AS waiting,
+                         SUM(CASE WHEN active_status = 'ACTIVE'
+                                           AND last_active_at >= CURRENT_DATE - INTERVAL 1 DAY THEN 1 ELSE 0 END) AS today_activated,
+                         SUM(CASE WHEN active_status = 'ACTIVE'
+                                     AND last_active_at >= CURRENT_DATE - INTERVAL 7 DAY THEN 1 ELSE 0 END)       AS recent7_activated
+                  FROM ERRANDER_PROFILES) p
+            LEFT JOIN
+                 (SELECT ROUND(AVG(complete_rate), 2) AS avg_complete_rate
+                  FROM (SELECT errander_id,
+                               SUM(CASE WHEN status = 'COMPLETED' THEN 1 ELSE 0 END) * 1.0 / COUNT(*) AS complete_rate
+                        FROM ERRANDS
+                        GROUP BY errander_id) t) r
+            ON 1 = 1
+        ]]>
+    </select>
+
+
+    <!-- 부름이 검색 -->
+    <select id="searchErranders" parameterType="map" resultType="map">
+        <![CDATA[
+            SELECT
+                m.user_id,
+                m.phone,
+                p.errander_id,
+                m.nickname,
+                p.approval_status,
+                p.active_status,
+                p.complete_rate,
+                p.rating_avg,
+                p.last_active_at
+            FROM MEMBERS m
+            JOIN ERRANDER_PROFILES p ON m.user_id = p.user_id
+            WHERE m.role = 'ERRANDER'
+        ]]>
+
+            <if test="keyword != null and keyword != ''">
+                AND (
+                m.nickname LIKE CONCAT('%', #{keyword}, '%')
+                OR p.errander_id LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+
+            <if test="approveStatus != null and approveStatus != ''">
+                AND p.approval_status = #{approveStatus}
+            </if>
+
+            <if test="activeStatus != null and activeStatus != ''">
+                AND p.active_status = #{activeStatus}
+            </if>
+
+            <if test="reviewScope != null">
+                AND p.rating_avg >= #{reviewScope}
+            </if>
+        <![CDATA[
+            ORDER BY p.approved_at DESC
+            LIMIT #{limit} OFFSET #{offset}
+        ]]>
+
+    </select>
+
+    <!-- 검색된 총 부름이 수 -->
+    <select id="countErranders" parameterType="map" resultType="int">
+        <![CDATA[
+            SELECT COUNT(*)
+            FROM MEMBERS m
+            JOIN ERRANDER_PROFILES p ON m.user_id = p.user_id
+            WHERE m.role = 'ERRANDER'
+        ]]>
+
+        <if test="keyword != null and keyword != ''">
+            AND (
+            m.nickname LIKE CONCAT('%', #{keyword}, '%')
+            OR p.errander_id LIKE CONCAT('%', #{keyword}, '%')
+            )
+        </if>
+
+        <if test="approveStatus != null and approveStatus != ''">
+            AND p.approval_status = #{approveStatus}
+        </if>
+
+        <if test="activeStatus != null and activeStatus != ''">
+            AND p.active_status = #{activeStatus}
+        </if>
+
+        <if test="reviewScope != null">
+            AND p.rating_avg >= #{reviewScope}
+        </if>
+    </select>
+
+    <!-- 사용자 상태 변경 -->
+<!--    <update id="updateErranderStatus" parameterType="map">-->
+<!--        UPDATE ERRANDER_PROFILES-->
+<!--        SET-->
+<!--            active_status = #{status},-->
+<!--            suspension_end_at = #{suspensionEndAt},-->
+<!--            suspension_note = #{suspensionNote}-->
+<!--        WHERE errander_id = #{erranderId}-->
+<!--    </update>-->
+
+<!--    &lt;!&ndash; 상세페이지 사용자 정보 &ndash;&gt;-->
+<!--    <select id="getUserInfoDetail"-->
+<!--            parameterType="long"-->
+<!--            resultType="com.gorani.vroom.admin.users.AdminUserDetailDTO">-->
+<!--        SELECT-->
+<!--            m.user_id, m.email, m.nickname, m.role, m.status, m.phone, m.cancel_rate,-->
+<!--            m.profile_image, m.manner_score, m.created_at, m.last_login_at, m.provider,-->
+<!--            m.admin_memo,-->
+<!--            d1.full_name AS address1,-->
+<!--            d2.full_name AS address2,-->
+
+<!--            &#45;&#45; 심부름 등록 횟수-->
+<!--            (SELECT COUNT(*) FROM ERRANDS WHERE user_id = m.user_id) AS errand_count,-->
+
+<!--            &#45;&#45; 신고 당한 횟수-->
+<!--            (SELECT COUNT(*) FROM ISSUE_TICKETS WHERE target_user_id = m.user_id) AS reported_count,-->
+
+<!--            &#45;&#45; 누적 거래 금액-->
+<!--            (SELECT IFNULL(SUM(amount), 0)-->
+<!--             FROM PAYMENT_ORDERS-->
+<!--             WHERE user_id = m.user_id AND status = 'PAID') AS total_tx_amount-->
+
+<!--        FROM MEMBERS m-->
+<!--                 LEFT JOIN LEGAL_DONG d1 ON m.dong_code1 = d1.dong_code-->
+<!--                 LEFT JOIN LEGAL_DONG d2 ON m.dong_code2 = d2.dong_code-->
+<!--        WHERE m.user_id = #{userId}-->
+<!--    </select>-->
+
+<!--    &lt;!&ndash; 사용자 신고당한 이력 &ndash;&gt;-->
+<!--    <select id="getUserReportHistory"-->
+<!--            parameterType="long"-->
+<!--            resultType="com.gorani.vroom.admin.users.UserReportHistoryVO">-->
+<!--        SELECT-->
+<!--            id AS ticket_id,-->
+<!--            type,-->
+<!--            status,-->
+<!--            content AS reason,-->
+<!--            created_at-->
+<!--        FROM ISSUE_TICKETS-->
+<!--        WHERE target_user_id = #{userId}-->
+<!--        ORDER BY created_at DESC-->
+<!--    </select>-->
+
+<!--    &lt;!&ndash; 사용자 활동 히스토리 &ndash;&gt;-->
+<!--    <select id="getUserActivityHistory"-->
+<!--            parameterType="long"-->
+<!--            resultType="com.gorani.vroom.admin.users.UserActivityVO">-->
+<!--        SELECT-->
+<!--            '심부름 등록' AS type,-->
+<!--            title AS description,-->
+<!--            created_at AS occurred_at-->
+<!--        FROM ERRANDS-->
+<!--        WHERE user_id = #{userId}-->
+<!--        ORDER BY created_at DESC-->
+<!--            LIMIT 10-->
+<!--    </select>-->
+
+<!--    &lt;!&ndash; 관리자 메모 업데이트 &ndash;&gt;-->
+<!--    <update id="updateAdminMemo">-->
+<!--        UPDATE MEMBERS-->
+<!--        SET admin_memo = #{memo}-->
+<!--        WHERE user_id = #{userId}-->
+<!--    </update>-->
+
+</mapper>
