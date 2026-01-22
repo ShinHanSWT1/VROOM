@@ -507,11 +507,11 @@
 
         .status-badge.SUSPENDED {
             background: #FDEAEA;
-            color: #E74C3C;
+            color: #e77e3c;
         }
 
         .status-badge.BANNED {
-            background: #2C3E50;
+            background: #E74C3C;
             color: #FFFFFF;
         }
 
@@ -1045,6 +1045,7 @@
                         <th>상태</th>
                         <th>완료율</th>
                         <th>평점</th>
+                        <th>승인일자</th>
                         <th>최근 활동일</th>
                         <th>관리</th>
                     </tr>
@@ -1240,6 +1241,12 @@
                 lastActive = date.toISOString().split('T')[0];
             }
 
+            let approvedAt = '-';
+            if (item.approved_at) {
+                const date = new Date(item.approved_at);
+                approvedAt = date.toISOString().split('T')[0];
+            }
+
             // 배지 텍스트 및 클래스 설정
             let approvalText = approvalStatus === 'APPROVED' ? '승인' : (approvalStatus === 'PENDING' ? '승인대기' : '반려');
             let activityText = '-';
@@ -1271,11 +1278,11 @@
 
             // 액션 버튼 (승인 대기중이면 승인버튼, 아니면 관리버튼)
             let actionBtnHtml = '';
-            if (approvalStatus === 'PENDING') {
+            if (approvalStatus === 'APPROVED') {
+                actionBtnHtml = `<button class="action-button" onclick="goToDetail(\${erranderId})">관리</button>`;
+            } else {
                 // 승인 모달 열기
                 actionBtnHtml = `<button class="action-button approve" onclick="openApprovalModal(\${erranderId})">승인</button>`;
-            } else {
-                actionBtnHtml = `<button class="action-button" onclick="goToDetail(\${erranderId})">관리</button>`;
             }
 
             const row = `
@@ -1285,6 +1292,7 @@
                     <td>\${activityStatusHtml}</td>
                     <td>\${completeRate}%</td>
                     <td>\${ratingDisplay}</td>
+                    <td>\${approvedAt}</td>
                     <td>\${lastActive}</td>
                     <td>\${actionBtnHtml}</td>
                 </tr>
@@ -1344,7 +1352,7 @@
 
     // 상세 페이지 이동
     function goToDetail(erranderId) {
-        window.location.href = '${pageContext.request.contextPath}/admin/erranders/detail?id=' + erranderId;
+        window.location.href = '${pageContext.request.contextPath}/admin/erranders/detail/' + erranderId;
     }
 
     // 승인 모달 열기
@@ -1421,14 +1429,15 @@
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
                 erranderId: currentErranderId,
-                status: "APPROVED"
+                status: "APPROVED",
+                reason: ""
             })
         })
             .then(res => res.json())
             .then(data => {
                 if(data.result === 'success'){
                     alert('승인되었습니다.');
-                    loadErranderList(1);
+                    window.location.reload();
                 }
                 else {
                     alert('승인 처리 실패했습니다: ' + data.message);
@@ -1458,7 +1467,7 @@
             .then(data => {
                 if(data.result === 'success'){
                     alert('반려되었습니다.');
-                    loadErranderList(1);
+                    window.location.reload();
                 }
                 else {
                     alert('처리 실패했습니다: ' + data.message);
@@ -1507,9 +1516,9 @@
             default: statusText = newStatus;
         }
 
-        if (!confirm('부름이 ID: \${erranderId}의 활동 상태를 ${statusText}(으)로 변경하시겠습니까?')) {
-            return;
-        }
+        <%--if (!confirm('부름이 ID: \${erranderId}의 활동 상태를 ${statusText}(으)로 변경하시겠습니까?')) {--%>
+        <%--    return;--%>
+        <%--}--%>
 
         // API 호출
         fetch('${pageContext.request.contextPath}/api/admin/erranders/status', {
@@ -1522,16 +1531,16 @@
         })
             .then(res => res.json())
             .then(data => {
-                if (data.success) {
+                if (data.result === 'success') {
                     alert('활동 상태가 변경되었습니다.');
-                    loadErranderList(1); // 목록 새로고침
+                    window.location.reload();
                 } else {
                     alert('상태 변경에 실패했습니다.');
                 }
             })
             .catch(error => {
                 console.error('상태 변경 실패:', error);
-                alert('활동 상태가 변경되었습니다. (UI 테스트)');
+                alert(error);
                 loadErranderList(1);
             });
 

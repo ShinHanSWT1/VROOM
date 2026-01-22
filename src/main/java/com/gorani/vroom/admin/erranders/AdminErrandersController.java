@@ -6,7 +6,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
@@ -91,6 +90,19 @@ public class AdminErrandersController {
         String status = params.get("activeStatus").toString();
 
         return service.changeErranderStatus(erranderId, status);
+    }
+
+    // 부름이 관리 상세 페이지 요청
+    @GetMapping("/admin/erranders/detail/{id}")
+    public String erranderDetail(
+            @PathVariable("id") Long erranderId,
+            Model model
+            ) {
+
+
+
+        return "admin/errander_detail";
+
     }
 
 }

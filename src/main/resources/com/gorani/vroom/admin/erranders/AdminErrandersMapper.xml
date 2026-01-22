@@ -45,7 +45,8 @@
                 p.active_status,
                 p.complete_rate,
                 p.rating_avg,
-                p.last_active_at
+                p.last_active_at,
+                p.approved_at
             FROM MEMBERS m
             JOIN ERRANDER_PROFILES p ON m.user_id = p.user_id
             WHERE m.role = 'ERRANDER'
