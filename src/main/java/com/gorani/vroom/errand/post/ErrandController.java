@@ -51,6 +51,11 @@ public class ErrandController {
 			return "redirect:/errand/list";
 		}
 		
+		// dongFullName 세팅
+	    if (errand.getGunguName() != null && errand.getDongName() != null) {
+	        errand.setDongFullName(errand.getGunguName() + " " + errand.getDongName());
+	    }
+		
 		List<ErrandListVO> relatedErrands =
 	            errandService.getRelatedErrands(errandsId, errand.getDongCode(), errand.getCategoryId(), 6);
 

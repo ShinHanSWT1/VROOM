@@ -127,8 +127,10 @@
 	      e.created_at     AS createdAt,
 	      e.dong_code      AS dongCode,
 	      e.category_id    AS categoryId,
-	      e.status         AS status
+	      e.status         AS status,
+	      c.default_image_url AS categoryDefaultImageUrl
 	  FROM ERRANDS e
+	  JOIN CATEGORIES c ON c.id = e.category_id
 	  WHERE e.errands_id != #{errandsId}
 	    AND e.dong_code = #{dongCode}
 	    AND e.category_id = #{categoryId}

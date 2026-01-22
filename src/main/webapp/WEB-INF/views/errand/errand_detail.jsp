@@ -560,7 +560,7 @@
                     <div class="info-panel">
                         <h2 class="panel-title">위치</h2>
                         <p class="panel-content">
-                        	<c:out value="${errand.dongCode}" />
+                        	<c:out value="${errand.dongFullName}" />
                         </p>
                     </div>
 
@@ -624,7 +624,16 @@
 					        <div class="task-card"
 					             onclick="location.href='${pageContext.request.contextPath}/errand/detail?errandsId=${e.errandsId}'">
 					
-					          <div class="task-image">📦</div>
+					          <div class="task-image">
+								<c:choose>
+								  <c:when test="${not empty e.categoryDefaultImageUrl}">
+								    <img src="${pageContext.request.contextPath}${e.categoryDefaultImageUrl}" alt="심부름 이미지">
+								  </c:when>
+								  <c:otherwise>
+								    📦
+								  </c:otherwise>
+								</c:choose>
+							  </div>
 					
 					          <div class="task-card-content">
 					            <div class="task-card-header">
@@ -706,6 +715,9 @@
                     }
                 });
             }
+
+            // Initialize
+            renderRelatedTasks();
         });
 
         // Mock related tasks data
@@ -720,6 +732,7 @@
 
         function renderRelatedTasks() {
             const grid = document.getElementById('relatedTasksGrid');
+            if (!grid) return; // 없으면 종료
             grid.innerHTML = '';
 
             relatedTasks.forEach(task => {
@@ -727,7 +740,7 @@
                 taskCard.className = 'task-card';
                 taskCard.innerHTML = `
                     <div class="task-image">
-                        ${task.icon}
+                		<img src="${task.imageUrl}" alt="심부름 이미지">	
                     </div>
                     <div class="task-card-content">
                         <div class="task-card-header">
@@ -744,9 +757,6 @@
                 grid.appendChild(taskCard);
             });
         }
-
-        // Initialize
-        renderRelatedTasks();
     </script>
 </body>
 
