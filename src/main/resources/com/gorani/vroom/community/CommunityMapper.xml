@@ -2,6 +2,7 @@
 <!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.gorani.vroom.community.CommunityMapper">
 
+    <!-- 카테고리 리스트 조회    -->
     <select id="selectCategoryList" resultType="com.gorani.vroom.community.CategoryVO">
         SELECT
             category_id, category_name
@@ -9,6 +10,7 @@
         ORDER BY category_id;
     </select>
 
+    <!-- 게시글 리스트 조회     -->
     <select id = "selectPostList" resultType = "com.gorani.vroom.community.CommunityPostVO">
         SELECT
             c.post_id,
@@ -44,7 +46,7 @@
         ORDER BY c.created_at DESC
         LIMIT #{startIdx}, 8
     </select>
-
+    <!-- 인기글 리스트 조회    -->
     <select id="selectPopularPostList" resultType="com.gorani.vroom.community.CommunityPostVO">
         SELECT
         c.post_id,
@@ -84,6 +86,7 @@
         LIMIT #{startIdx}, 8
     </select>
 
+    <!-- 게시글 상세정보 조회    -->
     <select id="selectPostDetail" resultType="com.gorani.vroom.community.CommunityPostVO">
         SELECT
             c.post_id,
@@ -111,6 +114,7 @@
         </where>
     </select>
 
+    <!-- pagination 페이지 수 조회     -->
     <select id="selectPostCount" resultType="long">
         SELECT COUNT(*)
         FROM COMMUNITY c
@@ -133,5 +137,66 @@
             </if>
         </where>
     </select>
+    <!-- 댓글수 조회    -->
+    <select id="selectCommentCount" resultType="Long">
+        SELECT COUNT(*)
+        FROM COMMUNITY_COMMENT
+        WHERE post_id = #{postId} AND deleted_at IS NULL
+    </select>
 
+    <!-- 게시글 댓글 수 업데이트  -->
+    <update id="updatePostCommentCount" >
+        UPDATE COMMUNITY
+        SET comment_count =
+            (SELECT COUNT(*)
+             FROM COMMUNITY_COMMENT
+             WHERE
+                 post_id = #{postId} AND deleted_at IS NULL)
+        WHERE post_id = #{postId}
+    </update>
+
+    <!-- 게시글에 대한 댓글 조회     -->
+    <select id="selectPostComments" resultType="com.gorani.vroom.community.CommunityCommentVO">
+        SELECT
+            cc.comment_id,
+            cc.content,
+            cc.created_at,
+            cc.updated_at,
+            cc.post_id,
+            m.user_id,
+            m.nickname,
+            cc.parent_comment_id,
+            cc.group_id,
+            cc.depth
+        FROM COMMUNITY_COMMENT cc
+        JOIN MEMBERS m ON cc.user_id = m.user_id
+        WHERE cc.post_id = #{postId} AND cc.deleted_at IS NULL
+        ORDER BY cc.group_id DESC, cc.depth ASC, cc.created_at ASC
+    </select>
+
+    <!-- 댓글 삽입     -->
+    <insert id="insertComment" useGeneratedKeys="true" keyProperty="commentId">
+        INSERT INTO COMMUNITY_COMMENT (
+            content,
+            post_id,
+            user_id,
+            parent_comment_id,
+            group_id,
+            depth
+        ) VALUES (
+            #{content},
+            #{postId},
+            #{userId},
+            #{parentCommentId},
+            #{groupId},
+            #{depth}
+        )
+    </insert>
+
+    <!-- 댓글의 group_id 업데이트 -->
+    <update id="updateCommentGroupId">
+        UPDATE COMMUNITY_COMMENT
+        SET group_id = #{groupId}
+        WHERE comment_id = #{commentId}
+    </update>
 </mapper>

@@ -26,11 +26,27 @@ public interface CommunityMapper {
     );
 
     // 게시글 상세 정보 조회
-    CommunityPostVO selectPostDetail(int postId);
+    CommunityPostVO selectPostDetail(Long postId);
 
+    //  pagination 페이지 수 조회
     Long selectPostCount(
             @Param("dongCode") String dongCode,
             @Param("categoryId") Long categoryId,
             @Param("searchKeyword") String searchKeyword
     );
+
+    // 댓글 수 조회
+    Long selectCommentCount(Long postId);
+
+    // 게시글 댓글 수 업데이트
+    int updatePostCommentCount(@Param("postId") Long postId);
+
+    // 게시글에 대한 댓글 조회
+    List<CommunityCommentVO> selectPostComments(Long postId);
+
+    // 댓글 삽입
+    int insertComment(CommunityCommentVO commentVO);
+
+    // 댓글의 group_id 업데이트
+    int updateCommentGroupId(@Param("commentId") Long commentId, @Param("groupId") Long groupId);
 }

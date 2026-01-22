@@ -23,6 +23,7 @@ public class CommunityPostVO {
     private Long userId;
     private String dongCode;
     private Long categoryId;
+    private Long commentCount;
 
     // --- MEMBERS 테이블 (JOIN) ---
     private String nickname;

@@ -1,11 +1,15 @@
 package com.gorani.vroom.community;
 
 import com.gorani.vroom.location.LocationService;
+import com.gorani.vroom.user.profile.UserProfileVO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpSession;
 import java.util.List;
 
 @Controller
@@ -38,7 +42,7 @@ public class CommunityPostController {
         
     }
 
-    // 커뮤니티 게시글 목록 페이지
+    // 커뮤니티 게시글 목록
     @GetMapping("")
     public String list(@RequestParam(required = false)  String dongCode,
                        @RequestParam(required = false)  Long categoryId,
@@ -59,8 +63,9 @@ public class CommunityPostController {
         return "community/main";
     }
 
+    // 게시글 상세 페이지
     @GetMapping("/detail/{postId}")
-    public String detail(@PathVariable int postId,
+    public String detail(@PathVariable Long postId,
                          @RequestParam(required = false)  String dongCode,
                          @RequestParam(required = false)  Long categoryId,
                          @RequestParam(required = false)  String guName,
@@ -80,17 +85,23 @@ public class CommunityPostController {
         if (guName == null) 
             model.addAttribute("selectedGuName", communityPostDetail.getGunguName());
 
+        // 댓글 목록 및 총 댓글 수 조회
+        List<CommunityCommentVO> commentList = communityService.getPostComments(postId);
+        Long totalComments = communityService.getCommentCount(postId);
+
+        model.addAttribute("commentList", commentList);
+        model.addAttribute("totalComments", totalComments);
+
         return "community/detail";
     }
 
+    // pagination
     @ResponseBody
-    @GetMapping("/api/posts")
-    public PaginationVO pagination(
-                             @RequestParam(required = false)  String dongCode,
-                             @RequestParam(required = false)  Long categoryId,
-                             @RequestParam(required = false)  String guName,
-                             @RequestParam(required = false)  String searchKeyword,
-                             @RequestParam(defaultValue = "1") Long page){
+    @GetMapping("/api/posts/pagination")
+    public PaginationVO pagination(@RequestParam(required = false)  String dongCode,
+                                   @RequestParam(required = false)  Long categoryId,
+                                   @RequestParam(required = false)  String searchKeyword,
+                                   @RequestParam(defaultValue = "1") Long page){
         PaginationDataDTO paginationData = getPaginationData(dongCode, categoryId, searchKeyword, page);
 
         PaginationVO result = new PaginationVO();
@@ -102,6 +113,50 @@ public class CommunityPostController {
 
         return result;
     }
+
+    // 댓글 목록 조회
+    @ResponseBody
+    @GetMapping("/api/posts/{postId}/comments")
+    public ResponseEntity<List<CommunityCommentVO>> getComment(
+            @PathVariable Long postId,
+            HttpSession session) {
+        List<CommunityCommentVO> commentList = communityService.getPostComments(postId);
+
+        UserProfileVO loginUser = (UserProfileVO) session.getAttribute("user");
+        if(loginUser != null) {
+            for(CommunityCommentVO comment : commentList) {
+                if(loginUser.getUserId().equals(comment.getUserId())) {
+                    comment.setUser(true);
+                }
+            }
+        }
+
+        return new ResponseEntity<>(commentList, HttpStatus.OK);
+    }
+
+    // 댓글 작성
+    @ResponseBody
+    @PostMapping("/api/posts/{postId}/comments")
+    public ResponseEntity<String> addComment(
+            @PathVariable Long postId,
+            @RequestBody CommunityCommentVO commentVO,
+            HttpSession session) {
+        UserProfileVO loginUser = (UserProfileVO) session.getAttribute("user");
+        if(loginUser == null) {
+            return new ResponseEntity<>("로그인이 필요합니다. ", HttpStatus.UNAUTHORIZED);
+        }
+
+        commentVO.setPostId(postId);
+        commentVO.setUserId(loginUser.getUserId());
+
+        boolean isSuccess = communityService.addComment(commentVO);
+        if (isSuccess) {
+            return new ResponseEntity<>("", HttpStatus.CREATED);
+        } else {
+            return new ResponseEntity<>("", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 
     private PaginationDataDTO getPaginationData(String dongCode, Long categoryId, String searchKeyword, Long page) {
         long startIdx = (page - 1) * PAGE_SIZE;

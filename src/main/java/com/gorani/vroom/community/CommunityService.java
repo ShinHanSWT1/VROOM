@@ -13,8 +13,18 @@ public interface CommunityService {
     List<CommunityPostVO> getPopularPostList(String dongCode, String searchKeyword, Long startIdx);
 
     // 게시글 상세 데이터 조회
-    CommunityPostVO getPostDetail(int postId);
+    CommunityPostVO getPostDetail(Long postId);
 
+    // pagination 페이지 수 조회
     Long getPostCount(String dongCode, Long categoryId, String searchKeyword);
 
+
+    // 댓글 수 조회
+    Long getCommentCount(Long postId);
+
+    // 게시글에 대한 댓글 조회
+    List<CommunityCommentVO> getPostComments(Long postId);
+
+    // 댓글 삽입
+    boolean addComment(CommunityCommentVO commentVO);
 }

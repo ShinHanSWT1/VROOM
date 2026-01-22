@@ -22,18 +22,23 @@ $(document).ready(function () {
             currentSearchKeyword
         } = window.communityFilterConfig;
 
-        // URL 파라미터 구성
-        const params = new URLSearchParams({
-            page: page,
-            dongCode: currentDongCode,
-            guName: selectedGuName,
-            categoryId: currentCategoryId,
-            search: currentSearchKeyword
-        });
+        // URL 파라미터 구성 (null/undefined/빈 값은 제외)
+        const params = new URLSearchParams();
+        params.append('page', page);
+
+        if (currentDongCode) {
+            params.append('dongCode', currentDongCode);
+        }
+        if (currentCategoryId !== null && currentCategoryId !== undefined && currentCategoryId !== '') {
+            params.append('categoryId', currentCategoryId);
+        }
+        if (currentSearchKeyword) {
+            params.append('searchKeyword', currentSearchKeyword);
+        }
 
         // AJAX 요청
         $.ajax({
-            url: `${contextPath}/community/api/posts?${params.toString()}`,
+            url: `${contextPath}/community/api/posts/pagination?${params.toString()}`,
             type: 'GET',
             dataType: 'json',
             success: function (response) {

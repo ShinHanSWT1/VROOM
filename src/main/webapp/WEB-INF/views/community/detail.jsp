@@ -3,7 +3,7 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <c:set var="pageCss" value="community-detail" scope="request"/>
-<c:set var="pageJs" value="community-ajax"/>
+<c:set var="pageJs" value="communityComment"/>
 <c:set var="pageTitle" value="VROOM - 동네생활" scope="request"/>
 <c:set var="pageId" value="community" scope="request"/>
 
@@ -139,7 +139,7 @@
                         <span>👍</span>
                         <span class="like-count">${postDetail.likeCount}</span>
                     </button>
-                    <button class="action-btn" onclick="showCommentForm()">
+                    <button class="action-btn" onclick="focusCommentForm()">
                         <span>💬</span>
                         <span>댓글</span>
                     </button>
@@ -149,76 +149,71 @@
 
             <!-- Comments Section -->
             <div class="comments-section">
-                <h3 class="comments-header">댓글</h3>
-
-                <!-- Comment Form (Initially Hidden) -->
-                <div class="comment-form" id="mainCommentForm" style="display: none;">
-                    <textarea class="comment-input" placeholder="댓글을 입력하세요..."></textarea>
-                    <button class="comment-submit-btn" onclick="submitComment()">등록</button>
+                <div class="comments-header">
+                    <h3>댓글 ${totalComments}개</h3>
+                    <div class="comment-sort-tabs">
+                        <button class="sort-btn active" data-sort="latest">최신순</button>
+                        <button class="sort-btn" data-sort="oldest">등록순</button>
+                    </div>
                 </div>
 
-                <!-- Existing Comments -->
-                <c:forEach var="comment" items="${commentList}">
-                    <div class="comment-item" data-comment-no="${comment.commentNo}">
-                        <div class="comment-header">
-                            <div class="comment-avatar">${comment.nickname.substring(0, 1)}</div>
-                            <div>
-                                <span class="comment-author">${comment.nickname}</span>
-                            </div>
-                        </div>
-                        <div class="author-meta" style="margin-left: 3.5rem; margin-bottom: 0.5rem;">
-                            <span>${comment.dong}</span>
-                            <span>•</span>
-                            <span><fmt:formatDate value="${comment.regDate}" pattern="MM월 dd일"/></span>
-                        </div>
-                        <div class="comment-content">${comment.content}</div>
-                        <div class="comment-actions">
-                            <button class="comment-action-btn" onclick="toggleCommentLike(this)">
-                                <span>👍</span>
-                                <span class="like-count">${comment.likeCount}</span>
-                            </button>
-                            <button class="comment-action-btn" onclick="showReplyForm(this)">
-                                <span>💬</span>
-                                <span>답글</span>
-                            </button>
-                        </div>
-
-                        <!-- Reply Comments -->
-                        <c:if test="${not empty comment.replies}">
-                            <div class="reply-comments">
-                                <c:forEach var="reply" items="${comment.replies}">
-                                    <div class="reply-item" data-comment-no="${reply.commentNo}">
-                                        <div class="comment-header">
-                                            <div class="comment-avatar">${reply.nickname.substring(0, 1)}</div>
-                                            <div>
-                                                <span class="comment-author">${reply.nickname}</span>
-                                            </div>
-                                        </div>
-                                        <div class="author-meta" style="margin-left: 3.5rem; margin-bottom: 0.5rem;">
-                                            <span>${reply.dong}</span>
-                                            <span>•</span>
-                                            <span><fmt:formatDate value="${reply.regDate}" pattern="MM월 dd일"/></span>
-                                        </div>
-                                        <div class="comment-content">${reply.content}</div>
-                                        <div class="comment-actions">
-                                            <button class="comment-action-btn" onclick="toggleCommentLike(this)">
-                                                <span>👍</span>
-                                                <span class="like-count">${reply.likeCount}</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </c:forEach>
-                            </div>
-                        </c:if>
+                <!-- Main Comment Form -->
+                <div class="comment-form-container" id="mainCommentForm">
+                    <div class="comment-avatar">
+                        <c:choose>
+                            <c:when test="${not empty sessionScope.user.profileUrl}">
+                                <img src="${sessionScope.user.profileUrl}" alt="profile">
+                            </c:when>
+                            <c:otherwise>
+                                ${sessionScope.user.nickname.substring(0, 1)}
+                            </c:otherwise>
+                        </c:choose>
                     </div>
-                </c:forEach>
+                    <div class="comment-input-wrapper">
+                        <textarea class="comment-input" placeholder="칭찬과 격려의 댓글은 작성자에게 큰 힘이 됩니다."></textarea>
+                        <button class="comment-submit-btn" onclick="submitComment(this)">등록</button>
+                    </div>
+                </div>
+
+                <!-- Comment List -->
+                <div class="comment-list" id="commentList">
+                    <c:forEach var="comment" items="${commentList}">
+                        <div class="comment-item-wrapper ${comment.depth > 0 ? 'reply' : ''}" data-comment-id="${comment.commentId}" data-group-id="${comment.groupId}">
+                            <div class="comment-item">
+                                <div class="comment-avatar">
+                                    <c:choose>
+                                        <c:when test="${not empty comment.profileUrl}">
+                                            <img src="${comment.profileUrl}" alt="profile">
+                                        </c:when>
+                                        <c:otherwise>
+                                            ${comment.nickname.substring(0, 1)}
+                                        </c:otherwise>
+                                    </c:choose>
+                                </div>
+                                <div class="comment-body">
+                                    <div class="comment-author">
+                                        <span>${comment.nickname}</span>
+                                        <span class="time-ago"> • <fmt:formatDate value="${comment.createdAt}" pattern="M월 d일"/></span>
+                                    </div>
+                                    <div class="comment-content">${comment.content}</div>
+                                    <div class="comment-actions">
+                                        <button class="action-btn">👍 <span>${comment.likeCount}</span></button>
+                                        <button class="action-btn" onclick="showReplyForm(this, ${comment.commentId}, ${comment.groupId})">답글</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Reply form placeholder -->
+                            <div class="reply-form-container" style="display: none;"></div>
+                        </div>
+                    </c:forEach>
+                </div>
             </div>
 
             <!-- Related Posts Section -->
             <div class="related-posts-section">
                 <div class="related-posts-header">
                     <h3 class="related-posts-title">${postDetail.dongName} 근처 동네생활 인기글</h3>
-                    <a href="<c:url value='/community/list'/>" class="more-link">더보기 →</a>
+                    <a href="<c:url value='/community'/>" class="more-link">더보기 →</a>
                 </div>
                 <div class="related-posts-list">
                     <c:forEach var="relatedPost" items="${relatedPostList}">
@@ -244,14 +239,13 @@
 </main>
 
 <script>
-    window.communityFilterConfig = {
+    window.communityConfig = {
         contextPath: '${pageContext.request.contextPath}',
-        currentDongCode: '${selectedDongCode}',
-        selectedGuName: '${selectedGuName}',
-        currentCategoryId: '${selectedCategoryId}',
-        currentSearchKeyword: '${searchKeyword}'
+        postId: ${postDetail.postId},
+        isUserLoggedIn: ${not empty sessionScope.user}
     };
 </script>
 <script src="<c:url value='/static/community/js/communityFilter.js'/>"></script>
+<script src="<c:url value='/static/community/js/communityComment.js'/>"></script>
 
 <jsp:include page="../common/footer.jsp"/>
