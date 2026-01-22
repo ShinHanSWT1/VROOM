@@ -1,4 +1,4 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 
@@ -171,6 +171,8 @@
             grid-template-columns: 1fr 400px;
             gap: 2rem;
             margin-bottom: 3rem;
+            
+            align-items: stretch;
         }
 
         .image-section {
@@ -178,17 +180,20 @@
             border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            
+            height: 100%;
+            height: 455px;
         }
 
         .errand-image {
-            width: 100%;
-            height: 500px;
-            background: linear-gradient(135deg, var(--color-light-gray) 0%, var(--color-white) 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 8rem;
-        }
+		    width: 100%;
+		    height: 100%;
+		    background: linear-gradient(135deg, var(--color-light-gray) 0%, var(--color-white) 100%);
+		    display: flex;
+		    align-items: center;
+		    justify-content: center;
+		    font-size: 8rem;
+		}
 
         .errand-image img {
             width: 100%;
@@ -200,6 +205,8 @@
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
+            
+            height: 455px;
         }
 
         .info-panel {
@@ -207,20 +214,32 @@
             border-radius: 12px;
             padding: 1.5rem;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: left;
         }
+        
+        .info-panel.is-description {
+		    flex: 1;
+		    display: flex;
+		    flex-direction: column;
+		}
+		
+		.info-panel.is-description .panel-content {
+		    flex: 1;              /* 내용영역이 늘어나게 */
+		    overflow: auto;       /* 설명이 길면 스크롤로 처리 (원하면 hidden/ellipsis로 변경 가능) */
+		}
 
         .panel-title {
             font-size: 1.25rem;
             font-weight: 700;
             color: var(--color-dark);
             margin-bottom: 1rem;
-            text-align: center;
+            text-align: left;
         }
 
         .panel-content {
             font-size: 1rem;
             color: var(--color-gray);
-            text-align: center;
+            text-align: left;
             line-height: 1.8;
         }
 
@@ -274,6 +293,13 @@
         .author-details {
             flex: 1;
         }
+        
+        .author-score {
+		  display: flex;
+		  flex-direction: column;
+		  align-items: flex-end;
+		  min-width: 90px;
+		}
 
         .author-name-large {
             font-size: 1.125rem;
@@ -510,8 +536,15 @@
                 <!-- Left: Image Section -->
                 <div class="image-section">
                     <div class="errand-image">
-                        <img src="https://images.pexels.com/photos/6407393/pexels-photo-6407393.jpeg" 
-                             alt="심부름 사진">
+                        <c:choose>
+				            <c:when test="${not empty mainImageUrl}">
+				                <img src="${pageContext.request.contextPath}${errand.mainImageUrl}" alt="심부름 이미지">
+				            </c:when>
+				            <c:otherwise>
+				                <img src="${pageContext.request.contextPath}/static/img/errand/noimage.png"
+				                     alt="기본 이미지">
+				            </c:otherwise>
+				        </c:choose>
                     </div>
                 </div>
 
@@ -532,7 +565,7 @@
                     </div>
 
                     <div class="info-panel">
-                        <h2 class="panel-title">심부름<br>설명</h2>
+                        <h2 class="panel-title">심부름 설명</h2>
                         <p class="panel-content">
                         	<c:out value="${errand.description}" />
                         </p>
@@ -551,9 +584,23 @@
 							작성자: <c:out value="${errand.userId}" />
 						</div>
                         <div class="author-meta">10분 전 · 1.2km</div>
-                        <!-- <c:out value="${errand.createdAt}" /> -->
             			<!-- TODO: '10분 전', '1.2km'는 계산/조인 로직 필요 -->
                     </div>
+                    
+                    <!-- 오른쪽 매너점수 -->
+				    <div class="author-score">
+				      <div class="score-label">매너점수</div>
+				      <div class="score-value">
+				        <c:choose>
+				          <c:when test="${not empty errand.mannerScore}">
+				            <fmt:formatNumber value="${errand.mannerScore}" maxFractionDigits="1" />
+				          </c:when>
+				          <c:otherwise>
+				            - 
+				          </c:otherwise>
+				        </c:choose>
+				      </div>
+				    </div>
                 </div>
             </div>
 
@@ -563,13 +610,55 @@
                     <h2 class="section-title">동네 일거리</h2>
                 </div>
 	
-	                <div class="tasks-grid" id="relatedTasksGrid">
-	                    <!-- Related task cards will be generated by JavaScript -->
-	                </div>
+	                <div class="tasks-grid">
+					  <c:choose>
+					    <c:when test="${empty relatedErrands}">
+					      <div style="grid-column: 1 / -1; color: var(--color-gray); padding: 1rem 0;">
+					        근처에 등록된 심부름이 아직 없어요.
+					      </div>
+					    </c:when>
+					
+					    <c:otherwise>
+					      <c:forEach var="e" items="${relatedErrands}">
+					        <!-- 목록 페이지 카드 마크업 그대로 여기에 붙이면 됨 -->
+					        <div class="task-card"
+					             onclick="location.href='${pageContext.request.contextPath}/errand/detail?errandsId=${e.errandsId}'">
+					
+					          <div class="task-image">📦</div>
+					
+					          <div class="task-card-content">
+					            <div class="task-card-header">
+					              <span class="task-badge">대기중</span>
+					              <span class="task-time">
+					                <c:out value="${e.createdAt}" />
+					              </span>
+					            </div>
+					
+					            <div class="task-card-title">
+					              <c:out value="${e.title}" />
+					            </div>
+					
+					            <div class="task-meta">
+					              <span class="task-location">
+					                <c:out value="${e.dongCode}" />
+					              </span>
+					              <span class="task-price">
+					                <c:out value="${e.rewardAmount}" />원
+					              </span>
+					            </div>
+					          </div>
+					
+					        </div>
+					      </c:forEach>
+					    </c:otherwise>
+					  </c:choose>
+					</div>
 	            </div>
             </div>
         </div>
     </section>
+    
+    
 
     <footer class="footer">
         <div class="container">
