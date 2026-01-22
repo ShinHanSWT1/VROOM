@@ -41,8 +41,8 @@
     <!-- Breadcrumb -->
     <nav class="breadcrumb">
         <a href="<c:url value='/main'/>">홈</a>
-        <span class="breadcrumb-separator"></span>
-        <span>동네생활</span>
+        <span class="breadcrumb-separator"> > </span>
+        <a href="<c:url value='/community'/>">동네생활</a>
     </nav>
 
     <!-- Page Title -->
@@ -61,11 +61,11 @@
                     <!-- 전체 카테고리 -->
                     <li class="category-item ${empty selectedCategoryId ? 'active' : ''}">
                         <a href="<c:url value='/community'>
-                            <c:if test='${not empty selectedCategoryId}'>
-                                <c:param name='dongCode' value='${selectedDongCode}'/>
+                            <c:if test='${not empty selectedGuName}'>
+                                <c:param name='guName' value='${selectedGuName}'/>
                             </c:if>
-                            <c:if test = '${not empty selectedDongCode}'>
-                                <c:param name="dongCode" value="${selectedDongCode}"/>
+                            <c:if test='${not empty selectedDongCode}'>
+                                <c:param name='dongCode' value='${selectedDongCode}'/>
                             </c:if>
                         </c:url>">전체</a>
                     </li>
@@ -79,7 +79,7 @@
                             <c:if test='${not empty selectedGuName}'>
                                  <c:param name='guName' value='${selectedGuName}'/>
                             </c:if>
-                        </c:url>">인기글</a>
+                        </c:url>">인기글 🔥</a>
                      </li>
                     <!-- DB에서 가져온 카테고리 목록 -->
                     <c:forEach var="category" items="${categoryList}">
@@ -104,7 +104,7 @@
             <c:choose>
                 <c:when test="${not empty postList}">
                     <c:forEach var="post" items="${postList}">
-                        <article class="post-card">
+                        <a class="post-card" href="<c:url value='/community/detail/${post.postId}'/>" style="text-decoration: none; color: inherit;">
                             <div class="post-content-wrapper">
                                 <div class="post-text-content">
                                     <h3 class="post-title">${post.title}</h3>
@@ -126,7 +126,7 @@
                                     </div>
                                 </div>
                             </div>
-                        </article>
+                        </a>
                     </c:forEach>
                 </c:when>
                 <c:otherwise>
@@ -138,115 +138,14 @@
 </main>
 
 <script>
-    // 컨텍스트 경로
-    var contextPath = '${pageContext.request.contextPath}';
-
-    // 현재 선택된 필터 값 (서버에서 전달)
-    var currentDongCode = '${selectedDongCode}';
-    var selectedGuName = '${selectedGuName}';
-    var currentCategoryId = '${selectedCategoryId}';
-    var currentSearchKeyword = '${searchKeyword}';
-
-    // 페이지 로드시 초기화
-    $(document).ready(function() {
-        // 페이지 새로고침 감지 후, 기본 url로 리다이렉트
-        const navigationEntry = performance.getEntriesByType("navigation")[0];
-        if(navigationEntry && navigationEntry.type === 'reload') {
-            window.location.href = contextPath + '/community';
-            return;
-        }
-
-        // 이벤트 바인딩
-        $('#guSelect').on('change', loadDongOptions);
-        $('#dongSelect').on('change', filterPosts);
-        $('#searchBtn').on('click', filterPosts);
-        $('#searchInput').on('keypress', function(e) {
-            if (e.which === 13) filterPosts();
-        });
-
-        // 페이지 로드 시: 선택된 구가 있으면 동 목록 로드
-        if (selectedGuName) {
-            loadDongOptions();
-        }
-
-    });
-
-    // 구선택 동선택 ajax
-    function loadDongOptions() {
-        var selectedGu = $('#guSelect').val();
-        var $dongSelect = $('#dongSelect');
-
-        // 동 목록 초기화
-        $dongSelect.empty().append('<option value="">동 선택</option>');
-
-        if (!selectedGu) {
-            updatePageTitle();
-            return;
-        }
-
-        // AJAX 요청
-        $.ajax({
-            url: contextPath + '/location/getDongs',
-            type: 'GET',
-            data: { gunguName: selectedGu },
-            dataType: 'json',
-            success: function(data) {
-                if (data && data.length > 0) {
-                    data.forEach(function(item) {
-                        var selected = (item.dongCode === currentDongCode) ? ' selected' : '';
-                        var option = '<option value="' + item.dongCode + '"' + selected + '>' + item.dongName + '</option>';
-                        $dongSelect.append(option);
-                    });
-                }
-                updatePageTitle();
-            },
-            error: function(xhr, status, error) {
-                console.error('동 목록 조회 실패:', error);
-            }
-        });
-    }
-
-    // 필터링 후 페이지 이동
-    function filterPosts() {
-        var guName = $('#guSelect').val(); // 구 이름
-        var dongCode = $('#dongSelect').val(); // 동 코드
-        var searchKeyword = $('#searchInput').val().trim();
-
-        var url = '${pageContext.request.contextPath}/community';
-        var params = [];
-
-        if(guName) {
-            params.push('guName=' + encodeURIComponent(guName));
-        }
-        if(dongCode) {
-            params.push("dongCode=" + encodeURIComponent(dongCode));
-        }
-        if(currentCategoryId) {
-            params.push("categoryId=" + currentCategoryId);
-        }
-        if(searchKeyword) {
-            params.push("searchKeyword=" + encodeURIComponent(searchKeyword));
-        }
-        if(params.length>0) {
-            url += '?' + params.join('&');
-        }
-        window.location.href = url;
-    }
-
-    // 페이지 타이틀 업데이트
-    function updatePageTitle() {
-        var guName = $('#guSelect option:selected').text();
-        var dongName = $('#dongSelect option:selected').text();
-        var $pageTitle = $('#pageTitle');
-
-        if (dongName && dongName !== '동 선택') {
-            $pageTitle.text('서울특별시 ' + guName + ' ' + dongName + ' 동네생활');
-        } else if (guName && guName !== '구 선택') {
-            $pageTitle.text('서울특별시 ' + guName + ' 동네생활');
-        } else {
-            $pageTitle.text('서울특별시 동네생활');
-        }
-    }
+    window.communityFilterConfig = {
+        contextPath: '${pageContext.request.contextPath}',
+        currentDongCode: '${selectedDongCode}',
+        selectedGuName: '${selectedGuName}',
+        currentCategoryId: '${selectedCategoryId}',
+        currentSearchKeyword: '${searchKeyword}'
+    };
 </script>
+<script src="<c:url value='/static/community/js/communityFilter.js'/>"></script>
 
 <jsp:include page="../common/footer.jsp"/>

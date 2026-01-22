@@ -1,4 +1,7 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+
 <!DOCTYPE html>
 <html lang="ko">
 
@@ -466,31 +469,41 @@
                     <h1 class="form-title">HEADER</h1>
                 </div>
 
-                <form class="form-content" id="errandForm">
+                <form class="form-content" id="errandForm" method="post" action="${pageContext.request.contextPath}/errand/create">
+                    <!-- 카테고리/이미지 등 화면 선택값을 서버로 보내는 hidden들 -->
+    				<input type="hidden" id="categoryId" name="categoryId" value="">
+    				<input type="hidden" name="dongFullName" id="dongFullName">
+                    
                     <!-- Left Column -->
                     <div class="form-left">
                         <div class="form-group">
                             <label class="form-label form-label-required">심부름 제목</label>
-                            <input type="text" class="form-input" placeholder="제목을 입력하세요" required>
+                            <input type="text" class="form-input" name="title" placeholder="제목을 입력하세요" required>
                         </div>
 
                         <div class="form-group">
                             <label class="form-label form-label-required">카테고리</label>
                             <div class="category-toggle" id="categoryToggle">
-                                <div class="category-option" data-category="delivery">배달</div>
-                                <div class="category-option" data-category="cleaning">청소</div>
-                                <div class="category-option" data-category="assembly">설치/조립</div>
-                                <div class="category-option" data-category="pet">반려동물</div>
-                                <div class="category-option" data-category="line">줄서기</div>
-                                <div class="category-option" data-category="other">기타</div>
+                                <div class="category-option" data-category="1">배달/장보기</div>
+                                <div class="category-option" data-category="2">청소/집안일</div>
+                                <div class="category-option" data-category="3">벌레퇴치</div>
+                                <div class="category-option" data-category="4">설치/조립</div>
+                                <div class="category-option" data-category="5">동행/돌봄</div>
+                                <div class="category-option" data-category="6">줄서기/예약</div>
+                                <div class="category-option" data-category="7">서류/비즈니스</div>
+                                <div class="category-option" data-category="8">기타</div>
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label form-label-required">가격</label>
-                            <input type="number" class="form-input" placeholder="가격을 입력하세요 (원)" required>
+                            <label class="form-label form-label-required">심부름값</label>
+                            <input type="number" class="form-input" name="rewardAmount" placeholder="가격을 입력하세요 (원)" required>
                         </div>
-
+                        <div class="form-group">
+                            <label class="form-label form-label-required">수행비용</label>
+                            <input type="number" class="form-input" name="expenseAmount" placeholder="가격을 입력하세요 (원)" required>
+                        </div>
+                       
                         <div class="form-group">
                             <label class="form-label">심부름 이미지</label>
                             <div class="image-upload-area" id="imageUploadArea">
@@ -500,7 +513,7 @@
                                 <div class="upload-text">클릭하여 이미지를 업로드하세요</div>
                                 <div class="upload-counter">0/10</div>
                             </div>
-                            <input type="file" id="imageInput" multiple accept="image/*" style="display: none;">
+            				<input type="file" id="imageInput" name="images" multiple accept="image/*" style="display: none;">
                         </div>
                     </div>
 
@@ -508,24 +521,32 @@
                     <div class="form-right">
                         <div class="form-group">
                             <label class="form-label form-label-required">심부름 설명</label>
-                            <textarea class="form-textarea" placeholder="심부름에 대한 자세한 설명을 입력하세요" rows="8" required></textarea>
+                            <textarea class="form-textarea" name="description" placeholder="심부름에 대한 자세한 설명을 입력하세요" rows="11" required></textarea>
                         </div>
 
                         <div class="form-group">
                             <label class="form-label form-label-required">심부름 위치</label>
-                            <input type="text" class="form-input" placeholder="동네를 입력하세요" required>
+                            <select class="form-input" name="dongCode" id="dongCodeSelect" required>
+							  <option value="">동네를 선택하세요</option>
+							  <c:forEach var="d" items="${dongs}">
+							    <option value="${d.dongCode}" data-fullname="${d.dongFullName}">
+							      ${d.dongFullName}
+							    </option>
+							  </c:forEach>
+							</select>
                         </div>
 
                         <div class="form-group">
                             <label class="form-label">희망날짜</label>
                             <div class="datetime-group">
-                                <input type="date" class="form-input">
-                                <input type="time" class="form-input">
+                                <input type="date" class="form-input" name="desiredDate">
+                				<input type="time" class="form-input" name="desiredTime">
                             </div>
                         </div>
 
                         <div class="form-actions">
-                            <button type="button" class="btn btn-secondary">취소</button>
+                            <button type="button" class="btn btn-secondary" 
+                            onclick="window.location.href='${pageContext.request.contextPath}/errand/list'">취소</button>
                             <button type="submit" class="btn btn-primary">등록하기</button>
                         </div>
                     </div>
@@ -582,16 +603,22 @@
             }
         });
 
-        // Category Toggle
-        const categoryOptions = document.querySelectorAll('.category-option');
-        let selectedCategory = null;
+     	// Category Toggle (hidden 즉시 반영)
+        document.addEventListener('DOMContentLoaded', function () {
+          const categoryOptions = document.querySelectorAll('#categoryToggle .category-option');
+          const catInput = document.getElementById('categoryId');
 
-        categoryOptions.forEach(option => {
+          categoryOptions.forEach(option => {
             option.addEventListener('click', function () {
-                categoryOptions.forEach(opt => opt.classList.remove('active'));
-                this.classList.add('active');
-                selectedCategory = this.dataset.category;
+              categoryOptions.forEach(opt => opt.classList.remove('active'));
+              this.classList.add('active');
+
+              const v = this.dataset.category;
+              catInput.value = v;   // ⭐ 여기서 바로 박는다
+
+              console.log('categoryId set immediately =>', v);
             });
+          });
         });
 
         // Image Upload
@@ -601,6 +628,7 @@
         let uploadedImages = [];
 
         imageUploadArea.addEventListener('click', function () {
+        	if (uploadedImages.length >= 10) return;
             imageInput.click();
         });
 
@@ -617,21 +645,30 @@
                 imageUploadArea.style.cursor = 'not-allowed';
             }
         });
+        
+     	// Dong Select (코드 + 이름 분리)
+        const dongSelect = document.getElementById('dongCodeSelect');
+        const dongNameHidden = document.getElementById('dongFullName');
+
+        if (dongSelect && dongNameHidden) {
+        	  dongSelect.addEventListener('change', () => {
+        	    const opt = dongSelect.options[dongSelect.selectedIndex];
+        	    dongNameHidden.value = opt?.dataset?.fullname || '';
+        	  });
+        	  const opt = dongSelect.options[dongSelect.selectedIndex];
+        	  dongNameHidden.value = opt?.dataset?.fullname || '';
+        	}
 
         // Form Submit
         const errandForm = document.getElementById('errandForm');
         errandForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-
+        	const catInput = document.getElementById('categoryId');
+        	
             if (!selectedCategory) {
+            	e.preventDefault();
                 alert('카테고리를 선택해주세요.');
                 return;
             }
-
-            // Here you would typically send the form data to the server
-            alert('심부름이 등록되었습니다!');
-            // Redirect to errands list page
-            // window.location.href = 'errands-list.html';
         });
     </script>
 </body>

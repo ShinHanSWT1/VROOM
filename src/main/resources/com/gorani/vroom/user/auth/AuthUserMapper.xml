@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gorani.vroom.user.auth.AuthUserMapper">
+
+    <!--사용자 조회 (로그인)-->
+    <select id="login"
+            parameterType="com.gorani.vroom.user.auth.UserVO"
+            resultType="com.gorani.vroom.user.auth.UserVO">
+
+        SELECT
+            user_id,
+            email,
+            pwd,
+            nickname,
+            role,
+            status,
+            phone,
+            profile_image,
+            manner_score,
+            cancel_rate,
+            dong_code1,
+            dong_code2,
+            provider,
+            last_login_at
+        FROM MEMBERS
+        WHERE email = #{email}
+          AND pwd = MD5(#{pwd})
+          AND status = 'ACTIVE'
+          AND deleted_at IS NULL
+
+    </select>
+
+    <!--회원가입-->
+    <insert id="insertUser"
+            parameterType="com.gorani.vroom.user.auth.UserVO">
+
+        INSERT INTO MEMBERS (
+            email,
+            pwd,
+            sns_id,
+            provider,
+            nickname,
+            phone,
+            profile_image,
+            role,
+            status,
+            manner_score,
+            cancel_rate,
+            dong_code1,
+            dong_code2,
+            created_at
+        ) VALUES (
+                     #{email},
+                     MD5(#{pwd}),
+                     #{snsId},
+                     #{provider},
+                     #{nickname},
+                     #{phone},
+                     #{profileImage},
+                     #{role},
+                     #{status},
+                     #{mannerScore},
+                     #{cancelRate},
+                     #{dongCode1},
+                     #{dongCode2},
+                     NOW()
+                 )
+
+    </insert>
+
+    <!--마지막 시간 갱신-->
+    <update id="updateLastLoginAt"
+            parameterType="long">
+
+        UPDATE MEMBERS
+        SET last_login_at = NOW()
+        WHERE user_id = #{userId}
+
+    </update>
+
+    <!-- 이메일 중복 조회 -->
+    <select id="findByEmail"
+            parameterType="string"
+            resultType="com.gorani.vroom.user.auth.UserVO">
+
+        SELECT
+            user_id,
+            email
+        FROM MEMBERS
+        WHERE email = #{email}
+          AND deleted_at IS NULL
+
+    </select>
+
+    <!-- 전화번호 중복 조회 -->
+    <select id="findByPhone"
+            parameterType="string"
+            resultType="com.gorani.vroom.user.auth.UserVO">
+
+        SELECT
+            user_id,
+            email,
+            phone
+        FROM MEMBERS
+        WHERE phone = #{phone}
+          AND deleted_at IS NULL
+
+    </select>
+
+</mapper>

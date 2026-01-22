@@ -22,6 +22,7 @@ public class CommunityPostVO {
     private String nickname;
     private String dongCode;
     private String dongName;
+    private String gunguName;
     private Long categoryId;
     private String categoryName;
     private Double mannerScore;
