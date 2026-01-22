@@ -27,7 +27,7 @@
             last_login_at
         FROM MEMBERS
         WHERE email = #{email}
-          AND pwd = #{pwd}
+          AND pwd = MD5(#{pwd})
           AND status = 'ACTIVE'
           AND deleted_at IS NULL
 
@@ -54,7 +54,7 @@
             created_at
         ) VALUES (
                      #{email},
-                     #{pwd},
+                     MD5(#{pwd}),
                      #{snsId},
                      #{provider},
                      #{nickname},
