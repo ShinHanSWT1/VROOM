@@ -500,7 +500,7 @@
                             <input type="number" class="form-input" name="rewardAmount" placeholder="가격을 입력하세요 (원)" required>
                         </div>
                         <div class="form-group">
-                            <label class="form-label form-label-required">수행비용</label>
+                            <label class="form-label form-label-required"></label>
                             <input type="number" class="form-input" name="expenseAmount" placeholder="가격을 입력하세요 (원)" required>
                         </div>
                        
