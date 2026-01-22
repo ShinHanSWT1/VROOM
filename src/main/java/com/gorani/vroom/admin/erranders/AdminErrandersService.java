@@ -10,7 +10,7 @@ public interface AdminErrandersService {
 
     Map<String, Object> getErranderApprovalDetail(Long id);
 
-    Map<String, Object> approveErrander(Long erranderId, String status);
+    Map<String, Object> approveErrander(Long erranderId, String status, String reason);
 
     Map<String, Object> changeErranderStatus(Long erranderId, String status);
 }

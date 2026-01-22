@@ -75,14 +75,24 @@ public class AdminErrandersServiceImpl implements AdminErrandersService {
     }
 
     @Override
-    public Map<String, Object> approveErrander(Long erranderId, String status) {
-        mapper.updateErranderApprovalStatus(erranderId, status);
+    public Map<String, Object> approveErrander(Long erranderId, String status, String reason) {
+        log.info("승인 요청 받음" + erranderId + " : " + status);
 
-        return Map.of();
+        int result = mapper.updateErranderApprovalStatus(erranderId, status);
+        if (result != 1) {
+            throw new IllegalStateException("업데이트 실패");
+        }
+
+        Map<String, Object> dataMap = new HashMap<>();
+        dataMap.put("result", "success");
+
+        return dataMap;
     }
 
     @Override
     public Map<String, Object> changeErranderStatus(Long erranderId, String status) {
+        int result = mapper.updateErranderActiveStatus(erranderId, status);
+
         return Map.of();
     }
 

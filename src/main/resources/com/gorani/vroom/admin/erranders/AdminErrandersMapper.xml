@@ -144,8 +144,8 @@
     <!-- 부름이 승인 상태 변경 -->
     <update id="updateErranderApprovalStatus">
         <![CDATA[
-            UPDATE ERRANDER_PROFILES SET approval_status = #{status}
-            WHERE errander_id = #{erranderId}
+        UPDATE ERRANDER_PROFILES SET approval_status = #{status}, approved_at = NOW()
+        WHERE errander_id = #{erranderId}
         ]]>
     </update>
 

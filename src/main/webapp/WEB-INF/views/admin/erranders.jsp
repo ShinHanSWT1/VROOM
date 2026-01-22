@@ -1351,7 +1351,7 @@
     function openApprovalModal(erranderId) {
         currentErranderId = erranderId;
 
-        fetch('${pageContext.request.contextPath}/api/admin/erranders/resume?id=' + 3)
+        fetch('${pageContext.request.contextPath}/api/admin/erranders/resume?id=' + erranderId)
             .then(res => {
                 if (!res.ok) {
                     throw new Error('서버 응답 에러: ' + res.status);
@@ -1414,38 +1414,59 @@
 
     // 승인 처리
     function approveErrander() {
-        const erranderId = document.getElementById('approvalModal').dataset.helperId;
-        if(!confirm(helperId + ' 님을 승인하시겠습니까?')) return;
+        if(!confirm(' 부름이 ID: ' + currentErranderId + '을 승인하시겠습니까?')) return;
 
         fetch('${pageContext.request.contextPath}/api/admin/erranders/approve', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
-                erranderId: erranderId,
+                erranderId: currentErranderId,
                 status: "APPROVED"
             })
         })
             .then(res => res.json())
-            .then(data => {})
+            .then(data => {
+                if(data.result === 'success'){
+                    alert('승인되었습니다.');
+                    loadErranderList(1);
+                }
+                else {
+                    alert('승인 처리 실패했습니다: ' + data.message);
+                }
 
+            });
 
-
-        alert('승인되었습니다. (API 연동 필요)');
-        closeApprovalModal();
-        loadErranderList(1); // 목록 갱신
+        closeApprovalModal(); // 목록 갱신
     }
 
-    // 반려 처리 (API 연동 필요)
+    // 반려 처리
     function rejectHelper() {
         const helperId = document.getElementById('approvalModal').dataset.helperId;
         const reason = prompt('반려 사유를 입력하세요:');
         if (!reason) return;
 
-        // TODO: 반려 API 구현 후 fetch 호출
+        fetch('${pageContext.request.contextPath}/api/admin/erranders/approve', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                erranderId: currentErranderId,
+                status: "REJECTED",
+                reason: reason
+            })
+        })
+            .then(res => res.json())
+            .then(data => {
+                if(data.result === 'success'){
+                    alert('반려되었습니다.');
+                    loadErranderList(1);
+                }
+                else {
+                    alert('처리 실패했습니다: ' + data.message);
+                }
 
-        alert('반려되었습니다. (API 연동 필요)');
+            });
+
         closeApprovalModal();
-        loadErranderList(1); // 목록 갱신
     }
 
     function viewDocument(url) {
@@ -1486,13 +1507,13 @@
             default: statusText = newStatus;
         }
 
-        // if (!confirm(부름이 ID: \${erranderId}의 활동 상태를 '\${statusText}'(으)로 변경하시겠습니까?)) {
-        //     return;
-        // }
+        if (!confirm('부름이 ID: \${erranderId}의 활동 상태를 ${statusText}(으)로 변경하시겠습니까?')) {
+            return;
+        }
 
         // API 호출
         fetch('${pageContext.request.contextPath}/api/admin/erranders/status', {
-            method: 'PUT',
+            method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
                 erranderId: erranderId,
@@ -1511,7 +1532,7 @@
             .catch(error => {
                 console.error('상태 변경 실패:', error);
                 alert('활동 상태가 변경되었습니다. (UI 테스트)');
-                loadErranderList(1); // 테스트용으로 목록 새로고침
+                loadErranderList(1);
             });
 
         // 드롭다운 닫기

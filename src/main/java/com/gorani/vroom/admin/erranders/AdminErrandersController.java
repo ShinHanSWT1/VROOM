@@ -6,6 +6,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
@@ -63,8 +64,21 @@ public class AdminErrandersController {
     ) {
         Long erranderId = Long.parseLong(params.get("erranderId").toString());
         String status = params.get("status").toString();
+        String reason = params.get("reason").toString();
 
-        return service.approveErrander(erranderId, status);
+        Map<String, Object> response;
+
+        try {
+            response = service.approveErrander(erranderId, status, reason);
+
+        } catch (Exception e) {
+            response = Map.of(
+                    "result", "fail",
+                    "message", e.getMessage()
+            );
+        }
+
+        return response;
     }
 
     // 부름이 활성 상태 변경 요청
