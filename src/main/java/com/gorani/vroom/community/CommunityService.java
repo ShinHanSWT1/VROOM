@@ -33,4 +33,13 @@ public interface CommunityService {
 
     // 댓글 삭제
     boolean deleteComment(Long commentId, Long userId);
+
+    // 조회수 증가
+    void increaseViewCount(Long postId);
+
+    // 좋아요 토글 (좋아요 했으면 취소, 안했으면 추가)
+    boolean toggleLike(Long postId, Long userId);
+
+    // 좋아요 여부 확인
+    boolean isLiked(Long postId, Long userId);
 }

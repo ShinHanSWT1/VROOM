@@ -73,8 +73,14 @@ $(document).ready(function () {
                                     <span class="post-meta-item">${formatDate(post.createdAt)}</span>
                                 </div>
                                 <div class="post-stats">
-                                    <span class="post-stat">👍 ${post.likeCount}</span>
-                                    <span class="post-stat">👁 ${post.viewCount}</span>
+                                    <div class="post-stats-left">
+                                        <button class="post-stat like-btn" onclick="toggleListLike(event, ${post.postId}, this)">
+                                            <span class="like-icon">👍</span>
+                                            <span class="like-count">${post.likeCount}</span>
+                                        </button>
+                                        <span class="post-stat">💬 ${post.commentCount || 0}</span>
+                                    </div>
+                                    <span class="post-stat post-views">조회 ${post.viewCount}</span>
                                 </div>
                             </div>
                         </div>

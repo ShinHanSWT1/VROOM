@@ -58,4 +58,25 @@ public interface CommunityMapper {
 
     // 댓글의 postId 조회
     Long selectPostIdByCommentId(@Param("commentId") Long commentId);
+
+    // 부모 댓글의 depth 조회
+    Long selectCommentDepth(@Param("commentId") Long commentId);
+
+    // 조회수 증가
+    int updateViewCount(@Param("postId") Long postId);
+
+    // 좋아요 여부 확인
+    int checkLikeExists(@Param("postId") Long postId, @Param("userId") Long userId);
+
+    // 좋아요 추가
+    int insertLike(@Param("postId") Long postId, @Param("userId") Long userId);
+
+    // 좋아요 삭제
+    int deleteLike(@Param("postId") Long postId, @Param("userId") Long userId);
+
+    // 좋아요 수 증가
+    int incrementLikeCount(@Param("postId") Long postId);
+
+    // 좋아요 수 감소
+    int decrementLikeCount(@Param("postId") Long postId);
 }

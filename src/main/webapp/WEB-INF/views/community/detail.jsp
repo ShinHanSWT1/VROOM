@@ -135,9 +135,9 @@
             <!-- Post Actions -->
             <div class="post-actions">
                 <div class="actions-left">
-                    <button class="action-btn" onclick="toggleLike(this)">
-                        <span>👍</span>
-                        <span class="like-count">${postDetail.likeCount}</span>
+                    <button class="action-btn ${isLiked ? 'active' : ''}" id="likeBtn" onclick="togglePostLike()">
+                        <span id="likeIcon">${isLiked ? '❤️' : '👍'}</span>
+                        <span id="likeCount">${postDetail.likeCount}</span>
                     </button>
                     <button class="action-btn" onclick="focusCommentForm()">
                         <span>💬</span>
@@ -160,7 +160,7 @@
                 <!-- Comment List -->
                 <div class="comment-list" id="commentList">
                     <c:forEach var="comment" items="${commentList}">
-                        <div class="comment-item-wrapper ${comment.depth > 0 ? 'reply' : ''}" data-comment-id="${comment.commentId}" data-group-id="${comment.groupId}">
+                        <div class="comment-item-wrapper ${comment.depth > 0 ? 'reply' : ''}" data-comment-id="${comment.commentId}" data-group-id="${comment.groupId}" data-depth="${comment.depth}" style="${comment.depth > 0 ? 'margin-left: '.concat(comment.depth * 30).concat('px;') : ''}">
                             <div class="comment-item">
                                 <div class="comment-avatar">
                                     <c:choose>
@@ -181,6 +181,10 @@
                                     <div class="comment-actions">
                                         <button class="action-btn">👍 <span>${comment.likeCount}</span></button>
                                         <button class="action-btn" onclick="showReplyForm(this, ${comment.commentId}, ${comment.groupId})">답글</button>
+                                        <c:if test="${not empty loginUser and loginUser.userId == comment.userId}">
+                                            <button class="action-btn edit-btn" onclick="editComment(this, ${comment.commentId})">수정</button>
+                                            <button class="action-btn delete-btn" onclick="deleteComment(${comment.commentId})">삭제</button>
+                                        </c:if>
                                     </div>
                                 </div>
                             </div>
@@ -224,8 +228,41 @@
     window.communityConfig = {
         contextPath: '${pageContext.request.contextPath}',
         postId: ${postDetail.postId},
-        isUserLoggedIn: ${not empty loginUser}
+        isUserLoggedIn: ${not empty loginUser},
+        isLiked: ${isLiked}
     };
+
+    // 게시글 좋아요 토글
+    async function togglePostLike() {
+        if (!window.communityConfig.isUserLoggedIn) {
+            window.location.href = window.communityConfig.contextPath + '/auth/login';
+            return;
+        }
+
+        try {
+            const response = await fetch(window.communityConfig.contextPath + '/community/api/posts/' + window.communityConfig.postId + '/like', {
+                method: 'POST'
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const likeBtn = document.getElementById('likeBtn');
+                const likeIcon = document.getElementById('likeIcon');
+                const likeCount = document.getElementById('likeCount');
+
+                if (data.liked) {
+                    likeBtn.classList.add('active');
+                    likeIcon.textContent = '❤️';
+                } else {
+                    likeBtn.classList.remove('active');
+                    likeIcon.textContent = '👍';
+                }
+                likeCount.textContent = data.likeCount;
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
 </script>
 <script src="<c:url value='/static/community/js/communityFilter.js'/>"></script>
 <script src="<c:url value='/static/community/js/communityComment.js'/>"></script>

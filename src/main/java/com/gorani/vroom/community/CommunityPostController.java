@@ -75,8 +75,12 @@ public class CommunityPostController {
                          @RequestParam(required = false)  String dongCode,
                          @RequestParam(required = false)  Long categoryId,
                          @RequestParam(required = false)  String guName,
+                         HttpSession session,
                          Model model) {
         addCommonModel(dongCode, categoryId, guName, model);
+
+        // 조회수 증가
+        communityService.increaseViewCount(postId);
 
         // 게시글 상세
         CommunityPostVO communityPostDetail = communityService.getPostDetail(postId);
@@ -84,11 +88,11 @@ public class CommunityPostController {
             return "redirect:/community";
         }
         model.addAttribute("postDetail", communityPostDetail);
-        if (dongCode == null) 
+        if (dongCode == null)
             model.addAttribute("selectedDongCode", communityPostDetail.getDongCode());
         if (categoryId == null)
             model.addAttribute("selectedCategoryId", communityPostDetail.getCategoryId());
-        if (guName == null) 
+        if (guName == null)
             model.addAttribute("selectedGuName", communityPostDetail.getGunguName());
 
         // 댓글 목록 및 총 댓글 수 조회
@@ -97,6 +101,14 @@ public class CommunityPostController {
 
         model.addAttribute("commentList", commentList);
         model.addAttribute("totalComments", totalComments);
+
+        // 좋아요 여부 확인
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
+        boolean isLiked = false;
+        if (loginUser != null) {
+            isLiked = communityService.isLiked(postId, loginUser.getUserId());
+        }
+        model.addAttribute("isLiked", isLiked);
 
         return "community/detail";
     }
@@ -200,6 +212,24 @@ public class CommunityPostController {
         } else {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
+    }
+
+    // 좋아요 토글
+    @ResponseBody
+    @PostMapping("/api/posts/{postId}/like")
+    public ResponseEntity<LikeResponseDTO> toggleLike(
+            @PathVariable Long postId,
+            HttpSession session) {
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
+        if (loginUser == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        boolean isLiked = communityService.toggleLike(postId, loginUser.getUserId());
+        CommunityPostVO post = communityService.getPostDetail(postId);
+        Long likeCount = post != null ? post.getLikeCount() : 0L;
+
+        return new ResponseEntity<>(new LikeResponseDTO(isLiked, likeCount), HttpStatus.OK);
     }
 
     private PaginationDataDTO getPaginationData(String dongCode, Long categoryId, String searchKeyword, Long page) {

@@ -1,3 +1,4 @@
+
 // DOM이 완전히 로드된 후 스크립트 실행
 document.addEventListener('DOMContentLoaded', () => {
     // JSP에서 설정한 전역 설정 값 사용
@@ -38,12 +39,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-   // 댓글 객체 생성 
+   // 댓글 객체 생성
     function createCommentElement(comment) {
         const wrapper = document.createElement('div');
         wrapper.className = `comment-item-wrapper ${comment.depth > 0 ? 'reply' : ''}`;
         wrapper.dataset.commentId = comment.commentId;
         wrapper.dataset.groupId = comment.groupId;
+        wrapper.dataset.depth = comment.depth;
+
+        // depth에 따른 들여쓰기
+        if (comment.depth > 0) {
+            wrapper.style.marginLeft = `${comment.depth * 30}px`;
+        }
 
         // 간단한 날짜 포맷팅
         const timeAgo = new Date(comment.createdAt).toLocaleDateString('ko-KR', {
@@ -205,7 +212,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 <textarea class="comment-input edit-input">${originalContent}</textarea>
                 <div class="edit-buttons">
                     <button class="comment-submit-btn" onclick="submitEdit(this, ${commentId})">수정</button>
-                    <button class="cancel-btn" onclick="cancelEdit(this)">취소</button>
                 </div>
             </div>
         `;

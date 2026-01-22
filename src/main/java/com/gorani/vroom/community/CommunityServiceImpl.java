@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -48,10 +48,67 @@ public class CommunityServiceImpl implements CommunityService{
         return communityMapper.selectCommentCount(postId);
     }
 
-    // 게시글에 대한 댓글 조회
+    // 게시글에 대한 댓글 조회 (계층구조 정렬)
     @Override
     public List<CommunityCommentVO> getPostComments(Long postId) {
-        return communityMapper.selectPostComments(postId);
+        List<CommunityCommentVO> allComments = communityMapper.selectPostComments(postId);
+        return sortCommentsHierarchically(allComments);
+    }
+
+    // 댓글을 부모-자식 계층구조로 정렬
+    private List<CommunityCommentVO> sortCommentsHierarchically(List<CommunityCommentVO> comments) {
+        if (comments == null || comments.isEmpty()) {
+            return comments;
+        }
+
+        // commentId로 빠르게 찾기 위한 맵
+        Map<Long, CommunityCommentVO> commentMap = new HashMap<>();
+        for (CommunityCommentVO comment : comments) {
+            commentMap.put(comment.getCommentId(), comment);
+        }
+
+        // 부모 commentId별 자식 목록
+        Map<Long, List<CommunityCommentVO>> childrenMap = new HashMap<>();
+        List<CommunityCommentVO> rootComments = new ArrayList<>();
+
+        for (CommunityCommentVO comment : comments) {
+            if (comment.getParentCommentId() == null || comment.getDepth() == 0) {
+                // 최상위 댓글
+                rootComments.add(comment);
+            } else {
+                // 대댓글 - 부모별로 그룹화
+                childrenMap.computeIfAbsent(comment.getParentCommentId(), k -> new ArrayList<>()).add(comment);
+            }
+        }
+
+        // 최상위 댓글을 최신순으로 정렬
+        rootComments.sort((a, b) -> Long.compare(b.getGroupId(), a.getGroupId()));
+
+        // 자식 댓글 시간순 정렬
+        for (List<CommunityCommentVO> children : childrenMap.values()) {
+            children.sort(Comparator.comparing(CommunityCommentVO::getCreatedAt));
+        }
+
+        // dfs
+        List<CommunityCommentVO> result = new ArrayList<>();
+        for (CommunityCommentVO root : rootComments) {
+            addCommentWithChildren(root, childrenMap, result);
+        }
+
+        return result;
+    }
+
+    // 재귀적으로 댓글과 자식 댓글 추가
+    private void addCommentWithChildren(CommunityCommentVO comment,
+                                        Map<Long, List<CommunityCommentVO>> childrenMap,
+                                        List<CommunityCommentVO> result) {
+        result.add(comment);
+        List<CommunityCommentVO> children = childrenMap.get(comment.getCommentId());
+        if (children != null) {
+            for (CommunityCommentVO child : children) {
+                addCommentWithChildren(child, childrenMap, result);
+            }
+        }
     }
 
     // 댓글/대댓글 삽입
@@ -60,9 +117,11 @@ public class CommunityServiceImpl implements CommunityService{
     public boolean addComment(CommunityCommentVO commentVO) {
         // 대댓글인 경우
         if (commentVO.getParentCommentId() != null) {
-            commentVO.setDepth(1L); // Integer 타입으로 설정
+            // 부모 댓글의 depth를 조회해서 +1
+            Long parentDepth = communityMapper.selectCommentDepth(commentVO.getParentCommentId());
+            commentVO.setDepth(parentDepth != null ? parentDepth + 1 : 1L);
         } else { // 최상위 댓글인 경우
-            commentVO.setDepth(0L); // Integer 타입으로 설정
+            commentVO.setDepth(0L);
             commentVO.setGroupId(0L); // 임시값
         }
 
@@ -102,5 +161,35 @@ public class CommunityServiceImpl implements CommunityService{
             return true;
         }
         return false;
+    }
+
+    // 조회수 증가
+    @Override
+    public void increaseViewCount(Long postId) {
+        communityMapper.updateViewCount(postId);
+    }
+
+    // 좋아요 토글
+    @Override
+    @Transactional
+    public boolean toggleLike(Long postId, Long userId) {
+        int exists = communityMapper.checkLikeExists(postId, userId);
+        if (exists > 0) {
+            // 이미 좋아요 했으면 취소
+            communityMapper.deleteLike(postId, userId);
+            communityMapper.decrementLikeCount(postId);
+            return false;
+        } else {
+            // 좋아요 추가
+            communityMapper.insertLike(postId, userId);
+            communityMapper.incrementLikeCount(postId);
+            return true;
+        }
+    }
+
+    // 좋아요 여부 확인
+    @Override
+    public boolean isLiked(Long postId, Long userId) {
+        return communityMapper.checkLikeExists(postId, userId) > 0;
     }
 }

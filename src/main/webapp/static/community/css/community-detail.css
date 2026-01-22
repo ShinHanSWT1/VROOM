@@ -537,10 +537,14 @@
 }
 .edit-form .edit-buttons {
     position: absolute;
-    right: 8px;
-    bottom: 8px;
-    display: flex;
-    gap: 0.5rem;
+    right: 12px;
+    bottom: 12px;
+}
+
+.edit-form .edit-buttons .comment-submit-btn {
+    position: static;
+    padding: 0.5rem 1.2rem;
+    white-space: nowrap;
 }
 .edit-form .cancel-btn {
     padding: 0.4rem 1rem;

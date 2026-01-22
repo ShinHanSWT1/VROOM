@@ -18,6 +18,7 @@
             c.content,
             c.view_count,
             c.like_count,
+            c.comment_count,
             c.created_at,
             c.updated_at,
             c.user_id,
@@ -54,23 +55,18 @@
         c.content,
         c.view_count,
         c.like_count,
+        c.comment_count,
         c.created_at,
         m.nickname,
         c.dong_code,
         d.dong_name,
         c.category_id,
         cc.category_name,
-        (c.like_count * 3 + c.view_count * 1 + IFNULL(cmt.comment_count, 0) * 2) AS popularity_score
+        (c.like_count * 3 + c.view_count * 1 + c.comment_count * 2) AS popularity_score
         FROM COMMUNITY c
         LEFT JOIN COMMUNITY_CATEGORY cc ON c.category_id = cc.category_id
         LEFT JOIN MEMBERS m ON c.user_id = m.user_id
         LEFT JOIN LEGAL_DONG d ON c.dong_code = d.dong_code
-        LEFT JOIN (
-        SELECT post_id, COUNT(*) AS comment_count
-        FROM COMMUNITY_COMMENT
-        WHERE deleted_at IS NULL
-        GROUP BY post_id
-        ) cmt ON c.post_id = cmt.post_id
         <where>
             c.deleted_at IS NULL
             AND c.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
@@ -218,4 +214,39 @@
     <select id="selectPostIdByCommentId" resultType="Long">
         SELECT post_id FROM COMMUNITY_COMMENT WHERE comment_id = #{commentId}
     </select>
+
+    <!-- 부모 댓글의 depth 조회 -->
+    <select id="selectCommentDepth" resultType="Long">
+        SELECT depth FROM COMMUNITY_COMMENT WHERE comment_id = #{commentId}
+    </select>
+
+    <!-- 조회수 증가 -->
+    <update id="updateViewCount">
+        UPDATE COMMUNITY SET view_count = view_count + 1 WHERE post_id = #{postId}
+    </update>
+
+    <!-- 좋아요 여부 확인 -->
+    <select id="checkLikeExists" resultType="int">
+        SELECT COUNT(*) FROM COMMUNITY_POST_LIKES WHERE post_id = #{postId} AND user_id = #{userId}
+    </select>
+
+    <!-- 좋아요 추가 -->
+    <insert id="insertLike">
+        INSERT INTO COMMUNITY_POST_LIKES (post_id, user_id) VALUES (#{postId}, #{userId})
+    </insert>
+
+    <!-- 좋아요 삭제 -->
+    <delete id="deleteLike">
+        DELETE FROM COMMUNITY_POST_LIKES WHERE post_id = #{postId} AND user_id = #{userId}
+    </delete>
+
+    <!-- 좋아요 수 증가 -->
+    <update id="incrementLikeCount">
+        UPDATE COMMUNITY SET like_count = like_count + 1 WHERE post_id = #{postId}
+    </update>
+
+    <!-- 좋아요 수 감소 -->
+    <update id="decrementLikeCount">
+        UPDATE COMMUNITY SET like_count = GREATEST(like_count - 1, 0) WHERE post_id = #{postId}
+    </update>
 </mapper>

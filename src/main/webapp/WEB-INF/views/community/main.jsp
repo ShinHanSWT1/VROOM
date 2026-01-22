@@ -122,8 +122,14 @@
                                     </div>
 
                                     <div class="post-stats">
-                                        <span class="post-stat">👍 ${post.likeCount}</span>
-                                        <span class="post-stat">👁 ${post.viewCount}</span>
+                                        <div class="post-stats-left">
+                                            <button class="post-stat like-btn" onclick="toggleListLike(event, ${post.postId}, this)">
+                                                <span class="like-icon">👍</span>
+                                                <span class="like-count">${post.likeCount}</span>
+                                            </button>
+                                            <span class="post-stat">💬 ${post.commentCount}</span>
+                                        </div>
+                                        <span class="post-stat post-views">조회 ${post.viewCount}</span>
                                     </div>
                                 </div>
                             </div>
@@ -167,6 +173,39 @@
         currentPage: ${currentPage},
         totalPages: ${totalPages}
     };
+
+    // 게시글 리스트 좋아요 토글
+    async function toggleListLike(event, postId, button) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const contextPath = window.communityFilterConfig.contextPath;
+
+        try {
+            const response = await fetch(contextPath + '/community/api/posts/' + postId + '/like', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.status === 401) {
+                alert('로그인이 필요합니다.');
+                return;
+            }
+
+            if (response.ok) {
+                const data = await response.json();
+                const likeIcon = button.querySelector('.like-icon');
+                const likeCount = button.querySelector('.like-count');
+
+                likeIcon.textContent = data.liked ? '❤️' : '👍';
+                likeCount.textContent = data.likeCount;
+            }
+        } catch (error) {
+            console.error('좋아요 처리 실패:', error);
+        }
+    }
 </script>
 <script src="<c:url value='/static/community/js/communityFilter.js'/>"></script>
 <script src="<c:url value='/static/community/js/pagination.js'/>"></script>
