@@ -22,7 +22,7 @@ public class ErrandServiceImpl implements ErrandService {
 
         // 방어: page/size 기본값
         int safePage = (page <= 0) ? 1 : page;
-        int safeSize = (size <= 0) ? 20 : size;
+        int safeSize = (size <= 0) ? 9 : size;
 
         // sort 기본값
         String safeSort = (sort == null || sort.isBlank()) ? "latest" : sort;

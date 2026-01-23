@@ -26,11 +26,17 @@ public class ErrandController {
 			@RequestParam(required = false) String dongCode, @RequestParam(required = false) String sort,
 			@RequestParam(defaultValue = "1") int page, Model model) {
 
-		int size = 20; // 페이지당 개수
+		int size = 9; // 페이지당 개수
 
 		List<ErrandListVO> errands = errandService.getErrandList(q, categoryId, dongCode, sort, page, size);
 
 		int totalCount = errandService.getErrandTotalCount(q, categoryId, dongCode);
+		int totalPages = (int) Math.ceil((double) totalCount / size);
+		
+		model.addAttribute("page", page);
+	    model.addAttribute("size", size);
+	    model.addAttribute("totalCount", totalCount);
+	    model.addAttribute("totalPages", totalPages);
 
 		model.addAttribute("errands", errands);
 		model.addAttribute("categories", errandService.getCategories());

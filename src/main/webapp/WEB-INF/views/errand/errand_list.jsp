@@ -699,8 +699,7 @@
 			        총 <span class="results-count">${totalCount}</span>개의 심부름
 			    </div>
 			</form>
-
-
+						
             <div class="tasks-grid">
 			    <c:forEach var="e" items="${errands}">
 			      <a class="task-card"
@@ -750,6 +749,99 @@
 			      </a>
 			    </c:forEach>
 			  </div>
+			  
+			  <c:if test="${totalPages > 1}">
+				  <div class="pagination">
+				    <c:set var="baseUrl" value="${pageContext.request.contextPath}/errand/list" />
+				
+				    <!-- 현재 페이지 방어 -->
+				    <c:set var="currentPage" value="${page}" />
+				    <c:if test="${currentPage < 1}">
+				      <c:set var="currentPage" value="1" />
+				    </c:if>
+				    <c:if test="${currentPage > totalPages}">
+				      <c:set var="currentPage" value="${totalPages}" />
+				    </c:if>
+				
+				    <!-- 표시 범위: 현재 기준 -2 ~ +2 -->
+				    <c:set var="startPage" value="${currentPage - 2}" />
+				    <c:set var="endPage" value="${currentPage + 2}" />
+				
+				    <c:if test="${startPage < 1}">
+				      <c:set var="startPage" value="1" />
+				    </c:if>
+				    <c:if test="${endPage > totalPages}">
+				      <c:set var="endPage" value="${totalPages}" />
+				    </c:if>
+				
+				    <!-- 이전 버튼 -->
+				    <c:choose>
+				      <c:when test="${currentPage == 1}">
+				        <button class="pagination-btn" disabled>이전</button>
+				      </c:when>
+				      <c:otherwise>
+				        <a class="pagination-btn"
+				           href="${baseUrl}?page=${currentPage-1}&q=${q}&categoryId=${categoryId}&dongCode=${dongCode}&sort=${sort}">
+				          이전
+				        </a>
+				      </c:otherwise>
+				    </c:choose>
+				
+				    <!-- 1 페이지는 항상 보여주기 + 앞쪽 ... -->
+				    <c:if test="${startPage > 1}">
+				      <a class="pagination-number"
+				         href="${baseUrl}?page=1&q=${q}&categoryId=${categoryId}&dongCode=${dongCode}&sort=${sort}">
+				        1
+				      </a>
+				
+				      <c:if test="${startPage > 2}">
+				        <span class="pagination-ellipsis">…</span>
+				      </c:if>
+				    </c:if>
+				
+				    <!-- 가운데 범위 페이지들 -->
+				    <c:forEach var="p" begin="${startPage}" end="${endPage}">
+				      <c:choose>
+				        <c:when test="${p == currentPage}">
+				          <span class="pagination-number active">${p}</span>
+				        </c:when>
+				        <c:otherwise>
+				          <a class="pagination-number"
+				             href="${baseUrl}?page=${p}&q=${q}&categoryId=${categoryId}&dongCode=${dongCode}&sort=${sort}">
+				            ${p}
+				          </a>
+				        </c:otherwise>
+				      </c:choose>
+				    </c:forEach>
+				
+				    <!-- 뒤쪽 ... + 마지막 페이지 -->
+				    <c:if test="${endPage < totalPages}">
+				      <c:if test="${endPage < totalPages - 1}">
+				        <span class="pagination-ellipsis">…</span>
+				      </c:if>
+				
+				      <a class="pagination-number"
+				         href="${baseUrl}?page=${totalPages}&q=${q}&categoryId=${categoryId}&dongCode=${dongCode}&sort=${sort}">
+				        ${totalPages}
+				      </a>
+				    </c:if>
+				
+				    <!-- 다음 버튼 -->
+				    <c:choose>
+				      <c:when test="${currentPage == totalPages}">
+				        <button class="pagination-btn" disabled>다음</button>
+				      </c:when>
+				      <c:otherwise>
+				        <a class="pagination-btn"
+				           href="${baseUrl}?page=${currentPage+1}&q=${q}&categoryId=${categoryId}&dongCode=${dongCode}&sort=${sort}">
+				          다음
+				        </a>
+				      </c:otherwise>
+				    </c:choose>
+				
+				  </div>
+				</c:if>
+
 			
 			<!-- <div class="tasks-grid">
 			  <c:forEach var="e" items="${errands}">
