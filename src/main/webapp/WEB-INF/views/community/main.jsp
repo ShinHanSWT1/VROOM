@@ -46,12 +46,17 @@
         <a href="<c:url value='/community'/>">동네생활</a>
     </nav>
 
-    <!-- Page Title -->
-    <h2 class="page-title" id="pageTitle"
-        data-gu="${selectedGuName}"
-        data-dong-code="$selectedDongCode}">
-        서울특별시 ${not empty selectedGuName ? selectedGuName : ''} 동네생활
-    </h2>
+    <!-- Page Title & Write Button -->
+    <div class="page-header">
+        <h2 class="page-title" id="pageTitle"
+            data-gu="${selectedGuName}"
+            data-dong-code="$selectedDongCode}">
+            서울특별시 ${not empty selectedGuName ? selectedGuName : ''} 동네생활
+        </h2>
+        <a href="<c:url value='/community/write'/>" class="write-btn">
+            <span>글쓰기</span>
+        </a>
+    </div>
 
     <!-- Content Grid -->
     <div class="content-grid">

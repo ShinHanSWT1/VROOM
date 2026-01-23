@@ -35,9 +35,10 @@
     transition: all 0.3s ease;
 }
 
+/* 왼쪽 영역: 초록색 계열 (Secondary) */
 .location-select:hover,
 .location-select:focus {
-    border-color: var(--color-accent);
+    border-color: var(--color-secondary);
 }
 
 .search-wrapper {
@@ -59,13 +60,14 @@
     transition: all 0.3s ease;
 }
 
+/* 오른쪽 영역: 노란색 계열 (Accent) */
 .search-input:focus {
     border-color: var(--color-accent);
 }
 
 .search-btn {
     padding: 0.75rem 1.5rem;
-    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
+    background-color: var(--color-accent); /* 노란색 계열 */
     color: var(--color-dark);
     border: none;
     border-radius: 8px;
@@ -80,6 +82,7 @@
 .search-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    filter: brightness(0.95); /* 호버 시 약간 어둡게 */
 }
 
 /* ========================================
@@ -117,20 +120,49 @@
 }
 
 /* ========================================
-   Page Title
+   Page Title & Header
 ======================================== */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
 .page-title {
     font-size: 1.5rem;
     font-weight: 700;
     color: var(--color-dark);
-    margin-bottom: 1.5rem;
+    margin-bottom: 0;
+}
+
+/* 글쓰기 버튼: 오른쪽 영역이므로 노란색 계열 (Accent) */
+.write-btn {
+    padding: 0.75rem 1.5rem;
+    background-color: var(--color-accent); /* 노란색 계열 */
+    color: var(--color-dark);
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.write-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    filter: brightness(0.95);
 }
 
 .category-badge-active {
     display: inline-block;
     padding: 0.35rem 1rem;
-    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
-    color: var(--color-dark);
+    background-color: var(--color-secondary); /* 초록색 계열 */
+    color: var(--color-white);
     border-radius: 20px;
     font-size: 0.85rem;
     font-weight: 600;
@@ -192,12 +224,13 @@
 
 .category-item:hover a {
     background-color: var(--color-light-gray);
-    color: var(--color-accent);
+    color: var(--color-secondary); /* 호버 시 텍스트 초록색 */
 }
 
+/* 왼쪽 영역: 카테고리 활성화 시 초록색 계열 (Secondary) */
 .category-item.active a {
     background-color: var(--color-secondary);
-    color: var(--color-dark);
+    color: var(--color-white); /* 배경이 초록이면 흰 글씨가 가독성 좋음 */
     font-weight: 700;
 }
 
@@ -221,7 +254,7 @@
 
 .post-card:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border-color: var(--color-secondary);
+    border-color: var(--color-secondary); /* 카드 호버는 왼쪽 컨텐츠 느낌으로 초록 */
 }
 
 .post-content-wrapper {
@@ -311,7 +344,7 @@
 }
 
 .post-stat.like-btn:hover {
-    color: var(--color-accent);
+    color: var(--color-accent); /* 좋아요는 강조색(노랑/빨강 계열) */
 }
 
 .post-views {
@@ -330,7 +363,7 @@
    Pagination
 ======================================== */
 .pagination-container {
-    grid-column: 2; /* content-grid의 두 번째 컬럼에 위치 */
+    grid-column: 2;
     display: flex;
     justify-content: center;
     margin-top: 2rem;
@@ -357,12 +390,12 @@
 }
 
 .pagination-btn.wide-btn {
-    padding: 0.5rem 1.5rem; /* 너비 확장 */
+    padding: 0.5rem 1.5rem;
 }
 
 .pagination-btn:hover:not(:disabled) {
     background-color: var(--color-light-gray);
-    border-color: var(--color-accent);
+    border-color: var(--color-secondary); /* 페이지네이션 호버는 초록 */
 }
 
 .pagination-btn:disabled {
@@ -393,13 +426,13 @@
 
 .page-btn:hover {
     background-color: var(--color-light-gray);
-    border-color: var(--color-accent);
+    border-color: var(--color-secondary);
 }
 
 .page-btn.active {
-    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
-    color: var(--color-dark);
-    border-color: var(--color-accent);
+    background-color: var(--color-secondary); /* 페이지 활성화는 초록 */
+    color: var(--color-white);
+    border-color: var(--color-secondary);
     font-weight: 700;
 }
 
@@ -412,7 +445,7 @@
     }
 
     .pagination-container {
-        grid-column: 1; /* 컬럼이 하나이므로 1로 변경 */
+        grid-column: 1;
     }
 
     .category-sidebar {
