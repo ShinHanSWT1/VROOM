@@ -9,12 +9,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${pageTitle != null ? pageTitle : 'VROOM'}</title>
     
-    <!-- CSS -->
+    <!-- 공통 CSS -->
     <link rel="stylesheet" href="<c:url value='/static/community/css/common.css'/>">
     <link rel="stylesheet" href="<c:url value='/static/community/css/main.css'/>">
-    <link rel="stylesheet" href="<c:url value='/static/community/css/community.css'/>">
-    <link rel="stylesheet" href="<c:url value='/static/community/css/community-detail.css'/>">
 
+    <!-- 페이지별 CSS -->
+    <c:if test="${pageCss == 'community'}">
+        <link rel="stylesheet" href="<c:url value='/static/community/css/community.css'/>">
+    </c:if>
+    <c:if test="${pageCss == 'community-detail'}">
+        <link rel="stylesheet" href="<c:url value='/static/community/css/community-detail.css'/>">
+    </c:if>
 
     <!-- jQuery (AJAX 사용 시) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

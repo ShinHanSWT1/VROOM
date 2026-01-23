@@ -2,6 +2,7 @@
 <!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.gorani.vroom.community.CommunityMapper">
 
+    <!-- 카테고리 리스트 조회    -->
     <select id="selectCategoryList" resultType="com.gorani.vroom.community.CategoryVO">
         SELECT
             category_id, category_name
@@ -9,6 +10,7 @@
         ORDER BY category_id;
     </select>
 
+    <!-- 게시글 리스트 조회     -->
     <select id = "selectPostList" resultType = "com.gorani.vroom.community.CommunityPostVO">
         SELECT
             c.post_id,
@@ -16,6 +18,7 @@
             c.content,
             c.view_count,
             c.like_count,
+            c.comment_count,
             c.created_at,
             c.updated_at,
             c.user_id,
@@ -42,8 +45,9 @@
             </if>
         </where>
         ORDER BY c.created_at DESC
+        LIMIT #{startIdx}, 8
     </select>
-
+    <!-- 인기글 리스트 조회    -->
     <select id="selectPopularPostList" resultType="com.gorani.vroom.community.CommunityPostVO">
         SELECT
         c.post_id,
@@ -51,23 +55,18 @@
         c.content,
         c.view_count,
         c.like_count,
+        c.comment_count,
         c.created_at,
         m.nickname,
         c.dong_code,
         d.dong_name,
         c.category_id,
         cc.category_name,
-        (c.like_count * 3 + c.view_count * 1 + IFNULL(cmt.comment_count, 0) * 2) AS popularity_score
+        (c.like_count * 3 + c.view_count * 1 + c.comment_count * 2) AS popularity_score
         FROM COMMUNITY c
         LEFT JOIN COMMUNITY_CATEGORY cc ON c.category_id = cc.category_id
         LEFT JOIN MEMBERS m ON c.user_id = m.user_id
         LEFT JOIN LEGAL_DONG d ON c.dong_code = d.dong_code
-        LEFT JOIN (
-        SELECT post_id, COUNT(*) AS comment_count
-        FROM COMMUNITY_COMMENT
-        WHERE deleted_at IS NULL
-        GROUP BY post_id
-        ) cmt ON c.post_id = cmt.post_id
         <where>
             c.deleted_at IS NULL
             AND c.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
@@ -75,13 +74,15 @@
                 AND c.dong_code = #{dongCode}
             </if>
             <if test="searchKeyword != null and searchKeyword != ''">
-                AND (c.title LIKE CONCAT('%', #{searchKeyword}, '%')ㅠ
+                AND (c.title LIKE CONCAT('%', #{searchKeyword}, '%')
                 OR c.content LIKE CONCAT('%', #{searchKeyword}, '%'))
             </if>
         </where>
         ORDER BY popularity_score DESC, c.created_at DESC
+        LIMIT #{startIdx}, 8
     </select>
 
+    <!-- 게시글 상세정보 조회    -->
     <select id="selectPostDetail" resultType="com.gorani.vroom.community.CommunityPostVO">
         SELECT
             c.post_id,
@@ -109,4 +110,143 @@
         </where>
     </select>
 
+    <!-- pagination 페이지 수 조회     -->
+    <select id="selectPostCount" resultType="long">
+        SELECT COUNT(*)
+        FROM COMMUNITY c
+        <where>
+            c.deleted_at IS NULL
+            <if test="dongCode != null and dongCode != ''">
+                AND c.dong_code = #{dongCode}
+            </if>
+            <choose>
+                <when test="categoryId != null and categoryId == 0">
+                    AND c.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+                </when>
+                <when test="categoryId != null">
+                    AND c.category_id = #{categoryId}
+                </when>
+            </choose>
+            <if test="searchKeyword != null and searchKeyword != ''">
+                AND (c.title LIKE CONCAT('%', #{searchKeyword}, '%')
+                OR c.content LIKE CONCAT('%', #{searchKeyword}, '%'))
+            </if>
+        </where>
+    </select>
+    <!-- 댓글수 조회    -->
+    <select id="selectCommentCount" resultType="Long">
+        SELECT COUNT(*)
+        FROM COMMUNITY_COMMENT
+        WHERE post_id = #{postId} AND deleted_at IS NULL
+    </select>
+
+    <!-- 게시글 댓글 수 업데이트  -->
+    <update id="updatePostCommentCount" >
+        UPDATE COMMUNITY
+        SET comment_count =
+            (SELECT COUNT(*)
+             FROM COMMUNITY_COMMENT
+             WHERE
+                 post_id = #{postId} AND deleted_at IS NULL)
+        WHERE post_id = #{postId}
+    </update>
+
+    <!-- 게시글에 대한 댓글 조회     -->
+    <select id="selectPostComments" resultType="com.gorani.vroom.community.CommunityCommentVO">
+        SELECT
+            cc.comment_id,
+            cc.content,
+            cc.created_at,
+            cc.updated_at,
+            cc.post_id,
+            m.user_id,
+            m.nickname,
+            cc.parent_comment_id,
+            cc.group_id,
+            cc.depth
+        FROM COMMUNITY_COMMENT cc
+        JOIN MEMBERS m ON cc.user_id = m.user_id
+        WHERE cc.post_id = #{postId} AND cc.deleted_at IS NULL
+        ORDER BY cc.group_id DESC, cc.depth ASC, cc.created_at ASC
+    </select>
+
+    <!-- 댓글 삽입     -->
+    <insert id="insertComment" useGeneratedKeys="true" keyProperty="commentId">
+        INSERT INTO COMMUNITY_COMMENT (
+            content,
+            post_id,
+            user_id,
+            parent_comment_id,
+            group_id,
+            depth
+        ) VALUES (
+            #{content},
+            #{postId},
+            #{userId},
+            #{parentCommentId},
+            #{groupId},
+            #{depth}
+        )
+    </insert>
+
+    <!-- 댓글의 group_id 업데이트 -->
+    <update id="updateCommentGroupId">
+        UPDATE COMMUNITY_COMMENT
+        SET group_id = #{groupId}
+        WHERE comment_id = #{commentId}
+    </update>
+
+    <!-- 댓글 수정 -->
+    <update id="updateComment">
+        UPDATE COMMUNITY_COMMENT
+        SET content = #{content}, updated_at = NOW()
+        WHERE comment_id = #{commentId} AND user_id = #{userId} AND deleted_at IS NULL
+    </update>
+
+    <!-- 댓글 삭제 (soft delete) -->
+    <update id="deleteComment">
+        UPDATE COMMUNITY_COMMENT
+        SET deleted_at = NOW()
+        WHERE comment_id = #{commentId} AND user_id = #{userId} AND deleted_at IS NULL
+    </update>
+
+    <!-- 댓글의 postId 조회 -->
+    <select id="selectPostIdByCommentId" resultType="Long">
+        SELECT post_id FROM COMMUNITY_COMMENT WHERE comment_id = #{commentId}
+    </select>
+
+    <!-- 부모 댓글의 depth 조회 -->
+    <select id="selectCommentDepth" resultType="Long">
+        SELECT depth FROM COMMUNITY_COMMENT WHERE comment_id = #{commentId}
+    </select>
+
+    <!-- 조회수 증가 -->
+    <update id="updateViewCount">
+        UPDATE COMMUNITY SET view_count = view_count + 1 WHERE post_id = #{postId}
+    </update>
+
+    <!-- 좋아요 여부 확인 -->
+    <select id="checkLikeExists" resultType="int">
+        SELECT COUNT(*) FROM COMMUNITY_POST_LIKES WHERE post_id = #{postId} AND user_id = #{userId}
+    </select>
+
+    <!-- 좋아요 추가 -->
+    <insert id="insertLike">
+        INSERT INTO COMMUNITY_POST_LIKES (post_id, user_id) VALUES (#{postId}, #{userId})
+    </insert>
+
+    <!-- 좋아요 삭제 -->
+    <delete id="deleteLike">
+        DELETE FROM COMMUNITY_POST_LIKES WHERE post_id = #{postId} AND user_id = #{userId}
+    </delete>
+
+    <!-- 좋아요 수 증가 -->
+    <update id="incrementLikeCount">
+        UPDATE COMMUNITY SET like_count = like_count + 1 WHERE post_id = #{postId}
+    </update>
+
+    <!-- 좋아요 수 감소 -->
+    <update id="decrementLikeCount">
+        UPDATE COMMUNITY SET like_count = GREATEST(like_count - 1, 0) WHERE post_id = #{postId}
+    </update>
 </mapper>
