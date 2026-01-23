@@ -2,8 +2,9 @@ package com.gorani.vroom.community;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -11,23 +12,184 @@ public class CommunityServiceImpl implements CommunityService{
 
     private final CommunityMapper communityMapper;
 
+    // 카테고리 목록 조회
     @Override
     public List<CategoryVO> getCategoryList() {
         return communityMapper.selectCategoryList();
     }
 
+    // 게시글 목록 조회
     @Override
-    public List<CommunityPostVO> getPostList(String dongCode, Long categoryId, String searchKeyword) {
-        return communityMapper.selectPostList(dongCode, categoryId, searchKeyword);
+    public List<CommunityPostVO> getPostList(String dongCode, Long categoryId, String searchKeyword, Long startIdx) {
+        return communityMapper.selectPostList(dongCode, categoryId, searchKeyword, startIdx);
     }
 
+    // 인기글 조회
     @Override
-    public List<CommunityPostVO> getPopularPostList(String dongCode, String searchKeyword) {
-        return communityMapper.selectPopularPostList(dongCode, searchKeyword);
+    public List<CommunityPostVO> getPopularPostList(String dongCode, String searchKeyword, Long startIdx) {
+        return communityMapper.selectPopularPostList(dongCode, searchKeyword, startIdx);
     }
 
+    // 게시글 상세 데이터 조회
     @Override
-    public CommunityPostVO getPostDetail(int postId) {
+    public CommunityPostVO getPostDetail(Long postId) {
         return communityMapper.selectPostDetail(postId);
+    }
+
+    // pagination 페이지 수 조회
+    @Override
+    public Long getPostCount(String dongCode, Long categoryId, String searchKeyword) {
+        return communityMapper.selectPostCount(dongCode, categoryId, searchKeyword);
+    }
+
+    // 댓글 수 조회
+    @Override
+    public Long getCommentCount(Long postId) {
+        return communityMapper.selectCommentCount(postId);
+    }
+
+    // 게시글에 대한 댓글 조회 (계층구조 정렬)
+    @Override
+    public List<CommunityCommentVO> getPostComments(Long postId) {
+        List<CommunityCommentVO> allComments = communityMapper.selectPostComments(postId);
+        return sortCommentsHierarchically(allComments);
+    }
+
+    // 댓글을 부모-자식 계층구조로 정렬
+    private List<CommunityCommentVO> sortCommentsHierarchically(List<CommunityCommentVO> comments) {
+        if (comments == null || comments.isEmpty()) {
+            return comments;
+        }
+
+        // commentId로 빠르게 찾기 위한 맵
+        Map<Long, CommunityCommentVO> commentMap = new HashMap<>();
+        for (CommunityCommentVO comment : comments) {
+            commentMap.put(comment.getCommentId(), comment);
+        }
+
+        // 부모 commentId별 자식 목록
+        Map<Long, List<CommunityCommentVO>> childrenMap = new HashMap<>();
+        List<CommunityCommentVO> rootComments = new ArrayList<>();
+
+        for (CommunityCommentVO comment : comments) {
+            if (comment.getParentCommentId() == null || comment.getDepth() == 0) {
+                // 최상위 댓글
+                rootComments.add(comment);
+            } else {
+                // 대댓글 - 부모별로 그룹화
+                childrenMap.computeIfAbsent(comment.getParentCommentId(), k -> new ArrayList<>()).add(comment);
+            }
+        }
+
+        // 최상위 댓글을 최신순으로 정렬
+        rootComments.sort((a, b) -> Long.compare(b.getGroupId(), a.getGroupId()));
+
+        // 자식 댓글 시간순 정렬
+        for (List<CommunityCommentVO> children : childrenMap.values()) {
+            children.sort(Comparator.comparing(CommunityCommentVO::getCreatedAt));
+        }
+
+        // dfs
+        List<CommunityCommentVO> result = new ArrayList<>();
+        for (CommunityCommentVO root : rootComments) {
+            addCommentWithChildren(root, childrenMap, result);
+        }
+
+        return result;
+    }
+
+    // 재귀적으로 댓글과 자식 댓글 추가
+    private void addCommentWithChildren(CommunityCommentVO comment,
+                                        Map<Long, List<CommunityCommentVO>> childrenMap,
+                                        List<CommunityCommentVO> result) {
+        result.add(comment);
+        List<CommunityCommentVO> children = childrenMap.get(comment.getCommentId());
+        if (children != null) {
+            for (CommunityCommentVO child : children) {
+                addCommentWithChildren(child, childrenMap, result);
+            }
+        }
+    }
+
+    // 댓글/대댓글 삽입
+    @Override
+    @Transactional
+    public boolean addComment(CommunityCommentVO commentVO) {
+        // 대댓글인 경우
+        if (commentVO.getParentCommentId() != null) {
+            // 부모 댓글의 depth를 조회해서 +1
+            Long parentDepth = communityMapper.selectCommentDepth(commentVO.getParentCommentId());
+            commentVO.setDepth(parentDepth != null ? parentDepth + 1 : 1L);
+        } else { // 최상위 댓글인 경우
+            commentVO.setDepth(0L);
+            commentVO.setGroupId(0L); // 임시값
+        }
+
+        int insertedRows = communityMapper.insertComment(commentVO);
+
+        if (insertedRows > 0) {
+            if (commentVO.getDepth() == 0L) {
+                commentVO.setGroupId(commentVO.getCommentId());
+                communityMapper.updateCommentGroupId(commentVO.getCommentId(), commentVO.getGroupId());
+            }
+
+            // 게시글의 전체 댓글 수 업데이트
+            communityMapper.updatePostCommentCount(commentVO.getPostId());
+            return true;
+        }
+        return false;
+    }
+
+    // 댓글 수정
+    @Override
+    public boolean updateComment(Long commentId, String content, Long userId) {
+        int result = communityMapper.updateComment(commentId, content, userId);
+        return result > 0;
+    }
+
+    // 댓글 삭제
+    @Override
+    @Transactional
+    public boolean deleteComment(Long commentId, Long userId) {
+        // 삭제 전에 postId 조회
+        Long postId = communityMapper.selectPostIdByCommentId(commentId);
+
+        int result = communityMapper.deleteComment(commentId, userId);
+        if (result > 0 && postId != null) {
+            // 게시글의 댓글 수 업데이트
+            communityMapper.updatePostCommentCount(postId);
+            return true;
+        }
+        return false;
+    }
+
+    // 조회수 증가
+    @Override
+    public void increaseViewCount(Long postId) {
+        communityMapper.updateViewCount(postId);
+    }
+
+    // 좋아요 토글
+    @Override
+    @Transactional
+    public boolean toggleLike(Long postId, Long userId) {
+        int exists = communityMapper.checkLikeExists(postId, userId);
+        if (exists > 0) {
+            // 이미 좋아요 했으면 취소
+            communityMapper.deleteLike(postId, userId);
+            communityMapper.decrementLikeCount(postId);
+            return false;
+        } else {
+            // 좋아요 추가
+            communityMapper.insertLike(postId, userId);
+            communityMapper.incrementLikeCount(postId);
+            return true;
+        }
+    }
+
+    // 좋아요 여부 확인
+    @Override
+    public boolean isLiked(Long postId, Long userId) {
+        return communityMapper.checkLikeExists(postId, userId) > 0;
     }
 }

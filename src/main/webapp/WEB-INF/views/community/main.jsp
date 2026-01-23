@@ -4,6 +4,7 @@
 
 <c:set var="pageTitle" value="VROOM - 동네생활" scope="request"/>
 <c:set var="pageId" value="community" scope="request"/>
+<c:set var="pageCss" value="community" scope="request"/>
 
 <jsp:include page="../common/header.jsp"/>
 
@@ -40,7 +41,7 @@
 <main class="main-content">
     <!-- Breadcrumb -->
     <nav class="breadcrumb">
-        <a href="<c:url value='/main'/>">홈</a>
+        <a href="<c:url value='/vroom'/>">홈</a>
         <span class="breadcrumb-separator"> > </span>
         <a href="<c:url value='/community'/>">동네생활</a>
     </nav>
@@ -100,20 +101,20 @@
         </aside>
 
         <!-- Post List -->
-        <div class="post-list">
+        <div class="post-list" id="postList">
             <c:choose>
                 <c:when test="${not empty postList}">
                     <c:forEach var="post" items="${postList}">
                         <a class="post-card" href="<c:url value='/community/detail/${post.postId}'/>" style="text-decoration: none; color: inherit;">
                             <div class="post-content-wrapper">
                                 <div class="post-text-content">
-                                    <h3 class="post-title">${post.title}</h3>
+                                    <h1 class="post-title">${post.title}</h1>
                                     <p class="post-description">${post.content}</p>
 
                                     <div class="post-meta">
                                         <span class="post-meta-item">${post.dongName}</span>
                                         <span class="post-meta-item">•</span>
-                                        <span class="post-category-badge">${post.categoryName}</span>
+                                        <span class="post-meta-item">${post.categoryName}</span>
                                         <span class="post-meta-item">•</span>
                                         <span class="post-meta-item">
                                             <fmt:formatDate value="${post.createdAt}" pattern="MM.dd"/>
@@ -121,8 +122,14 @@
                                     </div>
 
                                     <div class="post-stats">
-                                        <span class="post-stat">👍 ${post.likeCount}</span>
-                                        <span class="post-stat">👁 ${post.viewCount}</span>
+                                        <div class="post-stats-left">
+                                            <button class="post-stat like-btn" onclick="toggleListLike(event, ${post.postId}, this)">
+                                                <span class="like-icon">👍</span>
+                                                <span class="like-count">${post.likeCount}</span>
+                                            </button>
+                                            <span class="post-stat">💬 ${post.commentCount}</span>
+                                        </div>
+                                        <span class="post-stat post-views">조회 ${post.viewCount}</span>
                                     </div>
                                 </div>
                             </div>
@@ -134,6 +141,25 @@
                 </c:otherwise>
             </c:choose>
         </div>
+
+        <!-- Pagination -->
+        <div class="pagination-container">
+            <c:if test="${totalPages > 0}">
+                <div class="pagination" id="pagination">
+                    <button class="pagination-btn prev-btn wide-btn" ${currentPage == 1 ? 'disabled' : ''} data-page="${currentPage - 1}">
+                        <span>이전</span>
+                    </button>
+                    <div class="page-numbers">
+                        <c:forEach var="i" begin="1" end="${totalPages}">
+                            <button class="page-btn ${currentPage == i ? 'active' : ''}" data-page="${i}">${i}</button>
+                        </c:forEach>
+                    </div>
+                    <button class="pagination-btn next-btn wide-btn" ${currentPage == totalPages ? 'disabled' : ''} data-page="${currentPage + 1}">
+                        <span>다음</span>
+                    </button>
+                </div>
+            </c:if>
+        </div>
     </div>
 </main>
 
@@ -143,9 +169,45 @@
         currentDongCode: '${selectedDongCode}',
         selectedGuName: '${selectedGuName}',
         currentCategoryId: '${selectedCategoryId}',
-        currentSearchKeyword: '${searchKeyword}'
+        currentSearchKeyword: '${searchKeyword}',
+        currentPage: ${currentPage},
+        totalPages: ${totalPages}
     };
+
+    // 게시글 리스트 좋아요 토글
+    async function toggleListLike(event, postId, button) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const contextPath = window.communityFilterConfig.contextPath;
+
+        try {
+            const response = await fetch(contextPath + '/community/api/posts/' + postId + '/like', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.status === 401) {
+                alert('로그인이 필요합니다.');
+                return;
+            }
+
+            if (response.ok) {
+                const data = await response.json();
+                const likeIcon = button.querySelector('.like-icon');
+                const likeCount = button.querySelector('.like-count');
+
+                likeIcon.textContent = data.liked ? '❤️' : '👍';
+                likeCount.textContent = data.likeCount;
+            }
+        } catch (error) {
+            console.error('좋아요 처리 실패:', error);
+        }
+    }
 </script>
 <script src="<c:url value='/static/community/js/communityFilter.js'/>"></script>
+<script src="<c:url value='/static/community/js/pagination.js'/>"></script>
 
 <jsp:include page="../common/footer.jsp"/>

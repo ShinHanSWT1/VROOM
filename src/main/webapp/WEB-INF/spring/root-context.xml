@@ -22,6 +22,12 @@
         <property name="dataSource" ref="dataSource"/>
         <!-- Mapper XML 위치 -->
         <property name="mapperLocations" value="classpath*:/com/gorani/vroom/**/*.xml"/>
+        <!-- MyBatis 설정 -->
+        <property name="configuration">
+            <bean class="org.apache.ibatis.session.Configuration">
+                <property name="mapUnderscoreToCamelCase" value="true"/>
+            </bean>
+        </property>
     </bean>
 
     <!-- Mapper 인터페이스 자동 스캔 -->

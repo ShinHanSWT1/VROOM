@@ -13,6 +13,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -112,6 +113,11 @@ public class MvcConfig implements WebMvcConfigurer {
 
         // 설정 객체를 SqlSessionFactoryBean에 주입
         ssf.setConfiguration(configuration);
+
+        // com/gorani 폴더 밑에 있는 모든 xml 파일 읽기
+        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+        ssf.setMapperLocations(resolver.getResources("classpath:com/gorani/**/*.xml"));
+
 
         return ssf.getObject();
     }

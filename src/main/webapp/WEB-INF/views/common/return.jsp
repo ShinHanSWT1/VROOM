@@ -405,13 +405,13 @@
 <script>
     <c:if test="${result == 'success'}">
         setTimeout(function () {
-            location.href = '${url}'
+            location.href = '${pageContext.request.contextPath}' + '${url}'
         }, 3000);
     </c:if>
     <c:if test="${result == 'fail'}">
         console.log('${errorMsg}');
         setTimeout(function () {
-            location.href = '${url}'
+            location.href = '${pageContext.request.contextPath}' + '${url}'
         }, 2000);
     </c:if>
 
