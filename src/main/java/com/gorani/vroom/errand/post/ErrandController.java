@@ -49,6 +49,11 @@ public class ErrandController {
 			return "redirect:/errand/list";
 		}
 		
+		// dongFullName 세팅
+	    if (errand.getGunguName() != null && errand.getDongName() != null) {
+	        errand.setDongFullName(errand.getGunguName() + " " + errand.getDongName());
+	    }
+		
 		List<ErrandListVO> relatedErrands =
 	            errandService.getRelatedErrands(errandsId, errand.getDongCode(), errand.getCategoryId(), 6);
 
@@ -113,6 +118,15 @@ public class ErrandController {
 	}
 
 	/**
+     * 내 정보 페이지 경로 리다이렉트
+     * 잘못된 경로(/errand/myInfo)로 들어왔을 때 -> 올바른 경로(/member/myInfo)로 보냄
+     */
+    @GetMapping("/errand/myInfo")
+    public String redirectMyInfo() {
+        return "redirect:/member/myInfo";
+    }
+
+    /**
      * 내 정보 페이지 경로 리다이렉트
      * 잘못된 경로(/errand/myInfo)로 들어왔을 때 -> 올바른 경로(/member/myInfo)로 보냄
      */

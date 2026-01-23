@@ -554,7 +554,7 @@
                 <input
                         type="file"
                         id="profileImage"
-                        name="profileImage"
+                        name="profile"
                         class="auth-input"
                         accept="image/*"
                         style="padding: 0.5rem;"
@@ -715,127 +715,23 @@
     // 목업 데이터 (실제로는 API 호출)
     const mockGus = ['강남구', '강동구', '강북구', '강서구', '관악구', '광진구', '구로구', '금천구', '노원구', '도봉구', '동대문구', '동작구', '마포구', '서대문구', '서초구', '성동구', '성북구', '송파구', '양천구', '영등포구', '용산구', '은평구', '종로구', '중구', '중랑구'];
 
-    const mockDongs = {
-        '강북구': [
-            { dongCode: '1130510100', dongName: '미아동' },
-            { dongCode: '1130510200', dongName: '번동' },
-            { dongCode: '1130510300', dongName: '수유동' },
-            { dongCode: '1130510400', dongName: '우이동' },
-            { dongCode: '1130510500', dongName: '삼양동' },
-            { dongCode: '1130510600', dongName: '송중동' },
-            { dongCode: '1130510700', dongName: '송천동' },
-            { dongCode: '1130510800', dongName: '삼각산동' },
-            { dongCode: '1130510900', dongName: '인수동' },
-            { dongCode: '1130511000', dongName: '오패산동' },
-            { dongCode: '1130511100', dongName: '하월곡동' },
-            { dongCode: '1130511200', dongName: '상월곡동' },
-            { dongCode: '1130511300', dongName: '번1동' },
-            { dongCode: '1130511400', dongName: '번2동' },
-            { dongCode: '1130511500', dongName: '번3동' }
-        ],
-        '강남구': [
-            { dongCode: '1168010100', dongName: '역삼동' },
-            { dongCode: '1168010200', dongName: '논현동' },
-            { dongCode: '1168010300', dongName: '압구정동' },
-            { dongCode: '1168010400', dongName: '청담동' },
-            { dongCode: '1168010500', dongName: '삼성동' },
-            { dongCode: '1168010600', dongName: '대치동' },
-            { dongCode: '1168010700', dongName: '개포동' },
-            { dongCode: '1168010800', dongName: '도곡동' },
-            { dongCode: '1168010900', dongName: '세곡동' },
-            { dongCode: '1168011000', dongName: '일원동' },
-            { dongCode: '1168011100', dongName: '수서동' },
-            { dongCode: '1168011200', dongName: '신사동' }
-        ],
-        '송파구': [
-            { dongCode: '1171010100', dongName: '잠실동' },
-            { dongCode: '1171010200', dongName: '신천동' },
-            { dongCode: '1171010300', dongName: '마천동' },
-            { dongCode: '1171010400', dongName: '문정동' },
-            { dongCode: '1171010500', dongName: '방이동' },
-            { dongCode: '1171010600', dongName: '오금동' },
-            { dongCode: '1171010700', dongName: '거여동' },
-            { dongCode: '1171010800', dongName: '가락동' },
-            { dongCode: '1171010900', dongName: '석촌동' },
-            { dongCode: '1171011000', dongName: '삼전동' },
-            { dongCode: '1171011100', dongName: '장지동' },
-            { dongCode: '1171011200', dongName: '위례동' }
-        ],
-        '서초구': [
-            { dongCode: '1165010100', dongName: '방배동' },
-            { dongCode: '1165010200', dongName: '양재동' },
-            { dongCode: '1165010300', dongName: '우면동' },
-            { dongCode: '1165010400', dongName: '원지동' },
-            { dongCode: '1165010500', dongName: '잠원동' },
-            { dongCode: '1165010600', dongName: '반포동' },
-            { dongCode: '1165010700', dongName: '서초동' },
-            { dongCode: '1165010800', dongName: '내곡동' },
-            { dongCode: '1165010900', dongName: '염곡동' },
-            { dongCode: '1165011000', dongName: '신원동' }
-        ],
-        '강동구': [
-            { dongCode: '1174010100', dongName: '강일동' },
-            { dongCode: '1174010200', dongName: '상일동' },
-            { dongCode: '1174010300', dongName: '명일동' },
-            { dongCode: '1174010400', dongName: '고덕동' },
-            { dongCode: '1174010500', dongName: '암사동' },
-            { dongCode: '1174010600', dongName: '성내동' },
-            { dongCode: '1174010700', dongName: '길동' },
-            { dongCode: '1174010800', dongName: '둔촌동' },
-            { dongCode: '1174010900', dongName: '천호동' }
-        ],
-        '동작구': [
-            { dongCode: '1159010100', dongName: '노량진동' },
-            { dongCode: '1159010200', dongName: '상도동' },
-            { dongCode: '1159010300', dongName: '상도1동' },
-            { dongCode: '1159010400', dongName: '본동' },
-            { dongCode: '1159010500', dongName: '흑석동' },
-            { dongCode: '1159010600', dongName: '동작동' },
-            { dongCode: '1159010700', dongName: '사당동' },
-            { dongCode: '1159010800', dongName: '대방동' },
-            { dongCode: '1159010900', dongName: '신대방동' }
-        ],
-        '영등포구': [
-            { dongCode: '1156010100', dongName: '여의도동' },
-            { dongCode: '1156010200', dongName: '당산동' },
-            { dongCode: '1156010300', dongName: '도림동' },
-            { dongCode: '1156010400', dongName: '문래동' },
-            { dongCode: '1156010500', dongName: '양평동' },
-            { dongCode: '1156010600', dongName: '신길동' },
-            { dongCode: '1156010700', dongName: '영등포동' },
-            { dongCode: '1156010800', dongName: '대림동' }
-        ],
-        '마포구': [
-            { dongCode: '1144010100', dongName: '아현동' },
-            { dongCode: '1144010200', dongName: '공덕동' },
-            { dongCode: '1144010300', dongName: '도화동' },
-            { dongCode: '1144010400', dongName: '용강동' },
-            { dongCode: '1144010500', dongName: '마포동' },
-            { dongCode: '1144010600', dongName: '신수동' },
-            { dongCode: '1144010700', dongName: '현석동' },
-            { dongCode: '1144010800', dongName: '구수동' },
-            { dongCode: '1144010900', dongName: '염리동' },
-            { dongCode: '1144011000', dongName: '상암동' },
-            { dongCode: '1144011100', dongName: '합정동' },
-            { dongCode: '1144011200', dongName: '망원동' },
-            { dongCode: '1144011300', dongName: '연남동' },
-            { dongCode: '1144011400', dongName: '성산동' },
-            { dongCode: '1144011500', dongName: '중동' },
-            { dongCode: '1144011600', dongName: '하중동' },
-            { dongCode: '1144011700', dongName: '상수동' }
-        ]
-    };
-
     // 페이지 로드 시 구 목록 로드
     function loadGus() {
-        // 실제로는: fetch('/auth/regions/gus').then(...)
-        // 목업: 구 목록을 select에 추가
+        console.log(mockGus.length);
+        console.log(gu1Select, gu2Select);
+
         mockGus.forEach(gu => {
+            // gu1용 option
             const option1 = document.createElement('option');
             option1.value = gu;
             option1.textContent = gu;
-            gu1Select.appendChild(option1.cloneNode(true));
-            gu2Select.appendChild(option1);
+            gu1Select.appendChild(option1);
+
+            // gu2용 option
+            const option2 = document.createElement('option');
+            option2.value = gu;
+            option2.textContent = gu;
+            gu2Select.appendChild(option2);
         });
     }
 
@@ -851,24 +747,29 @@
             return;
         }
 
-        // 실제로는: fetch(`/auth/regions/dongs?gu=${selectedGu}`).then(...)
-        // 목업: 선택된 구의 동 목록을 가져옴
-        const dongs = mockDongs[selectedGu] || [];
+        const contextPath = '${pageContext.request.contextPath}';
 
-        dongSelect.disabled = false;
-        dongSelect.innerHTML = '<option value="">동 선택</option>';
+        fetch(contextPath + '/auth/selectdong?gu=' + encodeURIComponent(selectedGu))
+            .then(res => res.json())
+            .then(dongs => {
+                dongSelect.disabled = false;
+                dongSelect.innerHTML = '<option value="">동 선택</option>';
 
-        dongs.forEach(dong => {
-            const option = document.createElement('option');
-            option.value = dong.dongName;
-            option.textContent = dong.dongName;
-            option.dataset.code = dong.dongCode;
-            dongSelect.appendChild(option);
-        });
+                dongs.forEach(dong => {
+                    const option = document.createElement('option');
+                    option.value = dong.dongName;
+                    option.textContent = dong.dongName;
+                    option.dataset.code = dong.dongCode;
+                    dongSelect.appendChild(option);
+                });
 
-        // 구 선택 시 동 선택 초기화
-        dongCodeInput.value = '';
-        dongSelect.classList.remove('has-value');
+                dongCodeInput.value = '';
+                dongSelect.classList.remove('has-value');
+            })
+            .catch(err => {
+                console.error('동 조회 실패', err);
+                alert('동 정보를 불러오지 못했습니다.');
+            });
     }
 
     // 동 선택 시 dong_code 저장

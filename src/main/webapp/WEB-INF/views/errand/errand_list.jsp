@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <!DOCTYPE html>
 <html lang="ko">
@@ -296,12 +297,23 @@
             font-size: 3rem;
             position: relative;
         }
-
-        .task-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+        
+        /* 업로드 이미지 / 실사 */
+		.task-image img.img-cover {
+		    width: 100%;
+		    height: 100%;
+		    object-fit: cover;
+		}
+		
+		/* 카테고리 기본 이미지 (배달, 벌레퇴치 등 아이콘) */
+		.task-image img.img-contain {
+		    width: 100%;
+		    height: 100%;
+		    object-fit: contain;
+		    padding: 12px;          /* 프레임에 딱 붙지 않게 */
+		    box-sizing: border-box;
+		    background-color: #fff;
+		}
 
         .task-card-content {
             padding: 1.25rem;
@@ -695,10 +707,11 @@
 			         href="${pageContext.request.contextPath}/errand/detail?errandsId=${e.errandsId}">
 			         
 			        <div class="task-image">
-				      <span style="font-size: 0.95rem; color: var(--color-gray); font-weight: 600;">
-				        <img src="${pageContext.request.contextPath}${e.displayImageUrl}" alt="심부름 이미지">
-				      </span>
-				    </div>
+					  <img
+					    src="${pageContext.request.contextPath}${e.displayImageUrl}"
+					    class="${fn:contains(e.displayImageUrl, '/static/img/category/') ? 'img-contain' : 'img-cover'}"
+					    alt="심부름 이미지">
+					</div>
 				    
 				   <div class="task-card-content">
 				      <div class="task-card-header">

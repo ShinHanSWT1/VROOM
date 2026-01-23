@@ -7,6 +7,7 @@ public interface AuthUserMapper {
 
     // 사용자 조회 (로그인용)
     UserVO findByEmail(String email);
+    UserVO findByPhone(String phone);
 
     UserVO login(UserVO vo);
 

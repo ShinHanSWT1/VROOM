@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gorani.vroom.errander.profile.ErranderMapper">
+
+    <!-- 라이더 프로필 조회 (사용자 정보 포함), 등급 추가 -->
+    <select id="getErranderProfile"
+            resultType="com.gorani.vroom.errander.profile.ErranderProfileVO">
+        SELECT
+            ep.errander_id,
+            ep.user_id,
+            ep.approval_status,
+            ep.active_status,
+            ep.rating_avg,
+            ep.complete_rate,
+            ep.dong_code1,
+            ep.dong_code2,
+            ep.last_active_at,
+            ep.approved_at,
+
+            ep.grade,    up.nickname,
+            up.profile_image
+        FROM ERRANDER_PROFILES ep
+                 LEFT JOIN MEMBERS up ON ep.user_id = up.user_id
+        WHERE ep.user_id = #{userId}
+    </select>
+
+    <!-- 수행 중 건수 (MATCHED, CONFIRMED1, CONFIRMED2 중 하나라도 맞으면 OK) -->
+    <select id="getInProgressCount" resultType="int">
+        SELECT COUNT(*)
+        FROM ERRANDS
+        WHERE errander_id = #{erranderId}
+          AND status IN ('MATCHED', 'CONFIRMED1', 'CONFIRMED2')
+    </select>
+
+    <!-- 완료 건수 -->
+    <select id="getCompletedCount" resultType="int">
+        SELECT COUNT(*)
+        FROM ERRANDS
+        WHERE errander_id = #{erranderId}
+          AND status = 'COMPLETED'
+    </select>
+
+    <!-- 월별 수익 -->
+    <select id="getMonthEarning" resultType="int">
+        SELECT COALESCE(SUM(reward_amount), 0)
+        FROM ERRANDS
+        WHERE errander_id = #{erranderId}
+            AND status = 'COMPLETED'
+            AND YEAR(updated_at) = #{year}
+          AND MONTH(updated_at) = #{month}
+    </select>
+
+    <!-- 평균 평점-->
+    <select id="getErranderAvgRating" resultType="double">
+        SELECT COALESCE(AVG(r.rating), 0.0)
+        FROM REVIEWS r
+                 JOIN ERRANDS e ON r.errand_id = e.errands_id
+        WHERE e.errander_id = #{erranderId}
+    </select>
+
+    <!-- 리뷰 개수 -->
+    <select id="getReviewCount" resultType="int">
+        SELECT COUNT(*)
+        FROM REVIEWS r
+                 JOIN ERRANDS e ON r.errand_id = e.errands_id
+        WHERE e.errander_id = #{erranderId}
+    </select>
+
+</mapper>
