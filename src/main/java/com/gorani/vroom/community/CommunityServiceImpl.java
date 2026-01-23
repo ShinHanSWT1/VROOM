@@ -192,4 +192,9 @@ public class CommunityServiceImpl implements CommunityService{
     public boolean isLiked(Long postId, Long userId) {
         return communityMapper.checkLikeExists(postId, userId) > 0;
     }
+
+    @Override
+    public boolean createPost (CommunityPostVO communityPostVO) {
+        return communityMapper.insertCommunityPost(communityPostVO) > 0;
+    }
 }

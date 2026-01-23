@@ -251,8 +251,29 @@ public class CommunityPostController {
     }
 
     @GetMapping("/write")
-    public String writeForm(Model model) {
+    public String writeForm(HttpSession session) {
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
+        if (loginUser == null) {
+            return "redirect:/user/login";
+        }
         return "community/write";
+    }
+
+    @PostMapping("/write")
+    public String createPost(CommunityPostVO postVO
+                            , HttpSession session) {
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
+        if (loginUser == null) {
+            return "redirect:/user/login";
+        }
+        postVO.setUserId(loginUser.getUserId());
+
+        boolean success = communityService.createPost(postVO);
+        if(success) {
+            return "redirect:/community/detail/" + postVO.getPostId();
+        }
+
+        return "redirect:/community/write";
     }
 
 }

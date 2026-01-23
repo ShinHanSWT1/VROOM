@@ -42,4 +42,7 @@ public interface CommunityService {
 
     // 좋아요 여부 확인
     boolean isLiked(Long postId, Long userId);
+
+    // 게시글 작성
+    boolean createPost(CommunityPostVO communityPostVO);
 }

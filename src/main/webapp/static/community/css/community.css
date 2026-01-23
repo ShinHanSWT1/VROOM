@@ -23,7 +23,7 @@
 }
 
 .location-select {
-    padding: 0.75rem 1.25rem;
+    padding: 0.5rem 1rem;
     background-color: var(--color-white);
     color: var(--color-dark);
     border: 2px solid var(--color-light-gray);
@@ -35,10 +35,10 @@
     transition: all 0.3s ease;
 }
 
-/* 왼쪽 영역: 초록색 계열 (Secondary) */
+/* 왼쪽 영역: 초록색 계열 (Primary) */
 .location-select:hover,
 .location-select:focus {
-    border-color: var(--color-secondary);
+    border-color: var(--color-primary);
 }
 
 .search-wrapper {
@@ -52,7 +52,7 @@
 
 .search-input {
     flex: 1;
-    padding: 0.75rem 1.25rem;
+    padding: 0.5rem 1rem;
     border: 2px solid var(--color-light-gray);
     border-radius: 8px;
     font-size: 0.95rem;
@@ -66,7 +66,7 @@
 }
 
 .search-btn {
-    padding: 0.75rem 1.5rem;
+    padding: 0.5rem 1.25rem;
     background-color: var(--color-accent); /* 노란색 계열 */
     color: var(--color-dark);
     border: none;
@@ -77,12 +77,38 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.search-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        120deg,
+        transparent 0%,
+        transparent 30%,
+        rgba(144, 238, 144, 0.4) 45%,
+        rgba(152, 251, 152, 0.6) 50%,
+        rgba(144, 238, 144, 0.4) 55%,
+        transparent 70%,
+        transparent 100%
+    );
+    transition: left 0.5s ease;
 }
 
 .search-btn:hover {
+    background-color: #90EE90; /* 밝은 연두색 */
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-    filter: brightness(0.95); /* 호버 시 약간 어둡게 */
+}
+
+.search-btn:hover::before {
+    left: 100%;
 }
 
 /* ========================================
@@ -138,7 +164,7 @@
 
 /* 글쓰기 버튼: 오른쪽 영역이므로 노란색 계열 (Accent) */
 .write-btn {
-    padding: 0.75rem 1.5rem;
+    padding: 0.5rem 1.25rem;
     background-color: var(--color-accent); /* 노란색 계열 */
     color: var(--color-dark);
     border: none;
@@ -150,18 +176,44 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.write-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        120deg,
+        transparent 0%,
+        transparent 30%,
+        rgba(144, 238, 144, 0.4) 45%,
+        rgba(152, 251, 152, 0.6) 50%,
+        rgba(144, 238, 144, 0.4) 55%,
+        transparent 70%,
+        transparent 100%
+    );
+    transition: left 0.5s ease;
 }
 
 .write-btn:hover {
+    background-color: #90EE90; /* 밝은 연두색 */
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-    filter: brightness(0.95);
+}
+
+.write-btn:hover::before {
+    left: 100%;
 }
 
 .category-badge-active {
     display: inline-block;
     padding: 0.35rem 1rem;
-    background-color: var(--color-secondary); /* 초록색 계열 */
+    background-color: var(--color-primary); /* 초록색 계열 */
     color: var(--color-white);
     border-radius: 20px;
     font-size: 0.85rem;
@@ -224,12 +276,12 @@
 
 .category-item:hover a {
     background-color: var(--color-light-gray);
-    color: var(--color-secondary); /* 호버 시 텍스트 초록색 */
+    color: var(--color-primary); /* 호버 시 텍스트 초록색 */
 }
 
-/* 왼쪽 영역: 카테고리 활성화 시 초록색 계열 (Secondary) */
+/* 왼쪽 영역: 카테고리 활성화 시 초록색 계열 (Primary) */
 .category-item.active a {
-    background-color: var(--color-secondary);
+    background-color: var(--color-primary);
     color: var(--color-white); /* 배경이 초록이면 흰 글씨가 가독성 좋음 */
     font-weight: 700;
 }
@@ -254,7 +306,7 @@
 
 .post-card:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border-color: var(--color-secondary); /* 카드 호버는 왼쪽 컨텐츠 느낌으로 초록 */
+    border-color: var(--color-primary); /* 카드 호버는 왼쪽 컨텐츠 느낌으로 초록 */
 }
 
 .post-content-wrapper {
@@ -395,7 +447,7 @@
 
 .pagination-btn:hover:not(:disabled) {
     background-color: var(--color-light-gray);
-    border-color: var(--color-secondary); /* 페이지네이션 호버는 초록 */
+    border-color: var(--color-primary); /* 페이지네이션 호버는 초록 */
 }
 
 .pagination-btn:disabled {
@@ -426,13 +478,13 @@
 
 .page-btn:hover {
     background-color: var(--color-light-gray);
-    border-color: var(--color-secondary);
+    border-color: var(--color-primary);
 }
 
 .page-btn.active {
-    background-color: var(--color-secondary); /* 페이지 활성화는 초록 */
+    background-color: var(--color-primary); /* 페이지 활성화는 초록 */
     color: var(--color-white);
-    border-color: var(--color-secondary);
+    border-color: var(--color-primary);
     font-weight: 700;
 }
 

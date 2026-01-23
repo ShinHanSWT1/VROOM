@@ -249,4 +249,22 @@
     <update id="decrementLikeCount">
         UPDATE COMMUNITY SET like_count = GREATEST(like_count - 1, 0) WHERE post_id = #{postId}
     </update>
+
+    <!-- 게시글 작성  -->
+    <insert id="insertCommunityPost" useGeneratedKeys="true" keyProperty="postId">
+        INSERT INTO COMMUNITY (
+            title
+            , content
+            , dong_code
+            , category_id
+            , user_id
+        ) VALUES (
+            #{title}
+            , #{content}
+            , #{dongCode}
+            , #{categoryId}
+            , #{userId}
+        )
+
+    </insert>
 </mapper>

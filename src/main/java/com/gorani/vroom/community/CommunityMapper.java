@@ -79,4 +79,7 @@ public interface CommunityMapper {
 
     // 좋아요 수 감소
     int decrementLikeCount(@Param("postId") Long postId);
+
+    // 게시글 작성
+    int insertCommunityPost(CommunityPostVO communityPostVO);
 }
