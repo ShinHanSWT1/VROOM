@@ -29,7 +29,7 @@
 <main class="main-content">
     <!-- Breadcrumb -->
     <nav class="breadcrumb">
-        <a href="<c:url value='/main'/>">홈</a>
+        <a href="<c:url value=''/>">홈</a>
         <span class="breadcrumb-separator">></span>
         <span>동네생활</span>
     </nav>

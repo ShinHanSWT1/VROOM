@@ -45,4 +45,11 @@ public interface CommunityService {
 
     // 게시글 작성
     boolean createPost(CommunityPostVO communityPostVO);
+
+    // 게시글 업데이트
+    boolean updatePost(CommunityPostVO communityPostVO);
+
+    // 근처 동네 인기글 조회
+    List<CommunityPostVO> getNearbyPopularPostList(String dongCode, Long currentPostId);
+
 }

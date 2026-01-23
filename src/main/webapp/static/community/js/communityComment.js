@@ -274,4 +274,17 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error(error);
         }
     };
+
+    // 좋아요 버튼 이벤트 바인딩
+    const likeBtn = document.getElementById('likeBtn');
+    if (likeBtn) {
+        likeBtn.addEventListener('click', function(e) {
+            // 공통 모듈 사용
+            if (typeof CommunityLike !== 'undefined') {
+                CommunityLike.toggle(e, postId, this);
+            } else {
+                console.error('CommunityLike 모듈이 로드되지 않았습니다.');
+            }
+        });
+    }
 });

@@ -82,4 +82,13 @@ public interface CommunityMapper {
 
     // 게시글 작성
     int insertCommunityPost(CommunityPostVO communityPostVO);
+
+    // 게시글 업데이트
+    int updateCommunityPost(CommunityPostVO communityPostVO);
+
+    // 근처 동네 인기글 리스트 조회
+    List<CommunityPostVO> selectNearbyPopularPostList(
+            @Param("dongCode") String dongCode,
+            @Param("currentPostId") Long postId
+    );
 }

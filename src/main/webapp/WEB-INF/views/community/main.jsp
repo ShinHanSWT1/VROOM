@@ -65,7 +65,7 @@
             <div class="sidebar-section">
                 <ul class="category-list">
                     <!-- 전체 카테고리 -->
-                    <li class="category-item ${empty selectedCategoryId ? 'active' : ''}">
+                    <li class="category-item ${selectedCategoryId == null ? 'active' : ''}">
                         <a href="<c:url value='/community'>
                             <c:if test='${not empty selectedGuName}'>
                                 <c:param name='guName' value='${selectedGuName}'/>
@@ -76,7 +76,7 @@
                         </c:url>">전체</a>
                     </li>
                      <!-- 인기글 카테고리 추가 -->
-                     <li class="category-item ${selectedCategoryId == 0 ? 'active' : ''}">
+                     <li class="category-item ${selectedCategoryId != null and selectedCategoryId == 0 ? 'active' : ''}">
                          <a href="<c:url value='/community'>
                             <c:param name='categoryId' value='0'/>
                             <c:if test='${not empty selectedDongCode}'>
@@ -128,7 +128,7 @@
 
                                     <div class="post-stats">
                                         <div class="post-stats-left">
-                                            <button class="post-stat like-btn" onclick="toggleListLike(event, ${post.postId}, this)">
+                                            <button class="post-stat like-btn" onclick="CommunityLike.toggle(event, ${post.postId}, this)">
                                                 <span class="like-icon">👍</span>
                                                 <span class="like-count">${post.likeCount}</span>
                                             </button>
@@ -178,40 +178,8 @@
         currentPage: ${currentPage},
         totalPages: ${totalPages}
     };
-
-    // 게시글 리스트 좋아요 토글
-    async function toggleListLike(event, postId, button) {
-        event.preventDefault();
-        event.stopPropagation();
-
-        const contextPath = window.communityFilterConfig.contextPath;
-
-        try {
-            const response = await fetch(contextPath + '/community/api/posts/' + postId + '/like', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.status === 401) {
-                alert('로그인이 필요합니다.');
-                return;
-            }
-
-            if (response.ok) {
-                const data = await response.json();
-                const likeIcon = button.querySelector('.like-icon');
-                const likeCount = button.querySelector('.like-count');
-
-                likeIcon.textContent = data.liked ? '❤️' : '👍';
-                likeCount.textContent = data.likeCount;
-            }
-        } catch (error) {
-            console.error('좋아요 처리 실패:', error);
-        }
-    }
 </script>
+<script src="<c:url value='/static/community/js/communityLike.js'/>"></script>
 <script src="<c:url value='/static/community/js/communityFilter.js'/>"></script>
 <script src="<c:url value='/static/community/js/pagination.js'/>"></script>
 
