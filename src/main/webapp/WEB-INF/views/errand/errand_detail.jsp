@@ -741,7 +741,7 @@
 					                <c:out value="${e.dongFullName}" />
 					              </span>
 					              <span class="task-price">
-					                <c:out value="${e.rewardAmount}" />원
+					                <fmt:formatNumber value="${e.rewardAmount}" pattern="#,###" />원
 					              </span>
 					            </div>
 					          </div>
