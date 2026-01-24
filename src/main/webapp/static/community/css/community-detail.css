@@ -23,7 +23,7 @@
 }
 
 .location-select {
-    padding: 0.75rem 1.25rem;
+    padding: 0.5rem 1rem;
     background-color: var(--color-white);
     color: var(--color-dark);
     border: 2px solid var(--color-light-gray);
@@ -37,7 +37,7 @@
 
 .location-select:hover,
 .location-select:focus {
-    border-color: var(--color-accent);
+    border-color: var(--color-primary); /* 왼쪽 영역 - 초록색 */
 }
 
 .search-wrapper {
@@ -51,7 +51,7 @@
 
 .search-input {
     flex: 1;
-    padding: 0.75rem 1.25rem;
+    padding: 0.5rem 1rem;
     border: 2px solid var(--color-light-gray);
     border-radius: 8px;
     font-size: 0.95rem;
@@ -64,8 +64,8 @@
 }
 
 .search-btn {
-    padding: 0.75rem 1.5rem;
-    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
+    padding: 0.5rem 1.25rem;
+    background-color: var(--color-accent); /* 노란색 계열 - 오른쪽 영역 */
     color: var(--color-dark);
     border: none;
     border-radius: 8px;
@@ -75,11 +75,38 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.search-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        120deg,
+        transparent 0%,
+        transparent 30%,
+        rgba(144, 238, 144, 0.4) 45%,
+        rgba(152, 251, 152, 0.6) 50%,
+        rgba(144, 238, 144, 0.4) 55%,
+        transparent 70%,
+        transparent 100%
+    );
+    transition: left 0.5s ease;
 }
 
 .search-btn:hover {
+    background-color: #90EE90; /* 밝은 연두색 */
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.search-btn:hover::before {
+    left: 100%;
 }
 
 /* ========================================
@@ -181,12 +208,12 @@
 
 .category-item:hover a {
     background-color: var(--color-light-gray);
-    color: var(--color-accent);
+    color: var(--color-primary); /* 호버 시 텍스트 초록색 */
 }
 
 .category-item.active a {
-    background-color: var(--color-secondary);
-    color: var(--color-dark);
+    background-color: var(--color-primary);
+    color: var(--color-white);
     font-weight: 700;
 }
 
@@ -210,8 +237,8 @@
 .post-category-badge {
     display: inline-block;
     padding: 0.35rem 1rem;
-    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
-    color: var(--color-dark);
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+    color: var(--color-white);
     border-radius: 20px;
     font-size: 0.85rem;
     font-weight: 600;
@@ -229,7 +256,7 @@
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -386,11 +413,36 @@
     border-radius: 6px;
     font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.comment-submit-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        120deg,
+        transparent 0%,
+        transparent 30%,
+        rgba(144, 238, 144, 0.4) 45%,
+        rgba(152, 251, 152, 0.6) 50%,
+        rgba(144, 238, 144, 0.4) 55%,
+        transparent 70%,
+        transparent 100%
+    );
+    transition: left 0.5s ease;
 }
 
 .comment-submit-btn:hover {
-    background-color: #FFD700; /* 밝은 노란색으로 변경 */
+    background-color: #90EE90; /* 밝은 연두색 */
+}
+
+.comment-submit-btn:hover::before {
+    left: 100%;
 }
 
 /* --- Comment Separator --- */
@@ -545,6 +597,7 @@
     position: static;
     padding: 0.5rem 1.2rem;
     white-space: nowrap;
+    overflow: hidden;
 }
 .edit-form .cancel-btn {
     padding: 0.4rem 1rem;
@@ -554,9 +607,31 @@
     border-radius: 6px;
     font-weight: 500;
     cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
 }
-.edit-form .cancel-btn:hover {
-    background-color: #d1d5db;
+.edit-form .cancel-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        120deg,
+        transparent 0%,
+        transparent 30%,
+        rgba(180, 180, 180, 0.4) 45%,
+        rgba(200, 200, 200, 0.6) 50%,
+        rgba(180, 180, 180, 0.4) 55%,
+        transparent 70%,
+        transparent 100%
+    );
+    transition: left 0.5s ease;
+}
+.edit-form .cancel-btn:hover::before {
+    left: 100%;
 }
 
 
@@ -599,7 +674,7 @@
 
 .related-post-item:hover {
     background-color: #F5F5F5;
-    border-color: var(--color-secondary);
+    border-color: var(--color-primary);
 }
 
 .related-post-title {

@@ -192,4 +192,22 @@ public class CommunityServiceImpl implements CommunityService{
     public boolean isLiked(Long postId, Long userId) {
         return communityMapper.checkLikeExists(postId, userId) > 0;
     }
+
+    // 게시글 작성
+    @Override
+    public boolean createPost (CommunityPostVO communityPostVO) {
+        return communityMapper.insertCommunityPost(communityPostVO) > 0;
+    }
+
+    // 게시글 업데이트
+    @Override
+    public boolean updatePost(CommunityPostVO communityPostVO) {
+        return communityMapper.updateCommunityPost(communityPostVO) > 0;
+    }
+
+    // 근처 동네 인기글 조회
+    @Override
+    public List<CommunityPostVO> getNearbyPopularPostList(String dongCode, Long currentPostId) {
+        return communityMapper.selectNearbyPopularPostList(dongCode, currentPostId);
+    }
 }

@@ -249,4 +249,64 @@
     <update id="decrementLikeCount">
         UPDATE COMMUNITY SET like_count = GREATEST(like_count - 1, 0) WHERE post_id = #{postId}
     </update>
+
+    <!-- 게시글 작성  -->
+    <insert id="insertCommunityPost" useGeneratedKeys="true" keyProperty="postId">
+        INSERT INTO COMMUNITY (
+            title
+            , content
+            , dong_code
+            , category_id
+            , user_id
+        ) VALUES (
+            #{title}
+            , #{content}
+            , #{dongCode}
+            , #{categoryId}
+            , #{userId}
+        )
+    </insert>
+
+    <!-- 게시글 업데이트  -->
+    <insert id="updateCommunityPost" useGeneratedKeys="true" keyProperty="postId">
+        UPDATE COMMUNITY
+        SET email = '#{title}'
+        , content = '#{content}'
+        , dong_code = '#{dongCode}'
+        , category_id = '#{categoryId}'
+        , user_id = '#{userId}'
+        WHERE post_id = #{postId}
+    </insert>
+
+    <!-- 근처 동네 인기글 리스트 조회    -->
+    <select id="selectNearbyPopularPostList" resultType="com.gorani.vroom.community.CommunityPostVO">
+        SELECT
+        c.post_id,
+        c.title,
+        c.content,
+        c.view_count,
+        c.like_count,
+        c.comment_count,
+        c.created_at,
+        m.nickname,
+        c.dong_code,
+        d.dong_name,
+        c.category_id,
+        cc.category_name,
+        (c.like_count * 3 + c.view_count * 1 + c.comment_count * 2) AS popularity_score
+        FROM COMMUNITY c
+        LEFT JOIN COMMUNITY_CATEGORY cc ON c.category_id = cc.category_id
+        LEFT JOIN MEMBERS m ON c.user_id = m.user_id
+        LEFT JOIN LEGAL_DONG d ON c.dong_code = d.dong_code
+        <where>
+            c.deleted_at IS NULL
+            AND c.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+            AND c.post_id != #{currentPostId}
+            <if test="dongCode != null and dongCode != ''">
+                AND c.dong_code = #{dongCode}
+            </if>
+        </where>
+        ORDER BY popularity_score DESC, c.created_at DESC
+        LIMIT 8
+    </select>
 </mapper>

@@ -23,7 +23,7 @@
 }
 
 .location-select {
-    padding: 0.75rem 1.25rem;
+    padding: 0.5rem 1rem;
     background-color: var(--color-white);
     color: var(--color-dark);
     border: 2px solid var(--color-light-gray);
@@ -35,9 +35,10 @@
     transition: all 0.3s ease;
 }
 
+/* 왼쪽 영역: 초록색 계열 (Primary) */
 .location-select:hover,
 .location-select:focus {
-    border-color: var(--color-accent);
+    border-color: var(--color-primary);
 }
 
 .search-wrapper {
@@ -51,7 +52,7 @@
 
 .search-input {
     flex: 1;
-    padding: 0.75rem 1.25rem;
+    padding: 0.5rem 1rem;
     border: 2px solid var(--color-light-gray);
     border-radius: 8px;
     font-size: 0.95rem;
@@ -59,13 +60,14 @@
     transition: all 0.3s ease;
 }
 
+/* 오른쪽 영역: 노란색 계열 (Accent) */
 .search-input:focus {
     border-color: var(--color-accent);
 }
 
 .search-btn {
-    padding: 0.75rem 1.5rem;
-    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
+    padding: 0.5rem 1.25rem;
+    background-color: var(--color-accent); /* 노란색 계열 */
     color: var(--color-dark);
     border: none;
     border-radius: 8px;
@@ -75,11 +77,38 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.search-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        120deg,
+        transparent 0%,
+        transparent 30%,
+        rgba(144, 238, 144, 0.4) 45%,
+        rgba(152, 251, 152, 0.6) 50%,
+        rgba(144, 238, 144, 0.4) 55%,
+        transparent 70%,
+        transparent 100%
+    );
+    transition: left 0.5s ease;
 }
 
 .search-btn:hover {
+    background-color: #90EE90; /* 밝은 연두색 */
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.search-btn:hover::before {
+    left: 100%;
 }
 
 /* ========================================
@@ -117,20 +146,75 @@
 }
 
 /* ========================================
-   Page Title
+   Page Title & Header
 ======================================== */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
 .page-title {
     font-size: 1.5rem;
     font-weight: 700;
     color: var(--color-dark);
-    margin-bottom: 1.5rem;
+    margin-bottom: 0;
+}
+
+/* 글쓰기 버튼: 오른쪽 영역이므로 노란색 계열 (Accent) */
+.write-btn {
+    padding: 0.5rem 1.25rem;
+    background-color: var(--color-accent); /* 노란색 계열 */
+    color: var(--color-dark);
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.write-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        120deg,
+        transparent 0%,
+        transparent 30%,
+        rgba(144, 238, 144, 0.4) 45%,
+        rgba(152, 251, 152, 0.6) 50%,
+        rgba(144, 238, 144, 0.4) 55%,
+        transparent 70%,
+        transparent 100%
+    );
+    transition: left 0.5s ease;
+}
+
+.write-btn:hover {
+    background-color: #90EE90; /* 밝은 연두색 */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.write-btn:hover::before {
+    left: 100%;
 }
 
 .category-badge-active {
     display: inline-block;
     padding: 0.35rem 1rem;
-    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
-    color: var(--color-dark);
+    background-color: var(--color-primary); /* 초록색 계열 */
+    color: var(--color-white);
     border-radius: 20px;
     font-size: 0.85rem;
     font-weight: 600;
@@ -192,12 +276,13 @@
 
 .category-item:hover a {
     background-color: var(--color-light-gray);
-    color: var(--color-accent);
+    color: var(--color-primary); /* 호버 시 텍스트 초록색 */
 }
 
+/* 왼쪽 영역: 카테고리 활성화 시 초록색 계열 (Primary) */
 .category-item.active a {
-    background-color: var(--color-secondary);
-    color: var(--color-dark);
+    background-color: var(--color-primary);
+    color: var(--color-white); /* 배경이 초록이면 흰 글씨가 가독성 좋음 */
     font-weight: 700;
 }
 
@@ -221,7 +306,7 @@
 
 .post-card:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border-color: var(--color-secondary);
+    border-color: var(--color-primary); /* 카드 호버는 왼쪽 컨텐츠 느낌으로 초록 */
 }
 
 .post-content-wrapper {
@@ -311,7 +396,7 @@
 }
 
 .post-stat.like-btn:hover {
-    color: var(--color-accent);
+    color: var(--color-accent); /* 좋아요는 강조색(노랑/빨강 계열) */
 }
 
 .post-views {
@@ -330,7 +415,7 @@
    Pagination
 ======================================== */
 .pagination-container {
-    grid-column: 2; /* content-grid의 두 번째 컬럼에 위치 */
+    grid-column: 2;
     display: flex;
     justify-content: center;
     margin-top: 2rem;
@@ -357,12 +442,12 @@
 }
 
 .pagination-btn.wide-btn {
-    padding: 0.5rem 1.5rem; /* 너비 확장 */
+    padding: 0.5rem 1.5rem;
 }
 
 .pagination-btn:hover:not(:disabled) {
     background-color: var(--color-light-gray);
-    border-color: var(--color-accent);
+    border-color: var(--color-primary); /* 페이지네이션 호버는 초록 */
 }
 
 .pagination-btn:disabled {
@@ -393,13 +478,13 @@
 
 .page-btn:hover {
     background-color: var(--color-light-gray);
-    border-color: var(--color-accent);
+    border-color: var(--color-primary);
 }
 
 .page-btn.active {
-    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
-    color: var(--color-dark);
-    border-color: var(--color-accent);
+    background-color: var(--color-primary); /* 페이지 활성화는 초록 */
+    color: var(--color-white);
+    border-color: var(--color-primary);
     font-weight: 700;
 }
 
@@ -412,7 +497,7 @@
     }
 
     .pagination-container {
-        grid-column: 1; /* 컬럼이 하나이므로 1로 변경 */
+        grid-column: 1;
     }
 
     .category-sidebar {

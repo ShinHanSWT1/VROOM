@@ -102,6 +102,11 @@ public class CommunityPostController {
         model.addAttribute("commentList", commentList);
         model.addAttribute("totalComments", totalComments);
 
+        // 게시글의 dongCode를 사용하여 근처 인기글 조회
+        String postDongCode = communityPostDetail.getDongCode();
+        List<CommunityPostVO> nearbyPopularPosts = communityService.getNearbyPopularPostList(postDongCode, postId);
+        model.addAttribute("nearbyPopularPosts", nearbyPopularPosts);
+
         // 좋아요 여부 확인
         UserVO loginUser = (UserVO) session.getAttribute("loginSess");
         boolean isLiked = false;
@@ -250,9 +255,62 @@ public class CommunityPostController {
         return new PaginationDataDTO(postList, totalCount, totalPages);
     }
 
+    // 게시글 작성 요청
     @GetMapping("/write")
-    public String writeForm(Model model) {
+    public String writeForm(HttpSession session) {
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
+        if (loginUser == null) {
+            return "redirect:/user/login";
+        }
         return "community/write";
     }
 
+    // 게시글 작성 처리
+    @PostMapping("/write")
+    public String createPost(CommunityPostVO postVO
+                            , HttpSession session) {
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
+        if (loginUser == null) {
+            return "redirect:/user/login";
+        }
+        postVO.setUserId(loginUser.getUserId());
+
+        boolean success = communityService.createPost(postVO);
+        if(success) {
+            return "redirect:/community/detail/" + postVO.getPostId();
+        }
+
+        return "redirect:/community/write";
+    }
+
+    // 게시글 수정 요청
+    @GetMapping("/edit/{postId}")
+    public String updateForm(HttpSession session
+                            , @PathVariable Long postId
+                            , Model model) {
+        UserVO loginUser = (UserVO)session.getAttribute("loginSess");
+        if (loginUser == null) {
+            return "redirect:/user/login";
+        }
+
+        CommunityPostVO postDetail = communityService.getPostDetail(postId);
+        if (postDetail == null) {
+            return "redirect:/community";
+        }
+
+        model.addAttribute("postDetail", postDetail);
+        return "community/write";
+    }
+
+    // 게시글 수정 처리
+    @PostMapping("/edit/{postId}")
+    public String updatePost(CommunityPostVO postVO
+                            , HttpSession session) {
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
+        if (loginUser == null) {
+            return "redirect:/user/login";
+        }
+
+        boolean success = communityService.updatePost(postVO);
+    }
 }
