@@ -44,7 +44,7 @@
 <main class="main-content">
     <!-- Breadcrumb -->
     <nav class="breadcrumb">
-        <a href="<c:url value='/main'/>">홈</a>
+        <a href="<c:url value='/vroom'/>">홈</a>
         <span class="breadcrumb-separator"> > </span>
         <a href="<c:url value='/community'/>">동네생활</a>
     </nav>
@@ -107,7 +107,17 @@
         <div class="post-detail-container">
             <!-- Post Header -->
             <div class="post-header">
-                <span class="post-category-badge">${postDetail.categoryName}</span>
+                <div class="post-header-top">
+                    <span class="post-category-badge">${postDetail.categoryName}</span>
+                    <c:if test="${not empty loginUser and loginUser.userId == postDetail.userId}">
+                        <div class="post-manage-btns">
+                            <a href="<c:url value='/community/edit/${postDetail.postId}'/>" class="post-edit-btn">수정</a>
+                            <form action="<c:url value='/community/delete/${postDetail.postId}'/>" method="post" style="display:inline;" onsubmit="return confirm('정말 삭제하시겠습니까?');">
+                                <button type="submit" class="post-delete-btn">삭제</button>
+                            </form>
+                        </div>
+                    </c:if>
+                </div>
 
                 <div class="post-author-section">
                     <div class="author-avatar">${postDetail.nickname.substring(0, 1)}</div>
@@ -132,6 +142,17 @@
                 ${postDetail.content}
             </div>
 
+            <!-- Post Images -->
+            <c:if test="${not empty postDetail.images}">
+                <div class="post-images">
+                    <c:forEach var="image" items="${postDetail.images}">
+                        <div class="post-image-item">
+                            <img src="${pageContext.request.contextPath}${image.imageUrl}" alt="게시글 이미지">
+                        </div>
+                    </c:forEach>
+                </div>
+            </c:if>
+
             <!-- Post Actions -->
             <div class="post-actions">
                 <div class="actions-left">
@@ -144,7 +165,7 @@
                         <span id="comment-count">${totalComments}</span>
                     </button>
                 </div>
-                <div class="views-count">조회 ${postDetail.viewCount}</div>
+                <span class="views-count">조회 ${postDetail.viewCount}</span>
             </div>
 
             <!-- Comments Section -->
