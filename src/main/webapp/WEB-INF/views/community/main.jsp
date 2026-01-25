@@ -127,16 +127,19 @@
                                     </div>
 
                                     <div class="post-stats">
-                                        <div class="post-stats-left">
-                                            <button class="post-stat like-btn" onclick="CommunityLike.toggle(event, ${post.postId}, this)">
-                                                <span class="like-icon">👍</span>
-                                                <span class="like-count">${post.likeCount}</span>
-                                            </button>
-                                            <span class="post-stat">💬 ${post.commentCount}</span>
-                                        </div>
-                                        <span class="post-stat post-views">조회 ${post.viewCount}</span>
+                                        <span class="post-stat like-btn" onclick="CommunityLike.toggle(event, ${post.postId}, this)">
+                                            <span class="like-icon">👍</span>
+                                            <span class="like-count">${post.likeCount}</span>
+                                        </span>
+                                        <span class="post-stat">💬 ${post.commentCount}</span>
+                                        <span class="post-stat">조회 ${post.viewCount}</span>
                                     </div>
                                 </div>
+                                <c:if test="${not empty post.thumbnailUrl}">
+                                    <div class="post-thumbnail">
+                                        <img src="${pageContext.request.contextPath}${post.thumbnailUrl}" alt="썸네일">
+                                    </div>
+                                </c:if>
                             </div>
                         </a>
                     </c:forEach>

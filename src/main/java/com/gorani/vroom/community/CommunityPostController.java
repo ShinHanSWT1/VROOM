@@ -1,17 +1,25 @@
 package com.gorani.vroom.community;
 
+import com.gorani.vroom.config.MvcConfig;
 import com.gorani.vroom.location.LocationService;
 import com.gorani.vroom.user.auth.UserVO;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpSession;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
+@Slf4j
 @Controller
 @RequestMapping("/community")
 @RequiredArgsConstructor
@@ -87,6 +95,11 @@ public class CommunityPostController {
         if(communityPostDetail == null) {
             return "redirect:/community";
         }
+
+        // 이미지 목록 조회
+        List<CommunityImageVO> images = communityService.getImages(postId);
+        communityPostDetail.setImages(images);
+
         model.addAttribute("postDetail", communityPostDetail);
         if (dongCode == null)
             model.addAttribute("selectedDongCode", communityPostDetail.getDongCode());
@@ -267,8 +280,9 @@ public class CommunityPostController {
 
     // 게시글 작성 처리
     @PostMapping("/write")
-    public String createPost(CommunityPostVO postVO
-                            , HttpSession session) {
+    public String createPost(CommunityPostVO postVO,
+                            @RequestParam(value = "imageFiles", required = false) MultipartFile[] imageFiles,
+                            HttpSession session) {
         UserVO loginUser = (UserVO) session.getAttribute("loginSess");
         if (loginUser == null) {
             return "redirect:/user/login";
@@ -276,7 +290,12 @@ public class CommunityPostController {
         postVO.setUserId(loginUser.getUserId());
 
         boolean success = communityService.createPost(postVO);
-        if(success) {
+        if (success) {
+            // 이미지 저장 처리
+            List<String> imageUrls = saveImageFiles(imageFiles);
+            if (!imageUrls.isEmpty()) {
+                communityService.saveImages(postVO.getPostId(), imageUrls);
+            }
             return "redirect:/community/detail/" + postVO.getPostId();
         }
 
@@ -285,10 +304,10 @@ public class CommunityPostController {
 
     // 게시글 수정 요청
     @GetMapping("/edit/{postId}")
-    public String updateForm(HttpSession session
-                            , @PathVariable Long postId
-                            , Model model) {
-        UserVO loginUser = (UserVO)session.getAttribute("loginSess");
+    public String updateForm(HttpSession session,
+                            @PathVariable Long postId,
+                            Model model) {
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
         if (loginUser == null) {
             return "redirect:/user/login";
         }
@@ -298,19 +317,101 @@ public class CommunityPostController {
             return "redirect:/community";
         }
 
+        if (!loginUser.getUserId().equals(postDetail.getUserId())) {
+            return "redirect:/community/detail/" + postId;
+        }
+
+        // 이미지 목록 조회
+        List<CommunityImageVO> images = communityService.getImages(postId);
+        postDetail.setImages(images);
+
         model.addAttribute("postDetail", postDetail);
         return "community/write";
     }
 
     // 게시글 수정 처리
     @PostMapping("/edit/{postId}")
-    public String updatePost(CommunityPostVO postVO
-                            , HttpSession session) {
+    public String updatePost(CommunityPostVO postVO,
+                            @RequestParam(value = "keepImageIds", required = false) List<Long> keepImageIds,
+                            @RequestParam(value = "imageFiles", required = false) MultipartFile[] imageFiles,
+                            HttpSession session) {
         UserVO loginUser = (UserVO) session.getAttribute("loginSess");
         if (loginUser == null) {
             return "redirect:/user/login";
         }
+        postVO.setUserId(loginUser.getUserId());
 
         boolean success = communityService.updatePost(postVO);
+        if (success) {
+            // 이미지 수정 처리
+            List<String> newImageUrls = saveImageFiles(imageFiles);
+            communityService.updateImages(postVO.getPostId(), keepImageIds, newImageUrls);
+            return "redirect:/community/detail/" + postVO.getPostId();
+        }
+        return "redirect:/community/edit/" + postVO.getPostId();
+    }
+
+    // 게시글 삭제 처리
+    @PostMapping("/delete/{postId}")
+    public String deletePost(@PathVariable Long postId
+                            , HttpSession session
+                            , CommunityPostVO postVO) {
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
+        if (loginUser == null) {
+            return "redirect:/user/login";
+        }
+        postVO.setUserId(loginUser.getUserId());
+        postVO.setPostId(postId);
+        boolean success = communityService.deletePost(postVO);
+        if(success) {
+            return "redirect:/community";
+        }
+        return "redirect:/community/detail/" + postId;
+    }
+
+    // 이미지 파일 저장 및 URL 목록 반환
+    private List<String> saveImageFiles(MultipartFile[] images) {
+        List<String> imageUrls = new ArrayList<>();
+
+        if (images == null || images.length == 0) {
+            return imageUrls;
+        }
+
+        // 저장 디렉토리 확인
+        File uploadDir = new File(MvcConfig.COMMUNITY_UPLOAD_PATH);
+        if (!uploadDir.exists()) {
+            uploadDir.mkdirs();
+        }
+
+        for (MultipartFile image : images) {
+            if (image.isEmpty()) {
+                continue;
+            }
+
+            try {
+                // 파일 확장자 추출
+                String originalFilename = image.getOriginalFilename();
+                String extension = "";
+                if (originalFilename != null && originalFilename.contains(".")) {
+                    extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+                }
+
+                // UUID로 고유 파일명 생성
+                String savedFilename = UUID.randomUUID().toString() + extension;
+                File destFile = new File(MvcConfig.COMMUNITY_UPLOAD_PATH + savedFilename);
+
+                // 파일 저장
+                image.transferTo(destFile);
+
+                // 웹 경로 생성
+                String webPath = "/uploads/community/" + savedFilename;
+                imageUrls.add(webPath);
+
+            } catch (IOException e) {
+                log.error("이미지 저장 실패: {}", e.getMessage());
+            }
+        }
+
+        return imageUrls;
     }
 }
