@@ -1081,7 +1081,7 @@
 <header class="header">
     <div class="header-container">
         <div class="logo">
-            <h1 onclick="location.href='main_updated_2.html'">VROOM</h1>
+            <h1 onclick="location.href='${pageContext.request.contextPath}/'">VROOM</h1>
         </div>
         <nav class="nav-menu">
             <a href="main_updated_2.html" class="nav-item">홈</a>

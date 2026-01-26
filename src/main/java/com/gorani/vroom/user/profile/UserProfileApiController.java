@@ -1,5 +1,6 @@
 package com.gorani.vroom.user.profile;
 
+import com.gorani.vroom.user.auth.UserVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -7,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.security.PublicKey;
 import java.util.List;
@@ -26,16 +28,25 @@ public class UserProfileApiController {
 
     // 프로필 조회
     @GetMapping
-    public ResponseEntity<UserProfileVO> getProfile() {
-        Long userId = 2L; // 테스트용
+    public ResponseEntity<UserProfileVO> getProfile(HttpSession session) {
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
+        if (loginUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        Long userId =  loginUser.getUserId();
         UserProfileVO profile = userProfileService.getUserProfile(userId);
         return ResponseEntity.ok(profile);
     }
 
     // 닉네임 수정
     @PutMapping("/nickname")
-    public ResponseEntity<Map<String, Object>> updateNickname(@RequestBody Map<String, String> request) {
-        Long userId = 2L; // 테스트용
+    public ResponseEntity<Map<String, Object>> updateNickname(@RequestBody Map<String, String> request,  HttpSession session) {
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
+        // 로그인이 안된 상태에서 api 호출하면 응답 보내기.
+        if (loginUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("success", false, "message", "로그인이 필요합니다."));
+        }
+        Long userId = loginUser.getUserId();
         String nickname = request.get("nickname");
 
         UserProfileVO vo = new UserProfileVO();

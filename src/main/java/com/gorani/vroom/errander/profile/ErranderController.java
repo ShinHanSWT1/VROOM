@@ -1,11 +1,14 @@
 package com.gorani.vroom.errander.profile;
 
+import com.gorani.vroom.user.auth.UserVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import javax.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/errander") // 모든 주소 앞에 /errander가 자동으로 붙음
@@ -16,27 +19,24 @@ public class ErranderController {
 
     //  나의 정보
     @GetMapping("/mypage/profile")
-    public String profile(Model model) {
+    public String profile(Model model, HttpSession session) {
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
+        if (loginUser == null) {
+            return "redirect:/auth/login";
+        }
+        // 로그인 상태
+        Long userId = loginUser.getUserId();
 
-        Long userId = 2L; // 테스트용 (TODO: 세션에서 로그인 사용자 ID 가져오기)
 
 
         // 서비스 호출 시 user_id 만 넘겨
         ErranderProfileVO profile = erranderService.getErranderProfile(userId);
-
-        // (옵션) 부름이 등록 안 된 유저라면 등록 페이지로 보내기 -> 혹시 필요할까봐.
-        if (profile == null) {
-            // return "redirect:/errander/register";
+        if(profile == null){
+            //TODO: 라이더 아니면 라이더 등록하게 해야 하는 페이지 필요.
+            return "redirect:/errander/register";
         }
-
         model.addAttribute("profile", profile);
         return "errander/profile";
-    }
-
-    // 나의 거래
-    @GetMapping("/mypage/activity")
-    public String activity() {
-        return "errander/activity";
     }
 
     // 부름 페이

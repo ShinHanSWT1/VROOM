@@ -1,11 +1,14 @@
 package com.gorani.vroom.user.profile;
 
+import com.gorani.vroom.user.auth.UserVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import javax.servlet.http.HttpSession;
 
 @Slf4j
 @Controller
@@ -22,8 +25,15 @@ public class UserProfileController {
 
     // 나의 정보 페이지
     @GetMapping("/myInfo")
-    public String userProfile(Model model) {
-        Long userId = 2L; // 테스트용 (성준)
+    public String userProfile(Model model, HttpSession session) {
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
+        // 로그인 안하면
+        if(loginUser == null){
+            return "redirect:/auth/login";
+        }
+        // 로그인 상태
+        Long userId = loginUser.getUserId();
+
         UserProfileVO profile = userProfileService.getUserProfile(userId);
         model.addAttribute("profile", profile);
 
@@ -43,7 +53,7 @@ public class UserProfileController {
     // 부름 페이
     @GetMapping("/vroomPay")
     public String vroomPay(Model model) {
-        return "user/vroomPay";
+        return "pay/vroomPay";
     }
 
     // 프로필 수정 페이지

@@ -369,35 +369,58 @@
         </div>
     </footer>
 
-    <!-- 샘플 데이터 하드 코딩 함 -->
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
     <script>
-        // 거래 내역 샘플 데이터 (나중에 서버에서 가져오기)
-        const activityCards = [
-            { id: '1', title: '스벅 자허블 픽업', date: '2026-01-15', time: '14:30', amount: 15000 },
-            { id: '2', title: '가구 날라주세요', date: '2026-01-20', time: '10:00', amount: 30000 },
-            { id: '3', title: '청소 심부름', date: '2026-01-25', time: '16:00', amount: 50000 }
-        ];
-
-        // FullCalendar 이벤트 형식으로 변환
-        const calendarEvents = activityCards.map(activity => ({
-            id: activity.id,
-            title: activity.title,
-            start: activity.date,
-            extendedProps: {
-                time: activity.time,
-                amount: activity.amount
-            }
-        }));
+        let calendar;
+        let earningsData = []; // 서버에서 가져온 일별 수익 데이터
 
         function formatCurrency(amount) {
             return '₩' + amount.toLocaleString('ko-KR');
         }
 
+        // 서버에서 일별 수익 데이터 가져오기
+        async function fetchDailyEarnings(year, month) {
+            try {
+                const response = await fetch('/errander/mypage/api/daily-earnings?year=' + year + '&month=' + month);
+                if (!response.ok) {
+                    throw new Error('API 호출 실패');
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('일별 수익 조회 오류:', error);
+                return [];
+            }
+        }
+
+        // 수익 데이터를 FullCalendar 이벤트로 변환
+        function convertToCalendarEvents(earnings) {
+            return earnings.map(item => ({
+                title: formatCurrency(item.dailyEarning),
+                start: item.earnDate,
+                extendedProps: {
+                    amount: item.dailyEarning
+                }
+            }));
+        }
+
+        // 달력 이벤트 갱신
+        async function loadCalendarEvents(year, month) {
+            earningsData = await fetchDailyEarnings(year, month);
+            const events = convertToCalendarEvents(earningsData);
+
+            // 기존 이벤트 제거 후 새 이벤트 추가
+            calendar.removeAllEvents();
+            events.forEach(event => calendar.addEvent(event));
+
+            // 거래 목록도 갱신
+            renderTransactionList(earningsData);
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             const calendarEl = document.getElementById('calendar');
+            const now = new Date();
 
-            const calendar = new FullCalendar.Calendar(calendarEl, {
+            calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
                 locale: 'ko',
                 headerToolbar: {
@@ -408,62 +431,55 @@
                 buttonText: {
                     today: '오늘'
                 },
-                events: calendarEvents,
 
                 // 날짜 클릭 시
                 dateClick: function(info) {
                     const dateStr = info.dateStr;
-                    const filtered = activityCards.filter(a => a.date === dateStr);
+                    const filtered = earningsData.filter(a => a.earnDate === dateStr);
                     renderTransactionList(filtered);
                 },
 
-                // 이벤트(거래) 클릭 시
-                eventClick: function(info) {
-                    const vroomId = info.event.id;
-                    location.href = 'activity_detail?id=' + vroomId;
+                // 월 변경 시 데이터 다시 로드
+                datesSet: function(info) {
+                    const viewStart = info.view.currentStart;
+                    const year = viewStart.getFullYear();
+                    const month = viewStart.getMonth() + 1;
+                    loadCalendarEvents(year, month);
                 }
             });
 
             calendar.render();
-
-            // 초기 로드: 전체 거래 목록 표시
-            renderTransactionList(activityCards);
         });
 
-        function renderTransactionList(activities) {
+        function renderTransactionList(earnings) {
             const container = document.getElementById('transactionListContainer');
             container.innerHTML = '';
 
-            if (activities.length === 0) {
+            if (earnings.length === 0) {
                 container.innerHTML = '<p style="text-align: center; color: var(--color-gray); padding: 2rem;">거래 내역이 없습니다.</p>';
                 return;
             }
 
-            activities.forEach(activity => {
-                const item = document.createElement('div');
-                item.className = 'transaction-item';
-                item.onclick = () => viewTransactionDetail(activity.id);
+            earnings.forEach(item => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'transaction-item';
 
-                item.innerHTML = `
+                itemEl.innerHTML = `
                     <div class="transaction-info">
                         <div class="transaction-icon">🐝</div>
                         <div class="transaction-details">
-                            <div class="transaction-name">\${activity.title}</div>
-                            <div class="transaction-date">\${activity.date} \${activity.time}</div>
+                            <div class="transaction-name">\${item.earnDate}</div>
+                            <div class="transaction-date">일별 수익</div>
                         </div>
                     </div>
-                    <div class="transaction-amount">\${formatCurrency(activity.amount)}</div>
+                    <div class="transaction-amount">\${formatCurrency(item.dailyEarning)}</div>
                 `;
-                container.appendChild(item);
+                container.appendChild(itemEl);
             });
         }
 
-        function viewTransactionDetail(vroomId) {
-            location.href = 'activity_detail?id=' + vroomId;
-        }
-
         function viewAllTransactions() {
-            renderTransactionList(activityCards);
+            renderTransactionList(earningsData);
         }
     </script>
 </body>

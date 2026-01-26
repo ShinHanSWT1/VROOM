@@ -501,6 +501,213 @@
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
+    /* Modal Styles (Added) */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background-color: var(--color-white);
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      max-width: 500px;
+      width: 90%;
+      padding: 2rem;
+      animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid var(--color-light-gray);
+    }
+
+    .modal-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--color-dark);
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.8rem;
+      color: var(--color-gray);
+      cursor: pointer;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.2s;
+    }
+
+    .modal-close:hover {
+      background-color: var(--color-light-gray);
+      color: var(--color-dark);
+    }
+
+    .modal-body {
+      margin-bottom: 1.5rem;
+    }
+
+    .current-balance {
+      background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+      color: var(--color-white);
+      padding: 1.25rem;
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .current-balance-label {
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+      opacity: 0.9;
+    }
+
+    .current-balance-amount {
+      font-size: 1.8rem;
+      font-weight: 700;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-label {
+      display: block;
+      font-weight: 600;
+      color: var(--color-dark);
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 0.875rem 1rem;
+      border: 2px solid var(--color-light-gray);
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.2s;
+      font-weight: 500;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--color-primary);
+    }
+
+    .form-input.error {
+      border-color: #e74c3c;
+    }
+
+    .form-helper {
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+      color: var(--color-gray);
+    }
+
+    .form-error {
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+      color: #e74c3c;
+      font-weight: 500;
+      display: none;
+    }
+
+    .form-error.active {
+      display: block;
+    }
+
+    .form-warning {
+      background-color: #fff3cd;
+      border: 1px solid #ffc107;
+      color: #856404;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .form-warning::before {
+      content: "⚠️";
+      font-size: 1.2rem;
+    }
+
+    .modal-footer {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+    }
+
+    .modal-btn {
+      padding: 0.875rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+    }
+
+    .modal-btn-cancel {
+      background-color: var(--color-light-gray);
+      color: var(--color-dark);
+    }
+
+    .modal-btn-cancel:hover {
+      background-color: #d5d9dc;
+    }
+
+    .modal-btn-submit {
+      background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+      color: var(--color-white);
+    }
+
+    .modal-btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(107, 142, 35, 0.3);
+    }
+
+    .modal-btn-submit:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
     /* Footer reused */
     .footer {
       background-color: var(--color-dark);
@@ -578,7 +785,6 @@
     }
   </style>
 
-  <!-- 글꼴 -->
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="stylesheet" as="style"
         href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
@@ -612,7 +818,6 @@
 
 <div class="container">
   <div class="dashboard-container">
-    <!-- Sidebar -->
     <aside class="sidebar">
       <ul class="sidebar-menu">
         <li class="sidebar-item"><a href="myInfo" class="sidebar-link">나의 정보</a></li>
@@ -624,12 +829,10 @@
       </ul>
     </aside>
 
-    <!-- Main Content -->
     <main class="main-content">
 
       <h2 class="page-title">부름 페이</h2>
 
-      <!-- Refined Profile & Balance Card -->
       <div class="pay-info-card">
         <div class="profile-section">
           <div class="profile-image-container">
@@ -643,11 +846,11 @@
 
         <div class="balance-container">
           <div class="balance-box">
-            <button class="balance-action-btn">충 전</button>
-            <button class="balance-action-btn">출 금</button>
+            <button class="balance-action-btn" id="depositBtn">충 전</button>
+            <button class="balance-action-btn" id="withdrawBtn">출 금</button>
             <div class="balance-display">
               <span class="balance-label">잔 액</span>
-              <span class="balance-amount">12 원</span>
+              <span class="balance-amount" id="balanceDisplay">12 원</span>
             </div>
           </div>
         </div>
@@ -661,7 +864,6 @@
         </div>
       </div>
 
-      <!-- Refined Transaction History -->
       <div class="history-section">
         <div class="history-header">
           <h3 class="history-title">거래 내역 <span class="history-count">(12)</span></h3>
@@ -674,12 +876,10 @@
         </div>
 
         <div class="history-list" id="transactionList">
-          <!-- JS populated -->
         </div>
       </div>
 
       <div class="pagination" id="pagination">
-        <!-- JS populated -->
       </div>
 
     </main>
@@ -708,7 +908,82 @@
   </div>
 </footer>
 
+<div class="modal-overlay" id="depositModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">충전하기</h3>
+      <button class="modal-close" id="closeDepositModal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="current-balance">
+        <div class="current-balance-label">현재 잔액</div>
+        <div class="current-balance-amount" id="depositModalBalance">12 원</div>
+      </div>
+      <div class="form-warning">
+        <span>금액은 숫자만 입력해주세요. 쉼표(,)는 사용할 수 없습니다.</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">계좌 선택</label>
+        <select class="form-input" id="depositBank">
+          <option value="">은행을 선택하세요</option>
+          <option value="신한">신한은행</option>
+          <option value="국민">국민은행</option>
+          <option value="하나">하나은행</option>
+          <option value="우리">우리은행</option>
+          <option value="농협">농협은행</option>
+          <option value="기업">기업은행</option>
+          <option value="SC">SC제일은행</option>
+          <option value="카카오">카카오뱅크</option>
+          <option value="토스">토스뱅크</option>
+        </select>
+        <div class="form-error" id="depositBankError">은행을 선택해주세요.</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">충전 금액</label>
+        <input type="text" class="form-input" id="depositAmount" placeholder="예: 10000">
+        <div class="form-helper">숫자만 입력하세요 (예: 10000)</div>
+        <div class="form-error" id="depositError">쉼표(,)는 사용할 수 없습니다. 숫자만 입력해주세요.</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-btn modal-btn-cancel" id="cancelDepositBtn">취소</button>
+      <button class="modal-btn modal-btn-submit" id="submitDepositBtn">충전하기</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="withdrawModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">출금하기</h3>
+      <button class="modal-close" id="closeWithdrawModal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="current-balance">
+        <div class="current-balance-label">현재 잔액</div>
+        <div class="current-balance-amount" id="withdrawModalBalance">12 원</div>
+      </div>
+      <div class="form-warning">
+        <span>금액은 숫자만 입력해주세요. 쉼표(,)는 사용할 수 없습니다.</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">출금 금액</label>
+        <input type="text" class="form-input" id="withdrawAmount" placeholder="예: 10000">
+        <div class="form-helper">숫자만 입력하세요 (예: 10000). 잔액 범위 내에서만 출금 가능합니다.</div>
+        <div class="form-error" id="withdrawError">쉼표(,)는 사용할 수 없습니다. 숫자만 입력해주세요.</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-btn modal-btn-cancel" id="cancelWithdrawBtn">취소</button>
+      <button class="modal-btn modal-btn-submit" id="submitWithdrawBtn">출금하기</button>
+    </div>
+  </div>
+</div>
+
 <script>
+  // Current Balance (mock data for interaction)
+  let currentBalance = 12;
+
   // Mock Data - 12 items
   const transactionData = Array.from({ length: 12 }, (_, i) => ({
     title: `거래 내역 테스트 제목 ${i + 1}`,
@@ -761,6 +1036,152 @@
 
   // Init
   renderTransactions(1);
+  // Update balance display
+  function updateBalanceDisplay() {
+    const balanceElements = [
+      document.getElementById('balanceDisplay'),
+      document.getElementById('depositModalBalance'),
+      document.getElementById('withdrawModalBalance')
+    ];
+    balanceElements.forEach(el => {
+      if (el) el.textContent = `${currentBalance} 원`;
+    });
+  }
+
+  // Validate input - only numbers, no commas
+  function validateAmount(input, errorElement) {
+    const value = input.value;
+    const hasComma = value.includes(',');
+    const isInvalid = hasComma || (value && !/^\d+$/.test(value));
+
+    if (isInvalid) {
+      input.classList.add('error');
+      errorElement.classList.add('active');
+      return false;
+    } else {
+      input.classList.remove('error');
+      errorElement.classList.remove('active');
+      return true;
+    }
+  }
+
+  // Modal Controls
+  function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.classList.add('active');
+      updateBalanceDisplay();
+    }
+  }
+
+  function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.classList.remove('active');
+      // Clear inputs
+      const inputs = modal.querySelectorAll('.form-input');
+      inputs.forEach(input => {
+        input.value = '';
+        input.classList.remove('error');
+      });
+      const errors = modal.querySelectorAll('.form-error');
+      errors.forEach(error => error.classList.remove('active'));
+    }
+  }
+
+  // Deposit Modal Events
+  document.getElementById('depositBtn').addEventListener('click', () => openModal('depositModal'));
+  document.getElementById('closeDepositModal').addEventListener('click', () => closeModal('depositModal'));
+  document.getElementById('cancelDepositBtn').addEventListener('click', () => closeModal('depositModal'));
+
+  document.getElementById('depositAmount').addEventListener('input', function() {
+    validateAmount(this, document.getElementById('depositError'));
+  });
+
+  document.getElementById('submitDepositBtn').addEventListener('click', function() {
+    const bankSelect = document.getElementById('depositBank');
+    const bankError = document.getElementById('depositBankError');
+    const input = document.getElementById('depositAmount');
+    const errorElement = document.getElementById('depositError');
+
+    let isValid = true;
+
+    // Validate bank selection
+    if (!bankSelect.value) {
+      bankSelect.classList.add('error');
+      bankError.classList.add('active');
+      isValid = false;
+    } else {
+      bankSelect.classList.remove('error');
+      bankError.classList.remove('active');
+    }
+
+    // Validate amount
+    if (!input.value) {
+      input.classList.add('error');
+      errorElement.textContent = '금액을 입력해주세요.';
+      errorElement.classList.add('active');
+      isValid = false;
+    } else if (!validateAmount(input, errorElement)) {
+      isValid = false;
+    }
+
+    if (isValid) {
+      const amount = parseInt(input.value);
+      if (amount > 0) {
+        currentBalance += amount;
+        updateBalanceDisplay();
+        alert(`${bankSelect.options[bankSelect.selectedIndex].text}에서 ${amount}원이 충전되었습니다.`);
+        closeModal('depositModal');
+      }
+    }
+  });
+
+  // Withdrawal Modal Events
+  document.getElementById('withdrawBtn').addEventListener('click', () => openModal('withdrawModal'));
+  document.getElementById('closeWithdrawModal').addEventListener('click', () => closeModal('withdrawModal'));
+  document.getElementById('cancelWithdrawBtn').addEventListener('click', () => closeModal('withdrawModal'));
+
+  document.getElementById('withdrawAmount').addEventListener('input', function() {
+    validateAmount(this, document.getElementById('withdrawError'));
+  });
+
+  document.getElementById('submitWithdrawBtn').addEventListener('click', function() {
+    const input = document.getElementById('withdrawAmount');
+    const errorElement = document.getElementById('withdrawError');
+
+    if (validateAmount(input, errorElement) && input.value) {
+      const amount = parseInt(input.value);
+      if (amount > 0) {
+        if (amount > currentBalance) {
+          input.classList.add('error');
+          errorElement.textContent = '잔액이 부족합니다. 현재 잔액: ' + currentBalance + '원';
+          errorElement.classList.add('active');
+        } else {
+          currentBalance -= amount;
+          updateBalanceDisplay();
+          alert(`${amount}원이 출금되었습니다. 남은 잔액: ${currentBalance}원`);
+          closeModal('withdrawModal');
+        }
+      }
+    } else if (!input.value) {
+      input.classList.add('error');
+      errorElement.textContent = '금액을 입력해주세요.';
+      errorElement.classList.add('active');
+    }
+  });
+
+  // Close modal on overlay click
+  document.getElementById('depositModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal('depositModal');
+  });
+
+  document.getElementById('withdrawModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal('withdrawModal');
+  });
+
+  // Initialize balance display
+  updateBalanceDisplay();
 
   // Dropdown Logic (Reused)
   document.addEventListener('DOMContentLoaded', function () {
