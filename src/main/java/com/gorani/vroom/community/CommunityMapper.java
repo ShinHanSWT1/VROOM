@@ -79,4 +79,31 @@ public interface CommunityMapper {
 
     // 좋아요 수 감소
     int decrementLikeCount(@Param("postId") Long postId);
+
+    // 게시글 작성
+    int insertCommunityPost(CommunityPostVO communityPostVO);
+
+    // 게시글 업데이트
+    int updateCommunityPost(CommunityPostVO communityPostVO);
+
+    // 게시글 삭제
+    int deleteCommunityPost(CommunityPostVO communityPostVO);
+
+    // 근처 동네 인기글 리스트 조회
+    List<CommunityPostVO> selectNearbyPopularPostList(
+            @Param("dongCode") String dongCode,
+            @Param("currentPostId") Long postId
+    );
+
+    // 이미지 삽입
+    int insertCommunityImage(CommunityImageVO imageVO);
+
+    // 게시글 이미지 목록 조회
+    List<CommunityImageVO> selectImages(@Param("postId") Long postId);
+
+    // 게시글 대표 이미지 조회
+    String selectThumbnail(@Param("postId") Long postId);
+
+    // 게시글 이미지 soft delete (keepImageIds에 없는 이미지 삭제)
+    int deleteImages(@Param("postId") Long postId, @Param("keepImageIds") List<Long> keepImageIds);
 }

@@ -507,7 +507,57 @@
 
         .status-badge.SUSPENDED {
             background: #FDEAEA;
-            color: #E74C3C;
+            color: #e77e3c;
+        }
+
+        .status-badge.BANNED {
+            background: #E74C3C;
+            color: #FFFFFF;
+        }
+
+        /* Status Dropdown */
+        .status-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .status-dropdown-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0;
+        }
+
+        .status-dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: var(--color-white);
+            min-width: 120px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+            overflow: hidden;
+            z-index: 100;
+            margin-top: 0.5rem;
+        }
+
+        .status-dropdown-menu.show {
+            display: block;
+        }
+
+        .status-dropdown-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .status-dropdown-item:hover {
+            background-color: var(--color-light-gray);
         }
 
         /* Rating Display */
@@ -992,9 +1042,10 @@
                     <tr>
                         <th>ID | 닉네임</th>
                         <th>승인</th>
-                        <th>활동</th>
+                        <th>상태</th>
                         <th>완료율</th>
                         <th>평점</th>
+                        <th>승인일자</th>
                         <th>최근 활동일</th>
                         <th>관리</th>
                     </tr>
@@ -1024,28 +1075,24 @@
                 <div class="modal-info-grid">
                     <div class="modal-info-item">
                         <span class="modal-info-label">사용자 ID / 부름이 ID</span>
-                        <span class="modal-info-value" id="modalHelperId">-</span>
+                        <span class="modal-info-value" id="modalUserId">-</span>
                     </div>
                     <div class="modal-info-item">
                         <span class="modal-info-label">닉네임</span>
                         <span class="modal-info-value" id="modalNickname">-</span>
                     </div>
                     <div class="modal-info-item">
-                        <span class="modal-info-label">이메일 / 휴대폰</span>
-                        <span class="modal-info-value" id="modalContact">-</span>
+                        <span class="modal-info-label">이메일</span>
+                        <span class="modal-info-value" id="modalContactEmail">-</span>
                     </div>
-<%--                    <div class="modal-info-item">--%>
-<%--                        <span class="modal-info-label">승인 상태(대기 / 승인 / 거절)</span>--%>
-<%--                        <span class="modal-info-value" id="modalApprovalStatus">-</span>--%>
-<%--                    </div>--%>
+                    <div class="modal-info-item">
+                        <span class="modal-info-label">휴대폰</span>
+                        <span class="modal-info-value" id="modalContactPhone">-</span>
+                    </div>
                     <div class="modal-info-item">
                         <span class="modal-info-label">활동 상태(활성/비활성)</span>
                         <span class="modal-info-value" id="modalActivityStatus">-</span>
                     </div>
-<%--                    <div class="modal-info-item">--%>
-<%--                        <span class="modal-info-label">부름이 승인일</span>--%>
-<%--                        <span class="modal-info-value" id="modalApprovalDate">-</span>--%>
-<%--                    </div>--%>
                     <div class="modal-info-item">
                         <span class="modal-info-label">최근 활동일</span>
                         <span class="modal-info-value" id="modalLastActivity">-</span>
@@ -1071,7 +1118,7 @@
         <div class="modal-footer">
             <button class="modal-button cancel" onclick="closeApprovalModal()">닫기</button>
             <button class="modal-button reject" onclick="rejectHelper()">반려</button>
-            <button class="modal-button approve" onclick="approveHelper()">승인</button>
+            <button class="modal-button approve" onclick="approveErrander()">승인</button>
         </div>
     </div>
 </div>
@@ -1194,6 +1241,12 @@
                 lastActive = date.toISOString().split('T')[0];
             }
 
+            let approvedAt = '-';
+            if (item.approved_at) {
+                const date = new Date(item.approved_at);
+                approvedAt = date.toISOString().split('T')[0];
+            }
+
             // 배지 텍스트 및 클래스 설정
             let approvalText = approvalStatus === 'APPROVED' ? '승인' : (approvalStatus === 'PENDING' ? '승인대기' : '반려');
             let activityText = '-';
@@ -1207,22 +1260,39 @@
             const ratingDisplay = ratingAvg > 0 ?
                 `<div class="rating-display"><span class="rating-stars">\${stars}</span> <span class="rating-value">\${ratingAvg}</span></div>` : '-';
 
+            // 활동 상태 드롭다운 HTML 생성
+            const activityStatusHtml = `
+                <div class="status-dropdown">
+                    <button class="status-dropdown-toggle" onclick="toggleActivityStatusDropdown(this, event)">
+                        <span class="status-badge \${activeStatus}">\${activityText}</span>
+                        <span>▼</span>
+                    </button>
+                    <div class="status-dropdown-menu">
+                        <div class="status-dropdown-item" onclick="changeActivityStatus(this, 'ACTIVE', \${erranderId}, event)">활성</div>
+                        <div class="status-dropdown-item" onclick="changeActivityStatus(this, 'INACTIVE', \${erranderId}, event)">비활성</div>
+                        <div class="status-dropdown-item" onclick="changeActivityStatus(this, 'SUSPENDED', \${erranderId}, event)">일시정지</div>
+                        <div class="status-dropdown-item" onclick="changeActivityStatus(this, 'BANNED', \${erranderId}, event)">정지</div>
+                    </div>
+                </div>
+            `;
+
             // 액션 버튼 (승인 대기중이면 승인버튼, 아니면 관리버튼)
             let actionBtnHtml = '';
-            if (approvalStatus === 'PENDING') {
-                // 승인 모달 열기 (item 객체를 통째로 넘기거나 ID만 넘김)
-                actionBtnHtml = `<button class="action-button approve" onclick="openApprovalModal(item)">승인</button>`;
-            } else {
+            if (approvalStatus === 'APPROVED') {
                 actionBtnHtml = `<button class="action-button" onclick="goToDetail(\${erranderId})">관리</button>`;
+            } else {
+                // 승인 모달 열기
+                actionBtnHtml = `<button class="action-button approve" onclick="openApprovalModal(\${erranderId})">승인</button>`;
             }
 
             const row = `
                 <tr>
                     <td>\${erranderId} / \${nickname}</td>
                     <td><span class="status-badge \${approvalStatus}">\${approvalText}</span></td>
-                    <td><span class="status-badge \${activeStatus}">\${activityText}</span></td>
+                    <td>\${activityStatusHtml}</td>
                     <td>\${completeRate}%</td>
                     <td>\${ratingDisplay}</td>
+                    <td>\${approvedAt}</td>
                     <td>\${lastActive}</td>
                     <td>\${actionBtnHtml}</td>
                 </tr>
@@ -1240,7 +1310,7 @@
 
         const { currentPage, startPage, endPage, totalPage } = pageInfo;
 
-        // [이전] 버튼
+        // 이전 버튼
         const prevBtn = document.createElement('button');
         prevBtn.className = 'pagination-button';
         prevBtn.innerText = '이전';
@@ -1252,7 +1322,7 @@
         }
         pagination.appendChild(prevBtn);
 
-        // [번호] 버튼
+        // 번호 버튼
         for (let i = startPage; i <= endPage; i++) {
             const btn = document.createElement('button');
             btn.className = 'pagination-button';
@@ -1265,7 +1335,7 @@
             pagination.appendChild(btn);
         }
 
-        // [다음] 버튼
+        // 다음 버튼
         const nextBtn = document.createElement('button');
         nextBtn.className = 'pagination-button';
         nextBtn.innerText = '다음';
@@ -1282,24 +1352,63 @@
 
     // 상세 페이지 이동
     function goToDetail(erranderId) {
-        const url = '${pageContext.request.contextPath}/admin/users/detail?id=' + erranderId;
-        window.location.href = url;
+        window.location.href = '${pageContext.request.contextPath}/admin/erranders/detail/' + erranderId;
     }
 
     // 승인 모달 열기
-    function openApprovalModal(errander) {
+    function openApprovalModal(erranderId) {
         currentErranderId = erranderId;
 
-        // UI 값 채우기 (목록에 없는 상세 정보는 별도 API 호출 필요)
-        document.getElementById('modalHelperId').textContent = errander.errandId;
-        document.getElementById('modalNickname').textContent = errander.nickname;
-        document.getElementById('modalContact').textContent = errander.phone || '-';
+        fetch('${pageContext.request.contextPath}/api/admin/erranders/resume?id=' + erranderId)
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error('서버 응답 에러: ' + res.status);
+                }
+                return res.json();
+            })
+            .then(data => {
+                // 사용자 id, 심부름 id, 닉네임, 이메일, 휴대폰, 활동 상태, 최근활동일, 활동 동네, 제출 서류
+                console.log(data);
 
-        // 나머지 필드는 목록 API에서 가져오지 않았다면 '로딩중' 또는 '-' 처리
-        // TODO: /api/admin/erranders/detail/{id} API를 만들어 호출해야 함
+                // UI 값 채우기 (목록에 없는 상세 정보는 별도 API 호출 필요)
+                document.getElementById('modalUserId').textContent = data.user_id + ' / ' + erranderId;
+                // document.getElementById('modalErranderId').textContent = data.errandId;
+                document.getElementById('modalNickname').textContent = data.nickname;
+                document.getElementById('modalContactPhone').textContent = data.phone || '-';
+                document.getElementById('modalContactEmail').textContent = data.email || '-';
+                document.getElementById('modalActivityStatus').textContent = data.status || '-';
+                document.getElementById('modalLastActivity').textContent = data.last_login_at || '-';
+                document.getElementById('modalRegions1').textContent = data.address1 || '-';
+                document.getElementById('modalRegions2').textContent = data.address2 || '-';
+
+                // 제출 서류 렌더링
+                const documentList = document.getElementById('documentList');
+                documentList.innerHTML = '';
+                data.documents.forEach(doc => {
+                    const docIcon = doc.doc_type.includes('IDCARD') ? '💳' : '📄';
+                    const docItem = `
+                        <div class="document-item">
+                            <div class="document-icon">${'${'}docIcon}</div>
+                            <div class="document-info">
+                                <div class="document-type">${'${'}doc.doc_type === 'IDCARD' ? '신분증' : '여권' }</div>
+                            </div>
+                            <button class="document-view-btn" onclick="viewDocument('${'${'}doc.file_url}')">보기</button>
+                        </div>
+                    `;
+                    documentList.innerHTML += docItem;
+                });
+                // 나머지 필드는 목록 API에서 가져오지 않았다면 '로딩중' 또는 '-' 처리
+            })
+            .catch(error => {
+                console.error('데이터 로드 실패:', error);
+                // alert('데이터를 불러오는 중 오류가 발생했습니다.');
+            });
+
 
         document.getElementById('approvalModal').dataset.helperId = erranderId;
         document.getElementById('approvalModal').classList.add('show');
+
+
     }
 
     function closeApprovalModal() {
@@ -1311,41 +1420,140 @@
         if (e.target === this) closeApprovalModal();
     });
 
-    // 승인 처리 (API 연동 필요)
-    function approveHelper() {
-        const helperId = document.getElementById('approvalModal').dataset.helperId;
-        if(!confirm(helperId + ' 님을 승인하시겠습니까?')) return;
+    // 승인 처리
+    function approveErrander() {
+        if(!confirm(' 부름이 ID: ' + currentErranderId + '을 승인하시겠습니까?')) return;
 
-        // TODO: 승인 API 구현 후 fetch 호출
-        /*
         fetch('${pageContext.request.contextPath}/api/admin/erranders/approve', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ id: helperId })
-        }).then(...)
-        */
+            body: JSON.stringify({
+                erranderId: currentErranderId,
+                status: "APPROVED",
+                reason: ""
+            })
+        })
+            .then(res => res.json())
+            .then(data => {
+                if(data.result === 'success'){
+                    alert('승인되었습니다.');
+                    window.location.reload();
+                }
+                else {
+                    alert('승인 처리 실패했습니다: ' + data.message);
+                }
 
-        alert('승인되었습니다. (API 연동 필요)');
-        closeApprovalModal();
-        loadErranderList(1); // 목록 갱신
+            });
+
+        closeApprovalModal(); // 목록 갱신
     }
 
-    // 반려 처리 (API 연동 필요)
+    // 반려 처리
     function rejectHelper() {
         const helperId = document.getElementById('approvalModal').dataset.helperId;
         const reason = prompt('반려 사유를 입력하세요:');
         if (!reason) return;
 
-        // TODO: 반려 API 구현 후 fetch 호출
+        fetch('${pageContext.request.contextPath}/api/admin/erranders/approve', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                erranderId: currentErranderId,
+                status: "REJECTED",
+                reason: reason
+            })
+        })
+            .then(res => res.json())
+            .then(data => {
+                if(data.result === 'success'){
+                    alert('반려되었습니다.');
+                    window.location.reload();
+                }
+                else {
+                    alert('처리 실패했습니다: ' + data.message);
+                }
 
-        alert('반려되었습니다. (API 연동 필요)');
+            });
+
         closeApprovalModal();
-        loadErranderList(1); // 목록 갱신
     }
 
     function viewDocument(url) {
-        alert('문서 보기: ' + url);
+        if (!url) {
+            alert('파일 경로가 존재하지 않습니다.');
+            return;
+        }
+        // 새 창에서 해당 URL 열람
+        url = '${pageContext.request.contextPath}' + '/' + url;
+        window.open(url, '_blank');
     }
+
+    // 활동 상태 드롭다운 토글
+    function toggleActivityStatusDropdown(button, event) {
+        event.stopPropagation();
+        const dropdown = button.nextElementSibling;
+
+        // 다른 열려있는 드롭다운 닫기
+        document.querySelectorAll('.status-dropdown-menu.show').forEach(menu => {
+            if (menu !== dropdown) {
+                menu.classList.remove('show');
+            }
+        });
+
+        dropdown.classList.toggle('show');
+    }
+
+    // 활동 상태 변경
+    function changeActivityStatus(item, newStatus, erranderId, event) {
+        event.stopPropagation();
+
+        let statusText = '';
+        switch(newStatus) {
+            case 'ACTIVE': statusText = '활성'; break;
+            case 'INACTIVE': statusText = '비활성'; break;
+            case 'SUSPENDED': statusText = '일시정지'; break;
+            case 'BANNED': statusText = '정지'; break;
+            default: statusText = newStatus;
+        }
+
+        <%--if (!confirm('부름이 ID: \${erranderId}의 활동 상태를 ${statusText}(으)로 변경하시겠습니까?')) {--%>
+        <%--    return;--%>
+        <%--}--%>
+
+        // API 호출
+        fetch('${pageContext.request.contextPath}/api/admin/erranders/status', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                erranderId: erranderId,
+                activeStatus: newStatus
+            })
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.result === 'success') {
+                    alert('활동 상태가 변경되었습니다.');
+                    window.location.reload();
+                } else {
+                    alert('상태 변경에 실패했습니다.');
+                }
+            })
+            .catch(error => {
+                console.error('상태 변경 실패:', error);
+                alert(error);
+                loadErranderList(1);
+            });
+
+        // 드롭다운 닫기
+        item.closest('.status-dropdown-menu').classList.remove('show');
+    }
+
+    // 전역 클릭 이벤트로 드롭다운 닫기
+    document.addEventListener('click', function() {
+        document.querySelectorAll('.status-dropdown-menu.show').forEach(menu => {
+            menu.classList.remove('show');
+        });
+    });
 </script>
 </body>
 

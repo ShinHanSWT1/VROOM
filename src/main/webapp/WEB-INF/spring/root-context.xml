@@ -1,39 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="
-        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:tx="http://www.springframework.org/schema/tx"
+	   xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd">
 
-	<!-- HikariCP DataSource -->
-	<bean id="dataSource" class="com.zaxxer.hikari.HikariDataSource">
-	    <property name="driverClassName" value="org.mariadb.jdbc.Driver"/>
-	    <property name="jdbcUrl" value="jdbc:mariadb://13.209.73.59:3306/vroom"/>
-	    <property name="username" value="testuser"/>
-	    <property name="password" value="test1234"/>
-	
-	    <!-- 옵션 (없어도 동작) -->
-	    <property name="maximumPoolSize" value="10"/>
-	    <property name="minimumIdle" value="2"/>
+	<!-- DB Properties -->
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="location" value="classpath:db.properties"/>
 	</bean>
 
-    <!-- MyBatis SqlSessionFactory -->
-    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
-        <!-- 이미 HikariCP로 등록된 dataSource를 그대로 사용 -->
-        <property name="dataSource" ref="dataSource"/>
-        <!-- Mapper XML 위치 -->
-        <property name="mapperLocations" value="classpath*:/com/gorani/vroom/**/*.xml"/>
-        <!-- MyBatis 설정 -->
-        <property name="configuration">
-            <bean class="org.apache.ibatis.session.Configuration">
-                <property name="mapUnderscoreToCamelCase" value="true"/>
-            </bean>
-        </property>
-    </bean>
+	<!-- DataSource (HikariCP) -->
+	<bean id="dataSource" class="com.zaxxer.hikari.HikariDataSource">
+		<property name="driverClassName" value="${db.driver}"/>
+		<property name="jdbcUrl" value="${db.url}"/>
+		<property name="username" value="${db.username}"/>
+		<property name="password" value="${db.password}"/>
 
-    <!-- Mapper 인터페이스 자동 스캔 -->
-    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
-        <property name="basePackage" value="com.gorani"/>
-    	<property name="annotationClass" value="org.apache.ibatis.annotations.Mapper"/>
-    </bean>
+		<!-- optional -->
+		<property name="maximumPoolSize" value="10"/>
+		<property name="minimumIdle" value="2"/>
+	</bean>
+
+	<!-- MyBatis SqlSessionFactory -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource"/>
+
+		<!-- Mapper XML 경로 -->
+		<property name="mapperLocations" value="classpath*:/com/gorani/vroom/**/*.xml"/>
+
+		<!-- MyBatis 설정 -->
+		<property name="configuration">
+			<bean class="org.apache.ibatis.session.Configuration">
+				<property name="mapUnderscoreToCamelCase" value="true"/>
+			</bean>
+		</property>
+	</bean>
+
+	<!-- Mapper 인터페이스 스캔 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.gorani.vroom"/>
+		<property name="annotationClass" value="org.apache.ibatis.annotations.Mapper"/>
+	</bean>
+
+	<!-- Transaction Manager -->
+	<bean id="transactionManager"
+		  class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+
+	<!-- @Transactional 활성화 -->
+	<tx:annotation-driven transaction-manager="transactionManager"/>
 
 </beans>

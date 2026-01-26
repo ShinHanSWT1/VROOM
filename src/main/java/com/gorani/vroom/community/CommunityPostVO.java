@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -25,14 +26,18 @@ public class CommunityPostVO {
     private Long categoryId;
     private Long commentCount;
 
-    // --- MEMBERS 테이블 (JOIN) ---
+    // MEMBERS 테이블
     private String nickname;
     private Double mannerScore;
 
-    // --- LEGAL_DONG 테이블 (JOIN) ---
+    //LEGAL_DONG 테이블
     private String dongName;
     private String gunguName;
 
-    // --- COMMUNITY_CATEGORY 테이블 (JOIN) ---
+    // COMMUNITY_CATEGORY 테이블
     private String categoryName;
+
+    // COMMUNITY_IMAGE 테이블
+    private List<CommunityImageVO> images;
+    private String thumbnailUrl; // 썸네일 이미지
 }

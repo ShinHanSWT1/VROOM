@@ -31,7 +31,7 @@ public class AdminAuthController {
 
             session.setAttribute("loginAdmin", adminVO);
             model.addAttribute("result", "success");
-            model.addAttribute("url", "dashboard");
+            model.addAttribute("url", "admin/dashboard");
             model.addAttribute("message", "로그인 성공! 관리자 페이지로 이동합니다");
             model.addAttribute("subMessage", "잠시만 기다려주세요...");
         } catch (IllegalArgumentException exception) {
@@ -39,7 +39,7 @@ public class AdminAuthController {
             model.addAttribute("result", "fail");
             model.addAttribute("message", exception.getMessage());
             model.addAttribute("subMessage", "아이디와 비밀번호를 확인해주세요");
-            model.addAttribute("url", "login");
+            model.addAttribute("url", "admin/login");
         }
 
         return "common/return";

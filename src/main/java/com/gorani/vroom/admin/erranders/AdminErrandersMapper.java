@@ -1,9 +1,7 @@
 package com.gorani.vroom.admin.erranders;
 
-import com.gorani.vroom.admin.users.AdminUserDetailDTO;
-import com.gorani.vroom.admin.users.UserActivityVO;
-import com.gorani.vroom.admin.users.UserReportHistoryVO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Map;
@@ -16,14 +14,61 @@ public interface AdminErrandersMapper {
 
     int countErranders(Map<String, Object> param);
 
-    void updateUserStatus(Map<String, Object> param);
+    Map<String, Object> getErranderApprovalDetail(
+            @Param("erranderId") Long erranderId
+    );
 
-    AdminUserDetailDTO getUserInfoDetail(Long id);
+    int updateErranderApprovalStatus(
+            @Param("erranderId") Long erranderId,
+            @Param("status") String status
+    );
 
-    List<UserReportHistoryVO> getUserReportHistory(Long id);
+    int updateErranderActiveStatus(
+            @Param("erranderId") Long erranderId,
+            @Param("status") String status
+    );
 
-    List<UserActivityVO> getUserActivityHistory(Long id);
+    Map<String, Object> getErranderDetail(
+            @Param("erranderId") Long erranderId
+    );
 
-    void updateAdminMemo(Long userId, String memo);
+    Map<String, Object> getActivitySummary(
+            @Param("erranderId") Long erranderId
+    );
 
+    List<Map<String, Object>> getRecentErrands(
+            @Param("erranderId") Long erranderId,
+            @Param("limit") int limit
+    );
+
+    List<Map<String, Object>> getRecentErrandsWithProof(
+            @Param("erranderId") Long erranderId,
+            @Param("limit") int limit
+    );
+
+    Map<String, Object> getSettlementSummary(
+            @Param("erranderId") Long erranderId
+    );
+
+    double getErranderRatingAvg(
+            @Param("erranderId") Long erranderId
+    );
+
+    List<Map<String, Object>> getRecentReviews(
+            @Param("erranderId") Long erranderId,
+            @Param("limit") int limit
+    );
+
+    String getAdminMemo(
+            @Param("erranderId") Long erranderId
+    );
+
+    int updateAdminMemo(
+            @Param("erranderId") Long erranderId,
+            @Param("adminMemo") String adminMemo
+    );
+
+    List<Map<String, Object>> getDocuments(
+            @Param("erranderId") Long erranderId
+    );
 }
