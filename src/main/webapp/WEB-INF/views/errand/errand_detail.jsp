@@ -749,7 +749,7 @@
 				
 				      <div class="author-details">
 				        <div class="author-name-large">작성자: <c:out value="${errand.userId}" /></div>
-				        <div class="author-meta">10분 전</div>
+				        <div class="author-meta"><c:out value="${errand.timeAgo}" /></div>
 				      </div>
 				
 				      <div class="author-score-inline">
