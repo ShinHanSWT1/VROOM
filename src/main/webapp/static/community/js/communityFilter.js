@@ -10,7 +10,9 @@
     var contextPath = config.contextPath || '';
     var currentDongCode = config.currentDongCode || '';
     var selectedGuName = config.selectedGuName || '';
-    var currentCategoryId = config.currentCategoryId || '';
+    // categoryId가 '0'인 경우도 유효한 값이므로 별도 처리
+    var currentCategoryId = (config.currentCategoryId !== undefined && config.currentCategoryId !== '')
+        ? config.currentCategoryId : null;
 
     $(document).ready(function () {
         // Reload detection: redirect to base community page
@@ -82,7 +84,7 @@
         if (dongCode) {
             params.push('dongCode=' + encodeURIComponent(dongCode));
         }
-        if (currentCategoryId) {
+        if (currentCategoryId !== null) {
             params.push('categoryId=' + currentCategoryId);
         }
         if (searchKeyword) {

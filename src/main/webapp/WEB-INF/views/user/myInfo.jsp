@@ -2,6 +2,7 @@
          pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <!DOCTYPE html>
 <html lang="ko">
@@ -1085,7 +1086,7 @@
         <nav class="nav-menu">
             <a href="main_updated_2.html" class="nav-item">홈</a>
             <a href="#" class="nav-item">커뮤니티</a>
-            <a href="#" class="nav-item">심부름꾼 전환</a>
+            <a href="<c:url value='/errander/mypage/profile'/>" class="nav-item">심부름꾼 전환</a>
             <div class="nav-dropdown">
                 <button class="nav-item nav-user" id="userDropdownBtn">유저</button>
                 <div class="dropdown-menu" id="userDropdownMenu">
@@ -1312,23 +1313,37 @@
     </div>
 </footer>
 
+<!-- 숨겨진 데이터 영역 -->
+<div id="errandDataContainer" style="display:none;">
+    <c:forEach var="errand" items="${errands}" varStatus="status">
+        <div class="errand-data"
+             data-id="${errand.errandsId}"
+             data-title="${fn:escapeXml(errand.title)}"
+             data-description="${fn:escapeXml(errand.description)}"
+             data-price="<fmt:formatNumber value="${errand.rewardAmount}" pattern="#,###"/>"
+             data-status="${errand.status}"
+             data-location="${errand.gunguName} ${errand.dongName}"
+             data-created="${errand.createdAt}">
+        </div>
+    </c:forEach>
+</div>
+
 <script>
-    // 서버에서 전달받은 심부름 데이터
-    const myActivities = [
-        <c:forEach var="errand" items="${errands}" varStatus="status">
-        {
-            errandsId: ${errand.errandsId},
+    // HTML data attribute에서 심부름 데이터 읽기
+    const myActivities = [];
+    document.querySelectorAll('#errandDataContainer .errand-data').forEach(function(el) {
+        myActivities.push({
+            errandsId: parseInt(el.dataset.id),
             icon: '📦',
             badge: '심부름',
-            title: '${errand.title}',
-            description: '${errand.description}',
-            price: '<fmt:formatNumber value="${errand.rewardAmount}" pattern="#,###"/>원',
-            status: '${errand.status}',
-            location: '${errand.gunguName} ${errand.dongName}',
-            createdAt: '${errand.createdAt}'
-        }<c:if test="${!status.last}">,</c:if>
-        </c:forEach>
-    ];
+            title: (el.dataset.title || '').replace(/[\r\n]+/g, ' '),
+            description: (el.dataset.description || '').replace(/[\r\n]+/g, ' '),
+            price: el.dataset.price + '원',
+            status: el.dataset.status,
+            location: el.dataset.location,
+            createdAt: el.dataset.created
+        });
+    });
 
     // timrAgo 함수를 추가
     function timeAgo(dateString) {

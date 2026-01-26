@@ -5,11 +5,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class CommunityPostVO {
+
+    // --- COMMUNITY 테이블 ---
     private Long postId;
     private String title;
     private String content;
@@ -19,11 +22,22 @@ public class CommunityPostVO {
     private Timestamp updatedAt;
     private Timestamp deletedAt;
     private Long userId;
-    private String nickname;
     private String dongCode;
+    private Long categoryId;
+    private Long commentCount;
+
+    // MEMBERS 테이블
+    private String nickname;
+    private Double mannerScore;
+
+    //LEGAL_DONG 테이블
     private String dongName;
     private String gunguName;
-    private Long categoryId;
+
+    // COMMUNITY_CATEGORY 테이블
     private String categoryName;
-    private Double mannerScore;
+
+    // COMMUNITY_IMAGE 테이블
+    private List<CommunityImageVO> images;
+    private String thumbnailUrl; // 썸네일 이미지
 }

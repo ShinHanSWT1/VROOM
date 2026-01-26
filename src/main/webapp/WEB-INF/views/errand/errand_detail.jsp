@@ -174,6 +174,12 @@
             
             align-items: stretch;
         }
+        
+        .left-col{
+		  display: flex;
+		  flex-direction: column;
+		  height: 100%;          /* 오른쪽 컬럼 높이에 맞춰 늘어나게 */
+		}
 
         .image-section {
             background-color: var(--color-white);
@@ -181,8 +187,9 @@
             overflow: hidden;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             
-            height: 100%;
-            height: 455px;
+            flex: 1 1 auto;    /* 남는 높이를 이미지가 먹게 */
+		  	display: flex;     /* 내부 .errand-image가 height:100% 먹기 편하게 */
+		  	min-height: 260px; /* 너무 납작해지는거 방지(선택) */
         }
 
         .errand-image {
@@ -206,7 +213,7 @@
             flex-direction: column;
             gap: 1.5rem;
             
-            height: 455px;
+            height: 100%;
         }
 
         .info-panel {
@@ -226,6 +233,38 @@
 		.info-panel.is-description .panel-content {
 		    flex: 1;              /* 내용영역이 늘어나게 */
 		    overflow: auto;       /* 설명이 길면 스크롤로 처리 (원하면 hidden/ellipsis로 변경 가능) */
+		}
+		
+		/* money-row는 바깥 카드 스타일 제거 */
+		.info-panel.money-row{
+		  background: transparent;
+		  box-shadow: none;
+		  padding: 0;
+		
+		  display: grid;
+		  grid-template-columns: 1fr 1fr;
+		  gap: 12px;
+		}
+		
+		/* 내부 박스가 카드 역할 */
+		.money-box{
+		  background: #fff;
+		  border-radius: 14px;
+		  padding: 18px;
+		  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+		}
+		
+		.money-row-under-image{
+		  width: 100%;
+		  display: flex;
+		  gap: 12px;
+		  
+		  margin-top: 16px; 
+		}
+		
+		.money-row-under-image .money-box{
+		  flex: 1;                /* 좌우 반반 */
+		  min-width: 0;           /* flex에서 줄바꿈 방지 핵심 */
 		}
 
         .panel-title {
@@ -491,6 +530,37 @@
                 grid-template-columns: 1fr;
             }
         }
+        
+        /* 기본: 4줄까지만 보여주고 … */
+		.desc-content{
+		  display: -webkit-box;
+		  -webkit-box-orient: vertical;
+		  -webkit-line-clamp: 4;   /* 보여줄 줄 수: 3~6으로 조절 */
+		  overflow: hidden;
+		  word-break: break-word;
+		}
+		
+		/* 펼친 상태: 전체 표시 */
+		#descPanel.expanded .desc-content{
+		  -webkit-line-clamp: unset;
+		  display: block;
+		  overflow: visible;
+		}
+		
+		/* 더보기 버튼 */
+		.desc-toggle{
+		  margin-top: 10px;
+		  background: transparent;
+		  border: none;
+		  padding: 0;
+		  cursor: pointer;
+		  font-weight: 700;
+		  color: var(--color-primary);
+		  text-align: left;
+		  display: none; /* ✅ 실제로 잘릴 때만 JS가 보여줌 */
+		}
+		        
+        
     </style>
 
     <!-- 글꼴 -->
@@ -533,20 +603,38 @@
     <section class="main-section">
         <div class="container">
             <div class="detail-grid">
-                <!-- Left: Image Section -->
-                <div class="image-section">
-                    <div class="errand-image">
-                        <c:choose>
-				            <c:when test="${not empty mainImageUrl}">
-				                <img src="${pageContext.request.contextPath}${errand.mainImageUrl}" alt="심부름 이미지">
-				            </c:when>
-				            <c:otherwise>
-				                <img src="${pageContext.request.contextPath}/static/img/errand/noimage.png"
-				                     alt="기본 이미지">
-				            </c:otherwise>
-				        </c:choose>
-                    </div>
-                </div>
+                <!-- Left: Image Section + Money -->
+                <div class="left-col">
+			      <div class="image-section">
+			        <div class="errand-image">
+			          <c:choose>
+			            <c:when test="${not empty errand.mainImageUrl}">
+			              <img src="${pageContext.request.contextPath}${errand.mainImageUrl}" alt="심부름 이미지">
+			            </c:when>
+			            <c:otherwise>
+			              <img src="${pageContext.request.contextPath}/static/img/errand/noimage.png" alt="기본 이미지">
+			            </c:otherwise>
+			          </c:choose>
+			        </div>
+			      </div>
+			      
+			      <!-- ✅ 심부름값 + 재료비: 이미지 아래로 이동 -->
+			      <div class="money-row-under-image">
+			        <div class="money-box">
+			          <h2 class="panel-title">심부름값</h2>
+			          <p class="panel-content">
+			            <fmt:formatNumber value="${errand.rewardAmount}" type="number" />원
+			          </p>
+			        </div>
+			
+			        <div class="money-box">
+			          <h2 class="panel-title">재료비</h2>
+			          <p class="panel-content">
+			            <fmt:formatNumber value="${errand.expenseAmount}" type="number" />원
+			          </p>
+			        </div>
+			      </div>
+			    </div>
 
                 <!-- Right: Info Panels -->
                 <div class="info-panels">
@@ -560,16 +648,17 @@
                     <div class="info-panel">
                         <h2 class="panel-title">위치</h2>
                         <p class="panel-content">
-                        	<c:out value="${errand.dongCode}" />
+                        	<c:out value="${errand.dongFullName}" />
                         </p>
                     </div>
 
-                    <div class="info-panel">
-                        <h2 class="panel-title">심부름 설명</h2>
-                        <p class="panel-content">
-                        	<c:out value="${errand.description}" />
-                        </p>
-                    </div>
+                    <div class="info-panel is-description" id="descPanel">
+					  <h2 class="panel-title">심부름 설명</h2>
+					
+					  <p class="panel-content desc-content" id="descContent">
+					    <c:out value="${errand.description}" />
+					  </p>
+					</div>
                 </div>
             </div>
 
@@ -624,7 +713,16 @@
 					        <div class="task-card"
 					             onclick="location.href='${pageContext.request.contextPath}/errand/detail?errandsId=${e.errandsId}'">
 					
-					          <div class="task-image">📦</div>
+					          <div class="task-image">
+								<c:choose>
+								  <c:when test="${not empty e.categoryDefaultImageUrl}">
+								    <img src="${pageContext.request.contextPath}${e.categoryDefaultImageUrl}" alt="심부름 이미지">
+								  </c:when>
+								  <c:otherwise>
+								    📦
+								  </c:otherwise>
+								</c:choose>
+							  </div>
 					
 					          <div class="task-card-content">
 					            <div class="task-card-header">
@@ -640,7 +738,7 @@
 					
 					            <div class="task-meta">
 					              <span class="task-location">
-					                <c:out value="${e.dongCode}" />
+					                <c:out value="${e.dongFullName}" />
 					              </span>
 					              <span class="task-price">
 					                <c:out value="${e.rewardAmount}" />원
@@ -706,6 +804,9 @@
                     }
                 });
             }
+
+            // Initialize
+            renderRelatedTasks();
         });
 
         // Mock related tasks data
@@ -720,6 +821,7 @@
 
         function renderRelatedTasks() {
             const grid = document.getElementById('relatedTasksGrid');
+            if (!grid) return; // 없으면 종료
             grid.innerHTML = '';
 
             relatedTasks.forEach(task => {
@@ -727,7 +829,7 @@
                 taskCard.className = 'task-card';
                 taskCard.innerHTML = `
                     <div class="task-image">
-                        ${task.icon}
+                		<img src="${task.imageUrl}" alt="심부름 이미지">	
                     </div>
                     <div class="task-card-content">
                         <div class="task-card-header">
@@ -744,9 +846,6 @@
                 grid.appendChild(taskCard);
             });
         }
-
-        // Initialize
-        renderRelatedTasks();
     </script>
 </body>
 

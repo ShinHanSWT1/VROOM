@@ -4,6 +4,7 @@
 
 <c:set var="pageTitle" value="VROOM - 동네생활" scope="request"/>
 <c:set var="pageId" value="community" scope="request"/>
+<c:set var="pageCss" value="community" scope="request"/>
 
 <jsp:include page="../common/header.jsp"/>
 
@@ -40,17 +41,22 @@
 <main class="main-content">
     <!-- Breadcrumb -->
     <nav class="breadcrumb">
-        <a href="<c:url value='/main'/>">홈</a>
+        <a href="<c:url value='/vroom'/>">홈</a>
         <span class="breadcrumb-separator"> > </span>
         <a href="<c:url value='/community'/>">동네생활</a>
     </nav>
 
-    <!-- Page Title -->
-    <h2 class="page-title" id="pageTitle"
-        data-gu="${selectedGuName}"
-        data-dong-code="$selectedDongCode}">
-        서울특별시 ${not empty selectedGuName ? selectedGuName : ''} 동네생활
-    </h2>
+    <!-- Page Title & Write Button -->
+    <div class="page-header">
+        <h2 class="page-title" id="pageTitle"
+            data-gu="${selectedGuName}"
+            data-dong-code="$selectedDongCode}">
+            서울특별시 ${not empty selectedGuName ? selectedGuName : ''} 동네생활
+        </h2>
+        <a href="<c:url value='/community/write'/>" class="write-btn">
+            <span>글쓰기</span>
+        </a>
+    </div>
 
     <!-- Content Grid -->
     <div class="content-grid">
@@ -59,7 +65,7 @@
             <div class="sidebar-section">
                 <ul class="category-list">
                     <!-- 전체 카테고리 -->
-                    <li class="category-item ${empty selectedCategoryId ? 'active' : ''}">
+                    <li class="category-item ${selectedCategoryId == null ? 'active' : ''}">
                         <a href="<c:url value='/community'>
                             <c:if test='${not empty selectedGuName}'>
                                 <c:param name='guName' value='${selectedGuName}'/>
@@ -70,7 +76,7 @@
                         </c:url>">전체</a>
                     </li>
                      <!-- 인기글 카테고리 추가 -->
-                     <li class="category-item ${selectedCategoryId == 0 ? 'active' : ''}">
+                     <li class="category-item ${selectedCategoryId != null and selectedCategoryId == 0 ? 'active' : ''}">
                          <a href="<c:url value='/community'>
                             <c:param name='categoryId' value='0'/>
                             <c:if test='${not empty selectedDongCode}'>
@@ -100,20 +106,20 @@
         </aside>
 
         <!-- Post List -->
-        <div class="post-list">
+        <div class="post-list" id="postList">
             <c:choose>
                 <c:when test="${not empty postList}">
                     <c:forEach var="post" items="${postList}">
                         <a class="post-card" href="<c:url value='/community/detail/${post.postId}'/>" style="text-decoration: none; color: inherit;">
                             <div class="post-content-wrapper">
                                 <div class="post-text-content">
-                                    <h3 class="post-title">${post.title}</h3>
+                                    <h1 class="post-title">${post.title}</h1>
                                     <p class="post-description">${post.content}</p>
 
                                     <div class="post-meta">
                                         <span class="post-meta-item">${post.dongName}</span>
                                         <span class="post-meta-item">•</span>
-                                        <span class="post-category-badge">${post.categoryName}</span>
+                                        <span class="post-meta-item">${post.categoryName}</span>
                                         <span class="post-meta-item">•</span>
                                         <span class="post-meta-item">
                                             <fmt:formatDate value="${post.createdAt}" pattern="MM.dd"/>
@@ -121,10 +127,19 @@
                                     </div>
 
                                     <div class="post-stats">
-                                        <span class="post-stat">👍 ${post.likeCount}</span>
-                                        <span class="post-stat">👁 ${post.viewCount}</span>
+                                        <span class="post-stat like-btn" onclick="CommunityLike.toggle(event, ${post.postId}, this)">
+                                            <span class="like-icon">👍</span>
+                                            <span class="like-count">${post.likeCount}</span>
+                                        </span>
+                                        <span class="post-stat">💬 ${post.commentCount}</span>
+                                        <span class="post-stat">조회 ${post.viewCount}</span>
                                     </div>
                                 </div>
+                                <c:if test="${not empty post.thumbnailUrl}">
+                                    <div class="post-thumbnail">
+                                        <img src="${pageContext.request.contextPath}${post.thumbnailUrl}" alt="썸네일">
+                                    </div>
+                                </c:if>
                             </div>
                         </a>
                     </c:forEach>
@@ -133,6 +148,25 @@
                     <div class="no-data">게시글이 없습니다.</div>
                 </c:otherwise>
             </c:choose>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination-container">
+            <c:if test="${totalPages > 0}">
+                <div class="pagination" id="pagination">
+                    <button class="pagination-btn prev-btn wide-btn" ${currentPage == 1 ? 'disabled' : ''} data-page="${currentPage - 1}">
+                        <span>이전</span>
+                    </button>
+                    <div class="page-numbers">
+                        <c:forEach var="i" begin="1" end="${totalPages}">
+                            <button class="page-btn ${currentPage == i ? 'active' : ''}" data-page="${i}">${i}</button>
+                        </c:forEach>
+                    </div>
+                    <button class="pagination-btn next-btn wide-btn" ${currentPage == totalPages ? 'disabled' : ''} data-page="${currentPage + 1}">
+                        <span>다음</span>
+                    </button>
+                </div>
+            </c:if>
         </div>
     </div>
 </main>
@@ -143,9 +177,13 @@
         currentDongCode: '${selectedDongCode}',
         selectedGuName: '${selectedGuName}',
         currentCategoryId: '${selectedCategoryId}',
-        currentSearchKeyword: '${searchKeyword}'
+        currentSearchKeyword: '${searchKeyword}',
+        currentPage: ${currentPage},
+        totalPages: ${totalPages}
     };
 </script>
+<script src="<c:url value='/static/community/js/communityLike.js'/>"></script>
 <script src="<c:url value='/static/community/js/communityFilter.js'/>"></script>
+<script src="<c:url value='/static/community/js/pagination.js'/>"></script>
 
 <jsp:include page="../common/footer.jsp"/>
