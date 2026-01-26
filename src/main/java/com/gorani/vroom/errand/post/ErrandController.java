@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.gorani.vroom.errand.assignment.ErrandAssignmentService;
+import com.gorani.vroom.user.auth.UserVO;
+
 import lombok.RequiredArgsConstructor;
 
 @Controller
@@ -19,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class ErrandController {
 
 	private final ErrandService errandService;
+	private final ErrandAssignmentService errandAssignmentService;
 
 	// 심부름 게시글 목록
 	@GetMapping("/errand/list")
@@ -123,11 +127,7 @@ public class ErrandController {
 		Long errandsId = errandService.createErrand(errandCreateVO);
 		return "redirect:/errand/detail?errandsId=" + errandsId;
 		
-	}
-	
-	
-	
-	
+	}	
 	
 	/**
      * 내 정보 페이지 경로 리다이렉트

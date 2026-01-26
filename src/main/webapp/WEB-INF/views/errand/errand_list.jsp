@@ -593,31 +593,44 @@
 
 <body>
     <header class="header">
-        <div class="header-container">
-            <div class="logo">
-                <h1 onclick="location.href='main_updated_2.html'">VROOM</h1>
-            </div>
-            <nav class="nav-menu">
-                <a href="main_updated_2" class="nav-item">홈</a>
-                <a href="#" class="nav-item">커뮤니티</a>
-                <a href="#" class="nav-item">심부름꾼 전환</a>
-                <a href="#" class="nav-item nav-login">로그인</a>
-                <a href="#" class="nav-item nav-signup">회원가입</a>
-                <div class="nav-dropdown">
-                    <button class="nav-item nav-user" id="userDropdownBtn">유저</button>
-                    <div class="dropdown-menu" id="userDropdownMenu">
-                        <a href="myInfo" class="dropdown-item">나의정보</a>
-                        <a href="vroomPay" class="dropdown-item">부름페이</a>
-                        <a href="myActivity" class="dropdown-item">나의 활동</a>
-                        <a href="#" class="dropdown-item">설정</a>
-                        <a href="#" class="dropdown-item">고객지원</a>
-                        <div class="dropdown-divider"></div>
-                        <a href="#" class="dropdown-item logout">로그아웃</a>
-                    </div>
-                </div>
-            </nav>
-        </div>
-    </header>
+	  <div class="header-container">
+	    <div class="logo">
+	      <h1 onclick="location.href='${pageContext.request.contextPath}/'">VROOM</h1>
+	    </div>
+	
+	    <nav class="nav-menu">
+	      <a href="${pageContext.request.contextPath}/" class="nav-item">홈</a>
+	      <a href="${pageContext.request.contextPath}/community" class="nav-item">커뮤니티</a>
+	      <a href="${pageContext.request.contextPath}/member/myInfo" class="nav-item">심부름꾼 전환</a>
+	
+	      <c:choose>
+	        <c:when test="${empty sessionScope.loginSess}">
+	          <a href="${pageContext.request.contextPath}/auth/login" class="nav-item nav-login">로그인</a>
+	          <a href="${pageContext.request.contextPath}/auth/join" class="nav-item nav-signup">회원가입</a>
+	        </c:when>
+	
+	        <c:otherwise>
+	          <div class="nav-dropdown">
+	            <button class="nav-item nav-user" id="userDropdownBtn">
+	              <c:out value="${sessionScope.loginSess.nickname}" />님
+	            </button>
+	
+	            <div class="dropdown-menu" id="userDropdownMenu">
+	              <a href="${pageContext.request.contextPath}/member/myInfo" class="dropdown-item">나의정보</a>
+	              <a href="${pageContext.request.contextPath}/vroomPay" class="dropdown-item">부름페이</a>
+	              <a href="${pageContext.request.contextPath}/myActivity" class="dropdown-item">나의 활동</a>
+	              <a href="${pageContext.request.contextPath}/settings" class="dropdown-item">설정</a>
+	              <a href="${pageContext.request.contextPath}/support" class="dropdown-item">고객지원</a>
+	              <div class="dropdown-divider"></div>
+	              <a href="${pageContext.request.contextPath}/member/logout" class="dropdown-item logout">로그아웃</a>
+	            </div>
+	          </div>
+	        </c:otherwise>
+	      </c:choose>
+	    </nav>
+	  </div>
+	</header>
+
 
     <section class="page-header">
         <div class="container">

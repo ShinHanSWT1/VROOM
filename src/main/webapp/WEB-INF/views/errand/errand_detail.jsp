@@ -692,6 +692,11 @@
 				    </div>
                 </div>
             </div>
+            
+            <form method="post" action="${pageContext.request.contextPath}/errand/assign/request">
+			  <input type="hidden" name="errandsId" value="${errand.errandsId}" />
+			  <button type="submit" class="btn btn-primary">채팅하기</button>
+			</form>
 
             <!-- Related Errands Section -->
             <div class="related-section">
