@@ -455,7 +455,7 @@
                         <a href="#" class="dropdown-item">설정</a>
                         <a href="#" class="dropdown-item">고객지원</a>
                         <div class="dropdown-divider"></div>
-                        <a href="#" class="dropdown-item logout">로그아웃</a>
+                        <a href="${pageContext.request.contextPath}/auth/logout" class="dropdown-item logout">로그아웃</a>
                     </div>
                 </div>
             </nav>

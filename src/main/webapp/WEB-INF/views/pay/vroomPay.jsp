@@ -794,7 +794,7 @@
 <header class="header">
   <div class="header-container">
     <div class="logo">
-      <h1 onclick="location.href='../../..'">VROOM</h1>
+      <h1 onclick="location.href='${pageContext.request.contextPath}/'">VROOM</h1>
     </div>
     <nav class="nav-menu">
       <a href="main_updated_2.html" class="nav-item">홈</a>
@@ -809,7 +809,7 @@
           <a href="#" class="dropdown-item">설정</a>
           <a href="#" class="dropdown-item">고객지원</a>
           <div class="dropdown-divider"></div>
-          <a href="#" class="dropdown-item logout">로그아웃</a>
+          <a href="${pageContext.request.contextPath}/auth/logout" class="dropdown-item logout">로그아웃</a>
         </div>
       </div>
     </nav>
