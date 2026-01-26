@@ -110,4 +110,18 @@
 
     </select>
 
+    <!-- 닉네임 중복 조회 -->
+    <select id="existsNickname"
+            parameterType="string"
+            resultType="com.gorani.vroom.user.auth.UserVO">
+
+        SELECT
+            user_id,
+            nickname
+        FROM MEMBERS
+        WHERE nickname = #{nickname}
+          AND deleted_at IS NULL
+
+    </select>
+
 </mapper>

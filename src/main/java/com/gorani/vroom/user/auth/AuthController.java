@@ -129,4 +129,11 @@ public class AuthController {
         return authService.existsPhone(phone);
     }
 
+    // 닉네임 중복 체크
+    @GetMapping("/auth/check-nickname")
+    @ResponseBody
+    public boolean checkNickname(@RequestParam String nickname) {
+        return authService.existsNickname(nickname);
+    }
+
 }

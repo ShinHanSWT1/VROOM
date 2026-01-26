@@ -8,6 +8,7 @@ public interface AuthUserMapper {
     // 사용자 조회 (로그인용)
     UserVO existsEmail(String email);
     UserVO existsPhone(String phone);
+    UserVO existsNickname(String nickname);
 
     UserVO login(UserVO vo);
 

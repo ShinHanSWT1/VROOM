@@ -526,11 +526,9 @@
     <div class="auth-card">
         <h2 class="auth-title">회원가입</h2>
 
-        <c:if test="${not empty signupError}">
-            <div id="globalError" class="form-msg error">
-                    ${signupError}
-            </div>
-        </c:if>
+        <div id="globalError" class="form-msg error">
+                ${signupError}
+        </div>
 
         <form action="${pageContext.request.contextPath}/auth/signup" method="post" enctype="multipart/form-data" id="signupForm">
             <!-- 이메일 입력 -->
@@ -571,6 +569,7 @@
                         placeholder="닉네임을 입력하세요"
                         autocomplete="nickname"
                 >
+                <span id="nicknameMsg" class="input-guide"></span>
             </div>
 
             <!-- 전화번호 입력 -->
@@ -697,6 +696,7 @@
     // 유효성 검사 변수
     let emailValid = false;
     let phoneValid = false;
+    let nicknameValid = false;
     let dong1Valid = false;
     let dong2Valid = false;
 
@@ -795,6 +795,44 @@
         });
     });
 
+    // 닉네임 중복 체크
+    let nicknameTimer = null;
+
+    nicknameInput.addEventListener('input', function () {
+        clearTimeout(nicknameTimer);
+
+        const nickname = $(this).val().trim();
+        const msg = $('#nicknameMsg');
+
+        if (!nickname) {
+            msg.text('');
+            nicknameValid = false;
+            validateSignup();
+            return;
+        }
+
+        nicknameTimer = setTimeout(() => {
+            $.ajax({
+                url: contextPath + '/auth/check-nickname',
+                type: 'GET',
+                data: { nickname: nickname },
+                dataType: 'json',
+                success: function (exists) {
+                    if (exists) {
+                        msg.text('✖ 이미 사용 중인 닉네임입니다');
+                        msg.attr('class', 'input-guide error');
+                        nicknameValid = false;
+                    } else {
+                        msg.text('✔ 사용 가능한 닉네임입니다');
+                        msg.attr('class', 'input-guide success');
+                        nicknameValid = true;
+                    }
+                    validateSignup();
+                }
+            });
+        }, 400);
+    });
+
     // 회원가입 버튼 활성화 체크
     function validateSignup() {
         const addrMsg = $('#addrMsg');
@@ -806,13 +844,12 @@
         }
 
         const passwordValue = $('#signup-password').val();
-        const nicknameValue = $('#nickname').val().trim();
 
         $('#signupBtn').prop('disabled', !(
             emailValid &&
             phoneValid &&
+            nicknameValid &&
             passwordValue.length >= 4 &&
-            nicknameValue.length > 0 &&
             dong1Valid &&
             dong2Valid
         ));
@@ -926,7 +963,7 @@
     $('#signupForm').on('submit', function(e) {
         e.preventDefault();
 
-        if (!emailValid || !phoneValid || !dong1Valid || !dong2Valid) {
+        if (!emailValid || !phoneValid || !nicknameValid || !dong1Valid || !dong2Valid) {
             return false;
         }
 
@@ -944,6 +981,7 @@
             dataType: 'json',
             success: function(response) {
                 if (response.success) {
+                    alert('정상적으로 회원가입되었습니다.');
                     window.location.href = contextPath + '/auth/login';
                 } else {
                     $('#signupBtn').prop('disabled', false).text(originalBtnText);

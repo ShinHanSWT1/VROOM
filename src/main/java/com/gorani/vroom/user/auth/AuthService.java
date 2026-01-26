@@ -9,4 +9,5 @@ public interface AuthService {
     UserVO login(UserVO vo);
     boolean existsEmail(String email);
     boolean existsPhone(String phone);
+    boolean existsNickname(String nickname);
 }

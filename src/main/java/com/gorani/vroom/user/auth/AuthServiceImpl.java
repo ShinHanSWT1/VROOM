@@ -28,7 +28,12 @@ public class AuthServiceImpl implements AuthService {
             throw new IllegalArgumentException("이미 가입된 전화번호입니다.");
         }
 
-        // 2. 주소 검증 (최소 1개라도 필수라면 조건 조절)
+        // 2. 닉네임 중복 체크
+        if (existsNickname(vo.getNickname())) {
+            throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
+        }
+
+        // 3. 주소 검증
         if (vo.getDongCode1() == null || vo.getDongCode1().isBlank()) {
             throw new IllegalArgumentException("주소 1은 필수입니다.");
         }
@@ -38,13 +43,13 @@ public class AuthServiceImpl implements AuthService {
         }
 
 
-        // 3. 프로필 이미지 처리
+        // 4. 프로필 이미지 처리
         if (profile != null && !profile.isEmpty()) {
             String fileName = saveFile(profile);
             vo.setProfileImage(fileName);
         }
 
-        // 4. 기본값 세팅
+        // 5. 기본값 세팅
         vo.setRole("USER");
         vo.setStatus("ACTIVE");
         vo.setProvider("LOCAL");
@@ -56,10 +61,10 @@ public class AuthServiceImpl implements AuthService {
             vo.setCancelRate(BigDecimal.ZERO);
         }
 
-        // 5. 비밀번호 암호화
+        // 6. 비밀번호 암호화
         vo.setPwd(MD5Util.md5(vo.getPwd()));
 
-        // 6. DB INSERT
+        // 7. DB INSERT
         int result = authUserMapper.insertUser(vo);
 
         if (result != 1) {
@@ -82,6 +87,7 @@ public class AuthServiceImpl implements AuthService {
         return loginUser;
     }
 
+    // ================= 중복 체크 (Validation용 조회) =================
 
     @Override
     public boolean existsEmail(String email) {
@@ -93,6 +99,10 @@ public class AuthServiceImpl implements AuthService {
         return authUserMapper.existsPhone(phone) != null;
     }
 
+    @Override
+    public boolean existsNickname(String nickname) {
+        return authUserMapper.existsNickname(nickname) != null;
+    }
 
     // ================= 파일 저장 =================
     private String saveFile(MultipartFile file) throws Exception {
