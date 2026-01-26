@@ -8,9 +8,12 @@ public interface ErrandAssignmentMapper {
 
     Long selectOwnerUserId(@Param("errandsId") Long errandsId);
     Long selectErranderIdByUserId(@Param("userId") Long userId);
+    boolean canChat(@Param("errandsId") Long errandsId);
 
 
     int updateErrandStatusWaitingToMatched(@Param("errandsId") Long errandsId);
+    
+    int updateErrandStatusToWaiting(@Param("errandsId") Long errandsId);
 
     int insertMatchedAssignment(@Param("userId") Long userId,
                                 @Param("errandsId") Long errandsId,

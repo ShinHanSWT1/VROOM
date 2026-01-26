@@ -1,7 +1,6 @@
 package com.gorani.vroom.errand.post;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 import lombok.Data;
 

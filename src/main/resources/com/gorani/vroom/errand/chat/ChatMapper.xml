@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gorani.vroom.errand.chat.ChatMapper">
+
+    <!-- 채팅방 조회 -->
+    <select id="selectChatRoomByErrandsId" resultType="com.gorani.vroom.errand.chat.ChatRoomVO">
+        SELECT room_id, errands_id, errander_id, created_at
+        FROM CHAT_ROOM
+        WHERE errands_id = #{errandsId}
+        LIMIT 1
+    </select>
+    
+    <select id="selectChatRoomById" resultType="com.gorani.vroom.errand.chat.ChatRoomVO">
+        SELECT room_id, errands_id, errander_id, created_at
+        FROM CHAT_ROOM
+        WHERE room_id = #{roomId}
+    </select>
+    
+    <select id="selectErrandsIdByRoomId" resultType="long">
+	  SELECT errands_id
+	  FROM chat_room
+	  WHERE room_id = #{roomId}
+	</select>
+    
+    
+    <!-- 채팅방 생성 -->
+    <insert id="insertChatRoom" useGeneratedKeys="true" keyProperty="roomId">
+        INSERT INTO CHAT_ROOM (errands_id, errander_id, created_at)
+        VALUES (#{errandsId}, #{erranderId}, 'OPEN', CURRENT_TIMESTAMP)
+    </insert>
+    
+    <!-- 참여자 조회 -->
+    <select id="selectParticipant" resultType="com.gorani.vroom.errand.chat.ChatParticipantVO">
+        SELECT participant_id, room_id, user_id, room_role, joined_at, 
+               last_read_message_id, is_active
+        FROM CHAT_PARTICIPANT
+        WHERE room_id = #{roomId}
+          AND user_id = #{userId}
+        LIMIT 1
+    </select>
+    
+    <select id="selectParticipantsByRoomId" resultType="com.gorani.vroom.errand.chat.ChatParticipantVO">
+        SELECT participant_id, room_id, user_id, room_role, joined_at, 
+               last_read_message_id, is_active
+        FROM CHAT_PARTICIPANT
+        WHERE room_id = #{roomId}
+    </select>
+    
+    <!-- 참여자 추가 -->
+    <insert id="insertParticipant">
+        INSERT INTO CHAT_PARTICIPANT (room_id, user_id, room_role, joined_at, is_active)
+        VALUES (#{roomId}, #{userId}, #{roomRole}, CURRENT_TIMESTAMP, 1)
+    </insert>
+    
+    <!-- 참여자 비활성화 -->
+    <update id="updateParticipantInactive">
+        UPDATE CHAT_PARTICIPANT
+        SET is_active = 0
+        WHERE room_id = #{roomId}
+          AND user_id = #{userId}
+    </update>
+    
+    <!-- 메시지 조회 -->
+    <select id="selectMessagesByRoomId" resultType="com.gorani.vroom.errand.chat.ChatMessageVO">
+        SELECT 
+            cm.message_id,
+            cm.room_id,
+            cm.sender_user_id,
+            cm.message_type,
+            cm.content,
+            cm.created_at,
+            cm.is_deleted,
+            m.nickname AS senderNickname,
+            CASE WHEN cm.sender_user_id = #{currentUserId} THEN 1 ELSE 0 END AS isMine
+        FROM CHAT_MESSAGE cm
+        LEFT JOIN MEMBERS m ON cm.sender_user_id = m.user_id
+        WHERE cm.room_id = #{roomId}
+          AND cm.is_deleted = 0
+        ORDER BY cm.created_at ASC
+    </select>
+    
+    <!-- 메시지 전송 -->
+    <insert id="insertMessage" useGeneratedKeys="true" keyProperty="messageId">
+        INSERT INTO CHAT_MESSAGE (room_id, sender_user_id, message_type, content, created_at, is_deleted)
+        VALUES (#{roomId}, #{senderUserId}, #{messageType}, #{content}, CURRENT_TIMESTAMP, 0)
+    </insert>
+    
+    <!-- 심부름 작성자 조회 -->
+    <select id="selectErrandOwnerUserId" resultType="long">
+        SELECT user_id
+        FROM ERRANDS
+        WHERE errands_id = #{errandsId}
+    </select>
+    
+    <!-- 심부름 정보 조회 (채팅방용) -->
+    <select id="selectErrandInfoForChat" resultType="com.gorani.vroom.errand.chat.ChatRoomVO">
+        SELECT 
+            e.errands_id AS errandsId,
+            e.title AS errandTitle,
+            e.description AS errandDescription,
+            CONCAT(ld.gungu_name, ' ', ld.dong_name) AS errandLocation,
+            e.reward_amount AS rewardAmount,
+            e.expense_amount AS expenseAmount,
+            COALESCE(ei.image_url, '/static/img/errand/noimage.png') AS errandImageUrl,
+            m.nickname AS partnerNickname
+        FROM ERRANDS e
+        LEFT JOIN LEGAL_DONG ld ON e.dong_code = ld.dong_code
+        LEFT JOIN ERRAND_IMAGES ei ON e.errands_id = ei.errands_id AND ei.is_main = 1
+        LEFT JOIN MEMBERS m ON e.user_id = m.user_id
+        WHERE e.errands_id = #{errandsId}
+        LIMIT 1
+    </select>
+    
+    <!-- 사용자가 특정 심부름의 채팅방 참여자인지 확인 -->
+    <select id="countParticipantByErrandsIdAndUserId" resultType="int">
+        SELECT COUNT(*)
+        FROM CHAT_PARTICIPANT cp
+        INNER JOIN CHAT_ROOM cr ON cp.room_id = cr.room_id
+        WHERE cr.errands_id = #{errandsId}
+          AND cp.user_id = #{userId}
+          AND cp.is_active = 1
+    </select>
+
+</mapper>
