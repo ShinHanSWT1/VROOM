@@ -969,20 +969,20 @@
                 <div class="summary-grid">
                     <div class="summary-card">
                         <div class="summary-label">총 심부름 게시물 수</div>
-                        <div class="summary-value"></div>
+                        <div class="summary-value">${total_count}</div>
                     </div>
                     <div class="summary-card">
                         <div class="summary-label">미배정 심부름</div>
-                        <div class="summary-value"></div>
-                        <div class="summary-subtitle">D-day 심부름 | </div>
+                        <div class="summary-value">${unmatched}</div>
+                        <div class="summary-subtitle">D-day 심부름 | ${dday} </div>
                     </div>
                     <div class="summary-card">
                         <div class="summary-label">정직원 수</div>
-                        <div class="summary-value">명</div>
+                        <div class="summary-value">${errander_count}명</div>
                     </div>
                     <div class="summary-card">
                         <div class="summary-label">심부름 평균 완료율</div>
-                        <div class="summary-value">%</div>
+                        <div class="summary-value">${completed_rate}%</div>
                     </div>
                 </div>
             </section>
@@ -1014,23 +1014,21 @@
                         </div>
                     </div>
                     <div class="filter-group">
-                        <label class="filter-label">등록시간</label>
-                        <select class="filter-select" id="filterRegisterTime" onchange="applyFilters()">
-                            <option value="">전체</option>
-                            <option value="ACTIVE">활성</option>
-                            <option value="INACTIVE">비활성</option>
-                            <option value="SUSPENDED">일시정지</option>
-                        </select>
+                        <label class="filter-label">등록기간</label>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="date" id="regStartDate" class="filter-select" style="min-width: 130px;">
+                            <span>~</span>
+                            <input type="date" id="regEndDate" class="filter-select" style="min-width: 130px;">
+                        </div>
                     </div>
+
                     <div class="filter-group">
-                        <label class="filter-label">마감시간</label>
-                        <select class="filter-select" id="filterDueDate" onchange="applyFilters()">
-                            <option value="">전체</option>
-                            <option value="5">⭐ 5.0</option>
-                            <option value="4">⭐ 4.0 이상</option>
-                            <option value="3">⭐ 3.0 이상</option>
-                            <option value="2">⭐ 2.0 이상</option>
-                        </select>
+                        <label class="filter-label">마감기간</label>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="date" id="dueStartDate" class="filter-select" style="min-width: 130px;">
+                            <span>~</span>
+                            <input type="date" id="dueEndDate" class="filter-select" style="min-width: 130px;">
+                        </div>
                     </div>
                 </div>
             </section>
@@ -1187,35 +1185,59 @@
         document.getElementById('filterDueDate').addEventListener('change', () => loadErrandsList(1));
     });
 
+    function loadDongList(gunguName) {
+        const dongSelect = document.getElementById('filterDong');
+        dongSelect.innerHTML = '<option value="">동 전체</option>';
+
+        if (!gunguName) return;
+
+        fetch(`${pageContext.request.contextPath}/location/getDongs?gunguName=` + encodeURIComponent(gunguName))
+            .then(res => res.json())
+            .then(data => {
+                data.forEach(dong => {
+                    const option = document.createElement('option');
+                    option.value = dong.dongCode;
+                    option.textContent = dong.dongName;
+                    dongSelect.appendChild(option);
+                });
+            })
+            .catch(err => console.error('동 목록 로드 실패:', err));
+    }
+
     //  심부름 목록 조회
     function loadErrandsList(page) {
         const keyword = document.getElementById('searchInput').value;
-        const approveStatus = document.getElementById('filterApprovalStatus').value;
-        const activeStatus = document.getElementById('filterRegisterTime').value;
-        const reviewScope = document.getElementById('filterDueDate').value;
+        const gu = document.getElementById('filterGu').value;
+        const dong = document.getElementById('filterDong').value;
 
-        // Query String 생성
+        // 시간 범위 값 추출
+        const regStart = document.getElementById('regStartDate').value;
+        const regEnd = document.getElementById('regEndDate').value;
+        const dueStart = document.getElementById('dueStartDate').value;
+        const dueEnd = document.getElementById('dueEndDate').value;
+
         const params = new URLSearchParams({
             page: page,
             keyword: keyword,
-            approveStatus: approveStatus,
-            activeStatus: activeStatus,
-            reviewScope: reviewScope
+            gu: gu,
+            dong: dong,
+            regStart: regStart,
+            regEnd: regEnd,
+            dueStart: dueStart,
+            dueEnd: dueEnd
         });
 
-        fetch('${pageContext.request.contextPath}/api/admin/erranders?' + params)
+        fetch(`${pageContext.request.contextPath}/api/admin/errands/search?` + params)
             .then(response => response.json())
             .then(data => {
-                // data = { userList: [...], totalCount: 123, pageInfo: {...} }
-                renderTable(data.userList);       // 테이블 그리기
-                renderPagination(data.pageInfo);  // 페이지네이션 그리기
-
-                // 총 개수 업데이트
+                console.log(data);
+                renderTable(data.errandList);
+                renderPagination(data.pageInfo);
                 document.getElementById('totalCount').innerText = data.totalCount;
             })
             .catch(error => {
                 console.error('데이터 로드 실패:', error);
-                // alert('데이터를 불러오는 중 오류가 발생했습니다.');
+                alert('심부름 데이터를 불러오는 중 오류가 발생했습니다.');
             });
     }
 
