@@ -47,6 +47,8 @@
             min-height: 100vh;
         }
 
+
+        /* Sidebar Styles */
         .sidebar {
             width: var(--sidebar-width);
             background: linear-gradient(180deg, var(--color-primary) 0%, #4A6B1A 100%);
@@ -65,20 +67,25 @@
         }
 
         .sidebar-header {
-            height: var(--header-height);
             padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            height: var(--header-height);
+            transition: all 0.3s ease;
         }
 
-        .sidebar-logo img {
+        .sidebar-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            white-space: nowrap;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar-logo > img {
             width: 150px;
-        }
-
-        .sidebar.collapsed .sidebar-logo {
-            display: none;
+            height: 37.5px;
         }
 
         .sidebar.collapsed .sidebar-header {
@@ -86,15 +93,42 @@
             padding: 1rem 0;
         }
 
+        .sidebar.collapsed .sidebar-logo {
+            display: none;
+        }
+
+        .sidebar.collapsed .nav-item {
+            justify-content: center;
+            padding: 1rem 0;
+        }
+
+        .sidebar.collapsed .nav-item-icon {
+            margin-right: 0;
+            min-width: unset;
+        }
+
+
         .sidebar-toggle {
+            z-index: 1001;
             background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
             border: none;
-            color: white;
+            color: var(--color-white);
+            min-width: 36px;
             width: 36px;
             height: 36px;
-            border-radius: 4px;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            transition: all 0.3s ease;
         }
+
+        .sidebar-toggle:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
 
         .nav-item {
             display: flex;
@@ -106,29 +140,44 @@
             border-left: 4px solid transparent;
         }
 
-        .nav-item:hover, .nav-item.active {
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            color: var(--color-white);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-left: 4px solid transparent;
+        }
+
+        .nav-item:hover {
             background: rgba(255, 255, 255, 0.1);
             border-left-color: var(--color-secondary);
         }
 
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.15);
+            border-left-color: var(--color-secondary);
+            font-weight: 600;
+        }
+
         .nav-item-icon {
-            margin-right: 10px;
-            font-size: 1.2rem;
-            min-width: 30px;
-            text-align: center;
-        }
-
-        .sidebar.collapsed .nav-item {
+            font-size: 1.5rem;
+            min-width: 40px;
+            display: flex;
+            align-items: center;
             justify-content: center;
-            padding: 1rem 0;
         }
 
-        .sidebar.collapsed .nav-item-icon {
-            margin-right: 0;
+        .nav-item-text {
+            white-space: nowrap;
+            transition: opacity 0.3s ease;
         }
 
         .sidebar.collapsed .nav-item-text {
-            display: none;
+            opacity: 0;
+            width: 0;
         }
 
         /* 메인 컨텐츠 영역 */
@@ -519,66 +568,66 @@
                 </div>
                 <div class="info-grid">
                     <div class="info-item">
-                        <span class="info-label">사용자 ID / 부름이 ID 닉네임</span>
-                        <span class="info-value highlight" id="helperIdNickname">-</span>
+                        <span class="info-label">사용자 ID / 부름이 ID / 닉네임</span>
+                        <span class="info-value highlight" id="helperIdNickname">${empty summary.detail.user_id ? '-' : summary.detail.user_id} / ${empty summary.detail.errander_id ? '-' : summary.detail.errander_id} / ${empty summary.detail.nickname ? '-' : summary.detail.nickname}</span>
                     </div>
                     <div class="info-item">
                         <span class="info-label">이메일 / 휴대폰</span>
-                        <span class="info-value" id="contactInfo">-</span>
+                        <span class="info-value" id="contactInfo">${empty summary.detail.email ? '-' : summary.detail.email} / ${empty summary.detail.phone ? '-' : summary.detail.phone}</span>
                     </div>
                     <div class="info-item">
                         <span class="info-label">승인 상태 (대기 / 승인 / 거절)</span>
                         <span class="info-value" id="approvalStatus">
-                            <span class="status-badge APPROVED">승인</span>
+                            <span class="status-badge ${summary.detail.approval_status}">${summary.detail.approval_status}</span>
                         </span>
                     </div>
                     <div class="info-item">
                         <span class="info-label">활동 상태 (활성/비활성)</span>
                         <span class="info-value" id="activityStatus">
-                            <span class="status-badge ACTIVE">활성</span>
+                            <span class="status-badge ${summary.detail.active_status}">${summary.detail.active_status}</span>
                         </span>
                     </div>
                     <div class="info-item">
                         <span class="info-label">부름이 승인일</span>
-                        <span class="info-value" id="approvalDate">-</span>
+                        <span class="info-value" id="approvalDate">${empty summary.detail.approved_at ? '-' : summary.detail.approved_at}</span>
                     </div>
                     <div class="info-item">
                         <span class="info-label">최근 활동일</span>
-                        <span class="info-value" id="lastActivityDate">-</span>
+                        <span class="info-value" id="lastActivityDate">${empty summary.detail.last_active_at ? '-' : summary.detail.last_active_at}</span>
                     </div>
                     <div class="info-item">
                         <span class="info-label">활동 동네 1</span>
-                        <span class="info-value" id="region1">-</span>
+                        <span class="info-value" id="region1">${empty summary.detail.address1 ? '-' : summary.detail.address1}</span>
                     </div>
                     <div class="info-item">
                         <span class="info-label">활동 동네 2</span>
-                        <span class="info-value" id="region2">-</span>
+                        <span class="info-value" id="region2">${empty summary.detail.address2 ? '-' : summary.detail.address2}</span>
                     </div>
                 </div>
             </section>
 
             <!-- 활동 요약 -->
             <section class="detail-card">
-                <div class="card-title">활동 요약 (한눈에 보기)</div>
+                <div class="card-title">통계 요약</div>
                 <div class="summary-grid">
                     <div class="summary-item">
-                        <div class="summary-label">총 수락 건수 / 완료 건수</div>
-                        <div class="summary-value"><span id="acceptCount">0</span> / <span
-                                id="completeCount">0</span><span class="summary-unit">건</span></div>
+                        <div class="summary-label">총 매칭 건수 / 완료 건수</div>
+                        <div class="summary-value"><span id="acceptCount">${empty summary.activity.matched ? '0' : summary.activity.matched}</span> / <span
+                                id="completeCount">${empty summary.activity.completed ? '0' : summary.activity.completed}</span><span class="summary-unit">건</span></div>
                     </div>
                     <div class="summary-item">
-                        <div class="summary-label">완료율 / 취소율</div>
-                        <div class="summary-value"><span id="completeRate">0</span> / <span
-                                id="cancelRate">0</span><span class="summary-unit">%</span></div>
+                        <div class="summary-label">완료율 / 거절</div>
+                        <div class="summary-value"><span id="completeRate">${empty summary.activity.complete_rate ? '0' : summary.activity.complete_rate}</span> / <span
+                                id="cancelRate">${empty summary.activity.canceled ? '0' : summary.activity.canceled}</span><span class="summary-unit">%</span></div>
                     </div>
                     <div class="summary-item">
                         <div class="summary-label">평균 평점</div>
-                        <div class="summary-value"><span id="avgRating">0</span><span class="summary-unit">/5.0</span>
+                        <div class="summary-value"><span id="avgRating">${empty summary.activity.rating_avg ? '0' : summary.activity.rating_avg}</span><span class="summary-unit">/5.0</span>
                         </div>
                     </div>
                     <div class="summary-item">
                         <div class="summary-label">누적 수익</div>
-                        <div class="summary-value" style="color: var(--color-primary);"><span id="totalEarning">0</span><span
+                        <div class="summary-value" style="color: var(--color-primary);"><span id="totalEarning">${empty summary.activity.total_earning ? '0' : summary.activity.total_earning}</span><span
                                 class="summary-unit">원</span></div>
                     </div>
                 </div>
@@ -618,7 +667,7 @@
                             <span class="info-value" id="totalSettlement">0원</span>
                         </div>
                         <div class="info-item">
-                            <span class="info-label">정산 완료 금액</span>
+                            <span class="info-label">이번달 정산 완료 금액</span>
                             <span class="info-value" id="completedSettlement">0원</span>
                         </div>
                         <div class="info-item">
@@ -694,6 +743,7 @@
 </div>
 
 <script>
+    const currentErranderId = ${summary.detail.errander_id};
     // Sidebar logic
     $(document).ready(function () {
         const sidebar = document.getElementById('sidebar');
@@ -712,7 +762,7 @@
         });
 
         // Load helper detail
-        loadHelperDetail();
+        loadErranderDetail();
     });
 
     // User Dropdown Toggle
@@ -730,78 +780,86 @@
     });
 
     // Load helper detail data
-    function loadHelperDetail() {
-        // URL에서 부름이 ID 추출
-        const urlParams = new URLSearchParams(window.location.search);
-        const erranderId = urlParams.get('id') || '${param.id}';
-
-        if (!erranderId) {
+    function loadErranderDetail() {
+        if (!currentErranderId) {
             alert('부름이 ID가 없습니다.');
             return;
         }
 
         // API 호출
-        fetch('${pageContext.request.contextPath}/api/admin/erranders/' + erranderId)
+        fetch('${pageContext.request.contextPath}/api/admin/erranders/detail',{
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                erranderId: currentErranderId,
+                limit: 5
+            })
+        })
             .then(response => response.json())
             .then(data => {
-                // 기본 정보
-                document.getElementById('helperIdNickname').textContent =
-                    (data.userId || '-') + ' / ' + (data.erranderId || '-') + ' ' + (data.nickname || '-');
-                document.getElementById('contactInfo').textContent =
-                    (data.email || '-') + ' / ' + (data.phone || '-');
-                document.getElementById('approvalDate').textContent = data.approvalDate || '-';
-                document.getElementById('lastActivityDate').textContent = data.lastActivityDate || '-';
-                document.getElementById('region1').textContent = data.region1 || '-';
-                document.getElementById('region2').textContent = data.region2 || '-';
 
-                // 승인/활동 상태
-                if (data.approvalStatus) {
-                    const approvalBadge = data.approvalStatus === 'APPROVED' ? '<span class="status-badge APPROVED">승인</span>' :
-                        data.approvalStatus === 'PENDING' ? '<span class="status-badge PENDING">승인 대기</span>' :
-                            '<span class="status-badge REJECTED">반려</span>';
-                    document.getElementById('approvalStatus').innerHTML = approvalBadge;
-                }
-
-                if (data.activityStatus) {
-                    const activityBadge = data.activityStatus === 'ACTIVE' ? '<span class="status-badge ACTIVE">활성</span>' :
-                        data.activityStatus === 'INACTIVE' ? '<span class="status-badge INACTIVE">비활성</span>' :
-                            '<span class="status-badge SUSPENDED">일시정지</span>';
-                    document.getElementById('activityStatus').innerHTML = activityBadge;
-                }
-
-                // 활동 요약
-                document.getElementById('acceptCount').textContent = data.acceptCount || 0;
-                document.getElementById('completeCount').textContent = data.completeCount || 0;
-                document.getElementById('completeRate').textContent = data.completeRate || 0;
-                document.getElementById('cancelRate').textContent = data.cancelRate || 0;
-                document.getElementById('avgRating').textContent = data.avgRating || 0;
-                document.getElementById('totalEarning').textContent = (data.totalEarning || 0).toLocaleString();
+                console.log(data);
 
                 // 정산 내역
-                document.getElementById('totalSettlement').textContent = (data.totalSettlement || 0).toLocaleString() + '원';
-                document.getElementById('completedSettlement').textContent = (data.completedSettlement || 0).toLocaleString() + '원';
-                document.getElementById('pendingSettlement').textContent = (data.pendingSettlement || 0).toLocaleString() + '원';
+                document.getElementById('totalSettlement').textContent = (data.settlementSummary.total_amount || 0).toLocaleString() + '원';
+                document.getElementById('completedSettlement').textContent = (data.settlementSummary.this_month_amount|| 0).toLocaleString() + '원';
+                document.getElementById('pendingSettlement').textContent = (data.settlementSummary.settlement_pending_amount || 0).toLocaleString() + '원';
                 document.getElementById('recentSettlement').textContent = data.recentSettlement || '-';
 
                 // 리뷰 평점
-                document.getElementById('reviewAvgRating').textContent = (data.reviewAvgRating || 0) + ' / 5.0';
+                document.getElementById('reviewAvgRating').textContent = (data.ratingAvg || 0) + ' / 5.0';
 
                 // 최근 리뷰
-                if (data.recentReviews && data.recentReviews.length > 0) {
-                    const reviewsHtml = data.recentReviews.map(review => `
-                        <div style="padding: 0.5rem; background: #F8F9FA; border-radius: 6px; margin-bottom: 0.5rem;">
-                            <div style="font-size: 0.85rem; color: var(--color-dark); font-weight: 600;">⭐ ${review.rating} / 5.0</div>
-                            <div style="font-size: 0.8rem; color: var(--color-gray);">${review.comment}</div>
-                            <div style="font-size: 0.75rem; color: var(--color-gray); margin-top: 0.25rem;">${review.date}</div>
+                data.recentReviewList.forEach(r => {
+                    r.created_at = formatReviewTime(r.created_at);
+                });
+
+                if (data.recentReviewList && data.recentReviewList.length > 0) {
+                    const reviewsHtml = data.recentReviewList.map(review => `
+                        <div style="
+                            padding: 0.6rem;
+                            background: #F8F9FA;
+                            border-radius: 6px;
+                            margin-bottom: 0.5rem;
+                            display: grid;
+                            grid-template-columns: 1fr auto;
+                            row-gap: 0.3rem;
+                        ">
+                            <!-- 1행: 심부름ID / 날짜 -->
+                            <div style="font-size: 0.75rem; color: var(--color-gray);">
+                                심부름ID: \${review.errand_id}
+                            </div>
+                            <div style="font-size: 0.75rem; color: var(--color-gray); text-align: right;">
+                                ${'${'}review.created_at}
+                            </div>
+
+                            <!-- 2행 왼쪽: 평점 -->
+                            <div style="
+                                font-size: 0.85rem;
+                                color: var(--color-dark);
+                                font-weight: 600;
+                                white-space: nowrap;
+                            ">
+                                ⭐ \${review.rating}
+                            </div>
+
+                            <!-- 2행 오른쪽: 코멘트 -->
+                            <div style="
+                                font-size: 0.8rem;
+                                color: var(--color-gray);
+                                line-height: 1.4;
+                            ">
+                                \${review.comment}
+                            </div>
                         </div>
                     `).join('');
                     document.getElementById('recentReviews').innerHTML = reviewsHtml;
                 }
 
                 // 수행 심부름 목록
-                if (data.errandList && data.errandList.length > 0) {
+                if (data.recentErrandsList && data.recentErrandsList.length > 0) {
                     const errandTbody = document.getElementById('errandListBody');
-                    errandTbody.innerHTML = data.errandList.map((errand, idx) => `
+                    errandTbody.innerHTML = data.recentErrandsList.map((errand, idx) => `
                         <tr>
                             <td>${idx + 1}</td>
                             <td>${errand.errandId} - ${errand.title}</td>
@@ -848,34 +906,35 @@
             })
             .catch(error => {
                 console.error('데이터 로드 실패:', error);
-                // Mock data for testing
-                loadMockData();
             });
     }
 
-    // Mock data for testing
-    function loadMockData() {
-        document.getElementById('helperIdNickname').textContent = 'U123 / E456 빠른배달왕';
-        document.getElementById('contactInfo').textContent = 'helper@example.com / 010-1234-5678';
-        document.getElementById('approvalDate').textContent = '2025-12-01';
-        document.getElementById('lastActivityDate').textContent = '2026-01-20';
-        document.getElementById('region1').textContent = '강남구';
-        document.getElementById('region2').textContent = '서초구';
+    function formatReviewTime(ms) {
+        ms = Number(ms);
+        const now = Date.now();
+        const diff = now - ms;
 
-        document.getElementById('acceptCount').textContent = '150';
-        document.getElementById('completeCount').textContent = '147';
-        document.getElementById('completeRate').textContent = '98';
-        document.getElementById('cancelRate').textContent = '2';
-        document.getElementById('avgRating').textContent = '4.8';
-        document.getElementById('totalEarning').textContent = '1,500,000';
+        const min = 60 * 1000;
+        const hour = 60 * min;
+        const day = 24 * hour;
 
-        document.getElementById('totalSettlement').textContent = '1,500,000원';
-        document.getElementById('completedSettlement').textContent = '1,400,000원';
-        document.getElementById('pendingSettlement').textContent = '100,000원';
-        document.getElementById('recentSettlement').textContent = '2026-01-15 / 50,000원';
+        // 방어 코드 (서버/클라 시간차)
+        if (diff < 0) return '방금 전';
 
-        document.getElementById('reviewAvgRating').textContent = '4.8 / 5.0';
+        // 1일 미만 → 상대시간
+        if (diff < min) return '방금 전';
+        if (diff < hour) return Math.floor(diff / min) + '분 전';
+        if (diff < day) return Math.floor(diff / hour) + '시간 전';
+
+        // 1일 이상 → 날짜로 표시
+        const d = new Date(ms);
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+
+        return yyyy + '-' + mm + '-' + dd;
     }
+
 
     function viewDocument(url) {
         if (!url) {

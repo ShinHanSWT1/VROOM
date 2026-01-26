@@ -186,7 +186,7 @@
               WHERE errander_id = #{erranderId}
               GROUP BY errander_id) e
              ON p.errander_id = e.errander_id
-        WHERE = p.arrander_id = #{erranderId}
+        WHERE p.errander_id = #{erranderId}
     </select>
 
     <!-- 부름이 최근 수행 심부름 목록 -->
@@ -218,6 +218,126 @@
             LIMIT #{limit};
     </select>
 
+    <!-- 부름이 최근 수행 심부름 목록 + 인증샷 -->
+    <select id="getRecentErrandsWithProof" parameterType="map" resultType="map">
+        SELECT
+            t.errands_id,
+            t.errander_id,
+            t.title,
+            t.status,
+            t.event_at,
+            t.source,
+
+            cp.proof_id,
+            cp.submitted_at,
+            cp.file_url
+        FROM (
+                 SELECT
+                     a.errands_id,
+                     a.errander_id,
+                     e.title,
+                     a.status,
+                     a.assigned_at AS event_at,
+                     'ASSIGNMENT'  AS source
+                 FROM ERRAND_ASSIGNMENTS a
+                          JOIN ERRANDS e ON e.errands_id = a.errands_id
+                 WHERE a.errander_id = #{erranderId}
+                   AND a.status IN ('CANCELED', 'COMPLETED')
+
+                 UNION ALL
+
+                 SELECT
+                     e.errands_id,
+                     e.errander_id,
+                     e.title,
+                     e.status,
+                     e.updated_at AS event_at,
+                     'ERRAND'     AS source
+                 FROM ERRANDS e
+                 WHERE e.errander_id = #{erranderId}
+                   AND e.status IN ('WAITING', 'MATCHED', 'CONFIRMED1', 'CONFIRMED2')
+             ) t
+                 LEFT JOIN COMPLETION_PROOFS cp
+                           ON cp.errands_id = t.errands_id
+                               AND cp.errander_id = t.errander_id
+        ORDER BY t.event_at DESC
+            LIMIT #{limit}
+    </select>
+
+
     <!-- 정산 정보 -->
+    <!-- 누적 정산 금액, 이번달 정산 완료 금액, 정산 대기 금액, 최근 정산 내역 -->
+    <select id="getSettlementSummary"
+            parameterType="long" resultType="map">
+        SELECT
+            (
+                SELECT COALESCE(SUM(wt.amount), 0)
+                FROM WALLET_TRANSACTIONS wt
+                WHERE wt.errander_id = #{erranderId} AND wt.txn_type = 'PAYOUT'
+            ) AS total_amount,
+            <![CDATA[
+            (
+                SELECT
+                    COALESCE(SUM(CASE WHEN created_at >= DATE_FORMAT(CURRENT_DATE, '%Y-%m-01')
+                                        AND created_at <  DATE_ADD(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL 1 MONTH)
+                                        THEN amount ELSE 0 END)
+                            , 0)
+                FROM WALLET_TRANSACTIONS
+                WHERE errander_id = #{erranderId} AND txn_type = 'PAYOUT'
+            ) AS this_month_amount,
+            ]]>
+            (
+                SELECT COALESCE(SUM(p.amount), 0)
+                FROM PAYMENT_ORDERS p JOIN ERRANDS e ON p.errands_id = e.errands_id
+                WHERE p.errander_id = #{erranderId} AND p.status = 'PENDING' AND e.status = 'CONFIRMED2'
+            ) AS settlement_pending_amount
+    </select>
+
+    <!-- 부름이 평균 평점 -->
+    <select id="getErranderRatingAvg"
+            parameterType="long" resultType="double">
+        SELECT
+            COALESCE(rating_avg, 0) AS rating_avg
+        FROM ERRANDER_PROFILES
+        WHERE errander_id = #{erranderId}
+    </select>
+
+    <!-- 부름이 최근 리뷰 N건 -->
+    <select id="getRecentReviews"
+            parameterType="map" resultType="map">
+        SELECT
+            r.review_id,
+            r.errand_id,
+            r.rating,
+            r.comment,
+            r.created_at
+        FROM REVIEWS r JOIN ERRANDS e ON e.errands_id = r.errand_id
+        WHERE e.errander_id = #{erranderId}
+        ORDER BY r.created_at DESC
+            LIMIT #{limit}
+    </select>
+
+    <!-- 관리자 메모 -->
+    <select id="getAdminMemo"
+            parameterType="long" resultType="String">
+        SELECT admin_memo
+        FROM ERRANDER_PROFILES
+        WHERE errander_id = #{erranderId}
+    </select>
+
+    <!-- 인증 제출 서류 -->
+    <select id="getDocuments"
+            parameterType="long" resultType="map">
+        SELECT doc_type, file_url
+        FROM ERRANDER_DOCUMENTS
+        WHERE errander_id = #{erranderId}
+    </select>
+
+    <!-- 관리자 메모 업데이트 -->
+    <update id="updateAdminMemo"
+            parameterType="map">
+        UPDATE ERRANDER_PROFILES SET admin_memo = #{adminMemo}
+        WHERE errander_id = #{erranderId}
+    </update>
 
 </mapper>

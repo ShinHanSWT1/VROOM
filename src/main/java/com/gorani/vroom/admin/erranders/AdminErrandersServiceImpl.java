@@ -110,4 +110,29 @@ public class AdminErrandersServiceImpl implements AdminErrandersService {
         return dataMap;
     }
 
+    @Override
+    public Map<String, Object> getDetailSummary(Long erranderId) {
+        Map<String, Object> dataMap = new HashMap<>();
+
+        dataMap.put("detail", mapper.getErranderDetail(erranderId));
+        dataMap.put("activity", mapper.getActivitySummary(erranderId));
+
+
+        return dataMap;
+    }
+
+    @Override
+    public Map<String, Object> getDetailAllInfo(Long erranderId, int limit) {
+        Map<String, Object> dataMap = new HashMap<>();
+
+        dataMap.put("recentErrandsList", mapper.getRecentErrandsWithProof(erranderId, limit));
+        dataMap.put("settlementSummary", mapper.getSettlementSummary(erranderId));
+        dataMap.put("ratingAvg", mapper.getErranderRatingAvg(erranderId));
+        dataMap.put("recentReviewList", mapper.getRecentReviews(erranderId, limit));
+        dataMap.put("adminMemo", mapper.getAdminMemo(erranderId));
+        dataMap.put("authDocuments", mapper.getDocuments(erranderId));
+
+        return dataMap;
+    }
+
 }

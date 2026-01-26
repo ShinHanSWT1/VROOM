@@ -23,15 +23,6 @@ public class AdminErrandersController {
         return "admin/erranders";
     }
 
-    // 부름이 상세 페이지 이동
-    @GetMapping("/admin/erranders/detail")
-    public String getErranderDetail(
-            @RequestParam("id") Long erranderId, Model model
-    ) {
-
-        return "admin/errander_detail";
-    }
-
     // 부름이 목록 조회
     @GetMapping("/api/admin/erranders")
     @ResponseBody
@@ -97,12 +88,23 @@ public class AdminErrandersController {
     public String erranderDetail(
             @PathVariable("id") Long erranderId,
             Model model
-            ) {
-
-
+    ) {
+        model.addAttribute("summary", service.getDetailSummary(erranderId));
+        log.info("부름이 기본 정보: " + service.getDetailSummary(erranderId));
 
         return "admin/errander_detail";
-
     }
 
+
+    @PostMapping("/api/admin/erranders/detail")
+    @ResponseBody
+    public Map<String, Object> erranderAllInfo(
+            @RequestBody Map<String, Object> params
+    ) {
+        Long erranderId = Long.parseLong(params.get("erranderId").toString());
+        int limit = Integer.parseInt(params.get("limit").toString());
+
+        log.info("부름이 상세 정보 요약" + service.getDetailAllInfo(erranderId, limit));
+        return service.getDetailAllInfo(erranderId, limit);
+    }
 }

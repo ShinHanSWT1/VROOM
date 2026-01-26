@@ -28,7 +28,47 @@ public interface AdminErrandersMapper {
             @Param("status") String status
     );
 
+    Map<String, Object> getErranderDetail(
+            @Param("erranderId") Long erranderId
+    );
+
     Map<String, Object> getActivitySummary(
+            @Param("erranderId") Long erranderId
+    );
+
+    List<Map<String, Object>> getRecentErrands(
+            @Param("erranderId") Long erranderId,
+            @Param("limit") int limit
+    );
+
+    List<Map<String, Object>> getRecentErrandsWithProof(
+            @Param("erranderId") Long erranderId,
+            @Param("limit") int limit
+    );
+
+    Map<String, Object> getSettlementSummary(
+            @Param("erranderId") Long erranderId
+    );
+
+    double getErranderRatingAvg(
+            @Param("erranderId") Long erranderId
+    );
+
+    List<Map<String, Object>> getRecentReviews(
+            @Param("erranderId") Long erranderId,
+            @Param("limit") int limit
+    );
+
+    String getAdminMemo(
+            @Param("erranderId") Long erranderId
+    );
+
+    int updateAdminMemo(
+            @Param("erranderId") Long erranderId,
+            @Param("adminMemo") String adminMemo
+    );
+
+    List<Map<String, Object>> getDocuments(
             @Param("erranderId") Long erranderId
     );
 }
