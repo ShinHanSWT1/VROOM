@@ -11,18 +11,36 @@
     
     <!-- 공통 CSS -->
     <link rel="stylesheet" href="<c:url value='/static/common/css/common.css'/>">
-    <link rel="stylesheet" href="<c:url value='/static/main/css/main.css'/>">
+    
+    <!-- 페이지별 CSS (본문 영역만) -->
+    <!-- DEBUG: pageCss = ${pageCss} -->
+    <c:if test="${not empty pageCss}">
+        <c:choose>
+            <c:when test="${pageCss == 'main'}">
+                <link rel="stylesheet" href="<c:url value='/static/main/css/main.css'/>">
+                <!-- DEBUG: main.css 로드됨 -->
+            </c:when>
+            <c:when test="${pageCss == 'community'}">
+                <link rel="stylesheet" href="<c:url value='/static/community/css/community.css'/>">
+            </c:when>
+            <c:when test="${pageCss == 'community-detail'}">
+                <link rel="stylesheet" href="<c:url value='/static/community/css/communityDetail.css'/>">
+            </c:when>
+            <c:when test="${pageCss == 'community-write'}">
+                <link rel="stylesheet" href="<c:url value='/static/community/css/communityWrite.css'/>">
+            </c:when>
+            <c:when test="${not empty pageCssDir}">
+                <c:if test="${pageCssDir == 'errander'}">
+                    <link rel="stylesheet" href="<c:url value='/static/errander/css/styles.css'/>">
+                </c:if>
+                <link rel="stylesheet" href="<c:url value='/static/${pageCssDir}/css/${pageCss}.css'/>">
+            </c:when>
+        </c:choose>
+    </c:if>
 
-    <!-- 페이지별 CSS -->
-    <c:if test="${pageCss == 'community'}">
-        <link rel="stylesheet" href="<c:url value='/static/community/css/community.css'/>">
-    </c:if>
-    <c:if test="${pageCss == 'community-detail'}">
-        <link rel="stylesheet" href="<c:url value='/static/community/css/communityDetail.css'/>">
-    </c:if>
-    <c:if test="${pageCss == 'community-write'}">
-        <link rel="stylesheet" href="<c:url value='/static/community/css/communityWrite.css'/>">
-    </c:if>
+    <!-- 글꼴 -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="stylesheet" as="style" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
 
     <!-- jQuery (AJAX 사용 시) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -38,14 +56,29 @@
                 <a href="${pageContext.request.contextPath}/"><h1>VROOM</h1></a>
             </div>
             <nav class="nav-menu">
-                <a href="<c:url value='/about'/>" class="nav-item">소개</a>
                 <a href="${pageContext.request.contextPath}/community/" class="nav-item ${pageId == 'community' ? 'active' : ''}">커뮤니티</a>
 
                 <c:choose>
                     <c:when test="${sessionScope.loginSess != null}">
                         <!-- 로그인 상태 -->
-                        <a href="${pageContext.request.contextPath}/errander/switch" class="nav-item">심부름꾼 전환</a>
-                        <a href="${pageContext.request.contextPath}/member/myInfo" class="nav-item nav-user">${sessionScope.loginSess.nickname}님</a>
+                        <c:choose>
+                            <c:when test="${sessionScope.loginSess.role == 'ERRANDER'}">
+                                <a href="${pageContext.request.contextPath}/user/switch" class="nav-item">사용자 전환</a>
+                            </c:when>
+                            <c:otherwise>
+                                <a href="${pageContext.request.contextPath}/errander/switch" class="nav-item">심부름꾼 전환</a>
+                            </c:otherwise>
+                        </c:choose>
+                        <div class="nav-dropdown">
+                            <button class="nav-item nav-user" id="userDropdownBtn">${sessionScope.loginSess.nickname}님</button>
+                            <div class="dropdown-menu" id="userDropdownMenu">
+                                <a href="<c:url value='/member/myInfo'/>" class="dropdown-item">나의정보</a>
+                                <a href="<c:url value='/member/vroomPay'/>" class="dropdown-item">부름페이</a>
+                                <a href="<c:url value='/member/myActivity'/>" class="dropdown-item">나의 활동</a>
+                                <a href="#" class="dropdown-item">설정</a>
+                                <a href="#" class="dropdown-item">고객지원</a>
+                            </div>
+                        </div>
                         <a href="${pageContext.request.contextPath}/auth/logout" class="nav-item">로그아웃</a>
                     </c:when>
                     <c:otherwise>
@@ -57,3 +90,24 @@
             </nav>
         </div>
     </header>
+
+    <script>
+        // Dropdown 기능
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdownBtn = document.getElementById('userDropdownBtn');
+            const dropdownMenu = document.getElementById('userDropdownMenu');
+
+            if (dropdownBtn && dropdownMenu) {
+                dropdownBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    dropdownMenu.classList.toggle('active');
+                });
+
+                document.addEventListener('click', function(e) {
+                    if (!dropdownMenu.contains(e.target) && !dropdownBtn.contains(e.target)) {
+                        dropdownMenu.classList.remove('active');
+                    }
+                });
+            }
+        });
+    </script>
