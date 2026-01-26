@@ -1,4 +1,4 @@
-package com.gorani.vroom.Location;
+package com.gorani.vroom.location;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
