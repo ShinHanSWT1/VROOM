@@ -767,11 +767,24 @@
 				  </div>
 				
 				  <div class="chat-cta">
-				    <form method="post" action="${pageContext.request.contextPath}/errand/assign/request">
-				      <input type="hidden" name="errandsId" value="${errand.errandsId}" />
-				      <button type="submit" class="btn btn-primary">채팅하기</button>
-				    </form>
-				  </div>
+					  <form method="post" action="${pageContext.request.contextPath}/errand/assign/request">
+					    <input type="hidden" name="errandsId" value="${errand.errandsId}" />
+					
+					    <c:choose>
+					      <c:when test="${errand.status eq 'WAITING'}">
+					        <button type="submit" class="btn btn-primary">
+					          채팅하기
+					        </button>
+					      </c:when>
+					      <c:otherwise>
+					        <button type="button" class="btn btn-secondary" disabled>
+					          이미 매칭됨
+					        </button>
+					      </c:otherwise>
+					    </c:choose>
+					
+					  </form>
+					</div>
 				</div>
 			</div>
 
