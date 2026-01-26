@@ -40,11 +40,11 @@
             <nav class="nav-menu">
                 <a href="<c:url value='/about'/>" class="nav-item">소개</a>
                 <a href="${pageContext.request.contextPath}/community/" class="nav-item ${pageId == 'community' ? 'active' : ''}">커뮤니티</a>
-                <a href="<c:url value='/event'/>" class="nav-item">이벤트</a>
-                
+
                 <c:choose>
                     <c:when test="${sessionScope.loginSess != null}">
                         <!-- 로그인 상태 -->
+                        <a href="${pageContext.request.contextPath}/errander/switch" class="nav-item">심부름꾼 전환</a>
                         <a href="${pageContext.request.contextPath}/member/myInfo" class="nav-item nav-user">${sessionScope.loginSess.nickname}님</a>
                         <a href="${pageContext.request.contextPath}/auth/logout" class="nav-item">로그아웃</a>
                     </c:when>

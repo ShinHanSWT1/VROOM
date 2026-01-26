@@ -11,6 +11,80 @@
     <title>나의 정보 - 부름이 마이 페이지</title>
     <link rel="stylesheet" href="<c:url value='/static/errander/css/styles.css'/>">
     <style>
+    
+    	.nav-dropdown {
+		  position: relative;
+		  display: inline-block;
+		  border: none;
+		}
+		
+		/* 실제 테두리 원인 */
+		.nav-dropdown button,
+		.nav-user {
+		  border: none;
+		  outline: none;
+		  box-shadow: none;
+		}
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background-color: var(--color-white);
+            min-width: 160px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 1001;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .dropdown-menu.active {
+            display: block;
+        }
+
+        .dropdown-item {
+            color: var(--color-dark);
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            font-size: 0.9rem;
+            transition: background-color 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f1f1f1;
+            color: var(--color-primary);
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background-color: var(--color-light-gray);
+            margin: 4px 0;
+        }
+
+        .dropdown-item.logout {
+            color: #e74c3c;
+        }
+
+        .dropdown-item.logout:hover {
+            background-color: #fdeaea;
+        }
+        
         .mypage-layout {
             display: flex;
             gap: 2rem;
@@ -336,9 +410,22 @@
                 <h1>VROOM</h1>
             </div>
             <nav class="nav-menu">
-                <a href="../../main.html" class="nav-item">홈</a>
-                <a href="#" class="nav-item">커뮤니티</a>
-                <a href="<c:url value='/member/myInfo'/>" class="nav-item nav-user">${profile.nickname}</a>
+                <a href="../../" class="nav-item">홈</a>
+                <a href="../../errand/list" class="nav-item">심부름 목록</a>
+                <a href="../../community" class="nav-item">커뮤니티</a>
+                <a href="<c:url value='/member/myInfo'/>" class="nav-item">사용자 전환</a>
+                <div class="nav-dropdown">
+	                <button class="nav-item nav-user" id="userDropdownBtn">부름이</button>
+	                <div class="dropdown-menu" id="userDropdownMenu">
+	                    <a href="myInfo" class="dropdown-item">나의정보</a>
+	                    <a href="vroomPay" class="dropdown-item">부름페이</a>
+	                    <a href="myActivity" class="dropdown-item">나의거래</a>
+	                    <a href="#" class="dropdown-item">설정</a>
+	                    <a href="#" class="dropdown-item">고객지원</a>
+	                    <div class="dropdown-divider"></div>
+	                    <a href="#" class="dropdown-item logout">로그아웃</a>
+	                </div>
+            	</div>
             </nav>
         </div>
     </header>
@@ -591,6 +678,25 @@
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', initPage);
+        
+     	// Dropdown Logic (Reused)
+        document.addEventListener('DOMContentLoaded', function () {
+            const dropdownBtn = document.getElementById('userDropdownBtn');
+            const dropdownMenu = document.getElementById('userDropdownMenu');
+
+            if (dropdownBtn && dropdownMenu) {
+                dropdownBtn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    dropdownMenu.classList.toggle('active');
+                });
+
+                document.addEventListener('click', function (e) {
+                    if (!dropdownMenu.contains(e.target) && !dropdownBtn.contains(e.target)) {
+                        dropdownMenu.classList.remove('active');
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>
