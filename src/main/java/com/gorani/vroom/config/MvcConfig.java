@@ -31,6 +31,7 @@ public class MvcConfig implements WebMvcConfigurer {
 	// 업로드 저장 경로 (외부 경로)
 	public static final String PROFILE_UPLOAD_PATH = "C:/uploads/profile/";
 	public static final String ERRAND_UPLOAD_PATH  = "C:/uploads/errand/";
+	public static final String COMMUNITY_UPLOAD_PATH = "C:/uploads/community/";
 
     @Value("${db.driver}")
     private String driver;
@@ -76,6 +77,10 @@ public class MvcConfig implements WebMvcConfigurer {
         // 심부름(게시글) 이미지 (외부 경로 매핑)
         registry.addResourceHandler("/uploads/errand/**")
                 .addResourceLocations("file:/" + ERRAND_UPLOAD_PATH);
+
+        // 커뮤니티 이미지 (외부 경로 매핑)
+        registry.addResourceHandler("/uploads/community/**")
+                .addResourceLocations("file:/" + COMMUNITY_UPLOAD_PATH);
     }
 
     @Override
@@ -126,7 +131,8 @@ public class MvcConfig implements WebMvcConfigurer {
     @Bean
     public CommonsMultipartResolver multipartResolver() {
         CommonsMultipartResolver resolver = new CommonsMultipartResolver();
-        resolver.setMaxUploadSize(5 * 1024 * 1024);
+        resolver.setMaxUploadSize(30 * 1024 * 1024); // 30MB
+        resolver.setMaxUploadSizePerFile(10 * 1024 * 1024); // 10MB per file
         resolver.setDefaultEncoding("utf-8");
 
         return resolver;
@@ -142,4 +148,3 @@ public class MvcConfig implements WebMvcConfigurer {
 
 
 }
-

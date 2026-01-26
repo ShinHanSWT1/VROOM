@@ -192,4 +192,69 @@ public class CommunityServiceImpl implements CommunityService{
     public boolean isLiked(Long postId, Long userId) {
         return communityMapper.checkLikeExists(postId, userId) > 0;
     }
+
+    // 게시글 작성
+    @Override
+    public boolean createPost (CommunityPostVO communityPostVO) {
+        return communityMapper.insertCommunityPost(communityPostVO) > 0;
+    }
+
+    // 게시글 업데이트
+    @Override
+    public boolean updatePost(CommunityPostVO communityPostVO) {
+        return communityMapper.updateCommunityPost(communityPostVO) > 0;
+    }
+
+    // 게시글 삭제
+    @Override
+    public boolean deletePost(CommunityPostVO communityPostVO) {
+        return communityMapper.deleteCommunityPost(communityPostVO) > 0;
+    }
+
+    // 근처 동네 인기글 조회
+    @Override
+    public List<CommunityPostVO> getNearbyPopularPostList(String dongCode, Long currentPostId) {
+        return communityMapper.selectNearbyPopularPostList(dongCode, currentPostId);
+    }
+
+    // 이미지 저장
+    @Override
+    public void saveImages(Long postId, List<String> imageUrls) {
+        if (imageUrls == null || imageUrls.isEmpty()) {
+            return;
+        }
+        for (int i = 0; i < imageUrls.size(); i++) {
+            CommunityImageVO imageVO = new CommunityImageVO();
+            imageVO.setPostId(postId);
+            imageVO.setImageUrl(imageUrls.get(i));
+            imageVO.setSortOrder(i + 1);
+            communityMapper.insertCommunityImage(imageVO);
+        }
+    }
+
+    // 이미지 목록 조회
+    @Override
+    public List<CommunityImageVO> getImages(Long postId) {
+        return communityMapper.selectImages(postId);
+    }
+
+    // 이미지 수정 (keepImageIds 제외한 나머지 삭제 + 새 이미지 추가)
+    @Override
+    @Transactional
+    public void updateImages(Long postId, List<Long> keepImageIds, List<String> newImageUrls) {
+        // keepImageIds에 없는 기존 이미지 soft delete
+        communityMapper.deleteImages(postId, keepImageIds);
+
+        // 새 이미지 추가 (sort_order는 기존 이미지 다음부터)
+        int startOrder = (keepImageIds != null) ? keepImageIds.size() + 1 : 1;
+        if (newImageUrls != null) {
+            for (int i = 0; i < newImageUrls.size(); i++) {
+                CommunityImageVO imageVO = new CommunityImageVO();
+                imageVO.setPostId(postId);
+                imageVO.setImageUrl(newImageUrls.get(i));
+                imageVO.setSortOrder(startOrder + i);
+                communityMapper.insertCommunityImage(imageVO);
+            }
+        }
+    }
 }

@@ -20,6 +20,9 @@
     <c:if test="${pageCss == 'community-detail'}">
         <link rel="stylesheet" href="<c:url value='/static/community/css/community-detail.css'/>">
     </c:if>
+    <c:if test="${pageCss == 'community-write'}">
+        <link rel="stylesheet" href="<c:url value='/static/community/css/community-write.css'/>">
+    </c:if>
 
     <!-- jQuery (AJAX 사용 시) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

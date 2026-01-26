@@ -42,4 +42,25 @@ public interface CommunityService {
 
     // 좋아요 여부 확인
     boolean isLiked(Long postId, Long userId);
+
+    // 게시글 작성
+    boolean createPost(CommunityPostVO communityPostVO);
+
+    // 게시글 업데이트
+    boolean updatePost(CommunityPostVO communityPostVO);
+
+    // 게시글 삭제
+    boolean deletePost(CommunityPostVO communityPostVO);
+
+    // 근처 동네 인기글 조회
+    List<CommunityPostVO> getNearbyPopularPostList(String dongCode, Long currentPostId);
+
+    // 이미지 저장
+    void saveImages(Long postId, List<String> imageUrls);
+
+    // 이미지 목록 조회
+    List<CommunityImageVO> getImages(Long postId);
+
+    // 이미지 수정 (keepImageIds 제외한 나머지 삭제 + 새 이미지 추가)
+    void updateImages(Long postId, List<Long> keepImageIds, List<String> newImageUrls);
 }
