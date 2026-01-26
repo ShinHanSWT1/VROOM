@@ -8,6 +8,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>회원가입 - 우리동네 심부름</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         /* 전역 변수 및 리셋 */
         :root {
@@ -188,6 +189,21 @@
             font-weight: 600;
             color: var(--color-dark);
             margin-bottom: 0.5rem;
+        }
+
+        .input-guide {
+            display: block;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            min-height: 1.2rem;
+        }
+
+        .input-guide.success {
+            color: var(--color-primary);
+        }
+
+        .input-guide.error {
+            color: #DC3545;
         }
 
         .auth-input {
@@ -451,6 +467,21 @@
             color: var(--color-warm);
         }
 
+        /* 공통 메시지 */
+        .form-msg {
+            display: block;
+            margin-top: 6px;
+            font-size: 0.85rem;
+        }
+
+        .form-msg.error {
+            color: #D32F2F;
+        }
+
+        .form-msg.success {
+            color: #2E7D32;
+        }
+
         /* 반응형 */
         @media (max-width: 768px) {
             .header-container {
@@ -495,6 +526,12 @@
     <div class="auth-card">
         <h2 class="auth-title">회원가입</h2>
 
+        <c:if test="${not empty signupError}">
+            <div id="globalError" class="form-msg error">
+                    ${signupError}
+            </div>
+        </c:if>
+
         <form action="${pageContext.request.contextPath}/auth/signup" method="post" enctype="multipart/form-data" id="signupForm">
             <!-- 이메일 입력 -->
             <div class="auth-form-group">
@@ -507,6 +544,7 @@
                         placeholder="이메일을 입력하세요"
                         autocomplete="email"
                 >
+                <span id="emailMsg" class="input-guide"></span>
             </div>
 
             <!-- 비밀번호 입력 -->
@@ -546,6 +584,7 @@
                         placeholder="전화번호를 입력하세요"
                         autocomplete="tel"
                 >
+                <span id="phoneMsg" class="input-guide"></span>
             </div>
 
             <!-- 프로필 이미지 업로드 -->
@@ -589,6 +628,7 @@
                     </select>
                     <input type="hidden" name="dongCode2" id="dongCode2">
                 </div>
+                <span id="addrMsg" class="input-guide error"></span>
             </div>
 
             <!-- 회원가입 버튼 -->
@@ -654,6 +694,12 @@
     const phoneInput = document.getElementById('phone');
     const signupBtn = document.getElementById('signupBtn');
 
+    // 유효성 검사 변수
+    let emailValid = false;
+    let phoneValid = false;
+    let dong1Valid = false;
+    let dong2Valid = false;
+
     // 모든 입력 필드에 대한 이벤트 리스너
     const inputs = [emailInput, passwordInput, nicknameInput, phoneInput];
 
@@ -675,7 +721,7 @@
             } else {
                 this.classList.remove('has-value', 'valid');
             }
-            checkSignupButton();
+            validateSignup();
         });
 
         // 포커스 처리
@@ -690,136 +736,248 @@
         });
     });
 
-    // 회원가입 버튼 활성화 체크
-    function checkSignupButton() {
-        const emailValue = emailInput.value.trim();
-        const passwordValue = passwordInput.value;
-        const nicknameValue = nicknameInput.value.trim();
-        const phoneValue = phoneInput.value.trim();
+    // 이메일 중복 체크
+    let emailTimer = null;
+    const contextPath = '${pageContext.request.contextPath}';
 
-        if (emailValue.length > 0 && passwordValue.length >= 4 && nicknameValue.length > 0 && phoneValue.length > 0) {
-            signupBtn.disabled = false;
-        } else {
-            signupBtn.disabled = true;
-        }
-    }
+    emailInput.addEventListener('input', function () {
+        clearTimeout(emailTimer);
 
-    // 주소 선택 관련 변수
-    const gu1Select = document.getElementById('gu1');
-    const dong1Select = document.getElementById('dong1');
-    const dongCode1Input = document.getElementById('dongCode1');
-    const gu2Select = document.getElementById('gu2');
-    const dong2Select = document.getElementById('dong2');
-    const dongCode2Input = document.getElementById('dongCode2');
+        const email = $(this).val().trim();
+        if (!email) return;
 
-    // 목업 데이터 (실제로는 API 호출)
-    const mockGus = ['강남구', '강동구', '강북구', '강서구', '관악구', '광진구', '구로구', '금천구', '노원구', '도봉구', '동대문구', '동작구', '마포구', '서대문구', '서초구', '성동구', '성북구', '송파구', '양천구', '영등포구', '용산구', '은평구', '종로구', '중구', '중랑구'];
-
-    // 페이지 로드 시 구 목록 로드
-    function loadGus() {
-        console.log(mockGus.length);
-        console.log(gu1Select, gu2Select);
-
-        mockGus.forEach(gu => {
-            // gu1용 option
-            const option1 = document.createElement('option');
-            option1.value = gu;
-            option1.textContent = gu;
-            gu1Select.appendChild(option1);
-
-            // gu2용 option
-            const option2 = document.createElement('option');
-            option2.value = gu;
-            option2.textContent = gu;
-            gu2Select.appendChild(option2);
-        });
-    }
-
-    // 구 선택 시 동 목록 로드
-    function loadDongs(guSelect, dongSelect, dongCodeInput) {
-        const selectedGu = guSelect.value;
-
-        if (!selectedGu) {
-            dongSelect.disabled = true;
-            dongSelect.innerHTML = '<option value="">동 선택</option>';
-            dongCodeInput.value = '';
-            dongSelect.classList.remove('has-value');
-            return;
-        }
-
-        const contextPath = '${pageContext.request.contextPath}';
-
-        fetch(contextPath + '/auth/selectdong?gu=' + encodeURIComponent(selectedGu))
-            .then(res => res.json())
-            .then(dongs => {
-                dongSelect.disabled = false;
-                dongSelect.innerHTML = '<option value="">동 선택</option>';
-
-                dongs.forEach(dong => {
-                    const option = document.createElement('option');
-                    option.value = dong.dongName;
-                    option.textContent = dong.dongName;
-                    option.dataset.code = dong.dongCode;
-                    dongSelect.appendChild(option);
-                });
-
-                dongCodeInput.value = '';
-                dongSelect.classList.remove('has-value');
-            })
-            .catch(err => {
-                console.error('동 조회 실패', err);
-                alert('동 정보를 불러오지 못했습니다.');
+        emailTimer = setTimeout(() => {
+            $.ajax({
+                url: contextPath + '/auth/check-email',
+                type: 'GET',
+                data: { email: email },
+                dataType: 'json',
+                success: function(exists) {
+                    const msg = $('#emailMsg');
+                    if (exists) {
+                        msg.text('✖ 이미 가입된 이메일입니다');
+                        msg.attr('class', 'input-guide error');
+                        emailValid = false;
+                    } else {
+                        msg.text('✔ 사용 가능한 이메일입니다');
+                        msg.attr('class', 'input-guide success');
+                        emailValid = true;
+                    }
+                    validateSignup();
+                }
             });
-    }
-
-    // 동 선택 시 dong_code 저장
-    function handleDongSelect(dongSelect, dongCodeInput) {
-        const selectedOption = dongSelect.options[dongSelect.selectedIndex];
-
-        if (selectedOption.value && selectedOption.dataset.code) {
-            dongCodeInput.value = selectedOption.dataset.code;
-            dongSelect.classList.add('has-value');
-        } else {
-            dongCodeInput.value = '';
-            dongSelect.classList.remove('has-value');
-        }
-    }
-
-    // 구 선택 이벤트 리스너
-    gu1Select.addEventListener('change', function() {
-        this.classList.add('has-value');
-        loadDongs(gu1Select, dong1Select, dongCode1Input);
+        }, 400); // 0.4초 후 실행
     });
 
-    gu2Select.addEventListener('change', function() {
-        this.classList.add('has-value');
-        loadDongs(gu2Select, dong2Select, dongCode2Input);
-    });
+    // 전화번호 중복 체크
+    phoneInput.addEventListener('blur', function () {
+        const phone = $(this).val().trim();
+        if (!phone) return;
 
-    // 동 선택 이벤트 리스너
-    dong1Select.addEventListener('change', function() {
-        handleDongSelect(dong1Select, dongCode1Input);
-    });
-
-    dong2Select.addEventListener('change', function() {
-        handleDongSelect(dong2Select, dongCode2Input);
-    });
-
-    // 포커스 처리
-    [gu1Select, dong1Select, gu2Select, dong2Select].forEach(select => {
-        select.addEventListener('focus', function() {
-            this.style.backgroundColor = 'var(--color-white)';
-        });
-
-        select.addEventListener('blur', function() {
-            if (!this.value) {
-                this.style.backgroundColor = 'var(--color-light-gray)';
+        $.ajax({
+            url: contextPath + '/auth/check-phone',
+            type: 'GET',
+            data: { phone: phone },
+            dataType: 'json',
+            success: function(exists) {
+                const msg = $('#phoneMsg');
+                if (exists) {
+                    msg.text('✖ 이미 등록된 번호입니다');
+                    msg.attr('class', 'input-guide error');
+                    phoneValid = false;
+                } else {
+                    msg.text('✔ 사용 가능한 번호입니다');
+                    msg.attr('class', 'input-guide success');
+                    phoneValid = true;
+                }
+                validateSignup();
             }
         });
     });
 
+    // 회원가입 버튼 활성화 체크
+    function validateSignup() {
+        const addrMsg = $('#addrMsg');
+
+        if (!dong1Valid || !dong2Valid) {
+            addrMsg.text('주소 1, 2를 모두 선택해주세요');
+        } else {
+            addrMsg.text('');
+        }
+
+        const passwordValue = $('#signup-password').val();
+        const nicknameValue = $('#nickname').val().trim();
+
+        $('#signupBtn').prop('disabled', !(
+            emailValid &&
+            phoneValid &&
+            passwordValue.length >= 4 &&
+            nicknameValue.length > 0 &&
+            dong1Valid &&
+            dong2Valid
+        ));
+    }
+
+    // 주소 선택 관련 변수는 jQuery로 직접 사용
+
+    // 페이지 로드 시 구 목록 로드 (하드코딩)
+    function loadGus() {
+        const gus = ['강남구', '강동구', '강북구', '강서구', '관악구', '광진구', '구로구', '금천구', '노원구', '도봉구', '동대문구', '동작구', '마포구', '서대문구', '서초구', '성동구', '성북구', '송파구', '양천구', '영등포구', '용산구', '은평구', '종로구', '중구', '중랑구'];
+
+        $.each(gus, function(i, gu) {
+            $('#gu1').append($('<option>').val(gu).text(gu));
+            $('#gu2').append($('<option>').val(gu).text(gu));
+        });
+    }
+
+    // 구 선택 시 동 목록 로드
+    function loadDongs(guSelectId, dongSelectId, dongCodeInputId) {
+        const selectedGu = $(guSelectId).val();
+
+        if (!selectedGu) {
+            $(dongSelectId).prop('disabled', true).html('<option value="">동 선택</option>');
+            $(dongCodeInputId).val('');
+            return;
+        }
+
+        $.ajax({
+            url: contextPath + '/location/getDongs',
+            type: 'GET',
+            data: { gunguName: selectedGu },
+            dataType: 'json',
+            success: function(dongs) {
+                $(dongSelectId).prop('disabled', false).html('<option value="">동 선택</option>');
+
+                $.each(dongs, function(i, dong) {
+                    $(dongSelectId).append(
+                        $('<option>')
+                            .val(dong.dongCode)
+                            .text(dong.dongName)
+                    );
+                });
+
+                $(dongCodeInputId).val('');
+            },
+            error: function(err) {
+                console.error('동 조회 실패', err);
+                alert('동 정보를 불러오지 못했습니다.');
+            }
+        });
+    }
+
+    // 동 선택 시 dongCode 저장
+    function handleDongSelect(dongSelectId, dongCodeInputId, which) {
+        const dongCode = $(dongSelectId).val();
+
+        if (dongCode) {
+            $(dongCodeInputId).val(dongCode);
+            $(dongSelectId).addClass('has-value');
+
+            if (which === 1) dong1Valid = true;
+            if (which === 2) dong2Valid = true;
+        } else {
+            $(dongCodeInputId).val('');
+            $(dongSelectId).removeClass('has-value');
+
+            if (which === 1) dong1Valid = false;
+            if (which === 2) dong2Valid = false;
+        }
+
+        validateSignup();
+    }
+
+    // 구 선택 이벤트 리스너
+    $('#gu1').on('change', function() {
+        $(this).addClass('has-value');
+        loadDongs('#gu1', '#dong1', '#dongCode1');
+        dong1Valid = false;
+        validateSignup();
+    });
+
+    $('#gu2').on('change', function() {
+        $(this).addClass('has-value');
+        loadDongs('#gu2', '#dong2', '#dongCode2');
+        dong2Valid = false;
+        validateSignup();
+    });
+
+    // 동 선택 이벤트 리스너
+    $('#dong1').on('change', function() {
+        handleDongSelect('#dong1', '#dongCode1', 1);
+    });
+
+    $('#dong2').on('change', function() {
+        handleDongSelect('#dong2', '#dongCode2', 2);
+    });
+
+    // 포커스 처리
+    $('#gu1, #dong1, #gu2, #dong2').on('focus', function() {
+        $(this).css('backgroundColor', 'var(--color-white)');
+    }).on('blur', function() {
+        if (!$(this).val()) {
+            $(this).css('backgroundColor', 'var(--color-light-gray)');
+        }
+    });
+
     // 페이지 로드 시 구 목록 로드
     loadGus();
+
+    // 회원가입 폼 제출 처리 (AJAX)
+    $('#signupForm').on('submit', function(e) {
+        e.preventDefault();
+
+        if (!emailValid || !phoneValid || !dong1Valid || !dong2Valid) {
+            return false;
+        }
+
+        const formData = new FormData(this);
+        const originalBtnText = $('#signupBtn').text();
+
+        $('#signupBtn').prop('disabled', true).text('처리 중...');
+
+        $.ajax({
+            url: contextPath + '/auth/signup',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    window.location.href = contextPath + '/auth/login';
+                } else {
+                    $('#signupBtn').prop('disabled', false).text(originalBtnText);
+                    const errorMsg = response.message || '회원가입 중 오류가 발생했습니다.';
+                    $('#globalError').text(errorMsg).show();
+                }
+            },
+            error: function(xhr) {
+                $('#signupBtn').prop('disabled', false).text(originalBtnText);
+                let errorMsg = '요청을 처리하지 못했습니다. 다시 시도해주세요.';
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.message) {
+                        errorMsg = response.message;
+                    }
+                } catch (e) {
+                    // JSON 파싱 실패 시 기본 메시지 사용
+                }
+                $('#globalError').text(errorMsg).show();
+            }
+        });
+
+        return false;
+    });
+
+    // 입력 시작 시 에러 숨김
+    document.querySelectorAll("input, select").forEach(el => {
+        el.addEventListener("input", () => {
+            const globalError = document.getElementById("globalError");
+            if (globalError) {
+                globalError.style.display = "none";
+            }
+        });
+    });
 </script>
 </body>
 </html>

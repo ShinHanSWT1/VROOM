@@ -54,7 +54,7 @@
             created_at
         ) VALUES (
                      #{email},
-                     MD5(#{pwd}),
+                     #{pwd},
                      #{snsId},
                      #{provider},
                      #{nickname},
@@ -82,7 +82,7 @@
     </update>
 
     <!-- 이메일 중복 조회 -->
-    <select id="findByEmail"
+    <select id="existsEmail"
             parameterType="string"
             resultType="com.gorani.vroom.user.auth.UserVO">
 
@@ -96,7 +96,7 @@
     </select>
 
     <!-- 전화번호 중복 조회 -->
-    <select id="findByPhone"
+    <select id="existsPhone"
             parameterType="string"
             resultType="com.gorani.vroom.user.auth.UserVO">
 

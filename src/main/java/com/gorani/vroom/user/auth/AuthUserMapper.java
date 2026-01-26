@@ -6,8 +6,8 @@ import org.apache.ibatis.annotations.Mapper;
 public interface AuthUserMapper {
 
     // 사용자 조회 (로그인용)
-    UserVO findByEmail(String email);
-    UserVO findByPhone(String phone);
+    UserVO existsEmail(String email);
+    UserVO existsPhone(String phone);
 
     UserVO login(UserVO vo);
 
