@@ -1081,12 +1081,13 @@
 <header class="header">
     <div class="header-container">
         <div class="logo">
-            <h1 onclick="location.href='main_updated_2.html'">VROOM</h1>
+            <h1>VROOM</h1>
         </div>
         <nav class="nav-menu">
-            <a href="main_updated_2.html" class="nav-item">홈</a>
+            <a href="../../" class="nav-item">홈</a>
+            <a href="../../errand/list" class="nav-item">심부름 목록</a>
             <a href="#" class="nav-item">커뮤니티</a>
-            <a href="<c:url value='/errander/mypage/profile'/>" class="nav-item">심부름꾼 전환</a>
+            <a href="<c:url value='/errander/mypage/profile'/>" class="nav-item">부름이 전환</a>
             <div class="nav-dropdown">
                 <button class="nav-item nav-user" id="userDropdownBtn">유저</button>
                 <div class="dropdown-menu" id="userDropdownMenu">
