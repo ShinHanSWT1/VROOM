@@ -10,18 +10,18 @@
     <title>${pageTitle != null ? pageTitle : 'VROOM'}</title>
     
     <!-- 공통 CSS -->
-    <link rel="stylesheet" href="<c:url value='/static/community/css/common.css'/>">
-    <link rel="stylesheet" href="<c:url value='/static/community/css/main.css'/>">
+    <link rel="stylesheet" href="<c:url value='/static/common/css/common.css'/>">
+    <link rel="stylesheet" href="<c:url value='/static/main/css/main.css'/>">
 
     <!-- 페이지별 CSS -->
     <c:if test="${pageCss == 'community'}">
         <link rel="stylesheet" href="<c:url value='/static/community/css/community.css'/>">
     </c:if>
     <c:if test="${pageCss == 'community-detail'}">
-        <link rel="stylesheet" href="<c:url value='/static/community/css/community-detail.css'/>">
+        <link rel="stylesheet" href="<c:url value='/static/community/css/communityDetail.css'/>">
     </c:if>
     <c:if test="${pageCss == 'community-write'}">
-        <link rel="stylesheet" href="<c:url value='/static/community/css/community-write.css'/>">
+        <link rel="stylesheet" href="<c:url value='/static/community/css/communityWrite.css'/>">
     </c:if>
 
     <!-- jQuery (AJAX 사용 시) -->
@@ -35,7 +35,7 @@
     <header class="header">
         <div class="header-container">
             <div class="logo">
-                <h1 onclick="goToPage('${pageContext.request.contextPath}/')">VROOM</h1>
+                <a href="${pageContext.request.contextPath}/"><h1>VROOM</h1></a>
             </div>
             <nav class="nav-menu">
                 <a href="<c:url value='/about'/>" class="nav-item">소개</a>

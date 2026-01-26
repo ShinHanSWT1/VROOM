@@ -41,7 +41,7 @@
 <main class="main-content">
     <!-- Breadcrumb -->
     <nav class="breadcrumb">
-        <a href="<c:url value='/vroom'/>">홈</a>
+        <a href="<c:url value='/'/>">홈</a>
         <span class="breadcrumb-separator"> > </span>
         <a href="<c:url value='/community'/>">동네생활</a>
     </nav>
