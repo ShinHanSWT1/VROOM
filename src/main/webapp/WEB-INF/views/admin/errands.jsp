@@ -414,7 +414,7 @@
         }
 
         /* Helper Table */
-        .helper-table-section {
+        .errand-table-section {
             background: var(--color-white);
             border-radius: 12px;
             padding: 1.5rem;
@@ -439,16 +439,16 @@
             font-size: 0.9rem;
         }
 
-        .helper-table {
+        .errand-table {
             width: 100%;
             border-collapse: collapse;
         }
 
-        .helper-table thead {
+        .errand-table thead {
             background-color: #F8F9FA;
         }
 
-        .helper-table th {
+        .errand-table th {
             padding: 1rem;
             text-align: left;
             font-weight: 700;
@@ -457,17 +457,17 @@
             border-bottom: 2px solid var(--color-light-gray);
         }
 
-        .helper-table td {
+        .errand-table td {
             padding: 1rem;
             border-bottom: 1px solid var(--color-light-gray);
             font-size: 0.9rem;
         }
 
-        .helper-table tbody tr {
+        .errand-table tbody tr {
             transition: background-color 0.2s ease;
         }
 
-        .helper-table tbody tr:hover {
+        .errand-table tbody tr:hover {
             background-color: #F8F9FA;
         }
 
@@ -870,12 +870,12 @@
                 flex-direction: column;
             }
 
-            .helper-table {
+            .errand-table {
                 font-size: 0.8rem;
             }
 
-            .helper-table th,
-            .helper-table td {
+            .errand-table th,
+            .errand-table td {
                 padding: 0.5rem;
             }
 
@@ -1001,21 +1001,21 @@
                     <div class="filter-group">
                         <label class="filter-label">동네</label>
                         <div class="location-selectors">
-                            <select id="guSelect" class="filter-select" onchange="applyFilters()">
+                            <select id="filterGu" class="filter-select" onchange="applyFilters()">
                                 <option value="">구 선택</option>
                                 <c:forEach var="gungu" items="${gunguList}">
                                     <option value="${gungu}" ${gungu == selectedGuName ? 'selected' : ''}>${gungu}</option>
                                 </c:forEach>
                             </select>
 
-                            <select id="dongSelect" class="filter-select" onchange="applyFilters()">
+                            <select id="filterDong" class="filter-select" onchange="applyFilters()">
                                 <option value="">동 선택</option>
                             </select>
                         </div>
                     </div>
                     <div class="filter-group">
                         <label class="filter-label">등록시간</label>
-                        <select class="filter-select" id="filterActivityStatus" onchange="applyFilters()">
+                        <select class="filter-select" id="filterRegisterTime" onchange="applyFilters()">
                             <option value="">전체</option>
                             <option value="ACTIVE">활성</option>
                             <option value="INACTIVE">비활성</option>
@@ -1024,7 +1024,7 @@
                     </div>
                     <div class="filter-group">
                         <label class="filter-label">마감시간</label>
-                        <select class="filter-select" id="filterRating" onchange="applyFilters()">
+                        <select class="filter-select" id="filterDueDate" onchange="applyFilters()">
                             <option value="">전체</option>
                             <option value="5">⭐ 5.0</option>
                             <option value="4">⭐ 4.0 이상</option>
@@ -1036,13 +1036,13 @@
             </section>
 
             <!-- Helper List Table -->
-            <section class="helper-table-section">
+            <section class="errand-table-section">
                 <div class="table-header">
                     <h3 class="table-title">심부름 목록 테이블</h3>
-                    <span class="table-count">총 <strong id="totalCount">421</strong>명</span>
+                    <span class="table-count">총 <strong id="totalCount">0</strong>명</span>
                 </div>
 
-                <table class="helper-table">
+                <table class="errand-table">
                     <thead>
                     <tr>
                         <th>ID</th>
@@ -1070,7 +1070,7 @@
 <div class="modal-overlay" id="approvalModal">
     <div class="modal">
         <div class="modal-header">
-            <h3 class="modal-title">부름이 승인 관리</h3>
+            <h3 class="modal-title">심부름 배정</h3>
         </div>
         <div class="modal-body">
             <!-- 기본 정보 -->
@@ -1078,7 +1078,7 @@
                 <div class="modal-section-title">기본 정보</div>
                 <div class="modal-info-grid">
                     <div class="modal-info-item">
-                        <span class="modal-info-label">사용자 ID / 부름이 ID</span>
+                        <span class="modal-info-label">작성자 ID</span>
                         <span class="modal-info-value" id="modalUserId">-</span>
                     </div>
                     <div class="modal-info-item">
@@ -1128,7 +1128,6 @@
 </div>
 
 <script>
-    // 전역 변수
     let currentErranderId = null; // 승인/반려 모달용 ID 저장
 
     $(document).ready(function ()  {
@@ -1137,7 +1136,6 @@
         const adminDropdownTrigger = document.getElementById('adminDropdownTrigger');
         const adminDropdown = document.getElementById('adminDropdown');
 
-        // 로컬스토리지 상태 적용
         const savedState = localStorage.getItem('sidebarState');
         if (savedState === 'collapsed') {
             sidebar.classList.add('collapsed');
@@ -1163,9 +1161,9 @@
         });
 
         // 메뉴 활성화
-        const currentPath = window.location.hash || '#erranders'; // URL에 맞게 조정
+        const currentPath = window.location.hash || '#errands'; // URL에 맞게 조정
         $('.nav-item').each(function () {
-            if ($(this).attr('href').includes('erranders')) {
+            if ($(this).attr('href').includes('errands')) {
                 $(this).addClass('active');
             } else {
                 $(this).removeClass('active');
@@ -1173,27 +1171,28 @@
         });
 
         // 초기 데이터 로드
-        loadErranderList(1);
+        loadErrandsList(1);
 
         // 이벤트 리스너
         // 검색 (엔터키 & 버튼)
-        document.querySelector('.search-button').addEventListener('click', () => loadErranderList(1));
+        document.querySelector('.search-button').addEventListener('click', () => loadErrandsList(1));
         document.getElementById('searchInput').addEventListener('keyup', function (e) {
-            if (e.key === 'Enter') loadErranderList(1);
+            if (e.key === 'Enter') loadErrandsList(1);
         });
 
         // 필터 변경 시 자동 검색
-        document.getElementById('filterApprovalStatus').addEventListener('change', () => loadErranderList(1));
-        document.getElementById('filterActivityStatus').addEventListener('change', () => loadErranderList(1));
-        document.getElementById('filterRating').addEventListener('change', () => loadErranderList(1));
+        document.getElementById('filterGu').addEventListener('change', () => loadErrandsList(1));
+        document.getElementById('filterDong').addEventListener('change', () => loadErrandsList(1));
+        document.getElementById('filterRegisterTime').addEventListener('change', () => loadErrandsList(1));
+        document.getElementById('filterDueDate').addEventListener('change', () => loadErrandsList(1));
     });
 
-    //  부름이 목록 조회
-    function loadErranderList(page) {
+    //  심부름 목록 조회
+    function loadErrandsList(page) {
         const keyword = document.getElementById('searchInput').value;
         const approveStatus = document.getElementById('filterApprovalStatus').value;
-        const activeStatus = document.getElementById('filterActivityStatus').value;
-        const reviewScope = document.getElementById('filterRating').value;
+        const activeStatus = document.getElementById('filterRegisterTime').value;
+        const reviewScope = document.getElementById('filterDueDate').value;
 
         // Query String 생성
         const params = new URLSearchParams({
@@ -1319,7 +1318,7 @@
         prevBtn.className = 'pagination-button';
         prevBtn.innerText = '이전';
         if (currentPage > 1) {
-            prevBtn.onclick = () => loadErranderList(currentPage - 1);
+            prevBtn.onclick = () => loadErrandsList(currentPage - 1);
         } else {
             prevBtn.disabled = true;
             prevBtn.classList.add('disabled');
@@ -1334,7 +1333,7 @@
             if (i === currentPage) {
                 btn.classList.add('active');
             } else {
-                btn.onclick = () => loadErranderList(i);
+                btn.onclick = () => loadErrandsList(i);
             }
             pagination.appendChild(btn);
         }
@@ -1344,7 +1343,7 @@
         nextBtn.className = 'pagination-button';
         nextBtn.innerText = '다음';
         if (currentPage < totalPage) {
-            nextBtn.onclick = () => loadErranderList(currentPage + 1);
+            nextBtn.onclick = () => loadErrandsList(currentPage + 1);
         } else {
             nextBtn.disabled = true;
             nextBtn.classList.add('disabled');
@@ -1545,7 +1544,7 @@
             .catch(error => {
                 console.error('상태 변경 실패:', error);
                 alert(error);
-                loadErranderList(1);
+                loadErrandsList(1);
             });
 
         // 드롭다운 닫기
