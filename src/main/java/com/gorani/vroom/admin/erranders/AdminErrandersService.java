@@ -17,4 +17,6 @@ public interface AdminErrandersService {
     Map<String, Object> getDetailSummary(Long erranderId);   // 부름이 상세 - 기본 정보 + 활동 요약
 
     Map<String, Object> getDetailAllInfo(Long erranderId, int limit);   // 부름이 상세 - 수행 심부름 목록, 정산내역, 리뷰평점, 관리자메모, 제출서류
+
+    Map<String, Object> saveAdminMemo(Long erranderId, String text);
 }

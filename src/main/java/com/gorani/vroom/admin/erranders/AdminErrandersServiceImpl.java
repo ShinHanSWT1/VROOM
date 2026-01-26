@@ -135,4 +135,18 @@ public class AdminErrandersServiceImpl implements AdminErrandersService {
         return dataMap;
     }
 
+    @Override
+    public Map<String, Object> saveAdminMemo(Long erranderId, String text) {
+
+        int result = mapper.updateAdminMemo(erranderId, text);
+        if (result != 1) {
+            throw new IllegalStateException("업데이트 실패");
+        }
+
+        Map<String, Object> dataMap = new HashMap<>();
+        dataMap.put("result", "success");
+
+        return dataMap;
+    }
+
 }

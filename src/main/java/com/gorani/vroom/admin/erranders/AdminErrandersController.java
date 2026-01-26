@@ -107,4 +107,15 @@ public class AdminErrandersController {
         log.info("부름이 상세 정보 요약" + service.getDetailAllInfo(erranderId, limit));
         return service.getDetailAllInfo(erranderId, limit);
     }
+
+    @PostMapping("/api/admin/erranders/savememo")
+    @ResponseBody
+    public Map<String, Object> saveAdminMemo(
+            @RequestBody Map<String, Object> params
+    ) {
+        Long erranderId = Long.parseLong(params.get("erranderId").toString());
+        String memo = params.get("memo").toString();
+
+        return service.saveAdminMemo(erranderId, memo);
+    }
 }

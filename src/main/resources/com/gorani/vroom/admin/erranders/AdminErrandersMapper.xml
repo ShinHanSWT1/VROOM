@@ -328,7 +328,7 @@
     <!-- 인증 제출 서류 -->
     <select id="getDocuments"
             parameterType="long" resultType="map">
-        SELECT doc_type, file_url
+        SELECT doc_type, file_url, name
         FROM ERRANDER_DOCUMENTS
         WHERE errander_id = #{erranderId}
     </select>

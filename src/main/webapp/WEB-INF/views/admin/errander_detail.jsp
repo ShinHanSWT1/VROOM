@@ -642,8 +642,9 @@
                         <table class="mini-table">
                             <thead>
                             <tr>
-                                <th>최근 N건</th>
-                                <th>심부름 ID + 제목</th>
+                                <th>최근순</th>
+                                <th>ID</th>
+                                <th>제목</th>
                                 <th>날짜</th>
                                 <th>상태</th>
                             </tr>
@@ -809,11 +810,10 @@
                 // 리뷰 평점
                 document.getElementById('reviewAvgRating').textContent = (data.ratingAvg || 0) + ' / 5.0';
 
-                // 최근 리뷰
+                // 최근 리뷰 날짜 가공 및 데이터 삽입
                 data.recentReviewList.forEach(r => {
                     r.created_at = formatReviewTime(r.created_at);
                 });
-
                 if (data.recentReviewList && data.recentReviewList.length > 0) {
                     const reviewsHtml = data.recentReviewList.map(review => `
                         <div style="
@@ -857,14 +857,18 @@
                 }
 
                 // 수행 심부름 목록
+                data.recentErrandsList.forEach(r => {
+                    r.event_at = formatDate(r.event_at);
+                });
                 if (data.recentErrandsList && data.recentErrandsList.length > 0) {
                     const errandTbody = document.getElementById('errandListBody');
                     errandTbody.innerHTML = data.recentErrandsList.map((errand, idx) => `
                         <tr>
-                            <td>${idx + 1}</td>
-                            <td>${errand.errandId} - ${errand.title}</td>
-                            <td>${errand.date}</td>
-                            <td><span class="status-badge ${errand.status}">${errand.statusText}</span></td>
+                            <td>\${idx + 1}</td>
+                            <td>\${errand.errands_id}</td>
+                            <td>\${errand.title}</td>
+                            <td>\${errand.event_at}</td>
+                            <td><span class="status-badge ${'${'}errand.status}">\${errand.status}</span></td>
                         </tr>
                     `).join('');
                 }
@@ -882,17 +886,18 @@
                 }
 
                 // 제출 서류
-                if (data.documents && data.documents.length > 0) {
-                    const documentsHtml = data.documents.map(doc => {
-                        const icon = doc.type.includes('신분증') || doc.type === 'IDCARD' ? '🪪' : '📄';
+                if (data.authDocuments && data.authDocuments.length > 0) {
+                    const documentsHtml = data.authDocuments.map(doc => {
+                        const icon = doc.doc_type === 'IDCARD' ? '🪪' : '📄';
+
                         return `
                             <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: #F8F9FA; border-radius: 8px;">
-                                <div style="font-size: 1.5rem;">${icon}</div>
+                                <div style="font-size: 1.5rem;">${'${'}icon}</div>
                                 <div style="flex: 1;">
-                                    <div style="font-size: 0.9rem; font-weight: 600;">${doc.name || doc.type}</div>
-                                    <div style="font-size: 0.75rem; color: var(--color-gray);">${doc.type}</div>
+                                    <div style="font-size: 0.9rem; font-weight: 600;">\${doc.name}</div>
+                                    <div style="font-size: 0.75rem; color: var(--color-gray);">\${doc.doc_type}</div>
                                 </div>
-                                <button onclick="viewDocument('${doc.url}')" style="padding: 0.375rem 0.75rem; background: var(--color-dark); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">보기</button>
+                                <button onclick="viewDocument('\${doc.file_url}')" style="padding: 0.375rem 0.75rem; background: var(--color-dark); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">보기</button>
                             </div>
                         `;
                     }).join('');
@@ -907,6 +912,18 @@
             .catch(error => {
                 console.error('데이터 로드 실패:', error);
             });
+    }
+
+    function formatDate(ms) {
+        const d = new Date(ms);
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+
+        const days = ['일', '월', '화', '수', '목', '금', '토'];
+        const day = days[d.getDay()];
+
+        return yyyy + '-' + mm + '-' + dd + ' ' + day;
     }
 
     function formatReviewTime(ms) {
@@ -946,8 +963,27 @@
 
     function saveMemo() {
         const memo = document.getElementById('adminMemo').value;
-        // TODO: API 호출
-        alert('메모가 저장되었습니다. (UI 테스트)');
+
+        fetch('${pageContext.request.contextPath}/api/admin/erranders/savememo', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                erranderId: currentErranderId,
+                memo: memo
+            })
+        })
+            .then(res => res.json())
+            .then(data => {
+                if(data.result === 'success'){
+                    alert('저장되었습니다');
+                    window.location.reload();
+                }
+                else {
+                    alert('처리 실패했습니다: ' + data.message);
+                }
+
+            });
+
         console.log('저장할 메모:', memo);
     }
 </script>
