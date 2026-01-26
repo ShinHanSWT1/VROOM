@@ -1,5 +1,7 @@
 package com.gorani.vroom.user.profile;
 
+import com.gorani.vroom.community.CommunityPostVO;
+import com.gorani.vroom.community.CommunityService;
 import com.gorani.vroom.user.auth.UserVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,18 +11,20 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.servlet.http.HttpSession;
+import java.util.List;
 
 @Slf4j
 @Controller
 @RequestMapping("/member")
 public class UserProfileController {
 
-    // 캡슐화
     private final UserProfileService userProfileService;
+    private final CommunityService communityService;
 
     @Autowired
-    public UserProfileController(UserProfileService userProfileService) {
+    public UserProfileController(UserProfileService userProfileService, CommunityService communityService) {
         this.userProfileService = userProfileService;
+        this.communityService = communityService;
     }
 
     // 나의 정보 페이지
@@ -46,22 +50,27 @@ public class UserProfileController {
 
     // 나의 활동
     @GetMapping("/myActivity")
-    public String myActivity(Model model) {
+    public String myActivity(Model model, HttpSession session) {
+
+        // 로그인 체크 (세션 확인)
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
+        if (loginUser == null) {
+            return "redirect:/auth/login";
+        }
+
+        // 내 회원 번호 가져오기
+        Long userId = loginUser.getUserId();
+
+        // CommunityService에서 3가지 활동 내역 가져오기
+        List<CommunityPostVO> myPosts = communityService.getMyPosts(userId);
+        List<CommunityPostVO> myComments = communityService.getMyCommentedPosts(userId);
+        List<CommunityPostVO> myScraps = communityService.getMyLikedPosts(userId);
+
+        //  JSP(화면)로 보따리(Model) 싸서 보내기
+        model.addAttribute("myPosts", myPosts);       // 작성한 글
+        model.addAttribute("myComments", myComments); // 댓글 단 글
+        model.addAttribute("myScraps", myScraps);     // 저장한 글
+
         return "user/myActivity";
     }
-
-    // 부름 페이
-    @GetMapping("/vroomPay")
-    public String vroomPay(Model model) {
-        return "pay/vroomPay";
-    }
-
-    // 프로필 수정 페이지
-    @GetMapping("/edit")
-    public String editPage(Model model) {
-        // TODO: 세션에서 로그인 사용자 ID 가져오기
-        // TODO: 프로필 정보 조회 후 model에 담기
-        return "mypage/profileEdit";
-    }
-
 }

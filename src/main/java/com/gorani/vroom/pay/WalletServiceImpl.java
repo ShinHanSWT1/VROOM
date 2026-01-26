@@ -114,7 +114,7 @@ public class WalletServiceImpl implements WalletService {
     }
 
     @Override
-    // 거래 내역 조회 - 페이징
+    // 거래 내역 조회 페이징 처리
     public Map<String, Object> getTransactionHistory(Long userId, int page, int size) {
         Map<String, Object> result = new HashMap<>();
         WalletVO account = getOrCreateAccount(userId);

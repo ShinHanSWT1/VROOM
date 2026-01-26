@@ -371,4 +371,54 @@
             </foreach>
         </if>
     </update>
+
+    <!-- 내가 작성한 글 목록 조회 -->
+    <select id="selectMyPosts" resultType="com.gorani.vroom.community.CommunityPostVO">
+        SELECT
+            c.post_id,
+            c.title,
+            c.view_count,
+            c.comment_count,
+            c.created_at,
+            m.nickname
+        FROM COMMUNITY c
+        JOIN MEMBERS m ON c.user_id = m.user_id
+        WHERE c.user_id = #{userId}
+          AND c.deleted_at IS NULL
+        ORDER BY c.created_at DESC
+    </select>
+
+    <!-- 내가 댓글 단 글 목록 조회 -->
+    <select id="selectMyCommentedPosts" resultType="com.gorani.vroom.community.CommunityPostVO">
+        SELECT DISTINCT
+            c.post_id,
+            c.title,
+            c.view_count,
+            c.comment_count,
+            c.created_at,
+            m.nickname
+        FROM COMMUNITY c
+        JOIN COMMUNITY_COMMENT cc ON c.post_id = cc.post_id
+        JOIN MEMBERS m ON c.user_id = m.user_id
+        WHERE cc.user_id = #{userId}
+          AND c.deleted_at IS NULL
+        ORDER BY c.created_at DESC
+    </select>
+
+    <!-- 내가 좋아요한 글 목록 조회 -->
+    <select id="selectMyLikedPosts" resultType="com.gorani.vroom.community.CommunityPostVO">
+        SELECT
+            c.post_id,
+            c.title,
+            c.view_count,
+            c.comment_count,
+            c.created_at,
+            m.nickname
+        FROM COMMUNITY c
+        JOIN COMMUNITY_POST_LIKES l ON c.post_id = l.post_id
+        JOIN MEMBERS m ON c.user_id = m.user_id
+        WHERE l.user_id = #{userId}
+          AND c.deleted_at IS NULL
+        ORDER BY l.created_at DESC
+    </select>
 </mapper>

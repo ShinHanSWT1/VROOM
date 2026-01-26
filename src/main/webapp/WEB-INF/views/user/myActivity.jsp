@@ -221,7 +221,7 @@
             flex-grow: 1;
         }
 
-        /* Activity Page Specific Styles - Refined to match my-info */
+        /* Activity Page Specific Styles */
         .page-title {
             font-size: 1.5rem;
             font-weight: 700;
@@ -235,6 +235,7 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
             border: 1px solid var(--color-light-gray);
             overflow: hidden;
+            min-height: 300px; /* 최소 높이 설정 */
         }
 
         .activity-tabs {
@@ -268,9 +269,12 @@
             box-shadow: 0 4px 6px rgba(107, 142, 35, 0.2);
         }
 
-        .activity-list {
-            display: flex;
-            flex-direction: column;
+        /* 리스트 컨테이너 (숨김 처리용) */
+        .activity-list-container {
+            display: none;
+        }
+        .activity-list-container.active {
+            display: block;
         }
 
         .activity-list-item {
@@ -281,6 +285,8 @@
             padding: 1.5rem 2rem;
             border-bottom: 1px solid var(--color-light-gray);
             transition: background-color 0.2s ease;
+            text-decoration: none; /* a태그일 경우 밑줄 제거 */
+            cursor: pointer;
         }
 
         .activity-list-item:hover {
@@ -300,10 +306,10 @@
 
         .item-title {
             font-size: 1.1rem;
-            /* More reasonable size */
             font-weight: 700;
             line-height: 1.4;
             color: var(--color-dark);
+            text-decoration: none;
         }
 
         .item-meta {
@@ -361,6 +367,12 @@
             color: var(--color-gray);
         }
 
+        .empty-message {
+            text-align: center;
+            padding: 3rem;
+            color: #777;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .dashboard-container {
@@ -385,28 +397,23 @@
             }
         }
     </style>
-
-    <!-- 글꼴 -->
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-    <link rel="stylesheet" as="style"
-          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
 </head>
 
 <body>
 <header class="header">
     <div class="header-container">
         <div class="logo">
-            <h1 onclick="location.href='main_updated_2.html'">VROOM</h1>
+            <h1 onclick="location.href='${pageContext.request.contextPath}/'">VROOM</h1>
         </div>
         <nav class="nav-menu">
             <a href="main_updated_2.html" class="nav-item">홈</a>
             <a href="#" class="nav-item">커뮤니티</a>
             <a href="#" class="nav-item">심부름꾼 전환</a>
             <div class="nav-dropdown">
-                <button class="nav-item nav-user" id="userDropdownBtn">유저</button>
+                <button class="nav-item nav-user" id="userDropdownBtn">사용자</button>
                 <div class="dropdown-menu" id="userDropdownMenu">
                     <a href="myInfo" class="dropdown-item">나의정보</a>
-                    <a href="vroomPay" class="dropdown-item">부름페이</a>
+                    <a href="/vroom/pay/vroomPay" class="dropdown-item">부름페이</a>
                     <a href="myActivity" class="dropdown-item">나의 활동</a>
                     <a href="#" class="dropdown-item">설정</a>
                     <a href="#" class="dropdown-item">고객지원</a>
@@ -420,34 +427,126 @@
 
 <div class="container">
     <div class="dashboard-container">
-        <!-- Sidebar -->
         <aside class="sidebar">
             <ul class="sidebar-menu">
                 <li class="sidebar-item"><a href="myInfo" class="sidebar-link">나의 정보</a></li>
-                <li class="sidebar-item"><a href="vroomPay" class="sidebar-link">부름 페이<br>(계좌 관리)</a></li>
+                <li class="sidebar-item"><a href="/vroom/pay/vroomPay" class="sidebar-link">부름 페이<br>(계좌 관리)</a></li>
                 <li class="sidebar-item"><a href="myActivity" class="sidebar-link active">나의 활동</a></li>
                 <li class="sidebar-item"><a href="#" class="sidebar-link">설정</a></li>
                 <li class="sidebar-item"><a href="#" class="sidebar-link">고객지원</a></li>
             </ul>
         </aside>
 
-        <!-- Main Content -->
         <main class="main-content">
-
             <h2 class="page-title">나의 활동</h2>
 
             <div class="activity-section">
                 <div class="activity-tabs">
-                    <button class="activity-tab-btn active" data-type="written">작성한 글</button>
-                    <button class="activity-tab-btn" data-type="commented">댓글단 글</button>
-                    <button class="activity-tab-btn" data-type="saved">저장한 글</button>
+                    <button class="activity-tab-btn active" data-target="list-written">작성한 글</button>
+                    <button class="activity-tab-btn" data-target="list-commented">댓글단 글</button>
+                    <button class="activity-tab-btn" data-target="list-saved">저장한 글</button>
                 </div>
 
-                <div class="activity-list" id="activityList">
-                    <!-- Javascript will populate this -->
+                <div id="list-written" class="activity-list-container active">
+                    <c:choose>
+                        <c:when test="${not empty myPosts}">
+                            <c:forEach var="item" items="${myPosts}">
+                                <div class="activity-list-item" onclick="location.href='${pageContext.request.contextPath}/community/detail/${item.postId}'">
+                                    <div class="item-left">
+                                        <div class="item-title">${item.title}</div>
+                                        <div class="item-meta">
+                                            <span>${item.nickname}</span>
+                                            <span style="margin: 0 0.5rem">|</span>
+                                            <span><fmt:formatDate value="${item.createdAt}" pattern="yyyy.MM.dd"/></span>
+                                            <span style="margin: 0 0.5rem">|</span>
+                                            <span>조회 ${item.viewCount}</span>
+                                        </div>
+                                    </div>
+                                    <div class="item-right">
+                                        <div class="item-thumbnail">
+                                            <span class="duck-icon">🐥</span>
+                                        </div>
+                                        <div class="item-comment-box">
+                                            <span class="comment-count">${item.commentCount}</span>
+                                            <span class="comment-label">댓글</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </c:forEach>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="empty-message">작성한 글이 없습니다.</div>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
+
+                <div id="list-commented" class="activity-list-container">
+                    <c:choose>
+                        <c:when test="${not empty myComments}">
+                            <c:forEach var="item" items="${myComments}">
+                                <div class="activity-list-item" onclick="location.href='${pageContext.request.contextPath}/community/detail/${item.postId}'">
+                                    <div class="item-left">
+                                        <div class="item-title">${item.title}</div>
+                                        <div class="item-meta">
+                                            <span>${item.nickname}</span>
+                                            <span style="margin: 0 0.5rem">|</span>
+                                            <span><fmt:formatDate value="${item.createdAt}" pattern="yyyy.MM.dd"/></span>
+                                            <span style="margin: 0 0.5rem">|</span>
+                                            <span>조회 ${item.viewCount}</span>
+                                        </div>
+                                    </div>
+                                    <div class="item-right">
+                                        <div class="item-thumbnail">
+                                            <span class="duck-icon">🐥</span>
+                                        </div>
+                                        <div class="item-comment-box">
+                                            <span class="comment-count">${item.commentCount}</span>
+                                            <span class="comment-label">댓글</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </c:forEach>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="empty-message">댓글을 단 글이 없습니다.</div>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+
+                <div id="list-saved" class="activity-list-container">
+                    <c:choose>
+                        <c:when test="${not empty myScraps}">
+                            <c:forEach var="item" items="${myScraps}">
+                                <div class="activity-list-item" onclick="location.href='${pageContext.request.contextPath}/community/detail/${item.postId}'">
+                                    <div class="item-left">
+                                        <div class="item-title">${item.title}</div>
+                                        <div class="item-meta">
+                                            <span>${item.nickname}</span>
+                                            <span style="margin: 0 0.5rem">|</span>
+                                            <span><fmt:formatDate value="${item.createdAt}" pattern="yyyy.MM.dd"/></span>
+                                            <span style="margin: 0 0.5rem">|</span>
+                                            <span>조회 ${item.viewCount}</span>
+                                        </div>
+                                    </div>
+                                    <div class="item-right">
+                                        <div class="item-thumbnail">
+                                            <span class="duck-icon">🐥</span>
+                                        </div>
+                                        <div class="item-comment-box">
+                                            <span class="comment-count">${item.commentCount}</span>
+                                            <span class="comment-label">댓글</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </c:forEach>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="empty-message">저장한 글이 없습니다.</div>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+
             </div>
-
         </main>
     </div>
 </div>
@@ -475,77 +574,23 @@
 </footer>
 
 <script>
-    // Mock Data
-    const activityData = {
-        written: [
-            { title: '제 목', nickname: '닉네임', time: '올린 시간', views: '조회수', comments: 0 },
-            { title: '제 목', nickname: '닉네임', time: '올린 시간', views: '조회수', comments: 0 },
-            { title: '제 목', nickname: '닉네임', time: '올린 시간', views: '조회수', comments: 0 },
-            { title: '제 목', nickname: '닉네임', time: '올린 시간', views: '조회수', comments: 0 }
-        ],
-        commented: [
-            { title: '댓글단 글 제목', nickname: '작성자', time: '1시간 전', views: '123', comments: 5 },
-            { title: '다른 게시물', nickname: '작성자2', time: '2시간 전', views: '45', comments: 12 }
-        ],
-        saved: [
-            { title: '저장한 꿀팁', nickname: '정보왕', time: '어제', views: '999+', comments: 30 }
-        ]
-    };
-
-    function renderActivities(type) {
-        const listContainer = document.getElementById('activityList');
-        listContainer.innerHTML = '';
-
-        const data = activityData[type];
-
-        if (!data || data.length === 0) {
-            listContainer.innerHTML = '<div style="text-align:center; padding: 3rem; color: #777;">활동 내역이 없습니다.</div>';
-            return;
-        }
-
-        // JSP 충돌 방지를 위해 문자열 연결(+) 방식으로 변경
-        data.forEach(function(item) {
-            const el = document.createElement('div');
-            el.className = 'activity-list-item';
-
-            let htmlContent = '';
-            htmlContent += '<div class="item-left">';
-            htmlContent += '    <div class="item-title">' + item.title + '</div>';
-            htmlContent += '    <div class="item-meta">';
-            htmlContent += '        <span>' + item.nickname + '</span>';
-            htmlContent += '        <span style="margin: 0 0.5rem">|</span>';
-            htmlContent += '        <span>' + item.time + '</span>';
-            htmlContent += '        <span style="margin: 0 0.5rem">|</span>';
-            htmlContent += '        <span>' + item.views + '</span>';
-            htmlContent += '    </div>';
-            htmlContent += '</div>';
-
-            // 우측 영역: 2번 사진처럼 가로 배치 구조
-            htmlContent += '<div class="item-right">';
-            htmlContent += '    <div class="item-thumbnail">';
-            htmlContent += '        <span class="duck-icon">🐥</span>';
-            htmlContent += '    </div>';
-            htmlContent += '    <div class="item-comment-box">';
-            htmlContent += '        <span class="comment-count">' + item.comments + '</span>';
-            htmlContent += '        <span class="comment-label">댓글</span>';
-            htmlContent += '    </div>';
-            htmlContent += '</div>';
-
-            el.innerHTML = htmlContent;
-            listContainer.appendChild(el);
-        });
-    }
-
-    // 초기 실행
-    renderActivities('written');
-
-    // 탭 클릭 이벤트
+    // 탭 클릭 이벤트 (단순 화면 전환)
     const tabs = document.querySelectorAll('.activity-tab-btn');
+    const lists = document.querySelectorAll('.activity-list-container');
+
     tabs.forEach(function(tab) {
         tab.addEventListener('click', function () {
+            // 1. 모든 탭 버튼 비활성화
             tabs.forEach(function(t) { t.classList.remove('active'); });
+            // 2. 현재 클릭한 탭 활성화
             this.classList.add('active');
-            renderActivities(this.dataset.type);
+
+            // 3. 모든 리스트 숨기기
+            lists.forEach(function(list) { list.classList.remove('active'); });
+
+            // 4. data-target에 맞는 리스트만 보이기
+            const targetId = this.dataset.target;
+            document.getElementById(targetId).classList.add('active');
         });
     });
 

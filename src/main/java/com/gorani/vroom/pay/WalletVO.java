@@ -12,7 +12,7 @@ public class WalletVO {
     private long userId; // 사용자 id
     private BigDecimal balance; // 잔액
     private BigDecimal availBalance; // 가용 잔액
-    private Timestamp updateAt; // 수정일
+    private Timestamp updatedAt; // 수정일
     private String realAccount; // 실제 계좌
 
     // Wallet_transactions

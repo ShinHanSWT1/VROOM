@@ -794,18 +794,18 @@
 <header class="header">
   <div class="header-container">
     <div class="logo">
-      <h1 onclick="location.href='main_updated_2.html'">VROOM</h1>
+      <h1 onclick="location.href='../../..'">VROOM</h1>
     </div>
     <nav class="nav-menu">
       <a href="main_updated_2.html" class="nav-item">홈</a>
       <a href="#" class="nav-item">커뮤니티</a>
       <a href="#" class="nav-item">심부름꾼 전환</a>
       <div class="nav-dropdown">
-        <button class="nav-item nav-user" id="userDropdownBtn">유저</button>
+        <button class="nav-item nav-user" id="userDropdownBtn">사용자</button>
         <div class="dropdown-menu" id="userDropdownMenu">
-          <a href="myInfo" class="dropdown-item">나의정보</a>
+          <a href="${pageContext.request.contextPath}/member/myInfo" class="dropdown-item">나의정보</a>
           <a href="vroomPay" class="dropdown-item">부름페이</a>
-          <a href="myActivity" class="dropdown-item">나의 활동</a>
+          <a href="${pageContext.request.contextPath}/member/myActivity" class="dropdown-item">나의활동</a>
           <a href="#" class="dropdown-item">설정</a>
           <a href="#" class="dropdown-item">고객지원</a>
           <div class="dropdown-divider"></div>
@@ -820,10 +820,10 @@
   <div class="dashboard-container">
     <aside class="sidebar">
       <ul class="sidebar-menu">
-        <li class="sidebar-item"><a href="myInfo" class="sidebar-link">나의 정보</a></li>
+        <a href="${pageContext.request.contextPath}/member/myInfo" class="dropdown-item">나의 정보</a>
         <li class="sidebar-item"><a href="vroomPay" class="sidebar-link active">부름 페이<br>(계좌 관리)</a>
         </li>
-        <li class="sidebar-item"><a href="myActivity" class="sidebar-link">나의 활동</a></li>
+        <a href="${pageContext.request.contextPath}/member/myActivity" class="dropdown-item">나의 활동</a>
         <li class="sidebar-item"><a href="#" class="sidebar-link">설정</a></li>
         <li class="sidebar-item"><a href="#" class="sidebar-link">고객지원</a></li>
       </ul>
@@ -836,10 +836,17 @@
       <div class="pay-info-card">
         <div class="profile-section">
           <div class="profile-image-container">
-            온도
+            <c:choose>
+              <c:when test="${not empty profile.profileImage}">
+                <img src="${pageContext.request.contextPath}${profile.profileImage}" alt="프로필" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">
+              </c:when>
+              <c:otherwise>
+                <img src="${pageContext.request.contextPath}/resources/images/default_profile.png" alt="기본 프로필" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">
+              </c:otherwise>
+            </c:choose>
           </div>
           <div class="profile-details">
-            <span class="profile-nickname">닉네임</span>
+            <span class="profile-nickname">${profile.nickname}</span>
             <button class="option-btn">현질 옵션 [ 내글을 상위 노출 해보세요 ]</button>
           </div>
         </div>
@@ -850,17 +857,19 @@
             <button class="balance-action-btn" id="withdrawBtn">출 금</button>
             <div class="balance-display">
               <span class="balance-label">잔 액</span>
-              <span class="balance-amount" id="balanceDisplay">12 원</span>
+              <span class="balance-amount" id="balanceDisplay">
+                <fmt:formatNumber value="${account.balance}" type="number"/> 원
+              </span>
             </div>
           </div>
         </div>
 
         <div class="temp-container">
-          <span class="temp-label">온도</span>
+          <span class="temp-label">매너온도</span>
           <div class="temp-bar">
-            <div class="temp-fill"></div>
+            <div class="temp-fill" style="width: ${profile.mannerTemp}%;"></div>
           </div>
-          <span class="temp-value">36.5℃</span>
+          <span class="temp-value">${profile.mannerTemp}℃</span>
         </div>
       </div>
 
@@ -981,226 +990,229 @@
 </div>
 
 <script>
-  // Current Balance (mock data for interaction)
-  let currentBalance = 12;
-
-  // Mock Data - 12 items
-  const transactionData = Array.from({ length: 12 }, (_, i) => ({
-    title: `거래 내역 테스트 제목 ${i + 1}`,
-    author: `사용자${i + 1}`,
-    amount: `${(i + 1) * 1000}원`
-  }));
-
+  // 서버에서 초기값을 안전하게 가져오기 (null이면 0)
+  let currentBalance = ${account.balance != null ? account.balance : 0};
+  let availBalance = ${account.availBalance != null ? account.availBalance : 0};
   const itemsPerPage = 10;
-  let currentPage = 1;
 
-  function renderTransactions(page) {
-    const listContainer = document.getElementById('transactionList');
-    listContainer.innerHTML = '';
-
-    const start = (page - 1) * itemsPerPage;
-    const end = start + itemsPerPage;
-    const pageItems = transactionData.slice(start, end);
-
-    pageItems.forEach(item => {
-      const el = document.createElement('div');
-      el.className = 'history-item';
-      el.innerHTML = `
-                    <div class="item-title">${item.title}</div>
-                    <div class="item-author">${item.author}</div>
-                    <div class="item-amount">${item.amount}</div>
-                `;
-      listContainer.appendChild(el);
-    });
-
-    renderPagination();
-  }
-
-  function renderPagination() {
-    const paginationContainer = document.getElementById('pagination');
-    paginationContainer.innerHTML = '';
-
-    const totalPages = Math.ceil(transactionData.length / itemsPerPage);
-
-    for (let i = 1; i <= totalPages; i++) {
-      const btn = document.createElement('div');
-      btn.className = 'page-btn' + (i === currentPage ? ' active' : '');
-      btn.textContent = i;
-      btn.onclick = () => {
-        currentPage = i;
-        renderTransactions(currentPage);
-      }
-      paginationContainer.appendChild(btn);
-    }
-  }
-
-  // Init
-  renderTransactions(1);
-  // Update balance display
-  function updateBalanceDisplay() {
-    const balanceElements = [
-      document.getElementById('balanceDisplay'),
-      document.getElementById('depositModalBalance'),
-      document.getElementById('withdrawModalBalance')
-    ];
-    balanceElements.forEach(el => {
-      if (el) el.textContent = `${currentBalance} 원`;
-    });
-  }
-
-  // Validate input - only numbers, no commas
-  function validateAmount(input, errorElement) {
-    const value = input.value;
-    const hasComma = value.includes(',');
-    const isInvalid = hasComma || (value && !/^\d+$/.test(value));
-
-    if (isInvalid) {
-      input.classList.add('error');
-      errorElement.classList.add('active');
-      return false;
-    } else {
-      input.classList.remove('error');
-      errorElement.classList.remove('active');
-      return true;
-    }
-  }
-
-  // Modal Controls
-  function openModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-      modal.classList.add('active');
-      updateBalanceDisplay();
-    }
-  }
-
-  function closeModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-      modal.classList.remove('active');
-      // Clear inputs
-      const inputs = modal.querySelectorAll('.form-input');
-      inputs.forEach(input => {
-        input.value = '';
-        input.classList.remove('error');
-      });
-      const errors = modal.querySelectorAll('.form-error');
-      errors.forEach(error => error.classList.remove('active'));
-    }
-  }
-
-  // Deposit Modal Events
-  document.getElementById('depositBtn').addEventListener('click', () => openModal('depositModal'));
-  document.getElementById('closeDepositModal').addEventListener('click', () => closeModal('depositModal'));
-  document.getElementById('cancelDepositBtn').addEventListener('click', () => closeModal('depositModal'));
-
-  document.getElementById('depositAmount').addEventListener('input', function() {
-    validateAmount(this, document.getElementById('depositError'));
+  document.addEventListener('DOMContentLoaded', function() {
+    updateBalanceDisplay();
+    loadTransactions(1);
+    initDropdown();
   });
 
+  // 거래 내역 조회 (수정됨: Context Path 추가)
+  function loadTransactions(page) {
+    fetch('${pageContext.request.contextPath}/api/wallet/transactions?page=' + page + '&size=' + itemsPerPage)
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+              if (data.success) {
+                // 내역 조회하면서 최신 잔액 동기화
+                currentBalance = data.balance;
+                availBalance = data.availBalance;
+                updateBalanceDisplay();
+                renderTransactions(data.transactions);
+                renderPagination(data.totalPages, data.currentPage);
+                document.querySelector('.history-count').textContent = '(' + data.totalCount + ')';
+              }
+            });
+  }
+
+  function renderTransactions(transactions) {
+    var list = document.getElementById('transactionList');
+    list.innerHTML = '';
+
+    if (!transactions || transactions.length === 0) {
+      list.innerHTML = '<div class="history-item"><div class="item-title" style="grid-column:1/-1;text-align:center;">거래 내역이 없습니다.</div></div>';
+      return;
+    }
+
+    var typeLabels = {
+      'CHARGE': '충전', 'WITHDRAW': '출금', 'HOLD': '보류',
+      'RELEASE': '해제', 'PAYOUT': '지급', 'REFUND': '환불'
+    };
+
+    transactions.forEach(function(item) {
+      var el = document.createElement('div');
+      el.className = 'history-item';
+
+      var isPlus = ['CHARGE', 'RELEASE', 'REFUND'].indexOf(item.txnType) !== -1;
+      var color = isPlus ? 'color:#27ae60;' : 'color:#e74c3c;';
+      var prefix = isPlus ? '+' : '-';
+      var label = item.memo || typeLabels[item.txnType] || item.txnType;
+
+      el.innerHTML =
+              '<div class="item-title">' + label + '</div>' +
+              '<div class="item-author">' + formatDate(item.createdAt) + '</div>' +
+              '<div class="item-amount" style="' + color + '">' + prefix + Number(item.amount).toLocaleString() +
+              '원</div>';
+      list.appendChild(el);
+    });
+  }
+
+  function formatDate(dateStr) {
+    if (!dateStr) return '';
+    var d = new Date(dateStr);
+    return (d.getMonth()+1) + '/' + d.getDate() + ' ' + d.getHours() + ':' +
+            String(d.getMinutes()).padStart(2,'0');
+  }
+
+  function renderPagination(totalPages, currentPage) {
+    var container = document.getElementById('pagination');
+    container.innerHTML = '';
+    for (var i = 1; i <= totalPages; i++) {
+      var btn = document.createElement('div');
+      btn.className = 'page-btn' + (i === currentPage ? ' active' : '');
+      btn.textContent = i;
+      (function(pageNum) {
+        btn.onclick = function() { loadTransactions(pageNum); };
+      })(i);
+      container.appendChild(btn);
+    }
+  }
+
+  function updateBalanceDisplay() {
+    var ids = ['balanceDisplay', 'depositModalBalance', 'withdrawModalBalance'];
+    ids.forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.textContent = Number(currentBalance).toLocaleString() + ' 원';
+    });
+  }
+
+  // 충전 (잘 되어 있음)
   document.getElementById('submitDepositBtn').addEventListener('click', function() {
-    const bankSelect = document.getElementById('depositBank');
-    const bankError = document.getElementById('depositBankError');
-    const input = document.getElementById('depositAmount');
-    const errorElement = document.getElementById('depositError');
+    var bankSelect = document.getElementById('depositBank');
+    var input = document.getElementById('depositAmount');
+    var bankError = document.getElementById('depositBankError');
+    var amountError = document.getElementById('depositError');
+    var valid = true;
 
-    let isValid = true;
-
-    // Validate bank selection
     if (!bankSelect.value) {
       bankSelect.classList.add('error');
       bankError.classList.add('active');
-      isValid = false;
+      valid = false;
     } else {
       bankSelect.classList.remove('error');
       bankError.classList.remove('active');
     }
 
-    // Validate amount
-    if (!input.value) {
+    if (!input.value || !/^\d+$/.test(input.value)) {
       input.classList.add('error');
-      errorElement.textContent = '금액을 입력해주세요.';
-      errorElement.classList.add('active');
-      isValid = false;
-    } else if (!validateAmount(input, errorElement)) {
-      isValid = false;
+      amountError.textContent = '숫자만 입력해주세요.';
+      amountError.classList.add('active');
+      valid = false;
+    } else {
+      input.classList.remove('error');
+      amountError.classList.remove('active');
     }
 
-    if (isValid) {
-      const amount = parseInt(input.value);
-      if (amount > 0) {
-        currentBalance += amount;
-        updateBalanceDisplay();
-        alert(`${bankSelect.options[bankSelect.selectedIndex].text}에서 ${amount}원이 충전되었습니다.`);
-        closeModal('depositModal');
-      }
+    if (valid) {
+      fetch('${pageContext.request.contextPath}/api/wallet/charge', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          amount: parseInt(input.value),
+          bankName: bankSelect.value
+        })
+      })
+              .then(function(res) { return res.json(); })
+              .then(function(data) {
+                alert(data.message);
+                if (data.success) {
+                  currentBalance = data.balance;
+                  availBalance = data.availBalance;
+                  updateBalanceDisplay();
+                  closeModal('depositModal');
+                  loadTransactions(1);
+                }
+              });
     }
   });
 
-  // Withdrawal Modal Events
-  document.getElementById('withdrawBtn').addEventListener('click', () => openModal('withdrawModal'));
-  document.getElementById('closeWithdrawModal').addEventListener('click', () => closeModal('withdrawModal'));
-  document.getElementById('cancelWithdrawBtn').addEventListener('click', () => closeModal('withdrawModal'));
-
-  document.getElementById('withdrawAmount').addEventListener('input', function() {
-    validateAmount(this, document.getElementById('withdrawError'));
-  });
-
+  // 출금 (수정됨: Context Path 추가)
   document.getElementById('submitWithdrawBtn').addEventListener('click', function() {
-    const input = document.getElementById('withdrawAmount');
-    const errorElement = document.getElementById('withdrawError');
+    var input = document.getElementById('withdrawAmount');
+    var error = document.getElementById('withdrawError');
 
-    if (validateAmount(input, errorElement) && input.value) {
-      const amount = parseInt(input.value);
-      if (amount > 0) {
-        if (amount > currentBalance) {
-          input.classList.add('error');
-          errorElement.textContent = '잔액이 부족합니다. 현재 잔액: ' + currentBalance + '원';
-          errorElement.classList.add('active');
-        } else {
-          currentBalance -= amount;
-          updateBalanceDisplay();
-          alert(`${amount}원이 출금되었습니다. 남은 잔액: ${currentBalance}원`);
-          closeModal('withdrawModal');
-        }
-      }
-    } else if (!input.value) {
+    if (!input.value || !/^\d+$/.test(input.value)) {
       input.classList.add('error');
-      errorElement.textContent = '금액을 입력해주세요.';
-      errorElement.classList.add('active');
+      error.textContent = '숫자만 입력해주세요.';
+      error.classList.add('active');
+      return;
     }
+
+
+    fetch('${pageContext.request.contextPath}/api/wallet/withdraw', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ amount: parseInt(input.value) })
+    })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+              if (data.success) {
+                currentBalance = data.balance;
+                availBalance = data.availBalance;
+                updateBalanceDisplay();
+                alert(data.message);
+                closeModal('withdrawModal');
+                loadTransactions(1);
+              } else {
+                input.classList.add('error');
+                error.textContent = data.message;
+                error.classList.add('active');
+              }
+            });
   });
 
-  // Close modal on overlay click
+  // 모달
+  function openModal(id) {
+    document.getElementById(id).classList.add('active');
+    updateBalanceDisplay();
+  }
+
+  function closeModal(id) {
+    var m = document.getElementById(id);
+    m.classList.remove('active');
+    var inputs = m.querySelectorAll('.form-input');
+    for (var i = 0; i < inputs.length; i++) {
+      inputs[i].value = '';
+      inputs[i].classList.remove('error');
+    }
+    var errors = m.querySelectorAll('.form-error');
+    for (var j = 0; j < errors.length; j++) {
+      errors[j].classList.remove('active');
+    }
+  }
+
+  document.getElementById('depositBtn').addEventListener('click', function() { openModal('depositModal'); });
+  document.getElementById('closeDepositModal').addEventListener('click', function() { closeModal('depositModal'); });
+  document.getElementById('cancelDepositBtn').addEventListener('click', function() { closeModal('depositModal'); });
+  document.getElementById('withdrawBtn').addEventListener('click', function() { openModal('withdrawModal'); });
+  document.getElementById('closeWithdrawModal').addEventListener('click', function() { closeModal('withdrawModal'); });
+  document.getElementById('cancelWithdrawBtn').addEventListener('click', function() { closeModal('withdrawModal'); });
+
   document.getElementById('depositModal').addEventListener('click', function(e) {
     if (e.target === this) closeModal('depositModal');
   });
-
   document.getElementById('withdrawModal').addEventListener('click', function(e) {
     if (e.target === this) closeModal('withdrawModal');
   });
 
-  // Initialize balance display
-  updateBalanceDisplay();
-
-  // Dropdown Logic (Reused)
-  document.addEventListener('DOMContentLoaded', function () {
-    const dropdownBtn = document.getElementById('userDropdownBtn');
-    const dropdownMenu = document.getElementById('userDropdownMenu');
-
-    if (dropdownBtn && dropdownMenu) {
-      dropdownBtn.addEventListener('click', function (e) {
+  function initDropdown() {
+    var btn = document.getElementById('userDropdownBtn');
+    var menu = document.getElementById('userDropdownMenu');
+    if (btn && menu) {
+      btn.addEventListener('click', function(e) {
         e.stopPropagation();
-        dropdownMenu.classList.toggle('active');
+        menu.classList.toggle('active');
       });
-
-      document.addEventListener('click', function (e) {
-        if (!dropdownMenu.contains(e.target) && !dropdownBtn.contains(e.target)) {
-          dropdownMenu.classList.remove('active');
+      document.addEventListener('click', function(e) {
+        if (!menu.contains(e.target) && !btn.contains(e.target)) {
+          menu.classList.remove('active');
         }
       });
     }
-  });
+  }
 </script>
 </body>
 

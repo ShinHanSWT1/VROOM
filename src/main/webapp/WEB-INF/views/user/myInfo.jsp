@@ -1088,10 +1088,10 @@
             <a href="#" class="nav-item">커뮤니티</a>
             <a href="<c:url value='/errander/mypage/profile'/>" class="nav-item">심부름꾼 전환</a>
             <div class="nav-dropdown">
-                <button class="nav-item nav-user" id="userDropdownBtn">유저</button>
+                <button class="nav-item nav-user" id="userDropdownBtn">사용자</button>
                 <div class="dropdown-menu" id="userDropdownMenu">
                     <a href="myInfo" class="dropdown-item">나의정보</a>
-                    <a href="vroomPay" class="dropdown-item">부름페이</a>
+                    <a href="/vroom/pay/vroomPay" class="dropdown-item">부름페이</a>
                     <a href="myActivity" class="dropdown-item">나의 활동</a>
                     <a href="#" class="dropdown-item">설정</a>
                     <a href="#" class="dropdown-item">고객지원</a>
@@ -1109,7 +1109,7 @@
         <aside class="sidebar">
             <ul class="sidebar-menu">
                 <li class="sidebar-item"><a href="myInfo" class="sidebar-link active">나의 정보</a></li>
-                <li class="sidebar-item"><a href="vroomPay" class="sidebar-link">부름 페이<br>(계좌 관리)</a></li>
+                <li class="sidebar-item"><a href="/vroom/pay/vroomPay" class="sidebar-link">부름 페이<br>(계좌 관리)</a></li>
                 <li class="sidebar-item"><a href="myActivity" class="sidebar-link">나의 활동</a></li>
                 <li class="sidebar-item"><a href="#" class="sidebar-link">설정</a></li>
                 <li class="sidebar-item"><a href="#" class="sidebar-link">고객지원</a></li>
@@ -1140,7 +1140,7 @@
                 </div>
                 <div class="profile-actions">
                     <a href="myActivity" class="action-btn">나의 활동</a>
-                    <a href="vroomPay" class="action-btn">부름 페이</a>
+                    <a href="/vroom/pay/vroomPay" class="action-btn">부름 페이</a>
                 </div>
             </div>
 
@@ -1439,21 +1439,26 @@
             // 주소 처리 (없으면 공백)
             const locationText = task.location || '';
 
-            // ★ 시간 변환 함수 적용! (여기서 방금 만든 함수를 씁니다)
-            console.log(task);
+            // 시간 변환
             const displayTime = timeAgo(task.createdAt);
+
+            // [수정됨] ★ 설명 글자수 20자로 자르기 로직 추가 ★
+            let shortDescription = task.description || ''; // 내용이 없으면 빈 문자열
+            if (shortDescription.length > 20) {
+                shortDescription = shortDescription.substring(0, 20) + '...';
+            }
 
             taskCard.innerHTML = '<div class="task-image">' + task.icon + statusLabel + '</div>' +
                 '<div class="task-card-content">' +
                 '<div class="task-card-header">' +
                 '<span class="task-badge">' + task.badge + '</span>' +
-                // 변환된 시간(displayTime)을 보여줍니다
                 '<span class="task-time" style="display:flex; align-items:center;">' + displayTime + reportButton + '</span>' +
                 '</div>' +
                 '<h3 class="task-card-title">' + task.title + '</h3>' +
                 '<div class="task-author-info">' +
                 '<div class="author-avatar" style="font-size:0.7rem; width:20px; height:20px; margin-right:5px;">👤</div>' +
-                '<span class="author-name">' + (task.description || '') + '</span>' +
+                // [수정됨] 자른 설명(shortDescription)을 넣었습니다.
+                '<span class="author-name">' + shortDescription + '</span>' +
                 '</div>' +
                 '<div class="task-meta">' +
                 '<span class="task-location">' + locationText + '</span>' +

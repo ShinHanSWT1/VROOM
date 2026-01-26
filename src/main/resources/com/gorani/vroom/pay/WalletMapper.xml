@@ -3,14 +3,14 @@
 <mapper namespace="com.gorani.vroom.pay.WalletMapper">
 
     <!-- 지갑 조회 -->
-    <select id="getAccountByUserId" parameterType="long" resultType="WalletVO">
+    <select id="getAccountByUserId" parameterType="long" resultType="com.gorani.vroom.pay.WalletVO">
         SELECT user_id, balance, avail_balance, updated_at, real_account
         FROM WALLET_ACCOUNTS
         WHERE user_id = #{userId}
     </select>
 
     <!-- 지갑 생성 -->
-    <insert id="createAccount" parameterType="WalletVO">
+    <insert id="createAccount" parameterType="com.gorani.vroom.pay.WalletVO">
         INSERT INTO WALLET_ACCOUNTS (user_id, balance, avail_balance, real_account)
         VALUES (#{userId}, 0, 0, #{realAccount})
     </insert>
@@ -52,13 +52,13 @@
     </update>
 
     <!-- 거래 기록 -->
-    <insert id="insertTransaction" parameterType="WalletVO">
+    <insert id="insertTransaction" parameterType="com.gorani.vroom.pay.WalletVO">
         INSERT INTO WALLET_TRANSACTIONS (txn_type, amount, errand_id, memo, payment_id, user_id)
         VALUES (#{txnType}, #{amount}, #{errandId}, #{memo}, #{paymentId}, #{userId})
     </insert>
 
     <!-- 거래 내역 조회 -->
-    <select id="getTransactions" parameterType="map" resultType="WalletVO">
+    <select id="getTransactions" parameterType="map" resultType="com.gorani.vroom.pay.WalletVO">
         SELECT id, txn_type, amount, errand_id, created_at, memo, payment_id, user_id
         FROM WALLET_TRANSACTIONS
         WHERE user_id = #{userId}

@@ -106,4 +106,13 @@ public interface CommunityMapper {
 
     // 게시글 이미지 soft delete (keepImageIds에 없는 이미지 삭제)
     int deleteImages(@Param("postId") Long postId, @Param("keepImageIds") List<Long> keepImageIds);
+
+    // 내가 작성한 글 목록 조회
+    List<CommunityPostVO> selectMyPosts(@Param("userId") Long userId);
+
+    // 내가 댓글 단 글 목록 조회
+    List<CommunityPostVO> selectMyCommentedPosts(@Param("userId") Long userId);
+
+    // 내가 좋아요한 글 목록 조회
+    List<CommunityPostVO> selectMyLikedPosts(@Param("userId") Long userId);
 }
