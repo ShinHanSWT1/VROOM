@@ -75,7 +75,7 @@ public class AuthController {
             model.addAttribute("message", "아이디 비밀번호가 올바르지 않습니다.");
             model.addAttribute("subMessage", "로그인 창으로 이동합니다.");
             model.addAttribute("result", "fail");
-            model.addAttribute("url", "/auth/login");
+            model.addAttribute("url", "auth/login");
         } else { // 로그인 성공
             log.info("로그인 성공 - userId: {}, email: {}", userVo.getUserId(), userVo.getEmail());
             sess.setAttribute("loginSess", userVo);
@@ -84,7 +84,7 @@ public class AuthController {
             model.addAttribute("message", "로그인 성공!");
             model.addAttribute("subMessage", "VROOM으로 이동합니다.");
             model.addAttribute("result", "success");
-            model.addAttribute("url", "/");
+            model.addAttribute("url", "");
         }
 
         return "common/return";
@@ -99,7 +99,7 @@ public class AuthController {
         model.addAttribute("message", "로그아웃되었습니다.");
         model.addAttribute("subMessage", "VROOM으로 이동합니다.");
         model.addAttribute("result", "success");
-        model.addAttribute("url", "/");
+        model.addAttribute("url", "");
         return "common/return";
     }
 

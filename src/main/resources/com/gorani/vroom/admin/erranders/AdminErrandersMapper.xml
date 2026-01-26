@@ -35,7 +35,6 @@
 
     <!-- 부름이 검색 -->
     <select id="searchErranders" parameterType="map" resultType="map">
-        <![CDATA[
             SELECT
                 m.user_id,
                 m.phone,
@@ -45,11 +44,11 @@
                 p.active_status,
                 p.complete_rate,
                 p.rating_avg,
-                p.last_active_at
+                p.last_active_at,
+                p.approved_at
             FROM MEMBERS m
             JOIN ERRANDER_PROFILES p ON m.user_id = p.user_id
             WHERE m.role = 'ERRANDER'
-        ]]>
 
             <if test="keyword != null and keyword != ''">
                 AND (
@@ -69,21 +68,18 @@
             <if test="reviewScope != null">
                 AND p.rating_avg >= #{reviewScope}
             </if>
-        <![CDATA[
+
             ORDER BY p.approved_at DESC
             LIMIT #{limit} OFFSET #{offset}
-        ]]>
 
     </select>
 
     <!-- 검색된 총 부름이 수 -->
     <select id="countErranders" parameterType="map" resultType="int">
-        <![CDATA[
             SELECT COUNT(*)
             FROM MEMBERS m
             JOIN ERRANDER_PROFILES p ON m.user_id = p.user_id
             WHERE m.role = 'ERRANDER'
-        ]]>
 
         <if test="keyword != null and keyword != ''">
             AND (
@@ -105,78 +101,243 @@
         </if>
     </select>
 
-    <!-- 사용자 상태 변경 -->
-<!--    <update id="updateErranderStatus" parameterType="map">-->
-<!--        UPDATE ERRANDER_PROFILES-->
-<!--        SET-->
-<!--            active_status = #{status},-->
-<!--            suspension_end_at = #{suspensionEndAt},-->
-<!--            suspension_note = #{suspensionNote}-->
-<!--        WHERE errander_id = #{erranderId}-->
-<!--    </update>-->
 
-<!--    &lt;!&ndash; 상세페이지 사용자 정보 &ndash;&gt;-->
-<!--    <select id="getUserInfoDetail"-->
-<!--            parameterType="long"-->
-<!--            resultType="com.gorani.vroom.admin.users.AdminUserDetailDTO">-->
-<!--        SELECT-->
-<!--            m.user_id, m.email, m.nickname, m.role, m.status, m.phone, m.cancel_rate,-->
-<!--            m.profile_image, m.manner_score, m.created_at, m.last_login_at, m.provider,-->
-<!--            m.admin_memo,-->
-<!--            d1.full_name AS address1,-->
-<!--            d2.full_name AS address2,-->
+    <!-- 부름이 승인/반려 모달 -->
+    <!-- 사용자 id, 심부름 id, 닉네임, 이메일, 휴대폰, 활동 상태, 최근활동일, 활동 동네, 제출 서류 -->
+    <resultMap id="erranderResumeMap" type="map">
+        <id property="user_id" column="user_id"/>
+        <result property="errander_id" column="errander_id"/>
+        <result property="nickname" column="nickname"/>
+        <result property="email" column="email"/>
+        <result property="phone" column="phone"/>
+        <result property="last_login_at" column="last_login_at"/>
+        <result property="status" column="status"/>
+        <result property="address1" column="address1"/>
+        <result property="address2" column="address2"/>
 
-<!--            &#45;&#45; 심부름 등록 횟수-->
-<!--            (SELECT COUNT(*) FROM ERRANDS WHERE user_id = m.user_id) AS errand_count,-->
+        <collection property="documents" javaType="java.util.ArrayList" ofType="map">
+            <result property="file_url" column="file_url"/>
+            <result property="doc_type" column="doc_type"/>
+        </collection>
+    </resultMap>
 
-<!--            &#45;&#45; 신고 당한 횟수-->
-<!--            (SELECT COUNT(*) FROM ISSUE_TICKETS WHERE target_user_id = m.user_id) AS reported_count,-->
+    <select id="getErranderApprovalDetail"
+            parameterType="long" resultMap="erranderResumeMap">
+            SELECT
+                e.user_id, e.errander_id, m.nickname, m.email, m.phone, m.last_login_at, m.status,
+                l1.full_name AS address1, l2.full_name AS address2,
+                d.file_url, d.doc_type
+            FROM ERRANDER_PROFILES e
+                     JOIN MEMBERS m ON e.user_id = m.user_id
+                     LEFT JOIN LEGAL_DONG l1 ON e.dong_code1 = l1.dong_code
+                     LEFT JOIN LEGAL_DONG l2 ON e.dong_code2 = l2.dong_code
+                     LEFT JOIN ERRANDER_DOCUMENTS d ON e.errander_id = d.errander_id AND d.status = 'SUBMITTED'
+            WHERE e.errander_id = #{erranderId}
+    </select>
 
-<!--            &#45;&#45; 누적 거래 금액-->
-<!--            (SELECT IFNULL(SUM(amount), 0)-->
-<!--             FROM PAYMENT_ORDERS-->
-<!--             WHERE user_id = m.user_id AND status = 'PAID') AS total_tx_amount-->
+    <!-- 부름이 승인 상태 변경 -->
+    <update id="updateErranderApprovalStatus">
+            UPDATE ERRANDER_PROFILES SET approval_status = #{status}, approved_at = NOW()
+            WHERE errander_id = #{erranderId}
+    </update>
 
-<!--        FROM MEMBERS m-->
-<!--                 LEFT JOIN LEGAL_DONG d1 ON m.dong_code1 = d1.dong_code-->
-<!--                 LEFT JOIN LEGAL_DONG d2 ON m.dong_code2 = d2.dong_code-->
-<!--        WHERE m.user_id = #{userId}-->
-<!--    </select>-->
+    <!-- 부름이 활성화 상태 변경 -->
+    <update id="updateErranderActiveStatus">
+            UPDATE ERRANDER_PROFILES SET active_status = #{status}
+            WHERE errander_id = #{erranderId}
+    </update>
 
-<!--    &lt;!&ndash; 사용자 신고당한 이력 &ndash;&gt;-->
-<!--    <select id="getUserReportHistory"-->
-<!--            parameterType="long"-->
-<!--            resultType="com.gorani.vroom.admin.users.UserReportHistoryVO">-->
-<!--        SELECT-->
-<!--            id AS ticket_id,-->
-<!--            type,-->
-<!--            status,-->
-<!--            content AS reason,-->
-<!--            created_at-->
-<!--        FROM ISSUE_TICKETS-->
-<!--        WHERE target_user_id = #{userId}-->
-<!--        ORDER BY created_at DESC-->
-<!--    </select>-->
+    <!-- 부름이 상세 정보 조회 (기본정보) -->
+    <!-- 사용자ID, 부름이 ID, 닉네임, 이메일, 휴대폰, 승인상태, 활동상태, 승인날짜, 최근 활동일, 동네12, -->
+    <select id="getErranderDetail" parameterType="long" resultType="map">
+            SELECT e.user_id, e.errander_id, m.nickname, m.email, m.phone,
+                   e.approval_status, e.active_status, e.approved_at, e.last_active_at,
+                   l1.full_name AS address1, l2.full_name AS address2
+                FROM ERRANDER_PROFILES e JOIN MEMBERS m ON e.user_id = m.user_id
+                   LEFT JOIN LEGAL_DONG l1 ON e.dong_code1 = l1.dong_code
+                   LEFT JOIN LEGAL_DONG l2 ON e.dong_code2 = l2.dong_code
+                WHERE e.errander_id = #{erranderId}
+    </select>
 
-<!--    &lt;!&ndash; 사용자 활동 히스토리 &ndash;&gt;-->
-<!--    <select id="getUserActivityHistory"-->
-<!--            parameterType="long"-->
-<!--            resultType="com.gorani.vroom.admin.users.UserActivityVO">-->
-<!--        SELECT-->
-<!--            '심부름 등록' AS type,-->
-<!--            title AS description,-->
-<!--            created_at AS occurred_at-->
-<!--        FROM ERRANDS-->
-<!--        WHERE user_id = #{userId}-->
-<!--        ORDER BY created_at DESC-->
-<!--            LIMIT 10-->
-<!--    </select>-->
+    <!-- 부름이 활동 요약 조회 -->
+    <!-- 총 수락(매칭) 건수, 완료 건수, 취소당한 건수, 심부름 완료율, 리뷰 평점, 누적 수익 -->
+    <select id="getActivitySummary"
+            parameterType="long" resultType="map">
+        SELECT p.complete_rate,
+               p.rating_avg,
+               COALESCE(a.matched, 0)       AS matched,
+               COALESCE(a.completed, 0)     AS completed,
+               COALESCE(a.canceled, 0)      AS canceled,
+               COALESCE(e.total_earning, 0) AS total_earning
+        FROM ERRANDER_PROFILES p
+                 LEFT JOIN
+             (SELECT errander_id,
+                     COUNT(*)                                              AS matched,
+                     SUM(CASE WHEN status = 'COMPLETED' THEN 1 ELSE 0 END) AS completed,
+                     SUM(CASE WHEN status = 'CANCELED' THEN 1 ELSE 0 END)  AS canceled
+              FROM ERRAND_ASSIGNMENTS
+              WHERE errander_id = #{erranderId}
+              GROUP BY errander_id) a
+             ON p.errander_id = a.errander_id
+                 LEFT JOIN
+             (SELECT errander_id,
+                     SUM(settlement_amount) AS total_earning
+              FROM ERRANDS
+              WHERE errander_id = #{erranderId}
+              GROUP BY errander_id) e
+             ON p.errander_id = e.errander_id
+        WHERE p.errander_id = #{erranderId}
+    </select>
 
-<!--    &lt;!&ndash; 관리자 메모 업데이트 &ndash;&gt;-->
-<!--    <update id="updateAdminMemo">-->
-<!--        UPDATE MEMBERS-->
-<!--        SET admin_memo = #{memo}-->
-<!--        WHERE user_id = #{userId}-->
-<!--    </update>-->
+    <!-- 부름이 최근 수행 심부름 목록 -->
+    <select id="getRecentErrands" parameterType="map" resultType="map">
+        SELECT *
+        FROM (SELECT a.errands_id,
+                     a.errander_id,
+                     e.title,
+                     a.status,
+                     a.assigned_at AS event_at,
+                     'ASSIGNMENT'  AS source
+              FROM ERRAND_ASSIGNMENTS a
+                       JOIN ERRANDS e ON e.errands_id = a.errands_id
+              WHERE a.errander_id = #{erranderId}
+                AND a.status IN ('CANCELED', 'COMPLETED')
+
+              UNION ALL
+
+              SELECT e.errands_id,
+                     e.errander_id,
+                     e.title,
+                     e.status,
+                     e.updated_at AS event_at,
+                     'ERRAND'     AS source
+              FROM ERRANDS e
+              WHERE e.errander_id = #{erranderId}
+                AND e.status IN ('WAITING', 'MATCHED', 'CONFIRMED1', 'CONFIRMED2')) t
+        ORDER BY t.event_at DESC
+            LIMIT #{limit};
+    </select>
+
+    <!-- 부름이 최근 수행 심부름 목록 + 인증샷 -->
+    <select id="getRecentErrandsWithProof" parameterType="map" resultType="map">
+        SELECT
+            t.errands_id,
+            t.errander_id,
+            t.title,
+            t.status,
+            t.event_at,
+            t.source,
+
+            cp.proof_id,
+            cp.submitted_at,
+            cp.file_url
+        FROM (
+                 SELECT
+                     a.errands_id,
+                     a.errander_id,
+                     e.title,
+                     a.status,
+                     a.assigned_at AS event_at,
+                     'ASSIGNMENT'  AS source
+                 FROM ERRAND_ASSIGNMENTS a
+                          JOIN ERRANDS e ON e.errands_id = a.errands_id
+                 WHERE a.errander_id = #{erranderId}
+                   AND a.status IN ('CANCELED', 'COMPLETED')
+
+                 UNION ALL
+
+                 SELECT
+                     e.errands_id,
+                     e.errander_id,
+                     e.title,
+                     e.status,
+                     e.updated_at AS event_at,
+                     'ERRAND'     AS source
+                 FROM ERRANDS e
+                 WHERE e.errander_id = #{erranderId}
+                   AND e.status IN ('WAITING', 'MATCHED', 'CONFIRMED1', 'CONFIRMED2')
+             ) t
+                 LEFT JOIN COMPLETION_PROOFS cp
+                           ON cp.errands_id = t.errands_id
+                               AND cp.errander_id = t.errander_id
+        ORDER BY t.event_at DESC
+            LIMIT #{limit}
+    </select>
+
+
+    <!-- 정산 정보 -->
+    <!-- 누적 정산 금액, 이번달 정산 완료 금액, 정산 대기 금액, 최근 정산 내역 -->
+    <select id="getSettlementSummary"
+            parameterType="long" resultType="map">
+        SELECT
+            (
+                SELECT COALESCE(SUM(wt.amount), 0)
+                FROM WALLET_TRANSACTIONS wt
+                WHERE wt.errander_id = #{erranderId} AND wt.txn_type = 'PAYOUT'
+            ) AS total_amount,
+            <![CDATA[
+            (
+                SELECT
+                    COALESCE(SUM(CASE WHEN created_at >= DATE_FORMAT(CURRENT_DATE, '%Y-%m-01')
+                                        AND created_at <  DATE_ADD(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL 1 MONTH)
+                                        THEN amount ELSE 0 END)
+                            , 0)
+                FROM WALLET_TRANSACTIONS
+                WHERE errander_id = #{erranderId} AND txn_type = 'PAYOUT'
+            ) AS this_month_amount,
+            ]]>
+            (
+                SELECT COALESCE(SUM(p.amount), 0)
+                FROM PAYMENT_ORDERS p JOIN ERRANDS e ON p.errands_id = e.errands_id
+                WHERE p.errander_id = #{erranderId} AND p.status = 'PENDING' AND e.status = 'CONFIRMED2'
+            ) AS settlement_pending_amount
+    </select>
+
+    <!-- 부름이 평균 평점 -->
+    <select id="getErranderRatingAvg"
+            parameterType="long" resultType="double">
+        SELECT
+            COALESCE(rating_avg, 0) AS rating_avg
+        FROM ERRANDER_PROFILES
+        WHERE errander_id = #{erranderId}
+    </select>
+
+    <!-- 부름이 최근 리뷰 N건 -->
+    <select id="getRecentReviews"
+            parameterType="map" resultType="map">
+        SELECT
+            r.review_id,
+            r.errand_id,
+            r.rating,
+            r.comment,
+            r.created_at
+        FROM REVIEWS r JOIN ERRANDS e ON e.errands_id = r.errand_id
+        WHERE e.errander_id = #{erranderId}
+        ORDER BY r.created_at DESC
+            LIMIT #{limit}
+    </select>
+
+    <!-- 관리자 메모 -->
+    <select id="getAdminMemo"
+            parameterType="long" resultType="String">
+        SELECT admin_memo
+        FROM ERRANDER_PROFILES
+        WHERE errander_id = #{erranderId}
+    </select>
+
+    <!-- 인증 제출 서류 -->
+    <select id="getDocuments"
+            parameterType="long" resultType="map">
+        SELECT doc_type, file_url, name
+        FROM ERRANDER_DOCUMENTS
+        WHERE errander_id = #{erranderId}
+    </select>
+
+    <!-- 관리자 메모 업데이트 -->
+    <update id="updateAdminMemo"
+            parameterType="map">
+        UPDATE ERRANDER_PROFILES SET admin_memo = #{adminMemo}
+        WHERE errander_id = #{erranderId}
+    </update>
 
 </mapper>

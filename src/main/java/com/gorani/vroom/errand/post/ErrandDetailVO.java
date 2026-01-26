@@ -19,4 +19,8 @@ public class ErrandDetailVO {
     private String dongCode;
     private String mainImageUrl;
     private java.math.BigDecimal mannerScore; // 또는 Double
+    
+    private String gunguName;
+    private String dongName;
+    private String dongFullName;
 }

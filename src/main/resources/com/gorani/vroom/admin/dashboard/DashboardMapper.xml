@@ -90,23 +90,23 @@
                 -- 활성 부름이
                 (SELECT COUNT(*) FROM ERRANDER_PROFILES WHERE last_active_at >= CURDATE()
                     AND last_active_at <  CURDATE() + INTERVAL 1 DAY
-                    AND status = 'ACTIVE'
+                    AND active_status = 'ACTIVE'
                 ) AS active_errander_today,
 
                 (SELECT COUNT(*) FROM ERRANDER_PROFILES WHERE last_active_at >= CURDATE() - INTERVAL 1 DAY
                     AND last_active_at <  CURDATE()
-                    AND status = 'ACTIVE'
+                    AND active_status = 'ACTIVE'
                 ) AS active_errander_yesterday,
 
                 (
                     (SELECT COUNT(*) FROM ERRANDER_PROFILES WHERE last_active_at >= CURDATE()
                     AND last_active_at <  CURDATE() + INTERVAL 1 DAY
-                    AND status = 'ACTIVE'
+                    AND active_status = 'ACTIVE'
                     )
                     -
                     (SELECT COUNT(*) FROM ERRANDER_PROFILES WHERE last_active_at >= CURDATE() - INTERVAL 1 DAY
                         AND last_active_at <  CURDATE()
-                        AND status = 'ACTIVE'
+                        AND active_status = 'ACTIVE'
                     )
                 ) AS active_errander_delta
         ]]>

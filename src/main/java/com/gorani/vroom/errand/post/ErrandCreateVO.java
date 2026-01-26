@@ -9,7 +9,7 @@ public class ErrandCreateVO {
     private String title; //제목
     private Long categoryId; //카테고리
     private Integer rewardAmount; // 심부름값
-    private Integer expenseAmount; // 수행비용
+    private Integer expenseAmount; // 재료비
     private String description; //심부름 설명
     private String dongCode;      // 동네 코드
     private String dongFullName;
