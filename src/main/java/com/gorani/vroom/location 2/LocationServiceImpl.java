@@ -1,16 +1,15 @@
-package com.gorani.vroom.Location;
+package com.gorani.vroom.location;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class LocationServiceImpl implements LocationService {
 
-    // 스프링에게 Mapper연결 요청
-    @Autowired
-    private LocationMapper locationMapper;
+    private final LocationMapper locationMapper;
 
     @Override
     public List<String> getGuList() {
@@ -19,7 +18,6 @@ public class LocationServiceImpl implements LocationService {
 
     @Override
     public List<LegalDongVO> getDongList(String gunguName) {
-        // 매퍼가 가져온 데이터를 그대로 컨트롤러에 전달
         return locationMapper.selectDongList(gunguName);
     }
 }

@@ -1,4 +1,4 @@
-package com.gorani.vroom.Location;
+package com.gorani.vroom.location;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

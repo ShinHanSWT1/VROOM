@@ -31,7 +31,7 @@ public class MvcConfig implements WebMvcConfigurer {
 	// 업로드 저장 경로 (외부 경로)
 	public static final String PROFILE_UPLOAD_PATH = "C:/uploads/profile/";
 	public static final String ERRAND_UPLOAD_PATH  = "C:/uploads/errand/";
-	public static final String COMMUNITY_UPLOAD_PATH = "C:/uploads/community/";
+	public static final String COMMUNITY_UPLOAD_PATH = "/Users/kimjaemin/Desktop/vroom/uploads/community/";
 
     @Value("${db.driver}")
     private String driver;
@@ -80,7 +80,7 @@ public class MvcConfig implements WebMvcConfigurer {
 
         // 커뮤니티 이미지 (외부 경로 매핑)
         registry.addResourceHandler("/uploads/community/**")
-                .addResourceLocations("file:/" + COMMUNITY_UPLOAD_PATH);
+                .addResourceLocations("file:" + COMMUNITY_UPLOAD_PATH);
     }
 
     @Override

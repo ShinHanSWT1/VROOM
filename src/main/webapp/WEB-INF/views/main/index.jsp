@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <c:set var="pageTitle" value="VROOM - 우리동네 심부름" />
 <c:set var="pageCss" value="main" />
 <c:set var="pageJs" value="main" />
@@ -26,30 +27,14 @@
 <section class="action-menu">
     <div class="container">
         <div class="menu-grid">
-            <div class="menu-item">
-                <div class="menu-icon">🚚</div>
-                <div class="menu-label">배달</div>
-            </div>
-            <div class="menu-item">
-                <div class="menu-icon">🔧</div>
-                <div class="menu-label">설치서비스</div>
-            </div>
-            <div class="menu-item">
-                <div class="menu-icon">🧹</div>
-                <div class="menu-label">청소</div>
-            </div>
-            <div class="menu-item">
-                <div class="menu-icon">👶</div>
-                <div class="menu-label">돌봄</div>
-            </div>
-            <div class="menu-item">
-                <div class="menu-icon">📦</div>
-                <div class="menu-label">이사도움</div>
-            </div>
-            <div class="menu-item">
-                <div class="menu-icon">🎯</div>
-                <div class="menu-label">기타</div>
-            </div>
+            <c:forEach var="category" items="${errandsCategoryList}">
+                <a href="<c:url value='/errand/list'><c:param name='categoryId' value='${category.id}'/></c:url>" class="menu-item" style="text-decoration: none;">
+                    <div class="menu-icon">
+                        <img src="<c:url value='${category.defaultImageUrl}'/>" alt="${category.name}" style="width: 48px; height: 48px;">
+                    </div>
+                    <div class="menu-label">${category.name}</div>
+                </a>
+            </c:forEach>
         </div>
     </div>
 </section>
@@ -57,23 +42,20 @@
 <!-- Location Search -->
 <section class="location-search">
     <div class="container">
-        <div class="location-selector">
-            <div class="select-group">
-                <label class="label-text">지역 선택</label>
-                <div class="district-tabs">
-                    <button class="district-tab active" onclick="showDong('songpa')">송파구</button>
-                    <button class="district-tab" onclick="showDong('gangnam')">강남구</button>
-                    <button class="district-tab" onclick="showDong('seocho')">서초구</button>
-                    <button class="district-tab" onclick="showDong('gangdong')">강동구</button>
-                    <button class="district-tab" onclick="showDong('yeongdeungpo')">영등포구</button>
-                    <button class="district-tab" onclick="showDong('mapo')">마포구</button>
-                </div>
-            </div>
-            <div class="select-group">
-                <label class="label-text">동 선택</label>
-                <div class="dong-grid" id="dongGrid">
-                    <!-- JavaScript로 동적 생성 -->
-                </div>
+        <div class="location-selector-wrapper" style="background-color: var(--color-white); padding: 2rem; border-radius: 12px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); text-align: center;">
+            <h3 style="margin-bottom: 1.5rem; color: var(--color-dark);">우리 동네 설정하기</h3>
+
+            <div class="location-selectors" style="display: flex; justify-content: center; gap: 1rem;">
+                <select id="guSelect" class="location-select" style="padding: 0.75rem 1.25rem; border: 2px solid var(--color-light-gray); border-radius: 8px; font-size: 1rem;">
+                    <option value="">구 선택</option>
+                    <c:forEach var="gungu" items="${gunguList}">
+                        <option value="${gungu}" ${gungu == selectedGuName ? 'selected' : ''}>${gungu}</option>
+                    </c:forEach>
+                </select>
+
+                <select id="dongSelect" class="location-select" style="padding: 0.75rem 1.25rem; border: 2px solid var(--color-light-gray); border-radius: 8px; font-size: 1rem;">
+                    <option value="">동 선택</option>
+                </select>
             </div>
         </div>
     </div>
@@ -84,21 +66,20 @@
     <div class="container">
         <div class="section-header">
             <h2 class="section-title">진행 중인 부름</h2>
-            <a href="${pageContext.request.contextPath}/errand/list" class="more-link">더보기 →</a>
+            <a href="<c:url value='/errand/list'><c:if test='${not empty selectedDongCode}'><c:param name='dongCode' value='${selectedDongCode}'/></c:if></c:url>" class="more-link">더보기 →</a>
         </div>
         <div class="task-grid">
-            <c:forEach var="task" items="${taskList}" begin="0" end="2">
-                <div class="task-card">
-                    <img src="https://picsum.photos/400/200?random=${task.taskNo}" alt="${task.title}" class="task-image">
+            <c:forEach var="task" items="${errandListVO}">
+                <a href="<c:url value='/errand/detail'><c:param name='errandsId' value='${task.errandsId}'/></c:url>" class="task-card" style="text-decoration: none; color: inherit;">
+                    <img src="<c:url value='${task.imageUrl}'/>" alt="${task.title}" class="task-image">
                     <div class="task-info">
                         <h3 class="task-title">${task.title}</h3>
-                        <p class="task-description">${task.description}</p>
                         <div class="task-meta">
-                            <span class="task-price">${task.price}원</span>
-                            <span class="task-location">${task.location}</span>
+                            <span class="task-price"><fmt:formatNumber value="${task.rewardAmount}" type="currency" currencySymbol="₩" /></span>
+                            <span class="task-location">${task.dongFullName}</span>
                         </div>
                     </div>
-                </div>
+                </a>
             </c:forEach>
         </div>
     </div>
@@ -109,22 +90,18 @@
     <div class="container">
         <div class="section-header">
             <h2 class="section-title">커뮤니티 인기글</h2>
-            <a href="${pageContext.request.contextPath}/community/" class="more-link">더보기 →</a>
+            <a href="<c:url value='/community'><c:if test='${not empty selectedDongCode}'><c:param name='dongCode' value='${selectedDongCode}'/></c:if></c:url>" class="more-link">더보기 →</a>
         </div>
 
         <div class="hot-posts">
             <ul class="hot-post-list">
-                <c:forEach var="post" items="${hotPostList}" begin="0" end="5" varStatus="status">
-                    <li class="hot-post-item" onclick="goToPostDetail(${post.postNo})">
+                <c:forEach var="post" items="${popularPostListVO}" varStatus="status">
+                    <a href="<c:url value='/community/detail/${post.postId}'/>" class="hot-post-item" style="text-decoration: none; color: inherit;">
                         <span class="hot-rank">BEST ${status.index + 1}</span>
                         <span class="hot-title">${post.title}</span>
-                    </li>
+                    </a>
                 </c:forEach>
             </ul>
-
-            <div class="hot-more-wrap">
-                <a href="${pageContext.request.contextPath}/community/" class="hot-more-btn">전체보기</a>
-            </div>
         </div>
     </div>
 </section>
@@ -193,5 +170,14 @@
         </div>
     </div>
 </section>
+
+<script>
+    window.mainFilterConfig = {
+        contextPath: '${pageContext.request.contextPath}',
+        selectedDongCode: '${selectedDongCode}',
+        selectedGuName: '${selectedGuName}'
+    };
+</script>
+<script src="<c:url value='/static/main/js/mainFilter.js'/>"></script>
 
 <jsp:include page="../common/footer.jsp" />
