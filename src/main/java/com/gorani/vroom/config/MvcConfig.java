@@ -20,7 +20,7 @@ public class MvcConfig implements WebMvcConfigurer {
     // 업로드 경로
     public static final String PROFILE_UPLOAD_PATH = "C:/uploads/profile/";
     public static final String ERRAND_UPLOAD_PATH  = "C:/uploads/errand/";
-
+    public static final String COMMUNITY_UPLOAD_PATH = "C:/uploads/community/";
     // View Resolver (JSP)
     @Override
     public void configureViewResolvers(ViewResolverRegistry registry) {
@@ -43,6 +43,10 @@ public class MvcConfig implements WebMvcConfigurer {
         // 심부름 이미지
         registry.addResourceHandler("/uploads/errand/**")
                 .addResourceLocations("file:/" + ERRAND_UPLOAD_PATH);
+
+        // 커뮤니티 이미지 (외부 경로 매핑)
+        registry.addResourceHandler("/uploads/community/**")
+                .addResourceLocations("file:/" + COMMUNITY_UPLOAD_PATH);
     }
 
     // Interceptor
@@ -62,7 +66,8 @@ public class MvcConfig implements WebMvcConfigurer {
     @Bean(name = "multipartResolver")
     public CommonsMultipartResolver multipartResolver() {
         CommonsMultipartResolver resolver = new CommonsMultipartResolver();
-        resolver.setMaxUploadSize(5 * 1024 * 1024);
+        resolver.setMaxUploadSize(30 * 1024 * 1024); // 30MB
+        resolver.setMaxUploadSizePerFile(10 * 1024 * 1024); // 10MB per file
         resolver.setDefaultEncoding("utf-8");
         return resolver;
     }
