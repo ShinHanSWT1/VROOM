@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.bind.annotation.ResponseBody;
 import java.util.List;
+import java.util.Map;
 
 
 import javax.servlet.http.HttpServletRequest;
@@ -33,26 +34,35 @@ public class AuthController {
         return "user/signup";
     }
 
-    // 회원가입 처리
     @PostMapping("/auth/signup")
-    public String signup(UserVO vo,
-                         @RequestParam(required = false) MultipartFile profile,
-                         RedirectAttributes ra) {
-
-        log.info("회원가입 요청 UserVO = {}", vo);
+    @ResponseBody
+    public Map<String, Object> signup(UserVO vo,
+                                      @RequestParam(required = false) MultipartFile profile) {
 
         try {
             authService.signup(vo, profile);
-            ra.addFlashAttribute("msg", "회원가입이 완료되었습니다.");
-            return "redirect:/auth/login";
+
+            return Map.of(
+                    "success", true,
+                    "message", "회원가입이 완료되었습니다."
+            );
 
         } catch (IllegalArgumentException e) {
-            ra.addFlashAttribute("msg", e.getMessage());
-            return "redirect:/auth/signup";
+            log.info("catch:"+e.getMessage());
+            return Map.of(
+                    "success", false,
+                    "code", "INVALID_INPUT",
+                    "message", e.getMessage()
+            );
+
         } catch (Exception e) {
+            log.error("회원가입 서버 오류", e);
             log.error("회원가입 오류", e);
-            ra.addFlashAttribute("msg", "회원가입 중 오류가 발생했습니다.");
-            return "redirect:/auth/signup";
+            return Map.of(
+                    "success", false,
+                    "code", "SERVER_ERROR",
+                    "message", "회원가입 중 오류가 발생했습니다."
+            );
         }
     }
 
@@ -103,15 +113,27 @@ public class AuthController {
         return "common/return";
     }
 
-    // 주소(동) 조회 - AJAX
+    // ===================== 중복 체크 (AJAX) =====================
 
-    @GetMapping("/auth/selectdong")
+    // 이메일 중복 체크
+    @GetMapping("/auth/check-email")
     @ResponseBody
-    public List<LegalDongVO> selectDong(@RequestParam String gu) {
+    public boolean checkEmail(@RequestParam String email) {
+        return authService.existsEmail(email);
+    }
 
-        log.info("동 조회 요청 - gu={}", gu);
+    // 전화번호 중복 체크
+    @GetMapping("/auth/check-phone")
+    @ResponseBody
+    public boolean checkPhone(@RequestParam String phone) {
+        return authService.existsPhone(phone);
+    }
 
-        return authService.getDongListByGu(gu);
+    // 닉네임 중복 체크
+    @GetMapping("/auth/check-nickname")
+    @ResponseBody
+    public boolean checkNickname(@RequestParam String nickname) {
+        return authService.existsNickname(nickname);
     }
 
 }
