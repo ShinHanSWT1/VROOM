@@ -15,7 +15,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AdminSettlementController {
 
-    private AdminSettlementService settlementService;
+    private final AdminSettlementService settlementService;
 
     @GetMapping("/admin/settlements")
     public String errands(Model model) {

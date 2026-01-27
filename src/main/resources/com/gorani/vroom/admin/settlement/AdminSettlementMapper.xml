@@ -5,11 +5,13 @@
     <!-- 정산 대기 건수, 정산 보류 건수, 자동 확정 예정 건 수, 오늘 지급 완료 금액 -->
     <select id="getSummary" resultType="map">
         SELECT
-            COUNT(CASE WHEN status = 'WAITING' THEN 1 END) AS waitingCount,
-            COUNT(CASE WHEN status = 'HOLD' THEN 1 END) AS holdCount,
-            COUNT(CASE WHEN status = 'WAITING' AND requested_at &lt; DATE_SUB(NOW(), INTERVAL 3 DAY) THEN 1 END) AS autoConfirmCount,
-            COALESCE(SUM(CASE WHEN status = 'COMPLETED' AND DATE(processed_at) = CURDATE() THEN amount ELSE 0 END), 0) AS todayPaidAmount
-        FROM ERRANDS
+            COUNT(CASE WHEN e.status = 'CONFIRMED2' AND ea.status = 'MATCHED' THEN 1 END) AS waitingCount,
+            COUNT(CASE WHEN e.status = 'HOLD' THEN 1 END) AS holdCount,
+            COUNT(CASE WHEN e.status = 'CONFIRMED2' AND ea.status = 'MATCHED'
+                AND e.updated_at &lt; DATE_SUB(NOW(), INTERVAL 3 DAY) THEN 1 END) AS autoConfirmCount,
+            COALESCE(SUM(CASE WHEN e.status = 'COMPLETED' AND DATE(e.updated_at) = CURDATE() THEN e.reward_amount ELSE 0 END), 0) AS todayPaidAmount
+
+        FROM ERRANDS e JOIN ERRAND_ASSIGNMENTS ea ON e.errands_id = ea.errands_id
     </select>
 
     <select id="searchSettlements" parameterType="map" resultType="map">
