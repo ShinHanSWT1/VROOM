@@ -32,7 +32,7 @@
                 <div class="profile-image" id="profileImage">
                     <c:choose>
                         <c:when test="${not empty profile.profileImage}">
-                            <img src="${pageContext.request.contextPath}${profile.profileImage}" alt="Profile">
+                            <img src="${pageContext.request.contextPath}${profile.profileImage}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
                         </c:when>
                         <c:otherwise>V</c:otherwise>
                     </c:choose>
@@ -59,6 +59,10 @@
                 <button class="tab-btn">부름</button>
                 <button class="tab-btn">예약</button>
                 <button class="tab-btn">완료</button>
+            </div>
+
+            <div class="write-btn-container">
+                <button class="write-btn">글쓰기</button>
             </div>
 
             <!-- Grid -->
@@ -99,7 +103,7 @@
                 <label class="report-label" for="reportReason">신고 사유</label>
                 <textarea class="report-textarea" id="reportReason"
                           placeholder="신고 사유를 자세히 작성해주세요.&#10;&#10;예시:&#10;- 약속 시간을 지키지 않았습니다&#10;- 물품을 분실했습니다&#10;- 불친절한 태도로 응대했습니다"></textarea>
-                <div class="char-count">
+                <div class="char-count" style="margin-top: 0.5rem;">
                     <span id="reportCharCount">0</span> / 500
                 </div>
             </div>
@@ -107,7 +111,8 @@
 
         <div class="modal-actions">
             <button class="modal-btn modal-btn-cancel" id="reportCancel">취소</button>
-            <button class="modal-btn modal-btn-save report-submit-btn" id="reportSubmit">신고하기</button>
+            <button class="modal-btn modal-btn-save" id="reportSubmit"
+                    style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">신고하기</button>
         </div>
     </div>
 </div>
@@ -143,7 +148,8 @@
 
         <div class="modal-actions">
             <button class="modal-btn modal-btn-cancel" id="withdrawalCancel">취소</button>
-            <button class="modal-btn modal-btn-save withdrawal-confirm-btn" id="withdrawalConfirm">탈퇴하기</button>
+            <button class="modal-btn modal-btn-save" id="withdrawalConfirm"
+                    style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">탈퇴하기</button>
         </div>
     </div>
 </div>
@@ -168,7 +174,7 @@
                     <div class="preview-image" id="previewImage">
                         <c:choose>
                             <c:when test="${not empty profile.profileImage}">
-                                <img src="${pageContext.request.contextPath}${profile.profileImage}" alt="Profile">
+                                <img src="${pageContext.request.contextPath}${profile.profileImage}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">
                             </c:when>
                             <c:otherwise>V</c:otherwise>
                         </c:choose>
@@ -204,7 +210,7 @@
 </div>
 
 <!-- 숨겨진 데이터 영역 -->
-<div id="errandDataContainer" class="hidden">
+<div id="errandDataContainer" style="display:none;">
     <c:forEach var="errand" items="${errands}" varStatus="status">
         <div class="errand-data"
              data-id="${errand.errandsId}"

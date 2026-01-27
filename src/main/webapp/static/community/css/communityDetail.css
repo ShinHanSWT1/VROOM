@@ -400,6 +400,11 @@
     cursor: pointer;
     transition: all 0.2s ease;
     text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 32px;
+    box-sizing: border-box;
 }
 
 .post-edit-btn {

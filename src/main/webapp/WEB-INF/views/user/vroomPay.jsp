@@ -29,16 +29,11 @@
             <div class="pay-info-card">
                 <div class="profile-section">
                     <div class="profile-image-container">
-                        <c:choose>
-                            <c:when test="${not empty profile.profileImage}">
-                                <img src="${pageContext.request.contextPath}${profile.profileImage}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-                            </c:when>
-                            <c:otherwise>V</c:otherwise>
-                        </c:choose>
+                        온도
                     </div>
                     <div class="profile-details">
-                        <span class="profile-nickname">${profile.nickname}</span>
-                        <button class="option-btn">내 글 상위 노출</button>
+                        <span class="profile-nickname">닉네임</span>
+                        <button class="option-btn">현질 옵션 [ 내글을 상위 노출 해보세요 ]</button>
                     </div>
                 </div>
 
@@ -48,24 +43,24 @@
                         <button class="balance-action-btn">출 금</button>
                         <div class="balance-display">
                             <span class="balance-label">잔 액</span>
-                            <span class="balance-amount"><fmt:formatNumber value="${balance}" type="currency" currencySymbol="₩" /></span>
+                            <span class="balance-amount">12 원</span>
                         </div>
                     </div>
                 </div>
 
                 <div class="temp-container">
-                    <span class="temp-label">매너온도</span>
+                    <span class="temp-label">온도</span>
                     <div class="temp-bar">
-                        <div class="temp-fill" style="width: ${profile.mannerScore}%;"></div>
+                        <div class="temp-fill"></div>
                     </div>
-                    <span class="temp-value">${profile.mannerScore}℃</span>
+                    <span class="temp-value">36.5℃</span>
                 </div>
             </div>
 
             <!-- Transaction History -->
             <div class="history-section">
                 <div class="history-header">
-                    <h3 class="history-title">거래 내역 <span class="history-count">(${fn:length(transactionList)})</span></h3>
+                    <h3 class="history-title">거래 내역 <span class="history-count">(12)</span></h3>
                 </div>
 
                 <div class="history-table-header">
@@ -75,18 +70,12 @@
                 </div>
 
                 <div class="history-list" id="transactionList">
-                    <c:forEach var="transaction" items="${transactionList}">
-                        <div class="history-item">
-                            <div class="item-title">${transaction.title}</div>
-                            <div class="item-author">${transaction.author}</div>
-                            <div class="item-amount"><fmt:formatNumber value="${transaction.amount}" type="currency" currencySymbol="₩" /></div>
-                        </div>
-                    </c:forEach>
+                    <!-- JS populated -->
                 </div>
             </div>
 
             <div class="pagination" id="pagination">
-                <!-- Pagination can be added here if needed -->
+                <!-- JS populated -->
             </div>
         </main>
     </div>
@@ -94,6 +83,6 @@
 
 <jsp:include page="../common/footer.jsp"/>
 
-<%-- <script src="<c:url value='/static/user/js/vroomPay.js'/>"></script> --%>
+<script src="<c:url value='/static/user/js/vroomPay.js'/>"></script>
 </body>
 </html>

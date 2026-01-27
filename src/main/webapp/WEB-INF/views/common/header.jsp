@@ -11,23 +11,32 @@
     
     <!-- 공통 CSS -->
     <link rel="stylesheet" href="<c:url value='/static/common/css/common.css'/>">
+    
+    <!-- 페이지별 CSS (본문 영역만) -->
+    <c:choose>
+        <c:when test="${pageCss == 'main'}">
+            <link rel="stylesheet" href="<c:url value='/static/main/css/main.css'/>">
+        </c:when>
+        <c:when test="${pageCss == 'community'}">
+            <link rel="stylesheet" href="<c:url value='/static/community/css/community.css'/>">
+        </c:when>
+        <c:when test="${pageCss == 'community-detail'}">
+            <link rel="stylesheet" href="<c:url value='/static/community/css/communityDetail.css'/>">
+        </c:when>
+        <c:when test="${pageCss == 'community-write'}">
+            <link rel="stylesheet" href="<c:url value='/static/community/css/communityWrite.css'/>">
+        </c:when>
+        <c:when test="${not empty pageCss && not empty pageCssDir}">
+            <c:if test="${pageCssDir == 'errander'}">
+                <link rel="stylesheet" href="<c:url value='/static/errander/css/styles.css'/>">
+            </c:if>
+            <link rel="stylesheet" href="<c:url value='/static/${pageCssDir}/css/${pageCss}.css'/>">
+        </c:when>
+    </c:choose>
 
-    <!-- 페이지별 CSS -->
-    <c:if test="${not empty pageCss}">
-        <c:choose>
-            <c:when test="${pageCss == 'main'}">
-                <link rel="stylesheet" href="<c:url value='/static/main/css/main.css'/>">
-            </c:when>
-            <c:when test="${pageCss == 'auth'}">
-                <link rel="stylesheet" href="<c:url value='/static/user/css/auth.css'/>">
-            </c:when>
-            <c:when test="${pageCss.startsWith('community')}">
-                <link rel="stylesheet" href="<c:url value='/static/community/css/${pageCss}.css'/>">
-            </c:when>
-            <c:otherwise>
-                <link rel="stylesheet" href="<c:url value='/static/${pageCssDir}/css/${pageCss}.css'/>">
-            </c:otherwise>
-        </c:choose>
+    <!-- errander 공통 스타일 (pageCss 없이 pageCssDir만 설정된 경우) -->
+    <c:if test="${empty pageCss && pageCssDir == 'errander'}">
+        <link rel="stylesheet" href="<c:url value='/static/errander/css/styles.css'/>">
     </c:if>
 
     <!-- 글꼴 -->
@@ -37,6 +46,8 @@
     <!-- jQuery (AJAX 사용 시) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     
+    <!-- 공통 JS -->
+
 </head>
 <body>
     <!-- Header -->
@@ -101,20 +112,3 @@
             }
         });
     </script>
-
-    <!-- 페이지별 JS -->
-    <c:if test="${not empty pageJs}">
-        <c:choose>
-            <c:when test="${pageJs == 'login'}">
-                <script src="<c:url value='/static/user/js/login.js'/>"></script>
-            </c:when>
-            <c:when test="${pageJs == 'signup'}">
-                <script src="<c:url value='/static/user/js/signup.js'/>"></script>
-            </c:when>
-            <c:otherwise>
-                <script src="<c:url value='/static/${pageJsDir}/js/${pageJs}.js'/>"></script>
-            </c:otherwise>
-        </c:choose>
-    </c:if>
-</body>
-</html>

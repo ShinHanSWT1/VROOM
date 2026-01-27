@@ -27,44 +27,13 @@
 
             <div class="activity-section">
                 <div class="activity-tabs">
-                    <button class="activity-tab-btn ${currentType == 'written' ? 'active' : ''}" data-type="written">작성한 글</button>
-                    <button class="activity-tab-btn ${currentType == 'commented' ? 'active' : ''}" data-type="commented">댓글단 글</button>
-                    <button class="activity-tab-btn ${currentType == 'saved' ? 'active' : ''}" data-type="saved">저장한 글</button>
+                    <button class="activity-tab-btn active" data-type="written">작성한 글</button>
+                    <button class="activity-tab-btn" data-type="commented">댓글단 글</button>
+                    <button class="activity-tab-btn" data-type="saved">저장한 글</button>
                 </div>
 
                 <div class="activity-list" id="activityList">
-                    <c:choose>
-                        <c:when test="${not empty activityList}">
-                            <c:forEach var="item" items="${activityList}">
-                                <div class="activity-list-item">
-                                    <div class="item-left">
-                                        <div class="item-title">${item.title}</div>
-                                        <div class="item-meta">
-                                            <span>${item.nickname}</span>
-                                            <span style="margin: 0 0.5rem">|</span>
-                                            <span><fmt:formatDate value="${item.createdAt}" pattern="yyyy.MM.dd"/></span>
-                                            <span style="margin: 0 0.5rem">|</span>
-                                            <span>조회 ${item.views}</span>
-                                        </div>
-                                    </div>
-                                    <div class="item-right">
-                                        <div class="item-thumbnail">
-                                            <c:if test="${not empty item.thumbnailUrl}">
-                                                <img src="<c:url value='${item.thumbnailUrl}'/>" alt="thumbnail" style="width:100%; height:100%; object-fit:cover;">
-                                            </c:if>
-                                        </div>
-                                        <div class="item-comment-box">
-                                            <span class="comment-count">${item.comments}</span>
-                                            <span class="comment-label">댓글</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </c:forEach>
-                        </c:when>
-                        <c:otherwise>
-                            <div style="text-align:center; padding: 3rem; color: #777;">활동 내역이 없습니다.</div>
-                        </c:otherwise>
-                    </c:choose>
+                    <!-- Javascript will populate this -->
                 </div>
             </div>
         </main>

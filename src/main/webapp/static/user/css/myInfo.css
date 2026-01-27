@@ -91,19 +91,11 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     cursor: pointer;
     transition: all 0.3s ease;
-    overflow: hidden; /* 이미지 넘침 방지 */
 }
 
 .profile-image:hover {
     transform: scale(1.05);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-}
-
-.profile-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50%; /* 이미지가 둥글게 보이도록 */
 }
 
 .profile-info {
@@ -222,6 +214,29 @@
     box-shadow: 0 4px 8px rgba(242, 203, 5, 0.2);
 }
 
+.write-btn-container {
+    text-align: right;
+    margin-bottom: 2rem;
+}
+
+.write-btn {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+    color: var(--color-white);
+    padding: 0.75rem 2rem;
+    font-weight: 700;
+    border-radius: 8px;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 4px 8px rgba(107, 142, 35, 0.25);
+    transition: all 0.3s ease;
+}
+
+.write-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(107, 142, 35, 0.3);
+}
+
 /* Activity Grid */
 .activity-grid {
     display: grid;
@@ -282,8 +297,6 @@
 .task-time {
     color: var(--color-gray);
     font-size: 0.8rem;
-    display: flex; /* 신고하기 버튼과 함께 정렬 */
-    align-items: center;
 }
 
 .task-card-title {
@@ -341,36 +354,6 @@
     color: var(--color-accent);
     font-weight: 700;
     font-size: 1.125rem;
-}
-
-/* Task Status Labels */
-.task-status-label {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 0.7rem;
-    font-weight: 600;
-    color: var(--color-white);
-    z-index: 2;
-}
-
-.status-waiting {
-    background-color: var(--color-primary); /* 초록색 계열 */
-}
-
-.status-reserved {
-    background-color: var(--color-secondary); /* 노란색 계열 */
-}
-
-.status-completed {
-    background-color: var(--color-gray); /* 회색 */
-}
-
-.status-canceled,
-.status-hold {
-    background-color: #e74c3c; /* 빨간색 계열 */
 }
 
 /* Withdrawal Section */
@@ -455,6 +438,7 @@
     border: none;
     cursor: pointer;
     transition: all 0.3s ease;
+    margin-left: 8px;
 }
 
 .report-btn:hover {
@@ -839,61 +823,6 @@
     color: #856404;
     line-height: 1.5;
 }
-
-/* Hidden Utility */
-.hidden {
-    display: none !important;
-}
-
-/* Task Status Labels */
-.task-status-label {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 0.7rem;
-    font-weight: 600;
-    color: var(--color-white);
-    z-index: 2;
-}
-
-.status-waiting {
-    background-color: var(--color-primary); /* 초록색 계열 */
-}
-
-.status-reserved {
-    background-color: var(--color-secondary); /* 노란색 계열 */
-}
-
-.status-completed {
-    background-color: var(--color-gray); /* 회색 */
-}
-
-.status-canceled,
-.status-hold {
-    background-color: #e74c3c; /* 빨간색 계열 */
-}
-
-/* Modal specific button styles */
-.report-submit-btn {
-    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-}
-
-.report-submit-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(192, 57, 43, 0.3);
-}
-
-.withdrawal-confirm-btn {
-    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-}
-
-.withdrawal-confirm-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(192, 57, 43, 0.3);
-}
-
 
 @media (max-width: 768px) {
     .dashboard-container {
