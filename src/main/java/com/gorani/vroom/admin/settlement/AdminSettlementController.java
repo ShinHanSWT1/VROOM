@@ -5,9 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,48 +15,41 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AdminSettlementController {
 
-    private final AdminSettlementService issueService;
+    private AdminSettlementService settlementService;
 
     @GetMapping("/admin/settlements")
     public String errands(Model model) {
 
-        model.addAttribute("summary", issueService.getKpi());
+        model.addAttribute("summary", settlementService.getKpi());
 
         return "admin/settlement";
     }
 
-    @GetMapping("/api/admin/errands/search")
+    @GetMapping("/api/admin/settlements")
     @ResponseBody
-    public Map<String, Object> searchErrands(
-            @RequestParam(defaultValue = "1") int page,
+    public Map<String, Object> getSettlementList(
             @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) String gu,
-            @RequestParam(required = false) String dong,
-            @RequestParam(required = false) String regStart,
-            @RequestParam(required = false) String regEnd,
-            @RequestParam(required = false) String dueStart,
-            @RequestParam(required = false) String dueEnd
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(defaultValue = "1") int page
     ) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("page", page);
-        params.put("keyword", keyword);
-        params.put("gu", gu);
-        params.put("dong", dong);
-        params.put("regStart", regStart);
-        params.put("regEnd", regEnd);
-        params.put("dueStart", dueStart);
-        params.put("dueEnd", dueEnd);
-        params.put("size", 10); // 페이지당 출력 개수
-
-        return issueService.searchErrands(params);
+        return settlementService.searchSettlements(keyword, status, startDate, endDate, page);
     }
 
-    @GetMapping("/api/admin/errands/detail")
+    // 정산 상세 정보 조회 API
+    @GetMapping("/api/admin/settlements/{id}")
     @ResponseBody
-    public Map<String, Object> getErrandDetail(@RequestParam("id") Long errandsId) {
-        log.info("심부름 상세 및 이력 조회 요청 ID: {}", errandsId);
+    public Map<String, Object> getSettlementDetail(@PathVariable Long id) {
+        return settlementService.getSettlementDetail(id);
+    }
 
-        return issueService.getErrandDetailWithHistory(errandsId);
+    // 정산 상태 처리 API (승인/보류/거절)
+    @PostMapping("/api/admin/settlements/process")
+    @ResponseBody
+    public Map<String, Object> processSettlement(@RequestBody Map<String, Object> payload) {
+        // payload: { id: 101, action: "COMPLETED", memo: "확인함" }
+        return settlementService.processSettlement(payload);
     }
 
 

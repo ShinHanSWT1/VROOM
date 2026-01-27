@@ -9,15 +9,10 @@ import java.util.Map;
 public interface AdminIssueMapper {
     Map<String, Object> getSummary();
 
-    // 심부름 목록 필터링 조회
-    List<Map<String, Object>> selectErrandList(Map<String, Object> param);
+    List<Map<String, Object>> getIssueCountByType();
 
-    // 필터링된 전체 개수 조회
-    int countErrandList(Map<String, Object> param);
+    List<Map<String, Object>> searchIssues(Map<String, Object> param);
 
-    List<Map<String, Object>> getErrandHistory(Long errandsId);
-
-    Map<String, Object> getErrandDetail(Long errandsId);
-
-    List<Map<String, Object>> getAvailableEmployees();
+    int countIssue(Map<String, Object> param); // 페이징 카운트 추가
+    int updateIssuePriority(Map<String, Object> param); // 우선순위 변경 추가
 }

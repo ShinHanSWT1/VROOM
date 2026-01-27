@@ -9,15 +9,16 @@ import java.util.Map;
 public interface AdminSettlementMapper {
     Map<String, Object> getSummary();
 
-    // 심부름 목록 필터링 조회
-    List<Map<String, Object>> selectErrandList(Map<String, Object> param);
+    // 목록 검색
+    List<Map<String, Object>> searchSettlements(Map<String, Object> params);
 
-    // 필터링된 전체 개수 조회
-    int countErrandList(Map<String, Object> param);
+    // 목록 카운트 (페이징용)
+    int countSettlements(Map<String, Object> params);
 
-    List<Map<String, Object>> getErrandHistory(Long errandsId);
+    // 상세 조회
+    Map<String, Object> getSettlementDetail(Long id);
 
-    Map<String, Object> getErrandDetail(Long errandsId);
+    // 상태 업데이트
+    void updateSettlementStatus(Map<String, Object> params);
 
-    List<Map<String, Object>> getAvailableEmployees();
 }

@@ -10,7 +10,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <title>VROOM - 심부름 관리</title>
+    <title>VROOM - 신고 관리</title>
     <style>
         :root {
             --color-primary: #6B8E23;
@@ -414,7 +414,7 @@
         }
 
         /* Helper Table */
-        .errand-table-section {
+        .table-section {
             background: var(--color-white);
             border-radius: 12px;
             padding: 1.5rem;
@@ -470,6 +470,7 @@
         .errand-table tbody tr:hover {
             background-color: #F8F9FA;
         }
+
         .modal-info-full {
             margin-top: 12px;
             display: flex;
@@ -996,75 +997,85 @@
                 <h3 class="summary-title">간단 요약 제공</h3>
                 <div class="summary-grid">
                     <div class="summary-card">
-                        <div class="summary-label">총 심부름 게시물 수</div>
-                        <div class="summary-value">${summary.total_count}</div>
+                        <div class="summary-label">오늘 접수된 이슈</div>
+                        <div class="summary-value">${summary.today_received}</div>
                     </div>
                     <div class="summary-card">
-                        <div class="summary-label">미배정 심부름</div>
-                        <div class="summary-value">${summary.unmatched}</div>
-                        <div class="summary-subtitle">D-day 심부름 | ${summary.dday} </div>
+                        <div class="summary-label">처리 대기 이슈</div>
+                        <div class="summary-value">${summary.waiting}</div>
+                        <div class="summary-subtitle">처리 완료 이슈 | ${summary.resolved} </div>
                     </div>
                     <div class="summary-card">
-                        <div class="summary-label">정직원 수</div>
-                        <div class="summary-value">${summary.errander_count}명</div>
+                        <div class="summary-label">긴급 이슈</div>
+                        <div class="summary-value">${summary.emergency}</div>
                     </div>
                     <div class="summary-card">
-                        <div class="summary-label">심부름 평균 완료율</div>
-                        <div class="summary-value">${summary.completed_rate}%</div>
+                        <div class="summary-label">신고/이슈 유형별 건수</div>
+                        <div class="summary-value">-</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-label">평균 처리 시간</div>
+                        <div class="summary-value">${summary.avg_resolution_time}</div>
                     </div>
                 </div>
             </section>
 
             <!-- Search Section -->
             <section class="search-section">
-                <h3 class="search-title">심부름 검색</h3>
+                <h3 class="search-title">신고이슈 검색</h3>
                 <div class="search-bar">
                     <input type="text" class="search-input" id="searchInput"
-                           placeholder="심부름 검색 (ID/제목)">
-                    <button class="search-button" onclick="searchErrands()">🔍 검색</button>
+                           placeholder="검색어 입력 (이슈ID, 제목, 신고자ID)">
+                    <button class="search-button" onclick="loadIssueList(1)">🔍 검색</button>
                 </div>
 
-                <!-- Filters -->
                 <div class="filter-row">
                     <div class="filter-group">
-                        <label class="filter-label">동네</label>
-                        <div class="location-selectors">
-                            <select id="filterGu" class="filter-select" onchange="loadDongList(this.value)">
-                                <option value="">구 선택</option>
-                                <c:forEach var="gungu" items="${gunguList}">
-                                    <option value="${gungu}" ${gungu == selectedGuName ? 'selected' : ''}>${gungu}</option>
-                                </c:forEach>
+                        <label class="filter-label">이슈 분류</label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <select id="filterType" class="filter-select" onchange="loadContentList(1)">
+                                <option value="">유형 전체</option>
+                                <option value="USER_REPORT">사용자 신고</option>
+                                <option value="ERRANDER_REPORT">부름이 신고</option>
+                                <option value="COMPLAINT">편의개선</option>
+                                <option value="SETTLEMENT">정산 문의</option>
+                                <option value="SYSTEM">시스템 오류</option>
+                                <option value="ETC">기타</option>
                             </select>
 
-                            <select id="filterDong" class="filter-select">
-                                <option value="">동 선택</option>
+                            <select id="filterStatus" class="filter-select" onchange="loadContentList(1)">
+                                <option value="">상태 전체</option>
+                                <option value="RECEIVED">접수</option>
+                                <option value="IN_PROGRESS">처리중</option>
+                                <option value="RESOLVED">완료</option>
+                                <option value="HOLD">보류</option>
+                            </select>
+
+                            <select id="filterPriority" class="filter-select" onchange="loadContentList(1)">
+                                <option value="">우선순위 전체</option>
+                                <option value="HIGH">긴급</option>
+                                <option value="MEDIUM">보통</option>
+                                <option value="LOW">낮음</option>
                             </select>
                         </div>
                     </div>
-                    <div class="filter-group">
-                        <label class="filter-label">등록기간</label>
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <input type="date" id="regStartDate" class="filter-select" style="min-width: 130px;">
-                            <span>~</span>
-                            <input type="date" id="regEndDate" class="filter-select" style="min-width: 130px;">
-                        </div>
-                    </div>
 
                     <div class="filter-group">
-                        <label class="filter-label">마감기간</label>
+                        <label class="filter-label">접수 기간</label>
                         <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <input type="date" id="dueStartDate" class="filter-select" style="min-width: 130px;">
+                            <input type="date" id="regStartDate" class="filter-select" onchange="loadContentList(1)">
                             <span>~</span>
-                            <input type="date" id="dueEndDate" class="filter-select" style="min-width: 130px;">
+                            <input type="date" id="regEndDate" class="filter-select" onchange="loadContentList(1)">
                         </div>
                     </div>
                 </div>
             </section>
 
+
             <!-- Helper List Table -->
-            <section class="errand-table-section">
+            <section class="table-section">
                 <div class="table-header">
-                    <h3 class="table-title">심부름 목록 테이블</h3>
+                    <h3 class="table-title">신고이슈 목록 테이블</h3>
                     <span class="table-count">총 <strong id="totalCount">0</strong>건</span>
                 </div>
 
@@ -1072,20 +1083,21 @@
                     <thead>
                     <tr>
                         <th>ID</th>
-                        <th>제목</th>
-                        <th>동네</th>
-                        <th>등록시간</th>
+                        <th>유형</th>
+                        <th>신고인ID</th>
+                        <th>피신고인ID</th>
                         <th>상태</th>
-                        <th>희망일</th>
-                        <th>배정</th>
+                        <th>우선순위</th>
+                        <th>접수일</th>
+                        <th>처리</th>
                     </tr>
                     </thead>
-                    <tbody id="errandTableBody">
+                    <tbody id="TableBody">
                     </tbody>
                 </table>
 
                 <!-- Pagination -->
-                <div class="pagination" id="pagination"> 
+                <div class="pagination" id="pagination">
                 </div>
             </section>
         </main>
@@ -1215,10 +1227,11 @@
     </div>
 </div>
 
+</body>
 <script>
     let currentErrandsId = null; // 승인/반려 모달용 ID 저장
 
-    $(document).ready(function ()  {
+    $(document).ready(function () {
         const sidebar = document.getElementById('sidebar');
         const sidebarToggle = document.getElementById('sidebarToggle');
         const adminDropdownTrigger = document.getElementById('adminDropdownTrigger');
@@ -1251,7 +1264,7 @@
         // 메뉴 활성화
         const currentPath = window.location.hash || '#issue'; // URL에 맞게 조정
         $('.nav-item').each(function () {
-            if ($(this).attr('href').includes('errands')) {
+            if ($(this).attr('href').includes('issue')) {
                 $(this).addClass('active');
             } else {
                 $(this).removeClass('active');
@@ -1259,162 +1272,121 @@
         });
 
         // 초기 데이터 로드
-        loadErrandsList(1);
+        loadContentList(1);
 
         // 이벤트 리스너
         // 검색 (엔터키 & 버튼)
-        document.querySelector('.search-button').addEventListener('click', () => loadErrandsList(1));
+        document.querySelector('.search-button').addEventListener('click', () => loadContentList(1));
         document.getElementById('searchInput').addEventListener('keyup', function (e) {
-            if (e.key === 'Enter') loadErrandsList(1);
+            if (e.key === 'Enter') loadContentList(1);
         });
 
-        // 필터 변경 시 자동 검색
-        document.getElementById('filterGu').addEventListener('change', () => loadErrandsList(1));
-        document.getElementById('filterDong').addEventListener('change', () => loadErrandsList(1));
-        document.getElementById('regStartDate').addEventListener('change', () => loadErrandsList(1));
-        document.getElementById('regEndDate').addEventListener('change', () => loadErrandsList(1));
-        document.getElementById('dueStartDate').addEventListener('change', () => loadErrandsList(1));
-        document.getElementById('dueEndDate').addEventListener('change', () => loadErrandsList(1));
     });
 
-    function loadDongList(gunguName) {
-        const dongSelect = document.getElementById('filterDong');
-        dongSelect.innerHTML = '<option value="">동 전체</option>';
-
-        if (!gunguName) return;
-
-        fetch(`${pageContext.request.contextPath}/location/getDongs?gunguName=` + gunguName)
-            .then(res => res.json())
-            .then(data => {
-                data.forEach(dong => {
-                    const option = document.createElement('option');
-                    option.value = dong.dongCode;
-                    option.textContent = dong.dongName;
-                    dongSelect.appendChild(option);
-                });
-            })
-            .catch(err => console.error('동 목록 로드 실패:', err));
-    }
-
-    //  심부름 목록 조회
-    function loadErrandsList(page) {
+    //  목록 조회
+    function loadContentList(page) {
         const keyword = document.getElementById('searchInput').value;
-        const gu = document.getElementById('filterGu').value;
-        const dong = document.getElementById('filterDong').value;
+        const type = document.getElementById('filterType').value;       // 유형
+        const status = document.getElementById('filterStatus').value;   // 상태
+        const priority = document.getElementById('filterPriority').value; // 우선순위
 
-        // 시간 범위 값 추출
-        const regStart = document.getElementById('regStartDate').value;
-        const regEnd = document.getElementById('regEndDate').value;
-        const dueStart = document.getElementById('dueStartDate').value;
-        const dueEnd = document.getElementById('dueEndDate').value;
+        const regStart = document.getElementById('regStartDate').value; // 시작일
+        const regEnd = document.getElementById('regEndDate').value;     // 종료일
 
+        // 파라미터 구성
         const params = new URLSearchParams({
             page: page,
             keyword: keyword,
-            gu: gu,
-            dong: dong,
+            type: type,
+            status: status,
+            priority: priority,
             regStart: regStart,
-            regEnd: regEnd,
-            dueStart: dueStart,
-            dueEnd: dueEnd
+            regEnd: regEnd
         });
-        console.log(dong);
-        fetch(`${pageContext.request.contextPath}/api/admin/errands/search?` + params)
+
+        // API 호출
+        fetch(`${pageContext.request.contextPath}/api/admin/issues/search?` + params)
             .then(response => response.json())
             .then(data => {
-                console.log(data);
-                renderTable(data.errandList);
-                renderPagination(data.pageInfo);
-                document.getElementById('totalCount').innerText = data.errandList.length;
+                renderTable(data.issueList);      // 테이블 렌더링
+                renderPagination(data.pageInfo);  // 페이지네이션 렌더링
+                document.getElementById('totalCount').innerText = data.totalCount; // 총 건수
             })
             .catch(error => {
                 console.error('데이터 로드 실패:', error);
-                alert('심부름 데이터를 불러오는 중 오류가 발생했습니다.');
+                alert('이슈 데이터를 불러오는 중 오류가 발생했습니다.');
             });
     }
 
     // 테이블 HTML 렌더링
     function renderTable(list) {
-        const tbody = document.getElementById('errandTableBody');
-        tbody.innerHTML = ''; // 초기화
+        const tbody = document.getElementById('TableBody');
+        tbody.innerHTML = '';
 
         if (!list || list.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem;">검색 결과가 없습니다.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem;">검색 결과가 없습니다.</td></tr>';
             return;
         }
 
         list.forEach(item => {
-            const errandId = item.errands_id;
-            const title = item.title || '-';
-            const area = item.dong_full_name || '-';
-            const status = item.status;
-
-            // 날짜 포맷팅 (Timestamp -> YYYY-MM-DD)
-            let registAt = '-';
+            // 날짜 포맷팅
+            let regDate = '-';
             if (item.created_at) {
-                const date = new Date(item.created_at);
-                registAt = date.toISOString().split('T')[0];
+                regDate = new Date(item.created_at).toISOString().split('T')[0];
             }
 
-            let duedateHtml = '-';
-            if (item.desired_at) {
-                const now = new Date();
-                now.setHours(0, 0, 0, 0);
-                const target = new Date(item.desired_at);
-                target.setHours(0, 0, 0, 0);
+            // 상태(Status) 텍스트 및 배지 클래스
+            let statusClass = item.status === 'RECEIVED' ? 'CONFIRMED1' :
+                item.status === 'RESOLVED' ? 'COMPLETED' :
+                    item.status === 'HOLD' ? 'HOLD' : 'WAITING';
 
-                // 날짜 차이 계산
-                const diffDays = Math.ceil((target - now) / (1000 * 60 * 60 * 24));
-                const formattedDate = target.toISOString().split('T')[0];
+            let statusText = item.status;
+            if(item.status === 'RECEIVED') statusText = '접수';
+            else if(item.status === 'IN_PROGRESS') statusText = '처리중';
+            else if(item.status === 'RESOLVED') statusText = '완료';
+            else if(item.status === 'HOLD') statusText = '보류';
 
-                if (diffDays === 0) {
-                    // D-day: 빨간색 (BANNED 클래스 활용) [cite: 93]
-                    duedateHtml = `<span class="status-badge BANNED">${formattedDate} D-Day</span>`;
-                } else if (diffDays > 0 && diffDays <= 3) {
-                    // D-1 ~ D-3: 주황색 (CONFIRMED2 클래스 활용)
-                    duedateHtml = `<span class="status-badge CONFIRMED2">${formattedDate} D-${diffDays}</span>`;
-                } else {
-                    duedateHtml = formattedDate;
-                }
+            // 우선순위(Priority) 텍스트 및 배지 클래스 설정
+            let priorityText = '낮음';
+            let priorityClass = 'COMPLETED'; // 기본: 회색
+
+            if (item.priority === 'HIGH') {
+                priorityText = '긴급';
+                priorityClass = 'BANNED'; // 빨강
+            } else if (item.priority === 'MEDIUM') {
+                priorityText = '보통';
+                priorityClass = 'MATCHED'; // 노랑
             }
 
-            // 배지 텍스트 및 클래스 설정
-            let assignText = status === 'WAITING' ? '배정' : '상세';
-            let statusText = '-';
-            if (status === 'WAITING') statusText = '대기';
-            else if (status === 'MATCHED') statusText = '매칭됨';
-            else if (status === 'CONFIRMED1') statusText = '1차';
-            else if (status === 'CONFIRMED2') statusText = '2차(정산대기)';
-            else if (status === 'COMPLETED') statusText = '완료';
-            else if (status === 'HOLD') statusText = '정산보류';
+            // 우선순위 커스텀 드롭다운 HTML 생성
+            const priorityHtml = `
+            <div class="status-dropdown">
+                <button class="status-dropdown-toggle" onclick="togglePriorityDropdown(this, event)">
+                    <span class="status-badge \${priorityClass}">\${priorityText}</span>
+                    <span>▼</span>
+                </button>
+                <div class="status-dropdown-menu">
+                    <div class="status-dropdown-item" onclick="changePriority(this, 'HIGH', \${item.id}, event)">긴급</div>
+                    <div class="status-dropdown-item" onclick="changePriority(this, 'MEDIUM', \${item.id}, event)">보통</div>
+                    <div class="status-dropdown-item" onclick="changePriority(this, 'LOW', \${item.id}, event)">낮음</div>
+                </div>
+            </div>
+        `;
 
-
-            // 액션 버튼 (승인 대기중이면 승인버튼, 아니면 관리버튼)
-            let actionBtnHtml = '';
-            if (status === 'WAITING') {
-                actionBtnHtml = `<button class="action-button approve" onclick="openAssignModal(\${errandId}, '\${status}')">배정</button>`;
-            } else {
-                actionBtnHtml = `<button class="action-button" onclick="openAssignModal(\${errandId}, '\${status}')">상세</button>`;
-            }
-
-            // <th>ID</th>
-            // <th>제목</th>
-            // <th>동네</th>
-            // <th>등록시간</th>
-            // <th>상태</th>
-            // <th>희망일</th>
-            // <th>배정</th>
+            // 테이블 행 조립
             const row = `
-                <tr>
-                    <td>\${errandId}</td>
-                    <td>\${title}</td>
-                    <td>\${area}</td>
-                    <td>\${registAt}</td>
-                    <td><span class="status-badge \${status}">\${statusText}</span></td>
-                    <td>\${duedateHtml}</td>
-                    <td>\${actionBtnHtml}</td>
-                </tr>
-            `;
+            <tr>
+                <td>\${item.id}</td>
+                <td>\${item.type}</td>
+                <td>\${item.user_id || '-'}</td>
+                <td>\${item.target_user_id || '-'}</td>
+                <td><span class="status-badge \${statusClass}">\${statusText}</span></td>
+                <td>\${priorityHtml}</td> <td>\${regDate}</td>
+                <td>
+                    <button class="action-button" onclick="openDetailModal(\${item.id})">관리</button>
+                </td>
+            </tr>
+        `;
             tbody.innerHTML += row;
         });
     }
@@ -1426,14 +1398,14 @@
 
         if (!pageInfo) return;
 
-        const {currentPage, startPage, endPage, totalPage } = pageInfo;
+        const {currentPage, startPage, endPage, totalPage} = pageInfo;
 
         // 이전 버튼
         const prevBtn = document.createElement('button');
         prevBtn.className = 'pagination-button';
         prevBtn.innerText = '이전';
         if (currentPage > 1) {
-            prevBtn.onclick = () => loadErrandsList(currentPage - 1);
+            prevBtn.onclick = () => loadContentList(currentPage - 1);
         } else {
             prevBtn.disabled = true;
             prevBtn.classList.add('disabled');
@@ -1448,7 +1420,7 @@
             if (i === currentPage) {
                 btn.classList.add('active');
             } else {
-                btn.onclick = () => loadErrandsList(i);
+                btn.onclick = () => loadContentList(i);
             }
             pagination.appendChild(btn);
         }
@@ -1458,12 +1430,28 @@
         nextBtn.className = 'pagination-button';
         nextBtn.innerText = '다음';
         if (currentPage < totalPage) {
-            nextBtn.onclick = () => loadErrandsList(currentPage + 1);
+            nextBtn.onclick = () => loadContentList(currentPage + 1);
         } else {
             nextBtn.disabled = true;
             nextBtn.classList.add('disabled');
         }
         pagination.appendChild(nextBtn);
+    }
+
+    // 우선순위 드롭다운 토글 함수
+    function togglePriorityDropdown(button, event) {
+        event.stopPropagation(); // 이벤트 버블링 방지
+        const dropdownMenu = button.nextElementSibling;
+
+        // 다른 열려있는 드롭다운 모두 닫기 (하나만 열리도록)
+        document.querySelectorAll('.status-dropdown-menu.show').forEach(menu => {
+            if (menu !== dropdownMenu) {
+                menu.classList.remove('show');
+            }
+        });
+
+        // 현재 메뉴 토글
+        dropdownMenu.classList.toggle('show');
     }
 
     function openAssignModal(errandId, status) {
@@ -1502,7 +1490,7 @@
                     approveBtn.textContent = '배정 확정';
 
                     // 가용 정직원 목록 로드 함수 호출
-                    loadAvailableErranders();
+                    // loadAvailableErranders();
                 } else {
                     // [배정 완료 건] 관련 정보 표시 UI 활성화
                     assignSection.style.display = 'none';
@@ -1533,62 +1521,46 @@
         if (e.target === this) closeAssignModal();
     });
 
-    // 가용 정직원 부름이 목록 로드
-    function loadAvailableErranders() {
-        const tbody = document.getElementById('availableErranderList');
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">로딩 중...</td></tr>';
+    // 우선순위 변경 처리 함수
+    function changePriority(item, newPriority, issueId, event) {
+        event.stopPropagation();
 
-        fetch('${pageContext.request.contextPath}/api/admin/erranders/employees')
+        // 드롭다운 닫기
+        item.closest('.status-dropdown-menu').classList.remove('show');
+
+        // API 호출
+        fetch('${pageContext.request.contextPath}/api/admin/issues/priority', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: issueId,
+                priority: newPriority
+            })
+        })
             .then(res => res.json())
             .then(data => {
-                tbody.innerHTML = ''; // 초기화
-
-                if (!data || data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">배정 가능한 정직원이 없습니다.</td></tr>';
-                    return;
+                if (data.result === 'success') {
+                    // 변경 성공 시 목록 새로고침 (현재 페이지 유지)
+                    const currentPage = document.querySelector('.pagination-button.active')?.innerText || 1;
+                    // loadContentList(currentPage);
+                    window.location.reload();
+                } else {
+                    alert('우선순위 변경 실패: ' + data.message);
                 }
-
-                data.forEach(item => {
-                    // 최근 배정 시간 포맷팅
-                    let lastTime = '-';
-                    if (item.last_assigned_at) {
-                        const date = new Date(item.last_assigned_at);
-                        // 시:분 형태로 간단히 표시
-                        lastTime = date.getHours().toString().padStart(2, '0') + ':' +
-                            date.getMinutes().toString().padStart(2, '0');
-                    }
-
-                    const row = `
-                    <tr onclick="selectErranderRow(this)">
-                        <td>
-                            <div style="font-weight:bold;">\${item.nickname}</div>
-                            <div style="font-size:0.75rem; color:#888;">ID: \${item.errander_id}</div>
-                        </td>
-                        <td><span class="status-badge ACTIVE">활동중</span></td>
-                        <td style="text-align:center;">\${item.today_count}건</td>
-                        <td style="text-align:center;">\${lastTime}</td>
-                        <td style="text-align:center;">
-                            <input type="radio" name="selectedErrander" value="\${item.errander_id}" style="cursor:pointer;">
-                        </td>
-                    </tr>
-                `;
-                    tbody.innerHTML += row;
-                });
             })
             .catch(err => {
-                console.error(err);
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">데이터 로드 실패</td></tr>';
+                console.error('Error updating priority:', err);
+                alert('오류가 발생했습니다.');
             });
     }
 
-    // 행 클릭 시 라디오 버튼 선택되게 하는 UX 편의 함수
-    function selectErranderRow(tr) {
-        const radio = tr.querySelector('input[type="radio"]');
-        if (radio) radio.checked = true;
-    }
+    document.addEventListener('click', function() {
+        document.querySelectorAll('.status-dropdown-menu.show').forEach(menu => {
+            menu.classList.remove('show');
+        });
+    });
 
     // 배정 처리
-    // 배정 확정 (기존 approveErrander 대체 또는 수정)
     function approveErrander() {
         // 1. 선택된 부름이 확인
         const selectedRadio = document.querySelector('input[name="selectedErrander"]:checked');
@@ -1637,6 +1609,5 @@
     }
 
 </script>
-</body>
 
 </html>

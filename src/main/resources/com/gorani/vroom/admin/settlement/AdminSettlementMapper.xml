@@ -2,120 +2,99 @@
 <!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.gorani.vroom.admin.settlement.AdminSettlementMapper">
 
+    <!-- 정산 대기 건수, 정산 보류 건수, 자동 확정 예정 건 수, 오늘 지급 완료 금액 -->
     <select id="getSummary" resultType="map">
-        SELECT e.total_count,
-               e.unmatched,
-               e.dday,
-               e.completed_rate,
-               p.errander_count
-        FROM (SELECT COUNT(*)                                                   AS total_count,
-                     SUM(CASE WHEN status = 'WAITING' THEN 1 ELSE 0 END)        AS unmatched,
-                     SUM(CASE WHEN DATE(desired_at) = CURRENT_DATE() THEN 1 ELSE 0 END) AS dday,
-                     ROUND(SUM(CASE WHEN status = 'COMPLETED' THEN 1 ELSE 0 END)
-                         / COUNT(*) * 100.0, 2)                                     AS completed_rate
-              FROM ERRANDS) e
-
-        CROSS JOIN
-            (SELECT COUNT(*) AS errander_count
-             FROM ERRANDER_PROFILES
-             WHERE is_employee = TRUE) p
-    </select>
-
-    <select id="selectErrandList" parameterType="map" resultType="map">
         SELECT
-        errands_id,
-        title,
-        dong_full_name,
-        status,
-        created_at,
-        desired_at,
-        errander_id FROM ERRANDS
-        <where>
-            <if test="keyword != null and keyword != ''">
-                AND (title LIKE CONCAT('%', #{keyword}, '%') OR errands_id = #{keyword})
-            </if>
-            <if test="gu != null and gu != ''">
-                AND dong_full_name LIKE CONCAT('%', #{gu}, '%')
-            </if>
-            <if test="dong != null and dong != ''">
-                AND dong_code = #{dong}
-            </if>
-            <if test="regStart != null and regStart != ''">
-                AND created_at &gt;= #{regStart}
-            </if>
-            <if test="regEnd != null and regEnd != ''">
-                AND created_at &lt;= CONCAT(#{regEnd}, ' 23:59:59')
-            </if>
-            <if test="dueStart != null and dueStart != ''">
-                AND desired_at &gt;= #{dueStart}
-            </if>
-            <if test="dueEnd != null and dueEnd != ''">
-                AND desired_at &lt;= CONCAT(#{dueEnd}, ' 23:59:59')
-            </if>
-        </where>
-        ORDER BY created_at DESC
-        LIMIT #{limit} OFFSET #{offset}
+            COUNT(CASE WHEN status = 'WAITING' THEN 1 END) AS waitingCount,
+            COUNT(CASE WHEN status = 'HOLD' THEN 1 END) AS holdCount,
+            COUNT(CASE WHEN status = 'WAITING' AND requested_at &lt; DATE_SUB(NOW(), INTERVAL 3 DAY) THEN 1 END) AS autoConfirmCount,
+            COALESCE(SUM(CASE WHEN status = 'COMPLETED' AND DATE(processed_at) = CURDATE() THEN amount ELSE 0 END), 0) AS todayPaidAmount
+        FROM ERRANDS
     </select>
 
-    <select id="countErrandList" parameterType="map" resultType="int">
-        SELECT COUNT(*) FROM ERRANDS
-        <where>
-            <if test="keyword != null and keyword != ''">
-                AND (title LIKE CONCAT('%', #{keyword}, '%') OR errands_id = #{keyword})
-            </if>
-            <if test="gu != null and gu != ''">
-                AND dong_full_name LIKE CONCAT('%', #{gu}, '%')
-            </if>
-            <if test="dong != null and dong != ''">
-                AND dong_code = #{dong}
-            </if>
-            <if test="regStart != null and regStart != ''">
-                AND created_at &gt;= #{regStart}
-            </if>
-            <if test="regEnd != null and regEnd != ''">
-                AND created_at &lt;= CONCAT(#{regEnd}, ' 23:59:59')
-            </if>
-        </where>
+    <select id="searchSettlements" parameterType="map" resultType="map">
+<!--        SELECT-->
+<!--        s.settlement_id AS id,-->
+<!--        s.errand_id AS errandId,-->
+<!--        u.nickname AS errander,-->
+<!--        s.amount,-->
+<!--        DATE_FORMAT(s.requested_at, '%Y-%m-%d') AS date,-->
+<!--        s.status,-->
+<!--        s.admin_memo AS reason-->
+<!--        FROM SETTLEMENTS s-->
+<!--        JOIN USERS u ON s.user_id = u.user_id-->
+<!--        WHERE 1=1-->
+
+<!--        <if test="keyword != null and keyword != ''">-->
+<!--            AND (-->
+<!--            CAST(s.errand_id AS CHAR) LIKE CONCAT('%', #{keyword}, '%')-->
+<!--            OR u.nickname LIKE CONCAT('%', #{keyword}, '%')-->
+<!--            )-->
+<!--        </if>-->
+
+<!--        <if test="status != null and status != ''">-->
+<!--            AND s.status = #{status}-->
+<!--        </if>-->
+
+<!--        <if test="startDate != null and startDate != ''">-->
+<!--            AND s.requested_at >= #{startDate}-->
+<!--        </if>-->
+<!--        <if test="endDate != null and endDate != ''">-->
+<!--            AND s.requested_at &lt;= DATE_ADD(#{endDate}, INTERVAL 1 DAY)-->
+<!--        </if>-->
+
+<!--        ORDER BY s.requested_at DESC-->
+<!--        LIMIT #{limit} OFFSET #{offset}-->
     </select>
 
-    <select id="getErrandDetail" parameterType="long" resultType="map">
-        SELECT
-            e.*,
-            m.nickname AS user_nickname,
-            m.email AS user_email,
-            m.phone AS user_phone
-        FROM ERRANDS e
-                 JOIN MEMBERS m ON e.user_id = m.user_id
-        WHERE e.errands_id = #{errandsId}
+    <select id="countSettlements" parameterType="map" resultType="int">
+<!--        SELECT COUNT(*)-->
+<!--        FROM SETTLEMENTS s-->
+<!--        JOIN USERS u ON s.user_id = u.user_id-->
+<!--        WHERE 1=1-->
+<!--        <if test="keyword != null and keyword != ''">-->
+<!--            AND (CAST(s.errand_id AS CHAR) LIKE CONCAT('%', #{keyword}, '%') OR u.nickname LIKE CONCAT('%', #{keyword}, '%'))-->
+<!--        </if>-->
+<!--        <if test="status != null and status != ''">-->
+<!--            AND s.status = #{status}-->
+<!--        </if>-->
+<!--        <if test="startDate != null and startDate != ''">-->
+<!--            AND s.requested_at >= #{startDate}-->
+<!--        </if>-->
+<!--        <if test="endDate != null and endDate != ''">-->
+<!--            AND s.requested_at &lt;= DATE_ADD(#{endDate}, INTERVAL 1 DAY)-->
+<!--        </if>-->
     </select>
 
-    <select id="getErrandHistory" parameterType="long" resultType="map">
-        SELECT
-            a.id, a.assigned_at, a.status, a.reason,
-            m.nickname AS errander_nickname,
-            admin.name AS admin_name
-        FROM ERRAND_ASSIGNMENTS a
-                 LEFT JOIN ERRANDER_PROFILES p ON a.errander_id = p.errander_id
-                 LEFT JOIN MEMBERS m ON p.user_id = m.user_id
-                 LEFT JOIN ADMINS admin ON a.admin_id = admin.id
-        WHERE a.errands_id = #{errandsId}
-        ORDER BY a.assigned_at DESC
+    <select id="getSettlementDetail" parameterType="long" resultType="map">
+#         SELECT
+#             s.settlement_id AS id,
+#             s.errand_id AS errandId,
+#             e.title AS errandTitle,
+#             u.nickname AS errander,
+#             s.amount,
+#             s.status,
+#             s.admin_memo AS adminMemo,
+#
+#             -- 인증 사진 (ERRANDS 테이블에 있다고 가정)
+#             e.proof_image_url AS proofImg,
+#
+#             -- 마지막 메세지 (예시: 없으면 하드코딩 혹은 서브쿼리)
+#             '완료했습니다! 승인 부탁드려요.' AS erranderMsg
+#
+#         FROM SETTLEMENTS s
+#                  JOIN ERRANDS e ON s.errand_id = e.errand_id
+#                  JOIN USERS u ON s.user_id = u.user_id
+#         WHERE s.settlement_id = #{id}
     </select>
 
-    <select id="getAvailableEmployees" resultType="map">
-        SELECT
-            p.errander_id,
-            m.nickname,
-            p.active_status,
-            (SELECT COUNT(*) FROM ERRAND_ASSIGNMENTS
-             WHERE errander_id = p.errander_id
-               AND DATE(assigned_at) = CURRENT_DATE) AS today_count,
-            (SELECT MAX(assigned_at) FROM ERRAND_ASSIGNMENTS
-             WHERE errander_id = p.errander_id) AS last_assigned_at
-        FROM ERRANDER_PROFILES p
-                 JOIN MEMBERS m ON p.user_id = m.user_id
-        WHERE p.is_employee = TRUE
-          AND p.active_status = 'ACTIVE'
-        ORDER BY today_count ASC, last_assigned_at ASC
-    </select>
+    <update id="updateSettlementStatus" parameterType="map">
+#         UPDATE SETTLEMENTS
+#         SET
+#             status = #{action},
+#             admin_memo = #{memo},
+#             processed_at = NOW()
+#         WHERE settlement_id = #{id}
+    </update>
+
 </mapper>

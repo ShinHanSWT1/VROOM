@@ -27,39 +27,38 @@ public class AdminIssueController {
         return "admin/issue";
     }
 
-    @GetMapping("/api/admin/errands/search")
+    @GetMapping("/api/admin/issues/search") // JSP fetch 경로와 일치시킴
     @ResponseBody
-    public Map<String, Object> searchErrands(
+    public Map<String, Object> searchIssue(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) String gu,
-            @RequestParam(required = false) String dong,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String priority,
             @RequestParam(required = false) String regStart,
-            @RequestParam(required = false) String regEnd,
-            @RequestParam(required = false) String dueStart,
-            @RequestParam(required = false) String dueEnd
+            @RequestParam(required = false) String regEnd
     ) {
         Map<String, Object> params = new HashMap<>();
         params.put("page", page);
         params.put("keyword", keyword);
-        params.put("gu", gu);
-        params.put("dong", dong);
+        params.put("type", type);
+        params.put("status", status);
+        params.put("priority", priority);
         params.put("regStart", regStart);
         params.put("regEnd", regEnd);
-        params.put("dueStart", dueStart);
-        params.put("dueEnd", dueEnd);
-        params.put("size", 10); // 페이지당 출력 개수
 
-        return issueService.searchErrands(params);
+        return issueService.searchIssue(params);
     }
 
-    @GetMapping("/api/admin/errands/detail")
+    // 우선순위 변경
+    @PostMapping("/api/admin/issues/priority")
     @ResponseBody
-    public Map<String, Object> getErrandDetail(@RequestParam("id") Long errandsId) {
-        log.info("심부름 상세 및 이력 조회 요청 ID: {}", errandsId);
-
-        return issueService.getErrandDetailWithHistory(errandsId);
+    public Map<String, Object> updatePriority(@RequestBody Map<String, Object> params) {
+        // params: { id, priority }
+        return issueService.updatePriority(params);
     }
+
+
 
 
 }

@@ -10,7 +10,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <title>VROOM - 심부름 관리</title>
+    <title>VROOM - 정산 관리</title>
     <style>
         :root {
             --color-primary: #6B8E23;
@@ -282,7 +282,7 @@
 
         .summary-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(4, 1fr);
             gap: 1.5rem;
             margin-bottom: 2rem;
         }
@@ -298,7 +298,6 @@
 
         .summary-card:hover {
             border-color: var(--color-secondary);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
             transform: translateY(-2px);
         }
 
@@ -315,27 +314,13 @@
             color: var(--color-dark);
         }
 
-        .summary-subtitle {
-            font-size: 0.875rem;
-            font-weight: 600;
-            margin-top: 0.5rem;
-            color: var(--color-warm);
-        }
-
-        /* Search Section */
+        /* Search & Filter */
         .search-section {
             background: var(--color-white);
             border-radius: 12px;
             padding: 1.5rem;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             margin-bottom: 2rem;
-        }
-
-        .search-title {
-            font-size: 1.125rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            color: var(--color-dark);
         }
 
         .search-bar {
@@ -350,8 +335,6 @@
             border: 2px solid var(--color-light-gray);
             border-radius: 8px;
             font-size: 1rem;
-            font-family: inherit;
-            transition: all 0.3s ease;
         }
 
         .search-input:focus {
@@ -365,16 +348,8 @@
             color: var(--color-dark);
             border: none;
             border-radius: 8px;
-            font-size: 1rem;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: inherit;
-        }
-
-        .search-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(242, 160, 7, 0.3);
         }
 
         .filter-row {
@@ -402,19 +377,11 @@
             border: 2px solid var(--color-light-gray);
             border-radius: 8px;
             font-size: 0.9rem;
-            font-family: inherit;
-            background-color: var(--color-white);
-            cursor: pointer;
             min-width: 150px;
         }
 
-        .filter-select:focus {
-            outline: none;
-            border-color: var(--color-secondary);
-        }
-
-        /* Helper Table */
-        .errand-table-section {
+        /* Table */
+        .table-section {
             background: var(--color-white);
             border-radius: 12px;
             padding: 1.5rem;
@@ -428,78 +395,30 @@
             margin-bottom: 1.5rem;
         }
 
-        .table-title {
-            font-size: 1.125rem;
-            font-weight: 700;
-            color: var(--color-dark);
-        }
-
-        .table-count {
-            color: var(--color-gray);
-            font-size: 0.9rem;
-        }
-
-        .errand-table {
+        .common-table {
             width: 100%;
             border-collapse: collapse;
         }
 
-        .errand-table thead {
-            background-color: #F8F9FA;
-        }
-
-        .errand-table th {
+        .common-table th {
             padding: 1rem;
             text-align: left;
             font-weight: 700;
-            color: var(--color-dark);
-            font-size: 0.875rem;
+            background-color: #F8F9FA;
             border-bottom: 2px solid var(--color-light-gray);
         }
 
-        .errand-table td {
+        .common-table td {
             padding: 1rem;
             border-bottom: 1px solid var(--color-light-gray);
             font-size: 0.9rem;
         }
 
-        .errand-table tbody tr {
-            transition: background-color 0.2s ease;
-        }
-
-        .errand-table tbody tr:hover {
+        .common-table tr:hover {
             background-color: #F8F9FA;
         }
-        .modal-info-full {
-            margin-top: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
 
-        .modal-textarea {
-            width: 100%;
-            min-height: 120px;
-            resize: none;
-
-            padding: 12px;
-            font-size: 0.9rem;
-            line-height: 1.5;
-
-            border: 1px solid var(--color-light-gray);
-            border-radius: 8px;
-            background-color: #f9fafb;
-
-            color: #333;
-        }
-
-        .modal-textarea:focus {
-            outline: none;
-            border-color: var(--color-primary);
-            background-color: #fff;
-        }
-
-        /* Status Badge */
+        /* Status Badges (Settlement Specific) */
         .status-badge {
             display: inline-block;
             padding: 0.375rem 0.75rem;
@@ -513,134 +432,50 @@
             color: #27AE60;
         }
 
-        .status-badge.MATCHED {
+        /* 정산 대기 (승인됨) */
+        .status-badge.HOLD {
             background: #FFF9E6;
-            color: var(--color-accent);
+            color: #F2A007;
         }
 
-        .status-badge.HOLD {
+        /* 보류 */
+        .status-badge.COMPLETED {
+            background: #E3F2FD;
+            color: #2196F3;
+        }
+
+        /* 지급 완료 */
+        .status-badge.REJECTED {
             background: #FDEAEA;
             color: #E74C3C;
         }
 
-        .status-badge.CONFIRMED1 {
-            background: #E8F5E9;
-            color: #27AE60;
-        }
+        /* 거절 */
 
-        .status-badge.COMPLETED {
-            background: #F0F0F0;
-            color: var(--color-gray);
-        }
-
-        .status-badge.CONFIRMED2 {
-            background: #FDEAEA;
-            color: #e77e3c;
-        }
-
-        .status-badge.BANNED {
-            background: #E74C3C;
-            color: #FFFFFF;
-        }
-
-        /* Status Dropdown */
-        .status-dropdown {
-            position: relative;
-            display: inline-block;
-        }
-
-        .status-dropdown-toggle {
-            background: none;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0;
-        }
-
-        .status-dropdown-menu {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            background-color: var(--color-white);
-            min-width: 120px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            border-radius: 8px;
-            overflow: hidden;
-            z-index: 100;
-            margin-top: 0.5rem;
-        }
-
-        .status-dropdown-menu.show {
-            display: block;
-        }
-
-        .status-dropdown-item {
-            padding: 0.75rem 1rem;
-            cursor: pointer;
-            transition: background 0.2s;
-            font-size: 0.9rem;
-        }
-
-        .status-dropdown-item:hover {
-            background-color: var(--color-light-gray);
-        }
-
-        /* Rating Display */
-        .rating-display {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
-
-        .rating-stars {
-            color: var(--color-secondary);
-            font-size: 1rem;
-        }
-
-        .rating-value {
-            font-weight: 700;
-            color: var(--color-dark);
-        }
-
-        /* Action Button */
+        /* Buttons */
         .action-button {
             padding: 0.5rem 1rem;
-            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
-            color: var(--color-white);
+            background: var(--color-dark);
+            color: white;
             border: none;
             border-radius: 6px;
-            font-size: 0.875rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
+            font-size: 0.85rem;
         }
 
         .action-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            background: #1a252f;
         }
 
-        .action-button.approve {
-            background: linear-gradient(135deg, #27AE60 0%, #2ECC71 100%);
-        }
-
-        .action-button.approve:hover {
-            box-shadow: 0 2px 4px rgba(39, 174, 96, 0.3);
-        }
-
-        /* Approval Modal */
+        /* Modal Styles */
         .modal-overlay {
             display: none;
             position: fixed;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
+            width: 100%;
+            height: 100%;
             background: rgba(0, 0, 0, 0.5);
             z-index: 9998;
             align-items: center;
@@ -652,264 +487,136 @@
         }
 
         .modal {
-            background: var(--color-white);
+            background: white;
             border-radius: 12px;
             padding: 2rem;
-            max-width: 600px;
+            max-width: 800px;
             width: 90%;
-            max-height: 80vh;
+            max-height: 90vh;
             overflow-y: auto;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
             z-index: 9999;
         }
 
         .modal-header {
+            display: flex;
+            justify-content: space-between;
             margin-bottom: 1.5rem;
+            border-bottom: 1px solid #eee;
             padding-bottom: 1rem;
-            border-bottom: 2px solid var(--color-light-gray);
         }
 
         .modal-title {
-            font-size: 1.25rem;
+            font-size: 1.4rem;
             font-weight: 700;
-            color: var(--color-dark);
         }
 
-        .modal-body {
-            margin-bottom: 1.5rem;
-        }
-
-        .modal-section {
-            margin-bottom: 1.5rem;
+        .modal-grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
         }
 
         .modal-section-title {
             font-size: 1rem;
             font-weight: 700;
-            margin-bottom: 0.75rem;
-            color: var(--color-dark);
+            margin-bottom: 1rem;
             border-left: 4px solid var(--color-secondary);
             padding-left: 0.5rem;
         }
 
-        .modal-info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-
-        .modal-info-item {
+        .info-row {
             display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f0f0f0;
         }
 
-        .modal-info-label {
-            font-size: 0.8rem;
+        .info-label {
             color: var(--color-gray);
-            font-weight: 600;
+            font-weight: 500;
         }
 
-        .modal-info-value {
-            font-size: 0.95rem;
-            font-weight: 500;
+        .info-value {
+            font-weight: 600;
             color: var(--color-dark);
         }
 
-        .document-list {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-
-        .document-item {
+        /* Proof Image Style */
+        .proof-image-container {
+            width: 100%;
+            height: 250px;
+            background: #f5f5f5;
+            border-radius: 8px;
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem;
-            background: #F8F9FA;
-            border-radius: 8px;
-            transition: all 0.2s ease;
-        }
-
-        .document-item:hover {
-            background: var(--color-light-gray);
-        }
-
-        .document-icon {
-            font-size: 1.5rem;
-            min-width: 40px;
-            text-align: center;
-        }
-
-        .document-info {
-            flex: 1;
-        }
-
-        .document-name {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--color-dark);
-        }
-
-        .document-type {
-            font-size: 0.75rem;
-            color: var(--color-gray);
-        }
-
-        .document-view-btn {
-            padding: 0.375rem 0.75rem;
-            background: var(--color-dark);
-            color: var(--color-white);
-            border: none;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: 600;
+            justify-content: center;
+            overflow: hidden;
+            border: 1px solid #ddd;
             cursor: pointer;
-            transition: all 0.2s ease;
         }
 
-        .document-view-btn:hover {
-            background: #1a252f;
+        .proof-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .modal-textarea {
+            width: 100%;
+            height: 100px;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            resize: none;
+            margin-top: 0.5rem;
+            font-family: inherit;
         }
 
         .modal-footer {
             display: flex;
-            gap: 1rem;
             justify-content: flex-end;
-            padding-top: 1rem;
-            border-top: 2px solid var(--color-light-gray);
-        }
-
-        .modal-button {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: inherit;
-        }
-
-        .modal-button.approve {
-            background: linear-gradient(135deg, #27AE60 0%, #2ECC71 100%);
-            color: var(--color-white);
-        }
-
-        .modal-button.approve:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(39, 174, 96, 0.3);
-        }
-
-        .modal-button.reject {
-            background: linear-gradient(135deg, #E74C3C 0%, #EC7063 100%);
-            color: var(--color-white);
-        }
-
-        .modal-button.reject:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
-        }
-
-        .modal-button.cancel {
-            background: var(--color-light-gray);
-            color: var(--color-dark);
-        }
-
-        .modal-button.cancel:hover {
-            background: #D5D8DC;
-        }
-
-        /* Pagination */
-        .pagination {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 0.5rem;
+            gap: 1rem;
             margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
         }
 
-        .pagination-button {
-            padding: 0.5rem 1rem;
-            border: 2px solid var(--color-light-gray);
-            background: var(--color-white);
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.875rem;
-        }
-
-        .pagination-button:hover {
-            border-color: var(--color-secondary);
-            background-color: #FFF9E6;
-        }
-
-        .pagination-button.active {
-            background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
-            border-color: var(--color-accent);
-            color: var(--color-dark);
+        .modal-btn {
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
             font-weight: 700;
+            border: none;
+            cursor: pointer;
         }
 
-        .pagination-button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+        .btn-cancel {
+            background: #eee;
+            color: #333;
+        }
+
+        .btn-reject {
+            background: #FFEBEE;
+            color: #D32F2F;
+        }
+
+        .btn-hold {
+            background: #FFF3E0;
+            color: #EF6C00;
+        }
+
+        .btn-approve {
+            background: linear-gradient(135deg, #27AE60 0%, #2ECC71 100%);
+            color: white;
         }
 
         /* Responsive */
         @media (max-width: 1024px) {
             .summary-grid {
-                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                grid-template-columns: repeat(2, 1fr);
             }
 
-            .modal-info-grid {
+            .modal-grid-layout {
                 grid-template-columns: 1fr;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                width: var(--sidebar-collapsed-width);
-            }
-
-            .sidebar-logo {
-                opacity: 0;
-            }
-
-            .nav-item-text {
-                opacity: 0;
-                width: 0;
-            }
-
-            .main-content {
-                margin-left: var(--sidebar-collapsed-width);
-            }
-
-            .page-content {
-                padding: 1rem;
-            }
-
-            .summary-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .search-bar {
-                flex-direction: column;
-            }
-
-            .errand-table {
-                font-size: 0.8rem;
-            }
-
-            .errand-table th,
-            .errand-table td {
-                padding: 0.5rem;
-            }
-
-            .modal {
-                width: 95%;
-                padding: 1.5rem;
             }
         }
     </style>
@@ -943,7 +650,7 @@
                 <span class="nav-item-icon">🏃</span>
                 <span class="nav-item-text">부름이 관리</span>
             </a>
-            <a href="${pageContext.request.contextPath}/admin/errands" class="nav-item active">
+            <a href="${pageContext.request.contextPath}/admin/errands" class="nav-item">
                 <span class="nav-item-icon">📦</span>
                 <span class="nav-item-text">심부름/배정 관리</span>
             </a>
@@ -951,7 +658,7 @@
                 <span class="nav-item-icon">⚠️</span>
                 <span class="nav-item-text">신고/이슈 관리</span>
             </a>
-            <a href="${pageContext.request.contextPath}/admin/settlements" class="nav-item">
+            <a href="${pageContext.request.contextPath}/admin/settlements" class="nav-item active">
                 <span class="nav-item-icon">💰</span>
                 <span class="nav-item-text">정산 관리</span>
             </a>
@@ -989,228 +696,156 @@
 
         <!-- Page Content -->
         <main class="page-content">
-            <h2 class="page-title">심부름/배정 관리</h2>
+            <h2 class="page-title">정산 관리</h2>
 
             <!-- Summary Section -->
             <section class="summary-section">
-                <h3 class="summary-title">간단 요약 제공</h3>
+                <h3 class="summary-title">정산 현황 요약</h3>
                 <div class="summary-grid">
                     <div class="summary-card">
-                        <div class="summary-label">총 심부름 게시물 수</div>
-                        <div class="summary-value">${summary.total_count}</div>
+                        <div class="summary-label">정산 대기 건수</div>
+                        <div class="summary-value" style="color: var(--color-warm);">${summary.waitingCount}건</div>
                     </div>
                     <div class="summary-card">
-                        <div class="summary-label">미배정 심부름</div>
-                        <div class="summary-value">${summary.unmatched}</div>
-                        <div class="summary-subtitle">D-day 심부름 | ${summary.dday} </div>
+                        <div class="summary-label">정산 보류 건수</div>
+                        <div class="summary-value" style="color: #E74C3C;">${summary.holdCount}건</div>
                     </div>
                     <div class="summary-card">
-                        <div class="summary-label">정직원 수</div>
-                        <div class="summary-value">${summary.errander_count}명</div>
+                        <div class="summary-label">자동 확정 예정 건 수</div>
+                        <div class="summary-value">${summary.autoConfirmCount}건</div>
                     </div>
                     <div class="summary-card">
-                        <div class="summary-label">심부름 평균 완료율</div>
-                        <div class="summary-value">${summary.completed_rate}%</div>
+                        <div class="summary-label">오늘 지급 완료 금액</div>
+                        <div class="summary-value" style="color: var(--color-primary);">
+                            <fmt:formatNumber value="${summary.todayPaidAmount}" pattern="#,###"/>원
+                        </div>
                     </div>
                 </div>
             </section>
 
             <!-- Search Section -->
             <section class="search-section">
-                <h3 class="search-title">심부름 검색</h3>
+                <h3 class="search-title">정산 목록 검색</h3>
                 <div class="search-bar">
-                    <input type="text" class="search-input" id="searchInput"
-                           placeholder="심부름 검색 (ID/제목)">
-                    <button class="search-button" onclick="searchErrands()">🔍 검색</button>
+                    <input type="text" class="search-input" id="searchInput" placeholder="심부름 ID 또는 부름이 닉네임 검색">
+                    <button class="search-button" onclick="loadSettlementList(1)">🔍 검색</button>
                 </div>
 
-                <!-- Filters -->
                 <div class="filter-row">
                     <div class="filter-group">
-                        <label class="filter-label">동네</label>
-                        <div class="location-selectors">
-                            <select id="filterGu" class="filter-select" onchange="loadDongList(this.value)">
-                                <option value="">구 선택</option>
-                                <c:forEach var="gungu" items="${gunguList}">
-                                    <option value="${gungu}" ${gungu == selectedGuName ? 'selected' : ''}>${gungu}</option>
-                                </c:forEach>
-                            </select>
-
-                            <select id="filterDong" class="filter-select">
-                                <option value="">동 선택</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="filter-group">
-                        <label class="filter-label">등록기간</label>
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <input type="date" id="regStartDate" class="filter-select" style="min-width: 130px;">
-                            <span>~</span>
-                            <input type="date" id="regEndDate" class="filter-select" style="min-width: 130px;">
-                        </div>
+                        <label class="filter-label">정산 상태</label>
+                        <select id="filterStatus" class="filter-select" onchange="loadSettlementList(1)">
+                            <option value="">전체</option>
+                            <option value="WAITING">정산 대기</option>
+                            <option value="HOLD">보류</option>
+                            <option value="COMPLETED">지급 완료</option>
+                            <option value="REJECTED">정산 거절</option>
+                        </select>
                     </div>
 
                     <div class="filter-group">
-                        <label class="filter-label">마감기간</label>
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <input type="date" id="dueStartDate" class="filter-select" style="min-width: 130px;">
+                        <label class="filter-label">신청일 기준</label>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <input type="date" id="startDate" class="filter-select">
                             <span>~</span>
-                            <input type="date" id="dueEndDate" class="filter-select" style="min-width: 130px;">
+                            <input type="date" id="endDate" class="filter-select">
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- Helper List Table -->
-            <section class="errand-table-section">
+            <section class="table-section">
                 <div class="table-header">
-                    <h3 class="table-title">심부름 목록 테이블</h3>
+                    <h3 class="summary-title">정산 목록 테이블</h3>
                     <span class="table-count">총 <strong id="totalCount">0</strong>건</span>
                 </div>
 
-                <table class="errand-table">
+                <table class="common-table">
                     <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>제목</th>
-                        <th>동네</th>
-                        <th>등록시간</th>
+                        <th>심부름 ID</th>
+                        <th>부름이</th>
+                        <th>금액(원)</th>
+                        <th>신청일</th>
                         <th>상태</th>
-                        <th>희망일</th>
-                        <th>배정</th>
+                        <th>사유</th>
+                        <th>처리</th>
                     </tr>
                     </thead>
-                    <tbody id="errandTableBody">
+                    <tbody id="settlementTableBody">
                     </tbody>
                 </table>
 
-                <!-- Pagination -->
-                <div class="pagination" id="pagination"> 
-                </div>
+                <div style="display: flex; justify-content: center; margin-top: 1.5rem;" id="pagination"></div>
             </section>
         </main>
     </div>
 </div>
 
 <!-- Assignment Modal -->
-<div class="modal-overlay" id="assignModal">
+<div class="modal-overlay" id="settlementModal">
     <div class="modal">
         <div class="modal-header">
-            <h3 class="modal-title">심부름 배정</h3>
+            <h3 class="modal-title">정산 상세 내역</h3>
+            <button onclick="closeModal()" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">
+                &times;
+            </button>
         </div>
+
         <div class="modal-body">
-            <div class="modal-section">
-                <div class="modal-section-title">작성자 정보</div>
-                <div class="modal-info-grid" id="errandSummaryGrid">
-                    <div class="modal-info-item">
-                        <span class="modal-info-label">작성자 ID</span>
-                        <span class="modal-info-value" id="modalUserId">-</span>
+            <div class="modal-grid-layout">
+                <div class="left-panel">
+                    <div class="modal-section-title">심부름 및 정산 정보</div>
+                    <div class="info-row">
+                        <span class="info-label">심부름 ID</span>
+                        <span class="info-value" id="modalErrandId">-</span>
                     </div>
-                    <div class="modal-info-item">
-                        <span class="modal-info-label">작성자 닉네임</span>
-                        <span class="modal-info-value" id="modalNickname">-</span>
+                    <div class="info-row">
+                        <span class="info-label">심부름 제목</span>
+                        <span class="info-value" id="modalErrandTitle">-</span>
                     </div>
-                    <div class="modal-info-item">
-                        <span class="modal-info-label">이메일</span>
-                        <span class="modal-info-value" id="modalContactEmail">-</span>
+                    <div class="info-row">
+                        <span class="info-label">부름이</span>
+                        <span class="info-value" id="modalErrander">-</span>
                     </div>
-                    <div class="modal-info-item">
-                        <span class="modal-info-label">휴대폰</span>
-                        <span class="modal-info-value" id="modalContactPhone">-</span>
+                    <div class="info-row">
+                        <span class="info-label">정산 금액</span>
+                        <span class="info-value" id="modalAmount"
+                              style="color: var(--color-primary); font-size: 1.1rem;">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">현재 상태</span>
+                        <span class="info-value" id="modalStatus">-</span>
                     </div>
 
-
-                </div>
-                <br>
-                <div class="modal-section-title">심부름 정보</div>
-                <div class="modal-info-grid">
-                    <div class="modal-info-item">
-                        <span class="modal-info-label">심부름 ID</span>
-                        <span class="modal-info-value" id="summaryErrandId">-</span>
-                    </div>
-                    <div class="modal-info-item">
-                        <span class="modal-info-label">제목</span>
-                        <span class="modal-info-value" id="summaryTitle">-</span>
-                    </div>
-                    <div class="modal-info-item">
-                        <span class="modal-info-label">등록일</span>
-                        <span class="modal-info-value" id="summaryUploadDate">-</span>
-                    </div>
-                    <div class="modal-info-item">
-                        <span class="modal-info-label">희망일</span>
-                        <span class="modal-info-value" id="summaryDesiredDate">-</span>
-                    </div>
-                    <div class="modal-info-item">
-                        <span class="modal-info-label">심부름값 / 재료비</span>
-                        <span class="modal-info-value" id="summaryRewardAmount">-</span>
-                    </div>
-                    <div class="modal-info-item">
-                        <span class="modal-info-label">위치</span>
-                        <span class="modal-info-value" id="summaryLocation">-</span>
-                    </div>
+                    <div class="modal-section-title" style="margin-top: 2rem;">관리자 판단</div>
+                    <label class="info-label">처리 메모 / 반려 사유</label>
+                    <textarea class="modal-textarea" id="adminMemo"
+                              placeholder="보류/반려 시 사유를 입력하세요. (부름이에게 전송됩니다)"></textarea>
                 </div>
 
-                <div class="modal-info-full">
-                    <label class="modal-info-label">심부름 내용</label>
-                    <textarea
-                            id="summaryContent"
-                            class="modal-textarea"
-                            readonly
-                    ></textarea>
-                </div>
-            </div>
+                <div class="right-panel">
+                    <div class="modal-section-title">인증 사진 확인</div>
+                    <div class="proof-image-container"
+                         onclick="window.open(document.getElementById('modalProofImg').src)">
+                        <img id="modalProofImg" src="" alt="인증 사진 없음">
+                    </div>
+                    <p style="font-size: 0.8rem; color: #888; text-align: center; margin-top: 5px;">클릭하면 원본 이미지가
+                        열립니다.</p>
 
-            <div class="modal-section" id="assignActionSection" style="display:none;">
-                <div class="modal-section-title">정직원 부름이 배정</div>
-                <div class="search-bar" style="margin-bottom: 10px;">
-                    <input type="text" class="search-input" id="erranderSearch" placeholder="부름이 닉네임 검색">
-                </div>
-                <div style="max-height: 200px; overflow-y: auto; border: 1px solid var(--color-light-gray);">
-                    <table class="errand-table" style="font-size: 0.8rem;">
-                        <thead>
-                        <tr>
-                            <th>ID/닉네임</th>
-                            <th>상태</th>
-                            <th>오늘 배정</th>
-                            <th>최근 배정</th>
-                            <th>선택</th>
-                        </tr>
-                        </thead>
-                        <tbody id="availableErranderList"></tbody>
-                    </table>
-                </div>
-                <div class="filter-group" style="margin-top: 15px;">
-                    <label class="filter-label">배정 사유</label>
-                    <input type="text" id="assignReason" class="search-input" placeholder="사유 입력">
-                </div>
-            </div>
-
-            <div class="modal-section" id="assignedInfoSection" style="display:none;">
-                <div class="modal-section-title">배정 정보</div>
-                <div class="modal-info-grid">
-                    <div class="modal-info-item">
-                        <span class="modal-info-label">배정된 부름이</span>
-                        <span class="modal-info-value" id="infoErrander">-</span>
-                    </div>
-                    <div class="modal-info-item">
-                        <span class="modal-info-label">배정 시각</span>
-                        <span class="modal-info-value" id="infoAssignedAt">-</span>
-                    </div>
-                    <div class="modal-info-item">
-                        <span class="modal-info-label">배정 사유</span>
-                        <span class="modal-info-value" id="infoReason">-</span>
-                    </div>
-                    <div class="modal-info-item">
-                        <span class="modal-info-label">배정자(관리자)</span>
-                        <span class="modal-info-value" id="infoAdmin">-</span>
+                    <div class="modal-section-title" style="margin-top: 1.5rem;">메세지 (마지막 대화)</div>
+                    <div style="background: #f9f9f9; padding: 1rem; border-radius: 8px; font-size: 0.9rem; color: #555;">
+                        <strong>부름이:</strong> <span id="modalErranderMsg">완료했습니다! 정산 부탁드려요.</span>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="modal-footer">
-            <button class="modal-button cancel" onclick="closeAssignModal()">닫기</button>
-            <button class="modal-button approve" onclick="approveErrander()">승인</button>
+            <button class="modal-btn btn-cancel" onclick="closeModal()">닫기</button>
+            <button class="modal-btn btn-reject" onclick="processSettlement('REJECTED')">정산 거절</button>
+            <button class="modal-btn btn-hold" onclick="processSettlement('HOLD')">보류</button>
+            <button class="modal-btn btn-approve" onclick="processSettlement('COMPLETED')">정산 확정 (지급)</button>
         </div>
     </div>
 </div>
@@ -1218,7 +853,7 @@
 <script>
     let currentErrandsId = null; // 승인/반려 모달용 ID 저장
 
-    $(document).ready(function ()  {
+    $(document).ready(function () {
         const sidebar = document.getElementById('sidebar');
         const sidebarToggle = document.getElementById('sidebarToggle');
         const adminDropdownTrigger = document.getElementById('adminDropdownTrigger');
@@ -1249,9 +884,9 @@
         });
 
         // 메뉴 활성화
-        const currentPath = window.location.hash || '#errands'; // URL에 맞게 조정
+        const currentPath = window.location.hash || '#settlements'; // URL에 맞게 조정
         $('.nav-item').each(function () {
-            if ($(this).attr('href').includes('errands')) {
+            if ($(this).attr('href').includes('settlements')) {
                 $(this).addClass('active');
             } else {
                 $(this).removeClass('active');
@@ -1259,7 +894,7 @@
         });
 
         // 초기 데이터 로드
-        loadErrandsList(1);
+        loadSettlementList(1);
 
         // 이벤트 리스너
         // 검색 (엔터키 & 버튼)
@@ -1277,142 +912,109 @@
         document.getElementById('dueEndDate').addEventListener('change', () => loadErrandsList(1));
     });
 
-    function loadDongList(gunguName) {
-        const dongSelect = document.getElementById('filterDong');
-        dongSelect.innerHTML = '<option value="">동 전체</option>';
-
-        if (!gunguName) return;
-
-        fetch(`${pageContext.request.contextPath}/location/getDongs?gunguName=` + gunguName)
-            .then(res => res.json())
-            .then(data => {
-                data.forEach(dong => {
-                    const option = document.createElement('option');
-                    option.value = dong.dongCode;
-                    option.textContent = dong.dongName;
-                    dongSelect.appendChild(option);
-                });
-            })
-            .catch(err => console.error('동 목록 로드 실패:', err));
-    }
-
-    //  심부름 목록 조회
-    function loadErrandsList(page) {
+    //  목록 조회
+    function loadSettlementList(page) {
         const keyword = document.getElementById('searchInput').value;
-        const gu = document.getElementById('filterGu').value;
-        const dong = document.getElementById('filterDong').value;
+        const status = document.getElementById('filterStatus').value;
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
 
-        // 시간 범위 값 추출
-        const regStart = document.getElementById('regStartDate').value;
-        const regEnd = document.getElementById('regEndDate').value;
-        const dueStart = document.getElementById('dueStartDate').value;
-        const dueEnd = document.getElementById('dueEndDate').value;
+        // 실제 API 호출 시 경로 수정 필요
+        /*
+        fetch(`
+        ${pageContext.request.contextPath}/api/admin/settlements?page=` + page + `&keyword=` + keyword + ...)
+        */
 
-        const params = new URLSearchParams({
-            page: page,
-            keyword: keyword,
-            gu: gu,
-            dong: dong,
-            regStart: regStart,
-            regEnd: regEnd,
-            dueStart: dueStart,
-            dueEnd: dueEnd
-        });
-        console.log(dong);
-        fetch(`${pageContext.request.contextPath}/api/admin/errands/search?` + params)
-            .then(response => response.json())
-            .then(data => {
-                console.log(data);
-                renderTable(data.errandList);
-                renderPagination(data.pageInfo);
-                document.getElementById('totalCount').innerText = data.errandList.length;
-            })
-            .catch(error => {
-                console.error('데이터 로드 실패:', error);
-                alert('심부름 데이터를 불러오는 중 오류가 발생했습니다.');
-            });
+        // [테스트용 더미 데이터]
+        const dummyData = [
+            {
+                id: 101,
+                errandId: 3012,
+                errander: 'RUNNER_12',
+                amount: 15000,
+                date: '2026-01-27',
+                status: 'WAITING',
+                reason: '-',
+                proof: '/resources/img/sample_proof.jpg'
+            },
+            {
+                id: 102,
+                errandId: 3011,
+                errander: 'SPEEDY_JO',
+                amount: 8500,
+                date: '2026-01-26',
+                status: 'HOLD',
+                reason: '인증 불충분',
+                proof: ''
+            },
+            {
+                id: 103,
+                errandId: 3009,
+                errander: 'GORANI',
+                amount: 20000,
+                date: '2026-01-25',
+                status: 'COMPLETED',
+                reason: '-',
+                proof: ''
+            },
+            {
+                id: 104,
+                errandId: 3005,
+                errander: 'RUNNER_12',
+                amount: 5000,
+                date: '2026-01-24',
+                status: 'REJECTED',
+                reason: '미수행',
+                proof: ''
+            }
+        ];
+
+        renderTable(dummyData); // 실제로는 fetch response data 사용
+        document.getElementById('totalCount').innerText = dummyData.length;
     }
 
-    // 테이블 HTML 렌더링
     function renderTable(list) {
-        const tbody = document.getElementById('errandTableBody');
-        tbody.innerHTML = ''; // 초기화
+        const tbody = document.getElementById('settlementTableBody');
+        tbody.innerHTML = '';
 
         if (!list || list.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem;">검색 결과가 없습니다.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:2rem;">데이터가 없습니다.</td></tr>';
             return;
         }
 
         list.forEach(item => {
-            const errandId = item.errands_id;
-            const title = item.title || '-';
-            const area = item.dong_full_name || '-';
-            const status = item.status;
+            let statusBadge = '';
+            let statusText = '';
 
-            // 날짜 포맷팅 (Timestamp -> YYYY-MM-DD)
-            let registAt = '-';
-            if (item.created_at) {
-                const date = new Date(item.created_at);
-                registAt = date.toISOString().split('T')[0];
+            // 상태별 뱃지 처리
+            switch (item.status) {
+                case 'WAITING':
+                    statusBadge = 'WAITING';
+                    statusText = '정산 대기';
+                    break;
+                case 'HOLD':
+                    statusBadge = 'HOLD';
+                    statusText = '보류';
+                    break;
+                case 'COMPLETED':
+                    statusBadge = 'COMPLETED';
+                    statusText = '지급 완료';
+                    break;
+                case 'REJECTED':
+                    statusBadge = 'REJECTED';
+                    statusText = '정산 거절';
+                    break;
             }
 
-            let duedateHtml = '-';
-            if (item.desired_at) {
-                const now = new Date();
-                now.setHours(0, 0, 0, 0);
-                const target = new Date(item.desired_at);
-                target.setHours(0, 0, 0, 0);
-
-                // 날짜 차이 계산
-                const diffDays = Math.ceil((target - now) / (1000 * 60 * 60 * 24));
-                const formattedDate = target.toISOString().split('T')[0];
-
-                if (diffDays === 0) {
-                    // D-day: 빨간색 (BANNED 클래스 활용) [cite: 93]
-                    duedateHtml = `<span class="status-badge BANNED">${formattedDate} D-Day</span>`;
-                } else if (diffDays > 0 && diffDays <= 3) {
-                    // D-1 ~ D-3: 주황색 (CONFIRMED2 클래스 활용)
-                    duedateHtml = `<span class="status-badge CONFIRMED2">${formattedDate} D-${diffDays}</span>`;
-                } else {
-                    duedateHtml = formattedDate;
-                }
-            }
-
-            // 배지 텍스트 및 클래스 설정
-            let assignText = status === 'WAITING' ? '배정' : '상세';
-            let statusText = '-';
-            if (status === 'WAITING') statusText = '대기';
-            else if (status === 'MATCHED') statusText = '매칭됨';
-            else if (status === 'CONFIRMED1') statusText = '1차';
-            else if (status === 'CONFIRMED2') statusText = '2차(정산대기)';
-            else if (status === 'COMPLETED') statusText = '완료';
-            else if (status === 'HOLD') statusText = '정산보류';
-
-
-            // 액션 버튼 (승인 대기중이면 승인버튼, 아니면 관리버튼)
-            let actionBtnHtml = '';
-            if (status === 'WAITING') {
-                actionBtnHtml = `<button class="action-button approve" onclick="openAssignModal(\${errandId}, '\${status}')">배정</button>`;
-            } else {
-                actionBtnHtml = `<button class="action-button" onclick="openAssignModal(\${errandId}, '\${status}')">상세</button>`;
-            }
-
-            // <th>ID</th>
-            // <th>제목</th>
-            // <th>동네</th>
-            // <th>등록시간</th>
-            // <th>상태</th>
-            // <th>희망일</th>
-            // <th>배정</th>
             const row = `
                 <tr>
-                    <td>\${errandId}</td>
-                    <td>\${title}</td>
-                    <td>\${area}</td>
-                    <td>\${registAt}</td>
-                    <td><span class="status-badge \${status}">\${statusText}</span></td>
-                    <td>\${duedateHtml}</td>
-                    <td>\${actionBtnHtml}</td>
+                    <td>\${item.errandId}</td>
+                    <td>\${item.errander}</td>
+                    <td>\${item.amount.toLocaleString()}</td>
+                    <td>\${item.date}</td>
+                    <td><span class="status-badge \${statusBadge}">\${statusText}</span></td>
+                    <td>\${item.reason}</td>
+                    <td><button class="action-button" onclick="openSettlementModal(\${item.id})">상세</button></td>
                 </tr>
             `;
             tbody.innerHTML += row;
@@ -1426,7 +1028,7 @@
 
         if (!pageInfo) return;
 
-        const {currentPage, startPage, endPage, totalPage } = pageInfo;
+        const {currentPage, startPage, endPage, totalPage} = pageInfo;
 
         // 이전 버튼
         const prevBtn = document.createElement('button');
@@ -1466,175 +1068,57 @@
         pagination.appendChild(nextBtn);
     }
 
-    function openAssignModal(errandId, status) {
-        console.log("openAssignModal: " + errandId + ":" + status);
+    function openSettlementModal(id) {
+        currentSettlementId = id;
 
-        fetch('${pageContext.request.contextPath}/api/admin/errands/detail?id=' + errandId)
-            .then(res => res.json())
-            .then(data => {
-                const detail = data.detail;     // 심부름 및 작성자 정보
-                const history = data.history;   // 배정/매칭 이력 리스트
-                console.log(detail);
-                console.log(history);
-                // 1. 공통 섹션: 심부름 기본 정보 채우기
-                document.getElementById('modalUserId').textContent = detail.user_id;
-                document.getElementById('modalNickname').textContent = detail.user_nickname;
-                document.getElementById('modalContactEmail').textContent = detail.user_email || '-';
-                document.getElementById('modalContactPhone').textContent = detail.user_phone || '-';
-                document.getElementById('summaryErrandId').textContent = detail.errands_id;
-                document.getElementById('summaryTitle').textContent = detail.title;
-                document.getElementById('summaryUploadDate').textContent = new Date(detail.created_at) || '-';
-                document.getElementById('summaryDesiredDate').textContent = new Date(detail.desired_at) || '-';
-                document.getElementById('summaryRewardAmount').textContent = detail.reward_amount + '원 / ' + detail.expense_amount + '원' || '-';
-                document.getElementById('summaryLocation').textContent = detail.dong_full_name || '-';
-                document.getElementById('summaryContent').value = detail.description || '내용이 없습니다'
+        // TODO: fetch(`${pageContext.request.contextPath}/api/admin/settlements/` + id) 로 상세 데이터 가져오기
 
-                // 2. 상태별 섹션 제어 및 데이터 바인딩
-                const assignSection = document.getElementById('assignActionSection');
-                const infoSection = document.getElementById('assignedInfoSection');
-                const approveBtn = document.querySelector('.modal-button.approve');
+        // [테스트용 데이터 바인딩]
+        document.getElementById('modalErrandId').innerText = '3012';
+        document.getElementById('modalErrandTitle').innerText = '편의점에서 도시락 사다주세요';
+        document.getElementById('modalErrander').innerText = 'RUNNER_12 (김철수)';
+        document.getElementById('modalAmount').innerText = '15,000원';
+        document.getElementById('modalStatus').innerText = '정산 대기 중';
 
-                if (status === 'WAITING') {
-                    // [미배정 건] 수동 배정 액션 UI 활성화
-                    assignSection.style.display = 'block';
-                    infoSection.style.display = 'none';
-                    approveBtn.style.display = 'block';
-                    approveBtn.textContent = '배정 확정';
+        // 이미지 세팅 (실제 경로가 없으면 placeholder)
+        document.getElementById('modalProofImg').src = 'https://via.placeholder.com/400x300?text=Proof+Image';
+        document.getElementById('adminMemo').value = '';
 
-                    // 가용 정직원 목록 로드 함수 호출
-                    loadAvailableErranders();
-                } else {
-                    // [배정 완료 건] 관련 정보 표시 UI 활성화
-                    assignSection.style.display = 'none';
-                    infoSection.style.display = 'block';
-                    approveBtn.style.display = 'none';
-
-                    // 이력 데이터 중 가장 최신(첫 번째) 정보를 상세 섹션에 바인딩
-                    if (history && history.length > 0) {
-                        const latest = history[0];
-                        document.getElementById('infoErrander').textContent = `\${latest.errander_nickname} (\${latest.errander_id || '-'})`;
-                        document.getElementById('infoAssignedAt').textContent = new Date(latest.assigned_at);
-                        document.getElementById('infoReason').textContent = latest.reason || '사유 없음';
-                        document.getElementById('infoAdmin').textContent = latest.admin_name || '시스템 자동';
-                    }
-                }
-
-                // 3. 모달 표시
-                document.getElementById('assignModal').classList.add('show');
-            });
+        document.getElementById('settlementModal').classList.add('show');
     }
 
-    function closeAssignModal() {
-        document.getElementById('assignModal').classList.remove('show');
+    function closeModal() {
+        document.getElementById('settlementModal').classList.remove('show');
+        currentSettlementId = null;
     }
 
-    // 모달 외부 클릭 닫기
-    document.getElementById('assignModal').addEventListener('click', function (e) {
-        if (e.target === this) closeAssignModal();
-    });
+    // 정산 처리 (승인, 보류, 거절)
+    function processSettlement(action) {
+        const memo = document.getElementById('adminMemo').value;
+        const actionText = (action === 'COMPLETED') ? '확정(지급)' : (action === 'HOLD' ? '보류' : '거절');
 
-    // 가용 정직원 부름이 목록 로드
-    function loadAvailableErranders() {
-        const tbody = document.getElementById('availableErranderList');
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">로딩 중...</td></tr>';
-
-        fetch('${pageContext.request.contextPath}/api/admin/erranders/employees')
-            .then(res => res.json())
-            .then(data => {
-                tbody.innerHTML = ''; // 초기화
-
-                if (!data || data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">배정 가능한 정직원이 없습니다.</td></tr>';
-                    return;
-                }
-
-                data.forEach(item => {
-                    // 최근 배정 시간 포맷팅
-                    let lastTime = '-';
-                    if (item.last_assigned_at) {
-                        const date = new Date(item.last_assigned_at);
-                        // 시:분 형태로 간단히 표시
-                        lastTime = date.getHours().toString().padStart(2, '0') + ':' +
-                            date.getMinutes().toString().padStart(2, '0');
-                    }
-
-                    const row = `
-                    <tr onclick="selectErranderRow(this)">
-                        <td>
-                            <div style="font-weight:bold;">\${item.nickname}</div>
-                            <div style="font-size:0.75rem; color:#888;">ID: \${item.errander_id}</div>
-                        </td>
-                        <td><span class="status-badge ACTIVE">활동중</span></td>
-                        <td style="text-align:center;">\${item.today_count}건</td>
-                        <td style="text-align:center;">\${lastTime}</td>
-                        <td style="text-align:center;">
-                            <input type="radio" name="selectedErrander" value="\${item.errander_id}" style="cursor:pointer;">
-                        </td>
-                    </tr>
-                `;
-                    tbody.innerHTML += row;
-                });
-            })
-            .catch(err => {
-                console.error(err);
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">데이터 로드 실패</td></tr>';
-            });
-    }
-
-    // 행 클릭 시 라디오 버튼 선택되게 하는 UX 편의 함수
-    function selectErranderRow(tr) {
-        const radio = tr.querySelector('input[type="radio"]');
-        if (radio) radio.checked = true;
-    }
-
-    // 배정 처리
-    // 배정 확정 (기존 approveErrander 대체 또는 수정)
-    function approveErrander() {
-        // 1. 선택된 부름이 확인
-        const selectedRadio = document.querySelector('input[name="selectedErrander"]:checked');
-        const assignReason = document.getElementById('assignReason').value;
-
-        // 미배정 상태에서 배정 확정 버튼을 누른 경우 체크
-        const isAssignMode = document.getElementById('assignActionSection').style.display !== 'none';
-
-        if (isAssignMode) {
-            if (!selectedRadio) {
-                alert('배정할 부름이를 선택해주세요.');
-                return;
-            }
-
-            const selectedErranderId = selectedRadio.value;
-
-            if (!confirm('부름이(ID:' + selectedErranderId + ')에게 심부름을 배정하시겠습니까?')) return;
-
-            // 배정 API 호출
-            fetch('${pageContext.request.contextPath}/api/admin/errands/assign', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    errandId: currentErrandsId, // 전역변수에 저장된 심부름 ID
-                    erranderId: selectedErranderId,
-                    reason: assignReason
-                })
-            })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.result === 'success') {
-                        alert('배정이 완료되었습니다.');
-                        window.location.reload();
-                    } else {
-                        alert('배정 실패: ' + data.message);
-                    }
-                })
-                .catch(err => {
-                    console.error(err);
-                    alert('오류가 발생했습니다.');
-                });
-
+        if (action !== 'COMPLETED' && !memo) {
+            alert(actionText + " 처리를 위해서는 사유(메모) 입력이 필요합니다.");
+            return;
         }
 
-        closeAssignModal();
+        if (!confirm("정말 " + actionText + " 처리 하시겠습니까?")) return;
+
+        // API 호출 로직
+        /*
+        fetch(`
+        ${pageContext.request.contextPath}/api/admin/settlements/process`, {
+            method: 'POST',
+            body: JSON.stringify({ id: currentSettlementId, action: action, memo: memo })
+        })...
+        */
+
+        console.log(`Processing Settlement ID: \${currentSettlementId}, Action: \${action}, Memo: \${memo}`);
+        alert("처리가 완료되었습니다.");
+        closeModal();
+        loadSettlementList(1); // 목록 갱신
     }
+
 
 </script>
 </body>

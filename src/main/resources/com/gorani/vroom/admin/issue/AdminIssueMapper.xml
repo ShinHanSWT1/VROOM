@@ -3,74 +3,77 @@
 <mapper namespace="com.gorani.vroom.admin.issue.AdminIssueMapper">
 
     <select id="getSummary" resultType="map">
-        SELECT e.total_count,
-               e.unmatched,
-               e.dday,
-               e.completed_rate,
-               p.errander_count
-        FROM (SELECT COUNT(*)                                                   AS total_count,
-                     SUM(CASE WHEN status = 'WAITING' THEN 1 ELSE 0 END)        AS unmatched,
-                     SUM(CASE WHEN DATE(desired_at) = CURRENT_DATE() THEN 1 ELSE 0 END) AS dday,
-                     ROUND(SUM(CASE WHEN status = 'COMPLETED' THEN 1 ELSE 0 END)
-                         / COUNT(*) * 100.0, 2)                                     AS completed_rate
-              FROM ERRANDS) e
+        SELECT
+            COUNT(CASE WHEN DATE(created_at) = CURRENT_DATE THEN 1 END) AS today_received,
+            COUNT(CASE WHEN status IN ('RECEIVED', 'IN_PROGRESS') THEN 1 END) AS waiting,
+            COUNT(CASE WHEN status = 'RESOLVED' THEN 1 END) AS resolved,
+            COUNT(CASE WHEN priority = 'HIGH' AND status != 'RESOLVED' THEN 1 END) AS emergency,
+            ROUND(AVG(
+                          CASE WHEN status = 'RESOLVED'
+                                   THEN TIMESTAMPDIFF(HOUR, created_at, resolved_at)
+                               ELSE NULL END
+                  ), 1) AS avg_resolution_time
 
-        CROSS JOIN
-            (SELECT COUNT(*) AS errander_count
-             FROM ERRANDER_PROFILES
-             WHERE is_employee = TRUE) p
+        FROM ISSUE_TICKETS;
     </select>
 
-    <select id="selectErrandList" parameterType="map" resultType="map">
+    <select id="getIssueCountByType" resultType="map">
         SELECT
-        errands_id,
-        title,
-        dong_full_name,
-        status,
-        created_at,
-        desired_at,
-        errander_id FROM ERRANDS
+            type,
+            COUNT(*) as count
+        FROM ISSUE_TICKETS
+        GROUP BY type;
+    </select>
+
+    <select id="searchIssues" resultType="map">
+        SELECT * FROM ISSUE_TICKETS
         <where>
             <if test="keyword != null and keyword != ''">
-                AND (title LIKE CONCAT('%', #{keyword}, '%') OR errands_id = #{keyword})
+                AND (id LIKE CONCAT('%', #{keyword}, '%')
+                OR title LIKE CONCAT('%', #{keyword}, '%')
+                OR user_id LIKE CONCAT('%', #{keyword}, '%'))
             </if>
-            <if test="gu != null and gu != ''">
-                AND dong_full_name LIKE CONCAT('%', #{gu}, '%')
+            <if test="type != null and type != ''">
+                AND type = #{type}
             </if>
-            <if test="dong != null and dong != ''">
-                AND dong_code = #{dong}
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+            <if test="priority != null and priority != ''">
+                AND priority = #{priority}
             </if>
             <if test="regStart != null and regStart != ''">
-                AND created_at &gt;= #{regStart}
+                AND created_at >= #{regStart}
             </if>
             <if test="regEnd != null and regEnd != ''">
                 AND created_at &lt;= CONCAT(#{regEnd}, ' 23:59:59')
             </if>
-            <if test="dueStart != null and dueStart != ''">
-                AND desired_at &gt;= #{dueStart}
-            </if>
-            <if test="dueEnd != null and dueEnd != ''">
-                AND desired_at &lt;= CONCAT(#{dueEnd}, ' 23:59:59')
-            </if>
         </where>
-        ORDER BY created_at DESC
+        ORDER BY
+        FIELD(priority, 'HIGH', 'MEDIUM', 'LOW'), -- 긴급 우선 정렬
+        created_at DESC
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
-    <select id="countErrandList" parameterType="map" resultType="int">
-        SELECT COUNT(*) FROM ERRANDS
+    <select id="countIssue" parameterType="map" resultType="int">
+        SELECT COUNT(*) FROM ISSUE_TICKETS
         <where>
             <if test="keyword != null and keyword != ''">
-                AND (title LIKE CONCAT('%', #{keyword}, '%') OR errands_id = #{keyword})
+                AND (id LIKE CONCAT('%', #{keyword}, '%')
+                OR title LIKE CONCAT('%', #{keyword}, '%')
+                OR user_id LIKE CONCAT('%', #{keyword}, '%'))
             </if>
-            <if test="gu != null and gu != ''">
-                AND dong_full_name LIKE CONCAT('%', #{gu}, '%')
+            <if test="type != null and type != ''">
+                AND type = #{type}
             </if>
-            <if test="dong != null and dong != ''">
-                AND dong_code = #{dong}
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+            <if test="priority != null and priority != ''">
+                AND priority = #{priority}
             </if>
             <if test="regStart != null and regStart != ''">
-                AND created_at &gt;= #{regStart}
+                AND created_at >= #{regStart}
             </if>
             <if test="regEnd != null and regEnd != ''">
                 AND created_at &lt;= CONCAT(#{regEnd}, ' 23:59:59')
@@ -78,44 +81,10 @@
         </where>
     </select>
 
-    <select id="getErrandDetail" parameterType="long" resultType="map">
-        SELECT
-            e.*,
-            m.nickname AS user_nickname,
-            m.email AS user_email,
-            m.phone AS user_phone
-        FROM ERRANDS e
-                 JOIN MEMBERS m ON e.user_id = m.user_id
-        WHERE e.errands_id = #{errandsId}
-    </select>
+    <update id="updateIssuePriority" parameterType="map">
+        UPDATE ISSUE_TICKETS
+        SET priority = #{priority}
+        WHERE id = #{id}
+    </update>
 
-    <select id="getErrandHistory" parameterType="long" resultType="map">
-        SELECT
-            a.id, a.assigned_at, a.status, a.reason,
-            m.nickname AS errander_nickname,
-            admin.name AS admin_name
-        FROM ERRAND_ASSIGNMENTS a
-                 LEFT JOIN ERRANDER_PROFILES p ON a.errander_id = p.errander_id
-                 LEFT JOIN MEMBERS m ON p.user_id = m.user_id
-                 LEFT JOIN ADMINS admin ON a.admin_id = admin.id
-        WHERE a.errands_id = #{errandsId}
-        ORDER BY a.assigned_at DESC
-    </select>
-
-    <select id="getAvailableEmployees" resultType="map">
-        SELECT
-            p.errander_id,
-            m.nickname,
-            p.active_status,
-            (SELECT COUNT(*) FROM ERRAND_ASSIGNMENTS
-             WHERE errander_id = p.errander_id
-               AND DATE(assigned_at) = CURRENT_DATE) AS today_count,
-            (SELECT MAX(assigned_at) FROM ERRAND_ASSIGNMENTS
-             WHERE errander_id = p.errander_id) AS last_assigned_at
-        FROM ERRANDER_PROFILES p
-                 JOIN MEMBERS m ON p.user_id = m.user_id
-        WHERE p.is_employee = TRUE
-          AND p.active_status = 'ACTIVE'
-        ORDER BY today_count ASC, last_assigned_at ASC
-    </select>
 </mapper>
