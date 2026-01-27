@@ -8,12 +8,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
 import javax.servlet.http.HttpSession;
 import java.util.List;
 
 @Slf4j
 @Controller
-@RequestMapping("/member")
+//@RequestMapping("/member")
 public class UserProfileController {
 
     // 캡슐화
@@ -27,7 +29,7 @@ public class UserProfileController {
     }
 
     // 나의 정보 페이지
-    @GetMapping("/myInfo")
+    @GetMapping("/member/myInfo")
     public String userProfile(Model model, HttpSession session) {
         UserVO loginUser = (UserVO) session.getAttribute("loginSess");
         // 로그인 안하면
@@ -48,7 +50,7 @@ public class UserProfileController {
     }
 
     // 나의 활동
-    @GetMapping("/myActivity")
+    @GetMapping("/member/myActivity")
     public String myActivity(Model model, HttpSession session) {
 
         // 로그인 체크 (세션 확인)
@@ -74,7 +76,7 @@ public class UserProfileController {
     }
 
     // 부름 페이
-    @GetMapping("/vroomPay")
+    @GetMapping("/member/vroomPay")
     public String vroomPay(Model model) {
         return "user/vroomPay";
     }

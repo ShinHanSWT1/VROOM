@@ -68,6 +68,10 @@ document.addEventListener('DOMContentLoaded', function() {
             tabs.forEach(function(t) { t.classList.remove('active'); });
             this.classList.add('active');
             renderActivities(this.dataset.type);
+
+            // 4. data-target에 맞는 리스트만 보이기
+            const targetId = this.dataset.target;
+            document.getElementById(targetId).classList.add('active');
         });
     });
 });

@@ -22,7 +22,7 @@ public class ErranderActivityController {
 
     private final ErranderActivityServiceImpl activityService;
 
-    // 나의 거래 페이지
+/*    // 나의 거래 페이지
     @GetMapping("/activity")
     public String activity(Model model, HttpSession session) {
         UserVO loginUser = (UserVO) session.getAttribute("loginSess");
@@ -30,7 +30,7 @@ public class ErranderActivityController {
             return "redirect:/auth/login";
         }
         return "errander/activity";
-    }
+    }*/
 
     // 일별 수익 API (달력용)
     @GetMapping("/api/daily-earnings")
