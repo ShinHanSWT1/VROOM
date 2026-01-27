@@ -11,30 +11,22 @@
     
     <!-- 공통 CSS -->
     <link rel="stylesheet" href="<c:url value='/static/common/css/common.css'/>">
-    
-    <!-- 페이지별 CSS (본문 영역만) -->
-    <!-- DEBUG: pageCss = ${pageCss} -->
+
+    <!-- 페이지별 CSS -->
     <c:if test="${not empty pageCss}">
         <c:choose>
             <c:when test="${pageCss == 'main'}">
                 <link rel="stylesheet" href="<c:url value='/static/main/css/main.css'/>">
-                <!-- DEBUG: main.css 로드됨 -->
             </c:when>
-            <c:when test="${pageCss == 'community'}">
-                <link rel="stylesheet" href="<c:url value='/static/community/css/community.css'/>">
+            <c:when test="${pageCss == 'auth'}">
+                <link rel="stylesheet" href="<c:url value='/static/user/css/auth.css'/>">
             </c:when>
-            <c:when test="${pageCss == 'community-detail'}">
-                <link rel="stylesheet" href="<c:url value='/static/community/css/communityDetail.css'/>">
+            <c:when test="${pageCss.startsWith('community')}">
+                <link rel="stylesheet" href="<c:url value='/static/community/css/${pageCss}.css'/>">
             </c:when>
-            <c:when test="${pageCss == 'community-write'}">
-                <link rel="stylesheet" href="<c:url value='/static/community/css/communityWrite.css'/>">
-            </c:when>
-            <c:when test="${not empty pageCssDir}">
-                <c:if test="${pageCssDir == 'errander'}">
-                    <link rel="stylesheet" href="<c:url value='/static/errander/css/styles.css'/>">
-                </c:if>
+            <c:otherwise>
                 <link rel="stylesheet" href="<c:url value='/static/${pageCssDir}/css/${pageCss}.css'/>">
-            </c:when>
+            </c:otherwise>
         </c:choose>
     </c:if>
 
@@ -45,8 +37,6 @@
     <!-- jQuery (AJAX 사용 시) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     
-    <!-- 공통 JS -->
-
 </head>
 <body>
     <!-- Header -->
@@ -56,7 +46,7 @@
                 <a href="${pageContext.request.contextPath}/"><h1>VROOM</h1></a>
             </div>
             <nav class="nav-menu">
-                <a href="${pageContext.request.contextPath}/community/" class="nav-item ${pageId == 'community' ? 'active' : ''}">커뮤니티</a>
+                <a href="${pageContext.request.contextPath}/community/" class="nav-item">커뮤니티</a>
 
                 <c:choose>
                     <c:when test="${sessionScope.loginSess != null}">
@@ -70,7 +60,7 @@
                             </c:otherwise>
                         </c:choose>
                         <div class="nav-dropdown">
-                            <button class="nav-item nav-user" id="userDropdownBtn">${sessionScope.loginSess.nickname}님</button>
+                            <button class="nav-item" id="userDropdownBtn">${sessionScope.loginSess.nickname}님</button>
                             <div class="dropdown-menu" id="userDropdownMenu">
                                 <a href="<c:url value='/member/myInfo'/>" class="dropdown-item">나의정보</a>
                                 <a href="<c:url value='/member/vroomPay'/>" class="dropdown-item">부름페이</a>
@@ -83,8 +73,8 @@
                     </c:when>
                     <c:otherwise>
                         <!-- 비로그인 상태 -->
-                        <a href="${pageContext.request.contextPath}/auth/login" class="nav-item nav-login">로그인</a>
-                        <a href="${pageContext.request.contextPath}/auth/signup" class="nav-item nav-signup">회원가입</a>
+                        <a href="${pageContext.request.contextPath}/auth/login" class="nav-item">로그인</a>
+                        <a href="${pageContext.request.contextPath}/auth/signup" class="nav-item">회원가입</a>
                     </c:otherwise>
                 </c:choose>
             </nav>
@@ -111,3 +101,20 @@
             }
         });
     </script>
+
+    <!-- 페이지별 JS -->
+    <c:if test="${not empty pageJs}">
+        <c:choose>
+            <c:when test="${pageJs == 'login'}">
+                <script src="<c:url value='/static/user/js/login.js'/>"></script>
+            </c:when>
+            <c:when test="${pageJs == 'signup'}">
+                <script src="<c:url value='/static/user/js/signup.js'/>"></script>
+            </c:when>
+            <c:otherwise>
+                <script src="<c:url value='/static/${pageJsDir}/js/${pageJs}.js'/>"></script>
+            </c:otherwise>
+        </c:choose>
+    </c:if>
+</body>
+</html>

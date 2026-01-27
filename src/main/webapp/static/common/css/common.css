@@ -86,25 +86,6 @@ body {
     transform: translateY(-1px);
 }
 
-.nav-item.active {
-    background-color: rgba(255, 255, 255, 0.3);
-}
-
-.nav-login,
-.nav-signup {
-    background-color: rgba(255, 255, 255, 0.15);
-}
-
-.nav-user {
-    background-color: transparent;
-    color: var(--color-white);
-    font-weight: 700;
-}
-
-.nav-user:hover {
-    color: var(--color-white);
-}
-
 .nav-item::before,
 .nav-item::after {
     content: "";

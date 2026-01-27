@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('#errandDataContainer .errand-data').forEach(function(el) {
         myActivities.push({
             errandsId: parseInt(el.dataset.id),
-            icon: '📦',
+            icon: '📦', // 이 부분은 실제 아이콘 데이터로 대체 필요
             badge: '심부름',
             title: (el.dataset.title || '').replace(/[\r\n]+/g, ' '),
             description: (el.dataset.description || '').replace(/[\r\n]+/g, ' '),
@@ -54,8 +54,8 @@ document.addEventListener('DOMContentLoaded', function() {
             tabs.forEach(t => t.classList.remove('active'));
             this.classList.add('active');
 
-            const tabText = this.textContent.trim();
             let filterType = 'all';
+            const tabText = this.textContent.trim();
             if (tabText === '부름') filterType = 'waiting';
             else if (tabText === '예약') filterType = 'reserved';
             else if (tabText === '완료') filterType = 'completed';
@@ -63,23 +63,6 @@ document.addEventListener('DOMContentLoaded', function() {
             renderActivities(filterType, 1);
         });
     });
-
-    // Dropdown Logic
-    const dropdownBtn = document.getElementById('userDropdownBtn');
-    const dropdownMenu = document.getElementById('userDropdownMenu');
-
-    if (dropdownBtn && dropdownMenu) {
-        dropdownBtn.addEventListener('click', function (e) {
-            e.stopPropagation();
-            dropdownMenu.classList.toggle('active');
-        });
-
-        document.addEventListener('click', function (e) {
-            if (!dropdownMenu.contains(e.target) && !dropdownBtn.contains(e.target)) {
-                dropdownMenu.classList.remove('active');
-            }
-        });
-    }
 });
 
 // Function to render activities with pagination
@@ -126,34 +109,40 @@ function renderActivities(filterType, page = 1) {
         });
 
         let statusLabel = '';
+        let statusClass = ''; // 상태별 클래스 추가
         if (task.status === 'WAITING') {
-            statusLabel = '<span style="position:absolute; top:10px; right:10px; background:#6B8E23; color:#fff; padding:2px 8px; border-radius:4px; font-size:0.7rem; z-index:2;">부름중</span>';
+            statusLabel = '부름중';
+            statusClass = 'status-waiting';
         } else if (task.status === 'MATCHED' || task.status === 'CONFIRMED1' || task.status === 'CONFIRMED2') {
-            statusLabel = '<span style="position:absolute; top:10px; right:10px; background:#F2B807; color:#fff; padding:2px 8px; border-radius:4px; font-size:0.7rem; z-index:2;">예약중</span>';
+            statusLabel = '예약중';
+            statusClass = 'status-reserved';
         } else if (task.status === 'COMPLETED') {
-            statusLabel = '<span style="position:absolute; top:10px; right:10px; background:#7F8C8D; color:#fff; padding:2px 8px; border-radius:4px; font-size:0.7rem; z-index:2;">완료</span>';
+            statusLabel = '완료';
+            statusClass = 'status-completed';
         } else if (task.status === 'CANCELED') {
-            statusLabel = '<span style="position:absolute; top:10px; right:10px; background:#e74c3c; color:#fff; padding:2px 8px; border-radius:4px; font-size:0.7rem; z-index:2;">취소</span>';
+            statusLabel = '취소';
+            statusClass = 'status-canceled';
         } else if (task.status === 'HOLD') {
-            statusLabel = '<span style="position:absolute; top:10px; right:10px; background:#e74c3c; color:#fff; padding:2px 8px; border-radius:4px; font-size:0.7rem; z-index:2;">보류</span>';
+            statusLabel = '보류';
+            statusClass = 'status-hold';
         }
 
         const reportButton = task.status === 'HOLD'
-            ? '<button class="report-btn" data-task-index="' + (startIndex + index) + '" style="margin-left:8px; padding:2px 8px; font-size:0.7rem; vertical-align:middle;">신고하기</button>'
+            ? '<button class="report-btn" data-task-index="' + (startIndex + index) + '">신고하기</button>'
             : '';
 
         const locationText = task.location || '';
         const displayTime = timeAgo(task.createdAt);
 
-        taskCard.innerHTML = '<div class="task-image">' + task.icon + statusLabel + '</div>' +
+        taskCard.innerHTML = '<div class="task-image">' + task.icon + '<span class="task-status-label ' + statusClass + '">' + statusLabel + '</span></div>' +
             '<div class="task-card-content">' +
             '<div class="task-card-header">' +
             '<span class="task-badge">' + task.badge + '</span>' +
-            '<span class="task-time" style="display:flex; align-items:center;">' + displayTime + reportButton + '</span>' +
+            '<span class="task-time">' + displayTime + reportButton + '</span>' +
             '</div>' +
             '<h3 class="task-card-title">' + task.title + '</h3>' +
             '<div class="task-author-info">' +
-            '<div class="author-avatar" style="font-size:0.7rem; width:20px; height:20px; margin-right:5px;">👤</div>' +
+            '<div class="author-avatar">👤</div>' +
             '<span class="author-name">' + (task.description || '') + '</span>' +
             '</div>' +
             '<div class="task-meta">' +
@@ -170,7 +159,7 @@ function renderActivities(filterType, page = 1) {
             e.stopPropagation();
             const taskIndex = parseInt(btn.dataset.taskIndex);
             currentReportTask = myActivities[taskIndex];
-            // openReportModal();
+            // openReportModal(); // 모달 함수 호출 (주석 해제 필요)
         });
     });
 

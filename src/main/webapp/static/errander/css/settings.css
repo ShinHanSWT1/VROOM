@@ -1,0 +1,242 @@
+/* ========================================
+   Errander Settings Page - 설정
+======================================== */
+
+.mypage-layout {
+    display: flex;
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+}
+
+.mypage-sidebar {
+    width: 200px;
+    flex-shrink: 0;
+}
+
+.mypage-content {
+    flex: 1;
+}
+
+.sidebar-menu {
+    background-color: var(--color-white);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-item {
+    display: block;
+    padding: 1rem 1.5rem;
+    color: var(--color-dark);
+    text-decoration: none;
+    border-bottom: 1px solid var(--color-light-gray);
+    transition: all 0.3s ease;
+}
+
+.sidebar-item:last-child {
+    border-bottom: none;
+}
+
+.sidebar-item:hover {
+    background-color: var(--color-light-gray);
+}
+
+.sidebar-item.active {
+    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
+    color: var(--color-dark);
+    font-weight: 600;
+}
+
+.page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-dark);
+    margin-bottom: 2rem;
+}
+
+.settings-section {
+    background-color: var(--color-white);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1.5rem;
+}
+
+.settings-section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--color-light-gray);
+}
+
+.location-selector {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.location-item {
+    position: relative;
+}
+
+.location-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--color-dark);
+}
+
+.location-select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--color-light-gray);
+    border-radius: 8px;
+    font-size: 1rem;
+    background-color: var(--color-white);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.location-select:focus {
+    outline: none;
+    border-color: var(--color-secondary);
+    box-shadow: 0 0 0 3px rgba(242, 203, 5, 0.1);
+}
+
+.location-help {
+    font-size: 0.875rem;
+    color: var(--color-gray);
+    margin-top: 0.5rem;
+}
+
+.save-btn {
+    width: 100%;
+    padding: 1rem;
+    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
+    color: var(--color-dark);
+    border: none;
+    border-radius: 8px;
+    font-size: 1.125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.save-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.verification-status {
+    padding: 1.5rem;
+    background-color: var(--color-light-gray);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.verification-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.verification-item:last-child {
+    border-bottom: none;
+}
+
+.verification-label {
+    font-weight: 500;
+}
+
+.verification-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.verification-badge.verified {
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+    color: var(--color-white);
+}
+
+.verification-badge.pending {
+    background-color: var(--color-gray);
+    color: var(--color-white);
+}
+
+.verify-link {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.verify-link:hover {
+    background-color: var(--color-secondary);
+    color: var(--color-dark);
+}
+
+.blocked-users-info {
+    padding: 1rem;
+    background-color: var(--color-light-gray);
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.blocked-count {
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+.manage-btn {
+    padding: 0.75rem 1.5rem;
+    background-color: var(--color-dark);
+    color: var(--color-white);
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.manage-btn:hover {
+    background-color: var(--color-gray);
+}
+
+@media (max-width: 768px) {
+    .mypage-layout {
+        flex-direction: column;
+    }
+    
+    .mypage-sidebar {
+        width: 100%;
+    }
+    
+    .sidebar-menu {
+        display: flex;
+        overflow-x: auto;
+    }
+    
+    .sidebar-item {
+        white-space: nowrap;
+        border-bottom: none;
+        border-right: 1px solid var(--color-light-gray);
+    }
+    
+    .location-selector {
+        grid-template-columns: 1fr;
+    }
+}
