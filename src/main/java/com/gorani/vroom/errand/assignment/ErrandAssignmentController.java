@@ -30,8 +30,13 @@ public class ErrandAssignmentController {
         if (loginUser == null) {
             return "redirect:/auth/login";
         }
-
-        // 채팅 화면으로 리다이렉트 (채팅방은 ChatController에서 자동 생성)
-        return "redirect:/errand/chat?errandsId=" + errandsId;
+        
+        Long erranderUserId = loginUser.getUserId();
+        System.out.println("errandsId" + errandsId);
+        System.out.println("userId = " + loginUser.getUserId());
+        System.out.println("role = " + loginUser.getRole());
+        
+        Long roomId = errandAssignmentService.requestStartChat(errandsId, erranderUserId, erranderUserId);
+        return "redirect:/errand/chat/room?roomId=" + roomId;
     }
 }

@@ -28,8 +28,8 @@
     
     <!-- 채팅방 생성 -->
     <insert id="insertChatRoom" useGeneratedKeys="true" keyProperty="roomId">
-        INSERT INTO CHAT_ROOM (errands_id, errander_id, created_at)
-        VALUES (#{errandsId}, #{erranderId}, 'OPEN', CURRENT_TIMESTAMP)
+        INSERT INTO CHAT_ROOM (errands_id, errander_id)
+        VALUES (#{errandsId}, #{erranderId})
     </insert>
     
     <!-- 참여자 조회 -->
@@ -123,5 +123,4 @@
           AND cp.user_id = #{userId}
           AND cp.is_active = 1
     </select>
-
 </mapper>

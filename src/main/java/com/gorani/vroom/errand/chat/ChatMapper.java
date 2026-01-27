@@ -50,4 +50,7 @@ public interface ChatMapper {
     // 사용자가 특정 채팅방의 참여자인지 확인
     int countParticipantByErrandsIdAndUserId(@Param("errandsId") Long errandsId,
                                               @Param("userId") Long userId);
+    
+    List<ChatMessageVO> selectMessagesByRoomId(@Param("roomId") Long roomId);
+
 }

@@ -5,6 +5,12 @@
 
 <mapper namespace="com.gorani.vroom.errand.assignment.ErrandAssignmentMapper">
 
+	<select id="selectErrandStatus" parameterType="long" resultType="string">
+	  SELECT status
+	  FROM ERRANDS
+	  WHERE errands_id = #{errandsId}
+	</select>
+
   <select id="selectOwnerUserId" resultType="long">
     SELECT user_id
     FROM ERRANDS
@@ -53,6 +59,8 @@
 	      AND status NOT IN ('COMPLETED','CANCELED')
 	  )
 	</select>
+	
+	
   
 
 </mapper>

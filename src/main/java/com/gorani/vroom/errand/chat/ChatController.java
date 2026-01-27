@@ -26,6 +26,49 @@ import lombok.RequiredArgsConstructor;
 public class ChatController {
 
     private final ChatService chatService;
+    
+    @GetMapping("/room")
+    public String showChatPageByRoomId(
+            @RequestParam("roomId") Long roomId,
+            HttpSession session,
+            Model model
+    ) {
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
+        if (loginUser == null) {
+            return "redirect:/auth/login";
+        }
+
+        Long currentUserId = loginUser.getUserId();
+
+        // 1) 참가자 권한 체크 (참가자 아니면 차단)
+        String userRole = chatService.getUserRole(roomId, currentUserId);
+        if (userRole == null) {
+            model.addAttribute("message", "이미 다른 부름이가 채팅 중인 심부름입니다.");
+            return "errand/errand_already_matched";
+        }
+
+        // 2) roomId로 기본 정보 조회 (errandsId 필요하면 여기서 얻기)
+        ChatRoomVO room = chatService.getChatRoomInfo(roomId, currentUserId);
+        if (room == null) {
+            return "redirect:/errand/list";
+        }
+        Long errandsId = room.getErrandsId();
+
+        // 3) 채팅방 정보 + 메시지 로딩
+        ChatRoomVO chatRoomInfo = chatService.getErrandInfoForChat(errandsId, currentUserId);
+        List<ChatMessageVO> messages = chatService.getChatMessages(roomId, currentUserId);
+
+        model.addAttribute("roomId", roomId);
+        model.addAttribute("errandsId", errandsId);
+        model.addAttribute("currentUserId", currentUserId);
+        model.addAttribute("userRole", userRole);
+        model.addAttribute("chatRoomInfo", chatRoomInfo);
+        model.addAttribute("messages", messages);
+        model.addAttribute("currentUserNickname", loginUser.getNickname());
+
+        return "errand/errand_chat";
+    }
+
 
     /**
      * 채팅 페이지 표시
@@ -43,27 +86,34 @@ public class ChatController {
         }
         Long currentUserId = loginUser.getUserId();
         
-        System.out.println("[DEBUG] currentUserId=" + currentUserId);
-        System.out.println("[DEBUG] errandsId=" + errandsId);
-
-     // 채팅방 접근 권한 확인
-        boolean canAccess = chatService.canAccessChatRoom(errandsId, currentUserId);
-        if (!canAccess) {
-
-            // 1) 채팅방 자체가 없는 경우: OWNER면 "아직 방이 안 열림"이 맞음
-        	ChatRoomVO room = chatService.getChatRoomByErrandsId(errandsId);
-            if (room == null) {
-                model.addAttribute("message", "아직 부름이가 채팅을 시작하지 않았습니다.");
-                return "redirect:/errand/detail?errandsId=" + errandsId;
+        System.out.println("[ASSIGN] enter request errandsId=" + errandsId);
+        System.out.println("[ASSIGN] userId=" + loginUser.getUserId());
+        
+        // 0) 방 조회
+        ChatRoomVO room = chatService.getChatRoomByErrandsId(errandsId);
+        
+        // 1) 방이 없으면: "부름이만 생성 가능"
+        if (room == null) {
+            // 부름이(프로필 존재)면 여기서 생성하고 진행
+            if (chatService.canAccessChatRoom(errandsId, currentUserId)) {
+                Long roomId = chatService.getOrCreateChatRoom(errandsId, currentUserId);
+                return "redirect:/errand/chat?errandsId=" + errandsId; // 또는 roomId로 보내기
             }
 
-            // 2) 방은 있는데 내가 참가자가 아닌 경우: 이때가 진짜 '이미 다른 부름이와 매칭/진행 중'
-            model.addAttribute("message", "이미 다른 부름이가 채팅 중인 심부름입니다.");
+            // OWNER면 아직 시작 안 함 → 상세로
+            return "redirect:/errand/detail?errandsId=" + errandsId
+                 + "&message=" + java.net.URLEncoder.encode("아직 부름이가 채팅을 시작하지 않았습니다.", java.nio.charset.StandardCharsets.UTF_8);
+        }
+
+
+     // 2) 방이 있으면: 참가자 여부로 접근 체크
+        boolean canAccess = chatService.canAccessChatRoom(errandsId, currentUserId);
+        if (!canAccess) {
             return "errand/errand_already_matched";
         }
 
         // 채팅방 생성 또는 조회
-        Long roomId = chatService.getOrCreateChatRoom(errandsId, currentUserId);
+        Long roomId = room.getRoomId();
 
         // 사용자 역할 조회
         String userRole = chatService.getUserRole(roomId, currentUserId);

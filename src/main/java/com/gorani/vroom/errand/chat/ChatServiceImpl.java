@@ -1,5 +1,7 @@
 package com.gorani.vroom.errand.chat;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -168,5 +170,18 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public ChatRoomVO getChatRoomByErrandsId(Long errandsId) {
         return chatMapper.selectChatRoomByErrandsId(errandsId);
+    }
+    
+    @Override
+    public List<ChatMessageVO> getChatMessages(Long roomId, Long userId) {
+
+        // 1) 참가자 검증 (보안/권한)
+        ChatParticipantVO participant = chatMapper.selectParticipant(roomId, userId);
+        if (participant == null) {
+            throw new IllegalStateException("Not a participant");
+        }
+
+        // 2) 메시지 조회
+        return chatMapper.selectMessagesByRoomId(roomId);
     }
 }
