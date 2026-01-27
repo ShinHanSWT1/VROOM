@@ -73,10 +73,22 @@
                         <div class="nav-dropdown">
                             <button class="nav-item" id="userDropdownBtn">${sessionScope.loginSess.nickname}님</button>
                             <div class="dropdown-menu" id="userDropdownMenu">
-                                <a href="<c:url value='/member/myInfo'/>" class="dropdown-item">나의정보</a>
-                                <a href="<c:url value='/member/vroomPay'/>" class="dropdown-item">부름페이</a>
-                                <a href="<c:url value='/member/myActivity'/>" class="dropdown-item">나의 활동</a>
-                                <a href="#" class="dropdown-item">설정</a>
+                                <c:choose>
+                                    <c:when test="${sessionScope.loginSess.role == 'ERRANDER'}">
+                                        <!-- 심부름꾼 메뉴 -->
+                                        <a href="<c:url value='/errander/mypage/profile'/>" class="dropdown-item">나의 정보</a>
+                                        <a href="<c:url value='/errander/mypage/pay'/>" class="dropdown-item">부름 페이</a>
+                                        <a href="<c:url value='/errander/mypage/activity'/>" class="dropdown-item">나의 거래</a>
+                                        <a href="<c:url value='/errander/mypage/settings'/>" class="dropdown-item">설정</a>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <!-- 사용자 메뉴 -->
+                                        <a href="<c:url value='/member/myInfo'/>" class="dropdown-item">나의 정보</a>
+                                        <a href="<c:url value='/member/vroomPay'/>" class="dropdown-item">부름 페이</a>
+                                        <a href="<c:url value='/member/myActivity'/>" class="dropdown-item">나의 활동</a>
+                                        <a href="#" class="dropdown-item">설정</a>
+                                    </c:otherwise>
+                                </c:choose>
                                 <a href="#" class="dropdown-item">고객지원</a>
                             </div>
                         </div>

@@ -4,12 +4,14 @@ import com.gorani.vroom.config.MvcConfig;
 import com.gorani.vroom.user.auth.UserVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -17,7 +19,9 @@ import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
@@ -40,7 +44,7 @@ public class ErranderController {
         // 서비스 호출 시 user_id 만 넘겨
         ErranderProfileVO profile = erranderService.getErranderProfile(loginUser.getUserId());
 
-        // (옵션) 부름이 등록 안 된 유저라면 등록 페이지로 보내기 -> 혹시 필요할까봐.
+        // 부름이 등록 안 된 유저라면 등록 페이지로 보내기
         if (profile == null) {
              return "redirect:/errander/register";
         }
@@ -126,7 +130,7 @@ public class ErranderController {
                         String savedFilename = UUID.randomUUID().toString() + extension;
                         File destFile = new File(MvcConfig.ERRANDER_DOC_UPLOAD_PATH + savedFilename);
                         file.transferTo(destFile);
-                        fileUrls.add("/uploads/errander_docs/" + savedFilename);
+                        fileUrls.add("/uploads/erranderDocs/" + savedFilename);
                     } catch (IOException e) {
                         log.error("파일 저장 실패: {}", e.getMessage());
                     }
@@ -144,5 +148,46 @@ public class ErranderController {
             // 실패 시 다시 등록 페이지로 (에러 메시지 전달 필요할 수 있음)
             return "redirect:/errander/register?error=true";
         }
+    }
+
+    // 심부름꾼 등록 여부 및 승인 상태 확인
+    @ResponseBody
+    @GetMapping("/check")
+    public ResponseEntity<Map<String, Object>> checkErrander(HttpSession session) {
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
+        Map<String, Object> response = new HashMap<>();
+
+        if (loginUser == null) {
+            response.put("isRegistered", false);
+            return ResponseEntity.ok(response);
+        }
+
+        ErranderProfileVO profile = erranderService.getErranderProfile(loginUser.getUserId());
+        
+        if (profile == null) {
+            response.put("isRegistered", false);
+        } else {
+            response.put("isRegistered", true);
+            response.put("approvalStatus", profile.getApprovalStatus());
+        }
+
+        return ResponseEntity.ok(response);
+    }
+
+    // 심부름꾼으로 전환
+    @GetMapping("/switch")
+    public String switchToErrander(HttpSession session) {
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
+        
+        if (loginUser != null) {
+            // 전환 전 한 번 더 체크 (선택 사항)
+            ErranderProfileVO profile = erranderService.getErranderProfile(loginUser.getUserId());
+            if (profile != null && "APPROVED".equals(profile.getApprovalStatus())) {
+                loginUser.setRole("ERRANDER");
+                session.setAttribute("loginSess", loginUser);
+            }
+        }
+        
+        return "redirect:/";
     }
 }

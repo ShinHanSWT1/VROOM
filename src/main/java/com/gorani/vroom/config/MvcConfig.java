@@ -20,8 +20,8 @@ public class MvcConfig implements WebMvcConfigurer {
     // 업로드 경로
     public static final String PROFILE_UPLOAD_PATH = "C:/uploads/profile/";
     public static final String ERRAND_UPLOAD_PATH  = "C:/uploads/errand/";
-    public static final String COMMUNITY_UPLOAD_PATH = "/Users/kimjaemin/Desktop/vroom/uploads/community/";
-    public static final String ERRANDER_DOC_UPLOAD_PATH = "/Users/kimjaemin/Desktop/vroom/uploads/errander_docs/";
+    public static final String COMMUNITY_UPLOAD_PATH = "C:/uploads/community/";
+    public static final String ERRANDER_DOC_UPLOAD_PATH = "C:/uploads/erranderDocs/";
 
     // View Resolver (JSP)
     @Override
@@ -51,7 +51,7 @@ public class MvcConfig implements WebMvcConfigurer {
                 .addResourceLocations("file:/" + COMMUNITY_UPLOAD_PATH);
 
         // 부름이 서류 이미지
-        registry.addResourceHandler("/uploads/errander_docs/**")
+        registry.addResourceHandler("/uploads/erranderDocs/**")
                 .addResourceLocations("file:/" + ERRANDER_DOC_UPLOAD_PATH);
     }
 
