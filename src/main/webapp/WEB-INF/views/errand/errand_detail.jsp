@@ -2,15 +2,169 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 
-<!DOCTYPE html>
-<html lang="ko">
+<c:set var="pageTitle" value="심부름 상세 - VROOM" scope="request"/>
+<c:set var="pageCss" value="errand-detail" scope="request"/>
+<c:set var="pageCssDir" value="errand" scope="request"/>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>심부름 상세 - VROOM</title>
-    <style>
-        :root {
+<jsp:include page="../common/header.jsp"/>
+
+<section class="main-section">
+    <div class="container">
+        <div class="detail-grid">
+            <!-- Left: Image Section + Money -->
+            <div class="left-col">
+                <div class="image-section">
+                    <div class="errand-image">
+                        <c:choose>
+                            <c:when test="${not empty errand.mainImageUrl}">
+                                <img src="${pageContext.request.contextPath}${errand.mainImageUrl}" alt="심부름 이미지">
+                            </c:when>
+                            <c:otherwise>
+                                <img src="${pageContext.request.contextPath}/static/img/errand/noimage.png" alt="기본 이미지">
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                </div>
+
+                <!-- 심부름값 + 재료비: 이미지 아래로 이동 -->
+                <div class="money-row-under-image">
+                    <div class="money-box">
+                        <h2 class="panel-title">심부름값</h2>
+                        <p class="panel-content">
+                            <fmt:formatNumber value="${errand.rewardAmount}" type="number" />원
+                        </p>
+                    </div>
+
+                    <div class="money-box">
+                        <h2 class="panel-title">재료비</h2>
+                        <p class="panel-content">
+                            <fmt:formatNumber value="${errand.expenseAmount}" type="number" />원
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Info Panels -->
+            <div class="info-panels">
+                <div class="info-panel">
+                    <h2 class="panel-title">제목</h2>
+                    <p class="panel-content">
+                        <c:out value="${errand.title}" />
+                    </p>
+                </div>
+
+                <div class="info-panel">
+                    <h2 class="panel-title">위치</h2>
+                    <p class="panel-content">
+                        <c:out value="${errand.dongFullName}" />
+                    </p>
+                </div>
+
+                <div class="info-panel is-description" id="descPanel">
+                    <h2 class="panel-title">심부름 설명</h2>
+                    <p class="panel-content desc-content" id="descContent">
+                        <c:out value="${errand.description}" />
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Description Section -->
+        <div class="description-section">
+            <div class="author-card">
+                <div class="author-avatar-large">
+                    <i class="icon-user"></i>
+                </div>
+                <div class="author-details">
+                    <div class="author-name-large">
+                        작성자: <c:out value="${errand.userId}" />
+                    </div>
+                    <div class="author-meta">10분 전 · 1.2km</div>
+                </div>
+
+                <!-- 오른쪽 매너점수 -->
+                <div class="author-score">
+                    <div class="score-label">매너점수</div>
+                    <div class="score-value">
+                        <c:choose>
+                            <c:when test="${not empty errand.mannerScore}">
+                                <fmt:formatNumber value="${errand.mannerScore}" maxFractionDigits="1" />
+                            </c:when>
+                            <c:otherwise>
+                                - 
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Related Errands Section -->
+        <div class="related-section">
+            <div class="section-header">
+                <h2 class="section-title">동네 일거리</h2>
+            </div>
+
+            <div class="tasks-grid">
+                <c:choose>
+                    <c:when test="${empty relatedErrands}">
+                        <div style="grid-column: 1 / -1; color: var(--color-gray); padding: 1rem 0;">
+                            근처에 등록된 심부름이 아직 없어요.
+                        </div>
+                    </c:when>
+
+                    <c:otherwise>
+                        <c:forEach var="e" items="${relatedErrands}">
+                            <div class="task-card"
+                                 onclick="location.href='${pageContext.request.contextPath}/errand/detail?errandsId=${e.errandsId}'">
+
+                                <div class="task-image">
+                                    <c:choose>
+                                        <c:when test="${not empty e.categoryDefaultImageUrl}">
+                                            <img src="${pageContext.request.contextPath}${e.categoryDefaultImageUrl}" alt="심부름 이미지">
+                                        </c:when>
+                                        <c:otherwise>
+                                            📦
+                                        </c:otherwise>
+                                    </c:choose>
+                                </div>
+
+                                <div class="task-card-content">
+                                    <div class="task-card-header">
+                                        <span class="task-badge">대기중</span>
+                                        <span class="task-time">
+                                            <c:out value="${e.createdAt}" />
+                                        </span>
+                                    </div>
+
+                                    <div class="task-card-title">
+                                        <c:out value="${e.title}" />
+                                    </div>
+
+                                    <div class="task-meta">
+                                        <span class="task-location">
+                                            <c:out value="${e.dongFullName}" />
+                                        </span>
+                                        <span class="task-price">
+                                            <c:out value="${e.rewardAmount}" />원
+                                        </span>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </c:forEach>
+                    </c:otherwise>
+                </c:choose>
+            </div>
+        </div>
+    </div>
+</section>
+
+<jsp:include page="../common/footer.jsp"/>
+
+<script src="<c:url value='/static/errand/js/errand-detail.js'/>"></script>
+</body>
+</html>
             --color-primary: #6B8E23;
             --color-secondary: #F2CB05;
             --color-tertiary: #F2B807;
@@ -306,6 +460,66 @@
             line-height: 1.8;
             white-space: pre-wrap;
         }
+        
+        /* 작성자 카드 + 버튼 한 줄 레이아웃 */
+		.author-chat-row {
+		  display: flex;
+		  align-items: stretch;
+		  gap: 16px;
+		  width: 100%;
+		}
+		
+		/* 왼쪽 카드 폭 고정 담당 */
+		.author-card-wrap {
+		  flex: 0 1 720px;   /*  원하는 너비로 조절 */
+		  max-width: 720px;
+		  width: 100%;
+		}
+		
+		/* 오른쪽 버튼 영역 */
+		.chat-cta {
+		  flex: 1;
+		  display: flex;
+		  align-items: stretch;
+		  justify-content: flex-end;
+		}
+		
+		/* 버튼 스타일 */
+		.chat-cta form{
+		  display: flex;            /* ✅ 버튼을 가운데 정렬 */
+		  align-items: center;
+		  justify-content: center;
+		  height: 100%;             /* ✅ 왼쪽 카드 높이와 동일하게 */
+		  background: transparent;
+		  border: none;
+		  box-shadow: none;
+		  padding: 0;
+		}
+		
+		.chat-cta button{
+		  width: 220px;                /* 🔥 크게 */
+		  height: 72px;                /* 🔥 세로 키우기 */
+		  font-size: 1.2rem;
+		  font-weight: 800;
+		  border-radius: 16px;
+		
+		  background: linear-gradient(
+		    135deg,
+		    var(--color-secondary),
+		    var(--color-accent)
+		  );
+		  color: #fff;
+		
+		  border: none;
+		  cursor: pointer;
+		  transition: all 0.25s ease;
+		}
+		
+		/* 호버 효과 */
+		.chat-cta button:hover{
+		  transform: translateY(-2px);
+		  box-shadow: 0 8px 20px rgba(0,0,0,0.18);
+		}
 
         .author-card {
             display: flex;
@@ -331,13 +545,27 @@
 
         .author-details {
             flex: 1;
+            min-width: 0;
         }
         
-        .author-score {
+        .author-score-inline{
 		  display: flex;
-		  flex-direction: column;
-		  align-items: flex-end;
-		  min-width: 90px;
+		  align-items: center;
+		  gap: 6px;
+		  margin-left: auto;      /* 오른쪽으로 밀기 */
+		  white-space: nowrap;
+		  font-size: 1.5rem;
+		  font-weight: 800;
+		  color: var(--color-dark);
+		}
+		
+		.author-score-inline .score-label{
+		  font-weight: 600;
+		  color: var(--color-gray);
+		}
+		
+		.author-score-inline .score-value{
+		  font-weight: 800;
 		}
 
         .author-name-large {
@@ -663,35 +891,58 @@
             </div>
 
             <!-- Description Section -->
-            <div class="description-section">
-                <div class="author-card">
-                    <div class="author-avatar-large">
-                        <i class="icon-user"></i>
-                    </div>
-                    <div class="author-details">
-                        <div class="author-name-large">
-							작성자: <c:out value="${errand.userId}" />
-						</div>
-                        <div class="author-meta">10분 전 · 1.2km</div>
-            			<!-- TODO: '10분 전', '1.2km'는 계산/조인 로직 필요 -->
-                    </div>
-                    
-                    <!-- 오른쪽 매너점수 -->
-				    <div class="author-score">
-				      <div class="score-label">매너점수</div>
-				      <div class="score-value">
-				        <c:choose>
-				          <c:when test="${not empty errand.mannerScore}">
-				            <fmt:formatNumber value="${errand.mannerScore}" maxFractionDigits="1" />
-				          </c:when>
-				          <c:otherwise>
-				            - 
-				          </c:otherwise>
-				        </c:choose>
+			<div class="description-section">
+			
+			  <!-- 작성자 카드(좌) + 채팅 버튼(우) -->
+			  <div class="author-chat-row">
+				  <div class="author-card-wrap">
+				    <div class="author-card">
+				      <div class="author-avatar-large">
+				        <i class="icon-user"></i>
+				      </div>
+				
+				      <div class="author-details">
+				        <div class="author-name-large">작성자: <c:out value="${errand.userId}" /></div>
+				        <div class="author-meta"><c:out value="${errand.timeAgo}" /></div>
+				      </div>
+				
+				      <div class="author-score-inline">
+				        <span class="score-label">매너점수 :</span>
+				        <span class="score-value">
+				          <c:choose>
+				            <c:when test="${not empty errand.mannerScore}">
+				              <fmt:formatNumber value="${errand.mannerScore}" maxFractionDigits="1"/>
+				            </c:when>
+				            <c:otherwise>-</c:otherwise>
+				          </c:choose>
+				        </span>
 				      </div>
 				    </div>
-                </div>
-            </div>
+				  </div>
+				
+				  <div class="chat-cta">
+					  <form method="post" action="${pageContext.request.contextPath}/errand/assign/request">
+					    <input type="hidden" name="errandsId" value="${errand.errandsId}" />
+					
+					    <c:choose>
+					      <c:when test="${errand.status eq 'WAITING'}">
+					        <button type="submit" class="btn btn-primary">
+					          채팅하기
+					        </button>
+					      </c:when>
+					      <c:otherwise>
+					        <button type="button" class="btn btn-secondary" disabled>
+					          이미 매칭됨
+					        </button>
+					      </c:otherwise>
+					    </c:choose>
+					
+					  </form>
+					</div>
+				</div>
+			</div>
+
+           
 
             <!-- Related Errands Section -->
             <div class="related-section">
@@ -741,7 +992,7 @@
 					                <c:out value="${e.dongFullName}" />
 					              </span>
 					              <span class="task-price">
-					                <c:out value="${e.rewardAmount}" />원
+					                <fmt:formatNumber value="${e.rewardAmount}" pattern="#,###" />원
 					              </span>
 					            </div>
 					          </div>

@@ -8,8 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-
 import javax.servlet.http.HttpSession;
 import java.util.List;
 
@@ -18,6 +16,7 @@ import java.util.List;
 @RequestMapping("/member")
 public class UserProfileController {
 
+    // 캡슐화
     private final UserProfileService userProfileService;
     private final CommunityService communityService;
 
@@ -73,4 +72,33 @@ public class UserProfileController {
 
         return "user/myActivity";
     }
+
+    // 부름 페이
+    @GetMapping("/vroomPay")
+    public String vroomPay(Model model) {
+        return "user/vroomPay";
+    }
+
+    // 프로필 수정 페이지
+    @GetMapping("/member/edit")
+    public String editPage(Model model) {
+        // TODO: 세션에서 로그인 사용자 ID 가져오기
+        // TODO: 프로필 정보 조회 후 model에 담기
+        return "mypage/profileEdit";
+    }
+
+    // 사용자로 전환
+    @GetMapping("/user/switch")
+    public String switchToUser(HttpSession session) {
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
+
+        if (loginUser != null) {
+            loginUser.setRole("USER");
+            session.setAttribute("loginSess", loginUser);
+            log.info("Role switched to: {}", loginUser.getRole());
+        }
+
+        return "redirect:/";
+    }
+
 }

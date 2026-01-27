@@ -21,4 +21,16 @@ public interface ErranderMapper {
     double getErranderAvgRating(@Param("erranderId") Long erranderId);
     // 리뷰 개수
     int getReviewCount(@Param("erranderId") Long erranderId);
+
+    // 부름이 프로필 등록
+    int insertErranderProfile(ErranderProfileVO profileVO);
+
+    // 부름이 서류 등록
+    int insertErranderDocument(@Param("erranderId") Long erranderId, 
+                               @Param("fileUrl") String fileUrl, 
+                               @Param("docType") String docType, 
+                               @Param("name") String name);
+
+    // 사용자 역할 변경
+    int updateUserRole(@Param("userId") Long userId, @Param("role") String role);
 }

@@ -1,22 +1,21 @@
 package com.gorani.vroom.location;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RestController
+@RestController // json 데이터 반환
 @RequestMapping("/location")
-@RequiredArgsConstructor
 public class LocationController {
 
-    private final LocationService locationService;
+    @Autowired
+    private LocationService locationService;
 
     @GetMapping("/getDongs")
+    @ResponseBody
     public List<LegalDongVO> getDongs(@RequestParam("gunguName") String gunguName) {
-        return locationService.getDongList(gunguName);
+        List<LegalDongVO> result = locationService.getDongList(gunguName);
+        return result;
     }
 }

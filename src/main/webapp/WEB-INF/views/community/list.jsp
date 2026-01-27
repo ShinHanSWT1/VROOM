@@ -4,6 +4,7 @@
 
 <c:set var="pageTitle" value="VROOM - 동네생활" scope="request" />
 <c:set var="pageId" value="community" scope="request" />
+<c:set var="pageCss" value="community" scope="request" />
 
 <jsp:include page="../common/header.jsp" />
 
