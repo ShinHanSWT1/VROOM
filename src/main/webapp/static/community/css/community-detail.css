@@ -234,6 +234,63 @@
     margin-bottom: 1.5rem;
 }
 
+.post-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.post-manage-btns {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.post-edit-btn,
+.post-delete-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 36px;
+    min-width: 50px;
+    padding: 0 12px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    box-sizing: border-box;
+    font-family: inherit;
+    line-height: 1;
+    background-color: var(--color-white);
+    margin: 0;
+    vertical-align: middle;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.post-edit-btn {
+    color: var(--color-gray);
+    border: 1px solid var(--color-light-gray);
+}
+
+.post-edit-btn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.post-delete-btn {
+    color: var(--color-gray);
+    border: 1px solid var(--color-light-gray);
+}
+
+.post-delete-btn:hover {
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
 .post-category-badge {
     display: inline-block;
     padding: 0.35rem 1rem;
@@ -242,7 +299,6 @@
     border-radius: 20px;
     font-size: 0.85rem;
     font-weight: 600;
-    margin-bottom: 1rem;
 }
 
 .post-author-section {
@@ -312,6 +368,27 @@
 }
 
 /* ========================================
+   Post Images
+======================================== */
+.post-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.post-image-item {
+    max-width: 100%;
+}
+
+.post-image-item img {
+    max-width: 100%;
+    max-height: 400px;
+    border-radius: 8px;
+    object-fit: contain;
+}
+
+/* ========================================
    Post Actions (좋아요, 댓글 버튼)
 ======================================== */
 .post-actions {
@@ -352,6 +429,12 @@
 .views-count {
     color: var(--color-gray);
     font-size: 0.9rem;
+}
+
+.actions-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
 }
 
 /* ========================================
