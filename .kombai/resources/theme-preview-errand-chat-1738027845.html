@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VROOM 채팅 인터페이스 테마 프리뷰</title>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif;
+            background: #f5f5f5;
+            color: #2C3E50;
+            line-height: 1.6;
+        }
+
+        /* Theme Variables */
+        :root[data-theme="option1"] {
+            --chat-bg: #ffffff;
+            --chat-border: #e0e0e0;
+            --chat-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            --card-radius: 16px;
+            --message-radius: 18px;
+            --panel-bg: #fafafa;
+            --header-bg: linear-gradient(135deg, #6B8E23 0%, #F2CB05 100%);
+            --my-message-bg: #6B8E23;
+            --my-message-text: #ffffff;
+            --other-message-bg: #f0f0f0;
+            --other-message-text: #2C3E50;
+            --input-bg: #ffffff;
+            --input-border: #e0e0e0;
+            --button-primary: #6B8E23;
+            --button-hover: #5a7a1e;
+            --accent-color: #F2A007;
+            --divider-color: #e0e0e0;
+        }
+
+        :root[data-theme="option2"] {
+            --chat-bg: #ffffff;
+            --chat-border: #d0d0d0;
+            --chat-shadow: none;
+            --card-radius: 8px;
+            --message-radius: 12px;
+            --panel-bg: #ffffff;
+            --header-bg: #6B8E23;
+            --my-message-bg: #F2CB05;
+            --my-message-text: #2C3E50;
+            --other-message-bg: #ECF0F1;
+            --other-message-text: #2C3E50;
+            --input-bg: #fafafa;
+            --input-border: #d0d0d0;
+            --button-primary: #F2A007;
+            --button-hover: #D97218;
+            --accent-color: #6B8E23;
+            --divider-color: #d0d0d0;
+        }
+
+        :root[data-theme="option3"] {
+            --chat-bg: #ffffff;
+            --chat-border: transparent;
+            --chat-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            --card-radius: 20px;
+            --message-radius: 20px;
+            --panel-bg: linear-gradient(to bottom, #fafafa 0%, #ffffff 100%);
+            --header-bg: linear-gradient(135deg, #F2CB05 0%, #F2A007 100%);
+            --my-message-bg: linear-gradient(135deg, #6B8E23 0%, #7aa028 100%);
+            --my-message-text: #ffffff;
+            --other-message-bg: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+            --other-message-text: #2C3E50;
+            --input-bg: #ffffff;
+            --input-border: #f0f0f0;
+            --button-primary: linear-gradient(135deg, #F2A007 0%, #D97218 100%);
+            --button-hover: linear-gradient(135deg, #D97218 0%, #c86415 100%);
+            --accent-color: #F2CB05;
+            --divider-color: #f0f0f0;
+        }
+
+        /* Preview Controls */
+        .preview-controls {
+            background: white;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .preview-controls h1 {
+            font-size: 24px;
+            margin-bottom: 16px;
+            color: #2C3E50;
+        }
+
+        .theme-switcher {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .theme-btn {
+            padding: 12px 24px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Pretendard', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            color: #2C3E50;
+        }
+
+        .theme-btn:hover {
+            border-color: #6B8E23;
+            background: #f9f9f9;
+        }
+
+        .theme-btn.active {
+            background: #6B8E23;
+            color: white;
+            border-color: #6B8E23;
+        }
+
+        .theme-description {
+            background: #f9f9f9;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid #6B8E23;
+        }
+
+        .theme-description h3 {
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: #6B8E23;
+        }
+
+        .theme-description p {
+            font-size: 14px;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        /* Chat Container */
+        .chat-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: calc(100vh - 200px);
+        }
+
+        .chat-layout {
+            display: flex;
+            gap: 20px;
+            height: 700px;
+            background: var(--panel-bg);
+            border-radius: var(--card-radius);
+            overflow: hidden;
+            box-shadow: var(--chat-shadow);
+        }
+
+        /* Left Panel */
+        .left-panel {
+            width: 380px;
+            background: var(--panel-bg);
+            overflow-y: auto;
+            padding: 20px;
+            border-right: 1px solid var(--divider-color);
+        }
+
+        .errand-card {
+            background: var(--chat-bg);
+            border-radius: var(--card-radius);
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 1px solid var(--chat-border);
+            box-shadow: var(--chat-shadow);
+        }
+
+        .errand-thumbnail-section {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .errand-thumbnail {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #e0e0e0 0%, #f0f0f0 100%);
+            flex-shrink: 0;
+        }
+
+        .errand-basic-info {
+            flex: 1;
+        }
+
+        .errand-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2C3E50;
+            margin-bottom: 4px;
+        }
+
+        .errand-location {
+            font-size: 13px;
+            color: #7F8C8D;
+            margin-bottom: 8px;
+        }
+
+        .errand-price {
+            display: flex;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .price-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .price-label {
+            color: #7F8C8D;
+            font-size: 12px;
+        }
+
+        .price-value {
+            font-weight: 600;
+            color: var(--accent-color);
+        }
+
+        .errand-description {
+            background: #fafafa;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .section-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #7F8C8D;
+            margin-bottom: 6px;
+        }
+
+        .description-text {
+            font-size: 14px;
+            color: #2C3E50;
+            line-height: 1.5;
+        }
+
+        .errand-details {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+        }
+
+        .detail-label {
+            color: #7F8C8D;
+        }
+
+        .detail-value {
+            font-weight: 600;
+            color: #2C3E50;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            background: #F2CB05;
+            color: #2C3E50;
+        }
+
+        /* Right Panel */
+        .right-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--chat-bg);
+        }
+
+        /* Chat Header */
+        .chat-header {
+            background: var(--header-bg);
+            color: white;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--divider-color);
+        }
+
+        .chat-user-info h3 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .chat-user-status {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        /* Messages Area */
+        .messages-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: var(--panel-bg);
+        }
+
+        .date-divider {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .date-divider span {
+            background: var(--chat-bg);
+            padding: 6px 16px;
+            border-radius: 16px;
+            font-size: 12px;
+            color: #7F8C8D;
+            border: 1px solid var(--divider-color);
+        }
+
+        .system-message {
+            text-align: center;
+            margin: 16px 0;
+            font-size: 13px;
+            color: #7F8C8D;
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 16px;
+            gap: 8px;
+        }
+
+        .message.mine {
+            flex-direction: row-reverse;
+        }
+
+        .message-bubble {
+            max-width: 60%;
+            padding: 12px 16px;
+            border-radius: var(--message-radius);
+            font-size: 14px;
+            line-height: 1.5;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .message.mine .message-bubble {
+            background: var(--my-message-bg);
+            color: var(--my-message-text);
+        }
+
+        .message.other .message-bubble {
+            background: var(--other-message-bg);
+            color: var(--other-message-text);
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: #7F8C8D;
+            align-self: flex-end;
+            padding: 0 4px;
+        }
+
+        .image-message {
+            max-width: 60%;
+        }
+
+        .image-message img {
+            width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .image-caption {
+            font-size: 13px;
+            color: #7F8C8D;
+            margin-top: 8px;
+            padding: 0 8px;
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 16px 20px;
+            background: var(--input-bg);
+            border-top: 1px solid var(--input-border);
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .attach-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--divider-color);
+            background: var(--chat-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+
+        .attach-btn:hover {
+            background: var(--button-primary);
+            border-color: var(--button-primary);
+            color: white;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid var(--input-border);
+            border-radius: 20px;
+            font-family: 'Pretendard', sans-serif;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .message-input:focus {
+            border-color: var(--button-primary);
+            box-shadow: 0 0 0 3px rgba(107, 142, 35, 0.1);
+        }
+
+        .send-btn {
+            padding: 12px 24px;
+            background: var(--button-primary);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-family: 'Pretendard', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+
+        .send-btn:hover {
+            background: var(--button-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        /* Scrollbar */
+        .left-panel::-webkit-scrollbar,
+        .messages-area::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .left-panel::-webkit-scrollbar-track,
+        .messages-area::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .left-panel::-webkit-scrollbar-thumb,
+        .messages-area::-webkit-scrollbar-thumb {
+            background: #d0d0d0;
+            border-radius: 3px;
+        }
+
+        .left-panel::-webkit-scrollbar-thumb:hover,
+        .messages-area::-webkit-scrollbar-thumb:hover {
+            background: #b0b0b0;
+        }
+
+        @media (max-width: 768px) {
+            .chat-layout {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .left-panel {
+                width: 100%;
+                max-height: 300px;
+            }
+
+            .right-panel {
+                min-height: 500px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="preview-controls">
+        <h1>🎨 VROOM 채팅 인터페이스 테마 프리뷰</h1>
+        
+        <div class="theme-switcher">
+            <button class="theme-btn active" onclick="switchTheme('option1')">옵션 1: 카드 메신저</button>
+            <button class="theme-btn" onclick="switchTheme('option2')">옵션 2: 모던 플랫</button>
+            <button class="theme-btn" onclick="switchTheme('option3')">옵션 3: 그라디언트</button>
+        </div>
+
+        <div class="theme-description" id="themeDescription">
+            <h3>옵션 1: 카드 기반 메신저 스타일</h3>
+            <p>카카오톡이나 라인과 같은 친근한 메신저 느낌의 디자인입니다. 둥근 모서리와 부드러운 그림자로 카드 느낌을 강조했으며, VROOM의 그린-옐로우 그라디언트를 헤더에 적용하여 브랜드 일관성을 유지했습니다. 내 메시지는 올리브 그린, 상대방 메시지는 밝은 회색으로 구분됩니다.</p>
+        </div>
+    </div>
+
+    <div class="chat-container">
+        <div class="chat-layout">
+            <!-- Left Panel -->
+            <div class="left-panel">
+                <div class="errand-card">
+                    <div class="errand-thumbnail-section">
+                        <div class="errand-thumbnail"></div>
+                        <div class="errand-basic-info">
+                            <div class="errand-title">강남역 서류 전달</div>
+                            <div class="errand-location">📍 서울 강남구 역삼동</div>
+                            <div class="errand-price">
+                                <div class="price-item">
+                                    <span class="price-label">심부름값</span>
+                                    <span class="price-value">5,000원</span>
+                                </div>
+                                <div class="price-item">
+                                    <span class="price-label">재료비</span>
+                                    <span class="price-value">10,000원</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="errand-card">
+                    <div class="section-label">📋 제목</div>
+                    <div class="description-text" style="font-weight: 600; margin-bottom: 12px;">
+                        강남역 서류 전달 부탁드려요
+                    </div>
+                    
+                    <div class="section-label">📝 설명</div>
+                    <div class="description-text" style="margin-bottom: 12px;">
+                        안녕하세요! 강남역 근처 사무실로 중요한 서류를 전달해주실 분을 찾습니다. 
+                        시간 약속을 잘 지켜주시는 분이면 좋겠습니다.
+                    </div>
+                </div>
+
+                <div class="errand-card">
+                    <div class="section-label">📍 위치</div>
+                    <div class="description-text" style="margin-bottom: 16px;">
+                        서울 관악구 신림동 → 서울 강남구 역삼동
+                    </div>
+
+                    <div class="errand-details">
+                        <div class="detail-item">
+                            <span class="detail-label">심부름값 / 재료비</span>
+                            <span class="detail-value">5,000원 / 10,000원</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">카테고리</span>
+                            <span class="detail-value">서류 전달</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">상태</span>
+                            <span class="status-badge">진행중</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="errand-card">
+                    <div class="section-label">🕐 심부름 설명</div>
+                    <div class="description-text">
+                        오후 3시까지 강남역 10번 출구에서 만나서 서류를 전달받고,
+                        역삼동 사무실로 배달해주시면 됩니다. 
+                        간단한 확인 사진만 찍어서 보내주세요!
+                    </div>
+                </div>
+
+                <div class="errand-card">
+                    <div class="section-label">⏰ 상태 표시 (MATCHED 등)</div>
+                    <div class="detail-item">
+                        <span class="detail-label">매칭 상태</span>
+                        <span class="status-badge">✓ 매칭됨</span>
+                    </div>
+                </div>
+
+                <div class="errand-card">
+                    <div class="section-label">📷 + [매치 완료화] (허구 고정 입력 영역)</div>
+                    <div class="description-text" style="text-align: center; padding: 20px; color: #7F8C8D;">
+                        시스템 메시지<br>
+                        (하단 고정 입력 영역)
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="right-panel">
+                <!-- Chat Header -->
+                <div class="chat-header">
+                    <div class="chat-user-info">
+                        <h3>김심부름</h3>
+                        <div class="chat-user-status">채팅 상대 / 현재 상태</div>
+                    </div>
+                </div>
+
+                <!-- Messages Area -->
+                <div class="messages-area">
+                    <div class="date-divider">
+                        <span>2026년 1월 26일 일요일</span>
+                    </div>
+
+                    <div class="system-message">
+                        시스템 메시지: 심부름이 매칭되었습니다
+                    </div>
+
+                    <div class="message other">
+                        <div class="message-bubble">
+                            안녕하세요! 심부름 매칭되었네요. 
+                            오늘 오후 3시에 강남역 10번 출구 괜찮으신가요?
+                        </div>
+                        <div class="message-time">오후 2:15</div>
+                    </div>
+
+                    <div class="message mine">
+                        <div class="message-time">오후 2:17</div>
+                        <div class="message-bubble">
+                            네! 좋습니다. 3시에 뵙겠습니다 😊
+                        </div>
+                    </div>
+
+                    <div class="message other">
+                        <div class="message-bubble">
+                            감사합니다! 그럼 조금 이따 봬요~
+                        </div>
+                        <div class="message-time">오후 2:18</div>
+                    </div>
+
+                    <div class="system-message">
+                        ──────────────
+                    </div>
+
+                    <div class="message other">
+                        <div class="message-bubble">
+                            도착했습니다! 10번 출구 앞에 있어요
+                        </div>
+                        <div class="message-time">오후 3:02</div>
+                    </div>
+
+                    <div class="message mine">
+                        <div class="message-time">오후 3:03</div>
+                        <div class="message-bubble">
+                            지금 가고 있습니다! 2분이면 도착해요
+                        </div>
+                    </div>
+
+                    <div class="message mine">
+                        <div class="message-time">오후 3:25</div>
+                        <div class="message-bubble">
+                            서류 잘 전달했습니다!<br>
+                            완료 인증 사진 보내드릴게요
+                        </div>
+                    </div>
+
+                    <div class="message mine">
+                        <div class="image-message">
+                            <img src="data:image/svg+xml,%3Csvg width='300' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='300' height='200' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%237F8C8D' font-family='Pretendard, sans-serif' font-size='14'%3E완료 인증 이미지%3C/text%3E%3C/svg%3E" alt="완료 인증">
+                            <div class="image-caption">📷 완료 인증 사진 (스크롤 가능)</div>
+                        </div>
+                        <div class="message-time">오후 3:26</div>
+                    </div>
+
+                    <div class="message other">
+                        <div class="message-bubble">
+                            확인했습니다! 수고하셨어요 👍
+                        </div>
+                        <div class="message-time">오후 3:28</div>
+                    </div>
+
+                    <div class="system-message">
+                        심부름이 완료되었습니다
+                    </div>
+                </div>
+
+                <!-- Input Area (Fixed at Bottom) -->
+                <div class="input-area">
+                    <button class="attach-btn" title="파일 첨부">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </button>
+                    <input type="text" class="message-input" placeholder="메시지를 입력하세요...">
+                    <button class="send-btn">전송</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const themeDescriptions = {
+            option1: {
+                title: '옵션 1: 카드 기반 메신저 스타일',
+                description: '카카오톡이나 라인과 같은 친근한 메신저 느낌의 디자인입니다. 둥근 모서리와 부드러운 그림자로 카드 느낌을 강조했으며, VROOM의 그린-옐로우 그라디언트를 헤더에 적용하여 브랜드 일관성을 유지했습니다. 내 메시지는 올리브 그린, 상대방 메시지는 밝은 회색으로 구분됩니다.'
+            },
+            option2: {
+                title: '옵션 2: 모던 플랫 디자인',
+                description: '깔끔하고 현대적인 플랫 디자인으로, 그림자를 최소화하고 선명한 테두리로 요소를 구분합니다. 헤더는 단색 올리브 그린을 사용하여 프로페셔널한 느낌을 주고, 내 메시지는 VROOM의 시그니처 옐로우 컬러로 표시하여 밝고 활기찬 분위기를 연출합니다.'
+            },
+            option3: {
+                title: '옵션 3: 그라디언트 악센트 스타일',
+                description: 'VROOM의 다양한 컬러를 활용한 그라디언트 중심 디자인입니다. 헤더는 옐로우-오렌지 그라디언트로 따뜻하고 친근한 느낌을 주며, 메시지 말풍선에도 은은한 그라디언트를 적용하여 세련되고 현대적인 느낌을 더했습니다. 더 큰 둥근 모서리로 부드러운 인상을 강조합니다.'
+            }
+        };
+
+        function switchTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            
+            // Update active button
+            document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update description
+            const desc = themeDescriptions[theme];
+            document.getElementById('themeDescription').innerHTML = `
+                <h3>${desc.title}</h3>
+                <p>${desc.description}</p>
+            `;
+        }
+
+        // Initialize with option1
+        document.documentElement.setAttribute('data-theme', 'option1');
+    </script>
+</body>
+</html>

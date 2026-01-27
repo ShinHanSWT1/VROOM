@@ -1,6 +1,10 @@
 package com.gorani.vroom.errand.post;
 
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpSession;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,15 +12,17 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import javax.servlet.http.HttpSession;
-import java.util.List;
-import java.util.Map;
+import com.gorani.vroom.errand.assignment.ErrandAssignmentService;
+
+import lombok.RequiredArgsConstructor;
+
 
 @Controller
 @RequiredArgsConstructor
 public class ErrandController {
 
 	private final ErrandService errandService;
+	private final ErrandAssignmentService errandAssignmentService;
 
 	// 심부름 게시글 목록
 	@GetMapping("/errand/list")
@@ -24,11 +30,17 @@ public class ErrandController {
 			@RequestParam(required = false) String dongCode, @RequestParam(required = false) String sort,
 			@RequestParam(defaultValue = "1") int page, Model model) {
 
-		int size = 20; // 페이지당 개수
+		int size = 9; // 페이지당 개수
 
 		List<ErrandListVO> errands = errandService.getErrandList(q, categoryId, dongCode, sort, page, size);
 
 		int totalCount = errandService.getErrandTotalCount(q, categoryId, dongCode);
+		int totalPages = (int) Math.ceil((double) totalCount / size);
+		
+		model.addAttribute("page", page);
+	    model.addAttribute("size", size);
+	    model.addAttribute("totalCount", totalCount);
+	    model.addAttribute("totalPages", totalPages);
 
 		model.addAttribute("errands", errands);
 		model.addAttribute("categories", errandService.getCategories());

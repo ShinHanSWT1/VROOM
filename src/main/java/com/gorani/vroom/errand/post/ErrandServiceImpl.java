@@ -1,5 +1,7 @@
 package com.gorani.vroom.errand.post;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +24,7 @@ public class ErrandServiceImpl implements ErrandService {
 
         // 방어: page/size 기본값
         int safePage = (page <= 0) ? 1 : page;
-        int safeSize = (size <= 0) ? 20 : size;
+        int safeSize = (size <= 0) ? 9 : size;
 
         // sort 기본값
         String safeSort = (sort == null || sort.isBlank()) ? "latest" : sort;
@@ -82,6 +84,11 @@ public class ErrandServiceImpl implements ErrandService {
     public ErrandDetailVO getErrandDetail(Long errandsId) {
     	ErrandDetailVO errand = errandMapper.selectErrandDetail(errandsId);
         if (errand == null) return null;
+        
+        errand.setTimeAgo(
+            calculateTimeAgo(errand.getCreatedAt().toLocalDateTime())
+        );
+        
         String mainImageUrl = errandMapper.selectMainImageUrl(errandsId);
 
         if (mainImageUrl == null || mainImageUrl.isBlank()) {
@@ -149,4 +156,21 @@ public class ErrandServiceImpl implements ErrandService {
     public List<Map<String, Object>> getDongs() {
         return errandMapper.selectDongs();
     }
+    
+    private String calculateTimeAgo(LocalDateTime createdAt) {
+        if (createdAt == null) return "";
+
+        Duration duration = Duration.between(createdAt, LocalDateTime.now());
+        long minutes = duration.toMinutes();
+
+        if (minutes < 1) return "방금 전";
+        if (minutes < 60) return minutes + "분 전";
+
+        long hours = duration.toHours();
+        if (hours < 24) return hours + "시간 전";
+
+        long days = duration.toDays();
+        return days + "일 전";
+    }
+
 }

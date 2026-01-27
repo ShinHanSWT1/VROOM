@@ -593,31 +593,44 @@
 
 <body>
     <header class="header">
-        <div class="header-container">
-            <div class="logo">
-                <h1 onclick="location.href='main_updated_2.html'">VROOM</h1>
-            </div>
-            <nav class="nav-menu">
-                <a href="main_updated_2" class="nav-item">홈</a>
-                <a href="#" class="nav-item">커뮤니티</a>
-                <a href="#" class="nav-item">심부름꾼 전환</a>
-                <a href="#" class="nav-item nav-login">로그인</a>
-                <a href="#" class="nav-item nav-signup">회원가입</a>
-                <div class="nav-dropdown">
-                    <button class="nav-item nav-user" id="userDropdownBtn">유저</button>
-                    <div class="dropdown-menu" id="userDropdownMenu">
-                        <a href="myInfo" class="dropdown-item">나의정보</a>
-                        <a href="vroomPay" class="dropdown-item">부름페이</a>
-                        <a href="myActivity" class="dropdown-item">나의 활동</a>
-                        <a href="#" class="dropdown-item">설정</a>
-                        <a href="#" class="dropdown-item">고객지원</a>
-                        <div class="dropdown-divider"></div>
-                        <a href="#" class="dropdown-item logout">로그아웃</a>
-                    </div>
-                </div>
-            </nav>
-        </div>
-    </header>
+	  <div class="header-container">
+	    <div class="logo">
+	      <h1 onclick="location.href='${pageContext.request.contextPath}/'">VROOM</h1>
+	    </div>
+	
+	    <nav class="nav-menu">
+	      <a href="${pageContext.request.contextPath}/" class="nav-item">홈</a>
+	      <a href="${pageContext.request.contextPath}/community" class="nav-item">커뮤니티</a>
+	      <a href="${pageContext.request.contextPath}/member/myInfo" class="nav-item">심부름꾼 전환</a>
+	
+	      <c:choose>
+	        <c:when test="${empty sessionScope.loginSess}">
+	          <a href="${pageContext.request.contextPath}/auth/login" class="nav-item nav-login">로그인</a>
+	          <a href="${pageContext.request.contextPath}/auth/join" class="nav-item nav-signup">회원가입</a>
+	        </c:when>
+	
+	        <c:otherwise>
+	          <div class="nav-dropdown">
+	            <button class="nav-item nav-user" id="userDropdownBtn">
+	              <c:out value="${sessionScope.loginSess.nickname}" />님
+	            </button>
+	
+	            <div class="dropdown-menu" id="userDropdownMenu">
+	              <a href="${pageContext.request.contextPath}/member/myInfo" class="dropdown-item">나의정보</a>
+	              <a href="${pageContext.request.contextPath}/vroomPay" class="dropdown-item">부름페이</a>
+	              <a href="${pageContext.request.contextPath}/myActivity" class="dropdown-item">나의 활동</a>
+	              <a href="${pageContext.request.contextPath}/settings" class="dropdown-item">설정</a>
+	              <a href="${pageContext.request.contextPath}/support" class="dropdown-item">고객지원</a>
+	              <div class="dropdown-divider"></div>
+	              <a href="${pageContext.request.contextPath}/member/logout" class="dropdown-item logout">로그아웃</a>
+	            </div>
+	          </div>
+	        </c:otherwise>
+	      </c:choose>
+	    </nav>
+	  </div>
+	</header>
+
 
     <section class="page-header">
         <div class="container">
@@ -699,8 +712,7 @@
 			        총 <span class="results-count">${totalCount}</span>개의 심부름
 			    </div>
 			</form>
-
-
+						
             <div class="tasks-grid">
 			    <c:forEach var="e" items="${errands}">
 			      <a class="task-card"
@@ -750,6 +762,99 @@
 			      </a>
 			    </c:forEach>
 			  </div>
+			  
+			  <c:if test="${totalPages > 1}">
+				  <div class="pagination">
+				    <c:set var="baseUrl" value="${pageContext.request.contextPath}/errand/list" />
+				
+				    <!-- 현재 페이지 방어 -->
+				    <c:set var="currentPage" value="${page}" />
+				    <c:if test="${currentPage < 1}">
+				      <c:set var="currentPage" value="1" />
+				    </c:if>
+				    <c:if test="${currentPage > totalPages}">
+				      <c:set var="currentPage" value="${totalPages}" />
+				    </c:if>
+				
+				    <!-- 표시 범위: 현재 기준 -2 ~ +2 -->
+				    <c:set var="startPage" value="${currentPage - 2}" />
+				    <c:set var="endPage" value="${currentPage + 2}" />
+				
+				    <c:if test="${startPage < 1}">
+				      <c:set var="startPage" value="1" />
+				    </c:if>
+				    <c:if test="${endPage > totalPages}">
+				      <c:set var="endPage" value="${totalPages}" />
+				    </c:if>
+				
+				    <!-- 이전 버튼 -->
+				    <c:choose>
+				      <c:when test="${currentPage == 1}">
+				        <button class="pagination-btn" disabled>이전</button>
+				      </c:when>
+				      <c:otherwise>
+				        <a class="pagination-btn"
+				           href="${baseUrl}?page=${currentPage-1}&q=${q}&categoryId=${categoryId}&dongCode=${dongCode}&sort=${sort}">
+				          이전
+				        </a>
+				      </c:otherwise>
+				    </c:choose>
+				
+				    <!-- 1 페이지는 항상 보여주기 + 앞쪽 ... -->
+				    <c:if test="${startPage > 1}">
+				      <a class="pagination-number"
+				         href="${baseUrl}?page=1&q=${q}&categoryId=${categoryId}&dongCode=${dongCode}&sort=${sort}">
+				        1
+				      </a>
+				
+				      <c:if test="${startPage > 2}">
+				        <span class="pagination-ellipsis">…</span>
+				      </c:if>
+				    </c:if>
+				
+				    <!-- 가운데 범위 페이지들 -->
+				    <c:forEach var="p" begin="${startPage}" end="${endPage}">
+				      <c:choose>
+				        <c:when test="${p == currentPage}">
+				          <span class="pagination-number active">${p}</span>
+				        </c:when>
+				        <c:otherwise>
+				          <a class="pagination-number"
+				             href="${baseUrl}?page=${p}&q=${q}&categoryId=${categoryId}&dongCode=${dongCode}&sort=${sort}">
+				            ${p}
+				          </a>
+				        </c:otherwise>
+				      </c:choose>
+				    </c:forEach>
+				
+				    <!-- 뒤쪽 ... + 마지막 페이지 -->
+				    <c:if test="${endPage < totalPages}">
+				      <c:if test="${endPage < totalPages - 1}">
+				        <span class="pagination-ellipsis">…</span>
+				      </c:if>
+				
+				      <a class="pagination-number"
+				         href="${baseUrl}?page=${totalPages}&q=${q}&categoryId=${categoryId}&dongCode=${dongCode}&sort=${sort}">
+				        ${totalPages}
+				      </a>
+				    </c:if>
+				
+				    <!-- 다음 버튼 -->
+				    <c:choose>
+				      <c:when test="${currentPage == totalPages}">
+				        <button class="pagination-btn" disabled>다음</button>
+				      </c:when>
+				      <c:otherwise>
+				        <a class="pagination-btn"
+				           href="${baseUrl}?page=${currentPage+1}&q=${q}&categoryId=${categoryId}&dongCode=${dongCode}&sort=${sort}">
+				          다음
+				        </a>
+				      </c:otherwise>
+				    </c:choose>
+				
+				  </div>
+				</c:if>
+
 			
 			<!-- <div class="tasks-grid">
 			  <c:forEach var="e" items="${errands}">

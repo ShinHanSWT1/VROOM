@@ -1,6 +1,7 @@
 package com.gorani.vroom.errand.post;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 import lombok.Data;
 
@@ -13,7 +14,7 @@ public class ErrandDetailVO {
     private BigDecimal rewardAmount;
     private BigDecimal expenseAmount; // 심부름 비용(있으면)
     private String desiredAt; // 지금은 String으로(나중에 LocalDateTime으로 바꿔도 됨)
-    private String createdAt;    
+    private java.sql.Timestamp  createdAt;    
     private String status;          // WAIT / IN_PROGRESS / DONE 등
     private Long categoryId;
     private String dongCode;
@@ -23,4 +24,5 @@ public class ErrandDetailVO {
     private String gunguName;
     private String dongName;
     private String dongFullName;
+    private String timeAgo;
 }
