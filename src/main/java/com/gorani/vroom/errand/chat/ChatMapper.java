@@ -15,12 +15,11 @@ public interface ChatMapper {
     Long selectErrandsIdByRoomId(@Param("roomId") Long roomId);
     
     // 채팅방 생성
-    int insertChatRoom(@Param("errandsId") Long errandsId, 
-                       @Param("erranderId") Long erranderId);
+    int insertChatRoom(ChatRoomVO room);
     
     // 참여자 조회
     ChatParticipantVO selectParticipant(@Param("roomId") Long roomId, 
-                                        @Param("userId") Long userId);
+    									@Param("userId") Long userId);
     
     List<ChatParticipantVO> selectParticipantsByRoomId(@Param("roomId") Long roomId);
     
@@ -32,10 +31,6 @@ public interface ChatMapper {
     // 참여자 비활성화
     int updateParticipantInactive(@Param("roomId") Long roomId, 
                                    @Param("userId") Long userId);
-    
-    // 메시지 조회
-    List<ChatMessageVO> selectMessagesByRoomId(@Param("roomId") Long roomId, 
-                                                @Param("currentUserId") Long currentUserId);
     
     // 메시지 전송
     int insertMessage(ChatMessageVO message);

@@ -27,15 +27,18 @@
     
     
     <!-- 채팅방 생성 -->
-    <insert id="insertChatRoom" useGeneratedKeys="true" keyProperty="roomId">
-        INSERT INTO CHAT_ROOM (errands_id, errander_id)
-        VALUES (#{errandsId}, #{erranderId})
-    </insert>
+    <insert id="insertChatRoom"
+        parameterType="com.gorani.vroom.errand.chat.ChatRoomVO"
+        useGeneratedKeys="true"
+        keyProperty="roomId">
+	  INSERT INTO CHAT_ROOM (errands_id, errander_id)
+	  VALUES (#{errandsId}, #{erranderId})
+	</insert>
     
     <!-- 참여자 조회 -->
     <select id="selectParticipant" resultType="com.gorani.vroom.errand.chat.ChatParticipantVO">
         SELECT participant_id, room_id, user_id, room_role, joined_at, 
-               last_read_message_id, is_active
+               is_active
         FROM CHAT_PARTICIPANT
         WHERE room_id = #{roomId}
           AND user_id = #{userId}
@@ -44,7 +47,7 @@
     
     <select id="selectParticipantsByRoomId" resultType="com.gorani.vroom.errand.chat.ChatParticipantVO">
         SELECT participant_id, room_id, user_id, room_role, joined_at, 
-               last_read_message_id, is_active
+               is_active
         FROM CHAT_PARTICIPANT
         WHERE room_id = #{roomId}
     </select>
@@ -73,8 +76,7 @@
             cm.content,
             cm.created_at,
             cm.is_deleted,
-            m.nickname AS senderNickname,
-            CASE WHEN cm.sender_user_id = #{currentUserId} THEN 1 ELSE 0 END AS isMine
+            m.nickname AS senderNickname
         FROM CHAT_MESSAGE cm
         LEFT JOIN MEMBERS m ON cm.sender_user_id = m.user_id
         WHERE cm.room_id = #{roomId}
@@ -108,7 +110,13 @@
             m.nickname AS partnerNickname
         FROM ERRANDS e
         LEFT JOIN LEGAL_DONG ld ON e.dong_code = ld.dong_code
-        LEFT JOIN ERRAND_IMAGES ei ON e.errands_id = ei.errands_id AND ei.is_main = 1
+        LEFT JOIN (
+          SELECT errands_id, image_url
+		  FROM ERRANDS_IMAGE
+		  WHERE errands_id = #{errandsId}
+		  ORDER BY sort_order ASC, image_id ASC
+		  LIMIT 1
+		) ei ON e.errands_id = ei.errands_id
         LEFT JOIN MEMBERS m ON e.user_id = m.user_id
         WHERE e.errands_id = #{errandsId}
         LIMIT 1

@@ -31,12 +31,15 @@ public class ChatServiceImpl implements ChatService {
             throw new IllegalStateException("부름이 프로필이 없습니다.");
         }
 
-        // 새 채팅방 생성
-        chatMapper.insertChatRoom(errandsId, erranderId);
-        
-        // 방금 생성된 채팅방 조회
-        ChatRoomVO newRoom = chatMapper.selectChatRoomByErrandsId(errandsId);
-        Long roomId = newRoom.getRoomId();
+        // 새 채팅방 생성 (VO로 넣고 생성키(room_id) 받기)
+        ChatRoomVO room = new ChatRoomVO();
+        room.setErrandsId(errandsId);
+        room.setErranderId(erranderId);
+
+        chatMapper.insertChatRoom(room);
+
+        // insert 후 useGeneratedKeys로 room_id가 room.roomId에 들어옴
+        Long roomId = room.getRoomId();
 
         // 심부름 작성자 조회
         Long ownerUserId = chatMapper.selectErrandOwnerUserId(errandsId);

@@ -53,10 +53,14 @@
                             <div class="errand-location" id="errandLocation">📍 ${chatRoomInfo.errandLocation}</div>
                             <div class="errand-price">
                                 <div class="price-item">
-                                    <span class="price-label">심부름값</span>
                                     <span class="price-value" id="errandReward">
-                                        <fmt:formatNumber value="${chatRoomInfo.rewardAmount}" pattern="#,##0"/>원
-                                    </span>
+									    <c:choose>
+									      <c:when test="${not empty chatRoomInfo && not empty chatRoomInfo.rewardAmount}">
+									        <fmt:formatNumber value="${chatRoomInfo.rewardAmount}" pattern="#,##0"/>
+									      </c:when>
+									      <c:otherwise>0</c:otherwise>
+									    </c:choose>원
+									  </span>
                                 </div>
                                 <c:if test="${not empty chatRoomInfo.expenseAmount}">
                                     <div class="price-item">
@@ -277,11 +281,11 @@
                 if (isMine) {
                     messageDiv.innerHTML = `
                         <div class="message-time">${timeString}</div>
-                        <div class="message-bubble">${escapeHtml(text)}</div>
+                        <div class="message-bubble"><c:out value="${msg.content}"/></div>
                     `;
                 } else {
                     messageDiv.innerHTML = `
-                        <div class="message-bubble">${escapeHtml(text)}</div>
+                        <div class="message-bubble"><c:out value="${msg.content}"/></div>
                         <div class="message-time">${timeString}</div>
                     `;
                 }

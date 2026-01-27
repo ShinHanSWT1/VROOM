@@ -9,6 +9,9 @@ public class ChatRoomVO {
     private Long errandsId;
     private Long erranderId;
     private Timestamp createdAt;
+    private Long rewardAmount;
+    private Long expenseAmount;
+    private String status;
     
     // 조인용 추가 필드
     private String errandTitle;
