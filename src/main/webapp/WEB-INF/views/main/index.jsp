@@ -177,6 +177,14 @@
         selectedDongCode: '${selectedDongCode}',
         selectedGuName: '${selectedGuName}'
     };
+
+    // 알림 메시지 처리
+    document.addEventListener('DOMContentLoaded', function() {
+        const message = '${message}';
+        if (message) {
+            alert(message);
+        }
+    });
 </script>
 <script src="<c:url value='/static/main/js/mainFilter.js'/>"></script>
 

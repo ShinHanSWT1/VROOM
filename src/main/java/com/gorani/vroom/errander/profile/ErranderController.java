@@ -1,12 +1,26 @@
 package com.gorani.vroom.errander.profile;
 
+import com.gorani.vroom.config.MvcConfig;
+import com.gorani.vroom.user.auth.UserVO;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import javax.servlet.http.HttpSession;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+@Slf4j
 @Controller
 @RequestMapping("/errander") // 모든 주소 앞에 /errander가 자동으로 붙음
 @RequiredArgsConstructor
@@ -16,17 +30,19 @@ public class ErranderController {
 
     //  나의 정보
     @GetMapping("/mypage/profile")
-    public String profile(Model model) {
+    public String profile(Model model, HttpSession session) {
 
-        Long userId = 2L; // 테스트용 (TODO: 세션에서 로그인 사용자 ID 가져오기)
-
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
+        if (loginUser == null) {
+            return "redirect:/auth/login";
+        }
 
         // 서비스 호출 시 user_id 만 넘겨
-        ErranderProfileVO profile = erranderService.getErranderProfile(userId);
+        ErranderProfileVO profile = erranderService.getErranderProfile(loginUser.getUserId());
 
         // (옵션) 부름이 등록 안 된 유저라면 등록 페이지로 보내기 -> 혹시 필요할까봐.
         if (profile == null) {
-            // return "redirect:/errander/register";
+             return "redirect:/errander/register";
         }
 
         model.addAttribute("profile", profile);
@@ -57,5 +73,76 @@ public class ErranderController {
         // TODO : vroomID 로 거래 상세 정보 조회해서 담기
         model.addAttribute("vroomId", vroomId);
         return  "errander/activity_detail";
+    }
+
+    // 부름이 등록 페이지
+    @GetMapping("/register")
+    public String registerForm(HttpSession session) {
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
+        if (loginUser == null) {
+            return "redirect:/auth/login";
+        }
+        
+        // 이미 등록된 부름이인지 확인
+        ErranderProfileVO profile = erranderService.getErranderProfile(loginUser.getUserId());
+        if (profile != null) {
+            // 이미 등록되어 있다면 상태에 따라 분기 처리 가능
+            return "redirect:/member/myInfo";
+        }
+        
+        return "errander/register";
+    }
+
+    // 부름이 등록 처리
+    @PostMapping("/register")
+    public String register(ErranderProfileVO profileVO,
+                           @RequestParam("documentFiles") MultipartFile[] documentFiles,
+                           HttpSession session,
+                           RedirectAttributes redirectAttributes) {
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
+        if (loginUser == null) {
+            return "redirect:/auth/login";
+        }
+
+        profileVO.setUserId(loginUser.getUserId());
+
+        // 파일 저장 및 경로 리스트 생성
+        List<String> fileUrls = new ArrayList<>();
+        if (documentFiles != null && documentFiles.length > 0) {
+            // 저장 디렉토리 확인
+            File uploadDir = new File(MvcConfig.ERRANDER_DOC_UPLOAD_PATH);
+            if (!uploadDir.exists()) {
+                uploadDir.mkdirs();
+            }
+
+            for (MultipartFile file : documentFiles) {
+                if (!file.isEmpty()) {
+                    try {
+                        String originalFilename = file.getOriginalFilename();
+                        String extension = "";
+                        if (originalFilename != null && originalFilename.contains(".")) {
+                            extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+                        }
+                        String savedFilename = UUID.randomUUID().toString() + extension;
+                        File destFile = new File(MvcConfig.ERRANDER_DOC_UPLOAD_PATH + savedFilename);
+                        file.transferTo(destFile);
+                        fileUrls.add("/uploads/errander_docs/" + savedFilename);
+                    } catch (IOException e) {
+                        log.error("파일 저장 실패: {}", e.getMessage());
+                    }
+                }
+            }
+        }
+
+        boolean success = erranderService.registerErrander(profileVO, fileUrls);
+
+        if (success) {
+            // 등록 성공 시 사용자 메인 페이지로 이동하며 메시지 전달
+            redirectAttributes.addFlashAttribute("message", "부름이 등록 신청이 완료되었습니다. 관리자 승인 후 활동 가능합니다.");
+            return "redirect:/";
+        } else {
+            // 실패 시 다시 등록 페이지로 (에러 메시지 전달 필요할 수 있음)
+            return "redirect:/errander/register?error=true";
+        }
     }
 }

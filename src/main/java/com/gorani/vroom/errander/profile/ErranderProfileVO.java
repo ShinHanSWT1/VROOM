@@ -40,13 +40,7 @@ public class ErranderProfileVO {
     private int reviewCount; // 총 리뷰 개수
 
 
-
-
-
     private String dongCode1; // 동네1
     private String dongCode2; // 동네2
-
-
-
 
 }

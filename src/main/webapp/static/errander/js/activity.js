@@ -13,10 +13,9 @@ const activityCards = [
 // FullCalendar 이벤트 형식으로 변환
 const calendarEvents = activityCards.map(activity => ({
     id: activity.id,
-    title: formatCurrency(activity.amount), // 제목 대신 금액 표시
+    title: activity.title,
     start: activity.date,
     extendedProps: {
-        originalTitle: activity.title, // 원래 제목 저장
         time: activity.time,
         amount: activity.amount
     }
