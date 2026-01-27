@@ -10,9 +10,9 @@
                p.errander_count
         FROM (SELECT COUNT(*)                                                   AS total_count,
                      SUM(CASE WHEN status = 'WAITING' THEN 1 ELSE 0 END)        AS unmatched,
-                     SUM(CASE WHEN desired_at = CURRENT_DATE THEN 1 ELSE 0 END) AS dday,
-                     SUM(CASE WHEN status = 'COMPLETED' THEN 1 ELSE 0 END)
-                         / COUNT(*) * 100.0                                     AS completed_rate
+                     SUM(CASE WHEN DATE(desired_at) = CURRENT_DATE() THEN 1 ELSE 0 END) AS dday,
+                     ROUND(SUM(CASE WHEN status = 'COMPLETED' THEN 1 ELSE 0 END)
+                         / COUNT(*) * 100.0, 2)                                     AS completed_rate
               FROM ERRANDS) e
 
         CROSS JOIN
@@ -35,7 +35,7 @@
                 AND (title LIKE CONCAT('%', #{keyword}, '%') OR errands_id = #{keyword})
             </if>
             <if test="gu != null and gu != ''">
-                AND dong_full_name LIKE CONCAT(#{gu}, '%')
+                AND dong_full_name LIKE CONCAT('%', #{gu}, '%')
             </if>
             <if test="dong != null and dong != ''">
                 AND dong_code = #{dong}
@@ -64,7 +64,7 @@
                 AND (title LIKE CONCAT('%', #{keyword}, '%') OR errands_id = #{keyword})
             </if>
             <if test="gu != null and gu != ''">
-                AND dong_full_name LIKE CONCAT(#{gu}, '%')
+                AND dong_full_name LIKE CONCAT('%', #{gu}, '%')
             </if>
             <if test="dong != null and dong != ''">
                 AND dong_code = #{dong}
@@ -78,14 +78,44 @@
         </where>
     </select>
 
+    <select id="getErrandDetail" parameterType="long" resultType="map">
+        SELECT
+            e.*,
+            m.nickname AS user_nickname,
+            m.email AS user_email,
+            m.phone AS user_phone
+        FROM ERRANDS e
+                 JOIN MEMBERS m ON e.user_id = m.user_id
+        WHERE e.errands_id = #{errandsId}
+    </select>
+
     <select id="getErrandHistory" parameterType="long" resultType="map">
         SELECT
             a.id, a.assigned_at, a.status, a.reason,
-            m.nickname AS errander_nickname
+            m.nickname AS errander_nickname,
+            admin.name AS admin_name
         FROM ERRAND_ASSIGNMENTS a
-                 JOIN ERRANDER_PROFILES p ON a.errander_id = p.errander_id
-                 JOIN MEMBERS m ON p.user_id = m.user_id
+                 LEFT JOIN ERRANDER_PROFILES p ON a.errander_id = p.errander_id
+                 LEFT JOIN MEMBERS m ON p.user_id = m.user_id
+                 LEFT JOIN ADMINS admin ON a.admin_id = admin.id
         WHERE a.errands_id = #{errandsId}
         ORDER BY a.assigned_at DESC
+    </select>
+
+    <select id="getAvailableEmployees" resultType="map">
+        SELECT
+            p.errander_id,
+            m.nickname,
+            p.active_status,
+            (SELECT COUNT(*) FROM ERRAND_ASSIGNMENTS
+             WHERE errander_id = p.errander_id
+               AND DATE(assigned_at) = CURRENT_DATE) AS today_count,
+            (SELECT MAX(assigned_at) FROM ERRAND_ASSIGNMENTS
+             WHERE errander_id = p.errander_id) AS last_assigned_at
+        FROM ERRANDER_PROFILES p
+                 JOIN MEMBERS m ON p.user_id = m.user_id
+        WHERE p.is_employee = TRUE
+          AND p.active_status = 'ACTIVE'
+        ORDER BY today_count ASC, last_assigned_at ASC
     </select>
 </mapper>

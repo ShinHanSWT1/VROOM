@@ -17,4 +17,8 @@ public interface AdminErrandsMapper {
     int countErrandList(Map<String, Object> param);
 
     List<Map<String, Object>> getErrandHistory(Long errandsId);
+
+    Map<String, Object> getErrandDetail(Long errandsId);
+
+    List<Map<String, Object>> getAvailableEmployees();
 }

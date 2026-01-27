@@ -1,5 +1,6 @@
 package com.gorani.vroom.admin.errand;
 
+import com.gorani.vroom.location.LocationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -7,6 +8,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -14,13 +16,15 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AdminErrandsController {
 
-    private final AdminErrandsService service;
+    private final AdminErrandsService errandsService;
+    private final LocationService locationService;
 
     @GetMapping("/admin/errands")
-    public String erranders(Model model) {
+    public String errands(Model model) {
 
-        model.addAttribute("summary", service.getKpi());
-        log.info("심부름 요약 정보" + service.getKpi());
+        model.addAttribute("summary", errandsService.getKpi());
+        model.addAttribute("gunguList", locationService.getGuList());
+
         return "admin/errands";
     }
 
@@ -47,7 +51,30 @@ public class AdminErrandsController {
         params.put("dueEnd", dueEnd);
         params.put("size", 10); // 페이지당 출력 개수
 
-        return service.searchErrands(params);
+        return errandsService.searchErrands(params);
+    }
+
+    @GetMapping("/api/admin/errands/detail")
+    @ResponseBody
+    public Map<String, Object> getErrandDetail(@RequestParam("id") Long errandsId) {
+        log.info("심부름 상세 및 이력 조회 요청 ID: {}", errandsId);
+
+        return errandsService.getErrandDetailWithHistory(errandsId);
+    }
+
+    // 정직원 리스트 조회
+    @GetMapping("/api/admin/erranders/employees")
+    @ResponseBody
+    public List<Map<String, Object>> getAvailableEmployees() {
+        return errandsService.getAvailableEmployees();
+    }
+
+    // 심부름 배정
+    @PostMapping("/api/admin/errands/assign")
+    @ResponseBody
+    public Map<String, Object> assignErrander(@RequestBody Map<String, Object> params) {
+        // params: { errandId, erranderId, reason }
+        return errandsService.assignErrander(params);
     }
 
 }
