@@ -1,0 +1,256 @@
+/* pay.css - 부름 페이 페이지 전용 스타일 */
+
+.mypage-layout {
+    display: flex;
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+}
+
+.mypage-sidebar {
+    width: 200px;
+    flex-shrink: 0;
+}
+
+.mypage-content {
+    flex: 1;
+}
+
+.sidebar-menu {
+    background-color: var(--color-white);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-item {
+    display: block;
+    padding: 1rem 1.5rem;
+    color: var(--color-dark);
+    text-decoration: none;
+    border-bottom: 1px solid var(--color-light-gray);
+    transition: all 0.3s ease;
+}
+
+.sidebar-item:last-child {
+    border-bottom: none;
+}
+
+.sidebar-item:hover {
+    background-color: var(--color-light-gray);
+}
+
+.sidebar-item.active {
+    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
+    color: var(--color-dark);
+    font-weight: 600;
+}
+
+.page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-dark);
+    margin-bottom: 2rem;
+}
+
+.pay-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.pay-summary-card {
+    background-color: var(--color-white);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.pay-summary-label {
+    font-size: 0.875rem;
+    color: var(--color-gray);
+    margin-bottom: 0.75rem;
+}
+
+.pay-summary-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--color-dark);
+}
+
+.settlement-section {
+    background-color: var(--color-white);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.settlement-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.settlement-info {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.settlement-info-item {
+    flex: 1;
+    padding: 1rem;
+    background-color: var(--color-light-gray);
+    border-radius: 8px;
+    text-align: center;
+}
+
+.withdraw-btn {
+    width: 100%;
+    padding: 1rem;
+    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
+    color: var(--color-dark);
+    border: none;
+    border-radius: 8px;
+    font-size: 1.125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.withdraw-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.settlement-list {
+    background-color: var(--color-white);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.settlement-list-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+}
+
+.settlement-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem;
+    border-bottom: 1px solid var(--color-light-gray);
+    transition: all 0.3s ease;
+}
+
+.settlement-item:last-child {
+    border-bottom: none;
+}
+
+.settlement-item:hover {
+    background-color: var(--color-light-gray);
+}
+
+.settlement-item-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.settlement-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
+    border-radius: 8px;
+    font-size: 1.5rem;
+}
+
+.settlement-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.settlement-name {
+    font-weight: 600;
+    color: var(--color-dark);
+    margin-bottom: 0.25rem;
+}
+
+.settlement-date {
+    font-size: 0.875rem;
+    color: var(--color-gray);
+}
+
+.settlement-amount {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-accent);
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+}
+
+.page-btn {
+    padding: 0.5rem 1rem;
+    background-color: var(--color-white);
+    border: 1px solid var(--color-light-gray);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.page-btn:hover {
+    background-color: var(--color-light-gray);
+}
+
+.page-btn.active {
+    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
+    color: var(--color-dark);
+    font-weight: 600;
+    border-color: transparent;
+}
+
+.page-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+    .mypage-layout {
+        flex-direction: column;
+    }
+
+    .mypage-sidebar {
+        width: 100%;
+    }
+
+    .sidebar-menu {
+        display: flex;
+        overflow-x: auto;
+    }
+
+    .sidebar-item {
+        white-space: nowrap;
+        border-bottom: none;
+        border-right: 1px solid var(--color-light-gray);
+    }
+
+    .pay-summary-grid {
+        grid-template-columns: 1fr;
+    }
+}

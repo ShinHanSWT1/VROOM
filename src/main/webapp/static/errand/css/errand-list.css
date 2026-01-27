@@ -1,0 +1,425 @@
+/* errand-list.css - 심부름 목록 페이지 전용 스타일 (본문만!) */
+
+.page-header {
+    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
+    padding: 2.5rem 0;
+    text-align: center;
+}
+
+.page-title {
+    font-size: 2rem;
+    color: var(--color-white);
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.page-subtitle {
+    font-size: 1rem;
+    color: var(--color-white);
+    opacity: 0.95;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+.write-btn-container {
+    text-align: right;
+    margin-bottom: 2rem;
+}
+
+.write-btn {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+    color: var(--color-white);
+    padding: 0.7rem 1.5rem;
+    font-weight: 700;
+    border-radius: 8px;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 4px 8px rgba(107, 142, 35, 0.25);
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.write-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(107, 142, 35, 0.3);
+}
+
+.main-section {
+    padding: 3rem 0;
+}
+
+.filter-bar {
+    background-color: var(--color-white);
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.filter-group {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.filter-label {
+    font-weight: 600;
+    color: var(--color-dark);
+    font-size: 0.95rem;
+}
+
+.filter-select {
+    padding: 0.5rem 1rem;
+    border: 2px solid var(--color-light-gray);
+    border-radius: 8px;
+    background-color: var(--color-white);
+    color: var(--color-dark);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.filter-select:hover,
+.filter-select:focus {
+    border-color: var(--color-secondary);
+    outline: none;
+}
+
+.results-info {
+    color: var(--color-gray);
+    font-size: 0.95rem;
+}
+
+.results-count {
+    font-weight: 700;
+    color: var(--color-accent);
+}
+
+.tasks-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 4rem;
+}
+
+.task-card {
+    text-decoration: none;
+    background-color: var(--color-white);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    cursor: pointer;
+}
+
+.task-card:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    transform: translateY(-4px);
+    border-color: var(--color-secondary);
+}
+
+.task-image {
+    width: 100%;
+    height: 180px;
+    background-color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    position: relative;
+}
+
+.task-image img.img-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.task-image img.img-contain {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 12px;
+    box-sizing: border-box;
+    background-color: #fff;
+}
+
+.task-card-content {
+    padding: 1.25rem;
+}
+
+.task-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.task-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+    color: var(--color-white);
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.task-time {
+    color: var(--color-gray);
+    font-size: 0.8rem;
+}
+
+.task-card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-dark);
+    margin-bottom: 0.5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-height: 1.4;
+}
+
+.task-author-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.author-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.75rem;
+}
+
+.author-name {
+    font-size: 0.85rem;
+    color: var(--color-gray);
+}
+
+.meta-views {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.85rem;
+    color: var(--color-gray);
+}
+
+.task-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--color-light-gray);
+}
+
+.task-location {
+    color: var(--color-gray);
+    font-size: 0.85rem;
+}
+
+.task-price {
+    color: var(--color-accent);
+    font-weight: 700;
+    font-size: 1.125rem;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 3rem;
+}
+
+.pagination-btn {
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--color-light-gray);
+    background-color: var(--color-white);
+    color: var(--color-dark);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    border-color: var(--color-secondary);
+    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
+    color: var(--color-white);
+}
+
+.pagination-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.pagination-number {
+    min-width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--color-light-gray);
+    background-color: var(--color-white);
+    color: var(--color-dark);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.pagination-number:hover {
+    border-color: var(--color-secondary);
+    background-color: #FFF9E6;
+}
+
+.pagination-number.active {
+    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
+    color: var(--color-white);
+    border-color: var(--color-accent);
+}
+
+.pagination-ellipsis {
+    color: var(--color-gray);
+    font-weight: 700;
+    padding: 0 0.5rem;
+}
+
+.footer {
+    background-color: var(--color-dark);
+    color: var(--color-white);
+    padding: 3rem 0 1rem;
+    margin-top: 3rem;
+}
+
+.footer-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.footer-info h3 {
+    color: var(--color-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.footer-info p {
+    color: var(--color-light-gray);
+    font-size: 0.9rem;
+}
+
+.footer-links {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.footer-links a {
+    color: var(--color-light-gray);
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+    color: var(--color-secondary);
+}
+
+.footer-copyright {
+    text-align: center;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--color-gray);
+    font-size: 0.85rem;
+}
+
+#searchInput {
+    padding: 0.5rem 1rem;
+    border: 2px solid var(--color-light-gray);
+    border-radius: 8px;
+    background-color: var(--color-white);
+    color: var(--color-dark);
+    font-size: 0.9rem;
+    font-weight: 500;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+#searchInput:focus {
+    border-color: var(--color-secondary);
+}
+
+#searchButton {
+    padding: 0.5rem 1rem;
+    background-color: var(--color-secondary);
+    color: var(--color-dark);
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#searchButton:hover {
+    background-color: var(--color-accent);
+}
+
+@media (max-width: 1200px) {
+    .tasks-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 900px) {
+    .tasks-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .tasks-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filter-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filter-select,
+    #searchInput,
+    #searchButton {
+        width: 100%;
+    }
+}

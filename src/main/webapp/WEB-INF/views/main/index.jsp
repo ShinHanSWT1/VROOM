@@ -1,9 +1,9 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<c:set var="pageTitle" value="VROOM - 우리동네 심부름" />
-<c:set var="pageCss" value="main" />
-<c:set var="pageJs" value="main" />
+<c:set var="pageTitle" value="VROOM - 우리동네 심부름" scope="request" />
+<c:set var="pageCss" value="main" scope="request" />
+<c:set var="pageJs" value="main" scope="request" />
 
 <jsp:include page="../common/header.jsp" />
 
@@ -177,6 +177,14 @@
         selectedDongCode: '${selectedDongCode}',
         selectedGuName: '${selectedGuName}'
     };
+
+    // 알림 메시지 처리
+    document.addEventListener('DOMContentLoaded', function() {
+        const message = '${message}';
+        if (message) {
+            alert(message);
+        }
+    });
 </script>
 <script src="<c:url value='/static/main/js/mainFilter.js'/>"></script>
 

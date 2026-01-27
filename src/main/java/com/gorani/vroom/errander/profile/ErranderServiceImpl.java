@@ -3,8 +3,10 @@ package com.gorani.vroom.errander.profile;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -94,5 +96,31 @@ public class ErranderServiceImpl implements ErranderService {
         profile.setThisMonthEarning((long) monthEarning);
 
         return profile;
+    }
+
+    @Override
+    @Transactional
+    public boolean registerErrander(ErranderProfileVO profileVO, List<String> fileUrls) {
+        try {
+            //  부름이 프로필 등록
+            int result = erranderMapper.insertErranderProfile(profileVO);
+            if (result == 0) return false;
+
+            // 생성된 errander_id 가져오기 (useGeneratedKeys 사용)
+            Long erranderId = profileVO.getErranderId();
+
+            // 서류 파일 등록
+            if (fileUrls != null && !fileUrls.isEmpty()) {
+                for (String fileUrl : fileUrls) {
+                    erranderMapper.insertErranderDocument(erranderId, fileUrl, "IDENTITY_PROOF", "제출서류");
+                }
+            }
+
+
+            return true;
+        } catch (Exception e) {
+            log.error("부름이 등록 중 오류 발생", e);
+            return false;
+        }
     }
 }
