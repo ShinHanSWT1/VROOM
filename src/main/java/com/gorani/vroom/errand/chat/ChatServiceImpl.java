@@ -187,4 +187,9 @@ public class ChatServiceImpl implements ChatService {
         // 2) 메시지 조회
         return chatMapper.selectMessagesByRoomId(roomId);
     }
+    
+    @Override
+    public Long getOwnerUserIdByErrandsId(Long errandsId) {
+        return chatMapper.selectErrandOwnerUserId(errandsId);
+    }
 }

@@ -265,33 +265,38 @@
                 });
             }
 
-            // UI에 메시지 추가
             function addMessageToUI(text, isMine) {
-                const now = new Date();
-                const hours = now.getHours();
-                const minutes = now.getMinutes();
-                const ampm = hours >= 12 ? '오후' : '오전';
-                const displayHours = hours > 12 ? hours - 12 : (hours === 0 ? 12 : hours);
-                const timeString = ampm + ' ' + displayHours + ':' + (minutes < 10 ? '0' + minutes : minutes);
+            	  console.log('[UI] addMessageToUI running', { text, isMine });
 
-                const messageDiv = document.createElement('div');
-                messageDiv.className = 'message ' + (isMine ? 'mine' : 'other');
-                
-                if (isMine) {
-                    messageDiv.innerHTML = `
-                        <div class="message-time">${timeString}</div>
-                        <div class="message-bubble"><c:out value="${msg.content}"/></div>
-                    `;
-                } else {
-                    messageDiv.innerHTML = `
-                        <div class="message-bubble"><c:out value="${msg.content}"/></div>
-                        <div class="message-time">${timeString}</div>
-                    `;
-                }
+            	  const messageDiv = document.createElement('div');
+            	  messageDiv.className = 'message ' + (isMine ? 'mine' : 'other');
 
-                messagesArea.appendChild(messageDiv);
-                messagesArea.scrollTop = messagesArea.scrollHeight;
-            }
+            	  const bubble = document.createElement('div');
+            	  bubble.className = 'message-bubble';
+            	  bubble.textContent = text; // 안전 + 확실히 텍스트 들어감
+
+            	  const time = document.createElement('div');
+            	  time.className = 'message-time';
+            	  time.textContent = new Date().toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit' });
+
+            	  // mine이면 (시간, 말풍선), other이면 (말풍선, 시간) 유지
+            	  if (isMine) {
+            	    messageDiv.appendChild(time);
+            	    messageDiv.appendChild(bubble);
+            	  } else {
+            	    messageDiv.appendChild(bubble);
+            	    messageDiv.appendChild(time);
+            	  }
+
+            	  const area = document.getElementById('messagesArea');
+            	  console.log('[UI] messagesArea found?', !!area);
+
+            	  area.appendChild(messageDiv);
+            	  area.scrollTop = area.scrollHeight;
+
+            	  console.log('[UI] appended. children=', area.children.length);
+            	}
+
 
             // HTML 이스케이프 함수
             function escapeHtml(text) {

@@ -87,30 +87,40 @@ public class ChatController {
         Long currentUserId = loginUser.getUserId();
         
         System.out.println("[ASSIGN] enter request errandsId=" + errandsId);
-        System.out.println("[ASSIGN] userId=" + loginUser.getUserId());
+        System.out.println("[ASSIGN] userId=" + currentUserId);
         
-        // 0) 방 조회
+        Long ownerUserId = chatService.getOwnerUserIdByErrandsId(errandsId);
+        boolean isOwner = ownerUserId != null && ownerUserId.equals(currentUserId);
+
         ChatRoomVO room = chatService.getChatRoomByErrandsId(errandsId);
         
-        // 1) 방이 없으면: "부름이만 생성 가능"
-        if (room == null) {
-            // 부름이(프로필 존재)면 여기서 생성하고 진행
-            if (chatService.canAccessChatRoom(errandsId, currentUserId)) {
-                Long roomId = chatService.getOrCreateChatRoom(errandsId, currentUserId);
-                return "redirect:/errand/chat?errandsId=" + errandsId; // 또는 roomId로 보내기
-            }
-
-            // OWNER면 아직 시작 안 함 → 상세로
-            return "redirect:/errand/detail?errandsId=" + errandsId
-                 + "&message=" + java.net.URLEncoder.encode("아직 부름이가 채팅을 시작하지 않았습니다.", java.nio.charset.StandardCharsets.UTF_8);
-        }
-
-
-     // 2) 방이 있으면: 참가자 여부로 접근 체크
-        boolean canAccess = chatService.canAccessChatRoom(errandsId, currentUserId);
-        if (!canAccess) {
-            return "errand/errand_already_matched";
-        }
+        // A. 작성자(OWNER) 흐름
+	     if (isOwner) {
+	         if (room == null) {
+	             // 부름이가 아직 채팅 시작 안 함
+	             return "redirect:/errand/detail?errandsId=" + errandsId
+	                     + "&message=" + java.net.URLEncoder.encode(
+	                         "아직 부름이가 채팅을 시작하지 않았습니다.",
+	                         java.nio.charset.StandardCharsets.UTF_8
+	                     );
+	         }
+	         // 방 있으면 그대로 입장 (아래 공통 로직으로)
+	     }
+	
+	     // B. 부름이(ERRANDER) 흐름
+	     if (!isOwner) {
+	         if (room == null) {
+	             // 부름이만 방 생성 가능
+	             chatService.getOrCreateChatRoom(errandsId, currentUserId);
+	             return "redirect:/errand/chat?errandsId=" + errandsId;
+	         }
+	
+	         // 방은 있는데 참가자가 아니면 이미 매칭됨
+	         boolean canAccess = chatService.canAccessChatRoom(errandsId, currentUserId);
+	         if (!canAccess) {
+	             return "errand/errand_already_matched";
+	         }
+	     }
 
         // 채팅방 생성 또는 조회
         Long roomId = room.getRoomId();
