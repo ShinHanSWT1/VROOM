@@ -5,6 +5,12 @@
 
 <mapper namespace="com.gorani.vroom.errand.assignment.ErrandAssignmentMapper">
 
+	<select id="selectErrandStatus" parameterType="long" resultType="string">
+	  SELECT status
+	  FROM ERRANDS
+	  WHERE errands_id = #{errandsId}
+	</select>
+
   <select id="selectOwnerUserId" resultType="long">
     SELECT user_id
     FROM ERRANDS
@@ -25,6 +31,13 @@
     WHERE errands_id = #{errandsId}
       AND status = 'WAITING'
   </update>
+  
+  <update id="updateErrandStatusToWaiting">
+    UPDATE ERRANDS
+    SET status = 'WAITING',
+        updated_at = CURRENT_TIMESTAMP
+    WHERE errands_id = #{errandsId}
+  </update>
 
   <insert id="insertMatchedAssignment">
     INSERT INTO ERRAND_ASSIGNMENTS (user_id, errands_id, errander_id, assign_type, status)
@@ -37,5 +50,13 @@
     VALUES
       (#{errandsId}, #{fromStatus}, #{toStatus}, #{changedByType}, #{changedById})
   </insert>
-
+  
+  <select id="canChat" resultType="boolean">
+	  SELECT EXISTS(
+	    SELECT 1
+	    FROM ERRANDS
+	    WHERE errands_id = #{errandsId}
+	      AND status NOT IN ('COMPLETED','CANCELED')
+	  )
+	</select>
 </mapper>

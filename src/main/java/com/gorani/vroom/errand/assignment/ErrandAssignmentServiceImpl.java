@@ -3,6 +3,8 @@ package com.gorani.vroom.errand.assignment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.gorani.vroom.errand.chat.ChatService;
+
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -10,39 +12,55 @@ import lombok.RequiredArgsConstructor;
 public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
 
     private final ErrandAssignmentMapper errandAssignmentMapper;
+    private final ChatService chatService;
 
     @Override
     @Transactional
-    public void requestStartChat(Long errandsId, Long erranderUserId, Long changedByUserId) {
+    public Long requestStartChat(Long errandsId, Long erranderUserId, Long changedByUserId) {
+    	
+    	// DB에서 status 재조회
+        String status = errandAssignmentMapper.selectErrandStatus(errandsId);
+        System.out.println("[ASSIGN] db status before=" + status);
 
-        // 1) WAITING -> MATCHED (동시성 방어)
+        // WAITING->MATCHED 시도
         int updated = errandAssignmentMapper.updateErrandStatusWaitingToMatched(errandsId);
+        System.out.println("[ASSIGN] update rows=" + updated);
+
+        // 업데이트 후 status 재조회
+        String after = errandAssignmentMapper.selectErrandStatus(errandsId);
+        System.out.println("[ASSIGN] db status after=" + after);
+
+        // 1) WAITING -> MATCHED
         if (updated == 0) {
             throw new IllegalStateException("이미 누군가 선점했거나 요청 불가 상태입니다.");
         }
 
-        // 2) 작성자 user_id 조회 (ERRAND_ASSIGNMENTS.user_id NOT NULL)
+        // 2) owner 조회
         Long ownerUserId = errandAssignmentMapper.selectOwnerUserId(errandsId);
-        if (ownerUserId == null) {
-            throw new IllegalArgumentException("존재하지 않는 심부름입니다.");
-        }
 
-        // 3) MEMBERS.user_id -> ERRANDER_PROFILES.errander_id 변환
+        // 3) errander profile 조회
         Long erranderId = errandAssignmentMapper.selectErranderIdByUserId(erranderUserId);
-        if (erranderId == null) {
-            throw new IllegalStateException("부름이 프로필(ERRANDER_PROFILES)이 없습니다. 라이더 프로필을 먼저 생성하세요.");
-        }
+        
+        System.out.println("[ASSIGN] erranderUserId=" + erranderUserId);
+        System.out.println("[ASSIGN] erranderId(from profiles)=" + erranderId);
 
-        // 4) 배정 row 생성 (MATCHED) - FK는 errander_id로 넣어야 함
+        System.out.println("[ASSIGN] ownerUserId=" + ownerUserId + ", errandsId=" + errandsId + ", erranderId=" + erranderId);
+
+        // 4) assignment insert
         errandAssignmentMapper.insertMatchedAssignment(ownerUserId, errandsId, erranderId);
 
-        // 5) 상태 이력 저장
+        // 5) status history
         errandAssignmentMapper.insertStatusHistory(
-                errandsId,
-                "WAITING",
-                "MATCHED",
-                "ERRANDER",
-                changedByUserId
+            errandsId,
+            "WAITING",
+            "MATCHED",
+            "ERRANDER",
+            changedByUserId
         );
+
+        // 6) 채팅방 생성
+        Long roomId = chatService.getOrCreateChatRoom(errandsId, erranderUserId);
+
+        return roomId; // 이제 정상
     }
 }

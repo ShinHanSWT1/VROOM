@@ -144,6 +144,66 @@
     white-space: pre-wrap;
 }
 
+/* 작성자 카드 + 버튼 한 줄 레이아웃 */
+.author-chat-row {
+  display: flex;
+  align-items: stretch;
+  gap: 16px;
+  width: 100%;
+}
+
+/* 왼쪽 카드 폭 고정 담당 */
+.author-card-wrap {
+  flex: 0 1 720px;   /*  원하는 너비로 조절 */
+  max-width: 720px;
+  width: 100%;
+}
+
+/* 오른쪽 버튼 영역 */
+.chat-cta {
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-end;
+}
+
+/* 버튼 스타일 */
+.chat-cta form{
+  display: flex;            /* ✅ 버튼을 가운데 정렬 */
+  align-items: center;
+  justify-content: center;
+  height: 100%;             /* ✅ 왼쪽 카드 높이와 동일하게 */
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+.chat-cta button{
+  width: 220px;                /* 🔥 크게 */
+  height: 72px;                /* 🔥 세로 키우기 */
+  font-size: 1.2rem;
+  font-weight: 800;
+  border-radius: 16px;
+
+  background: linear-gradient(
+    135deg,
+    var(--color-secondary),
+    var(--color-accent)
+  );
+  color: #fff;
+
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+/* 호버 효과 */
+.chat-cta button:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.18);
+}
+
 .author-card {
     display: flex;
     align-items: center;
@@ -168,13 +228,27 @@
 
 .author-details {
     flex: 1;
+    min-width: 0;
 }
 
-.author-score {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    min-width: 90px;
+.author-score-inline{
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;      /* 오른쪽으로 밀기 */
+  white-space: nowrap;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--color-dark);
+}
+
+.author-score-inline .score-label{
+  font-weight: 600;
+  color: var(--color-gray);
+}
+
+.author-score-inline .score-value{
+  font-weight: 800;
 }
 
 .author-name-large {
@@ -188,6 +262,7 @@
     font-size: 0.875rem;
     color: var(--color-gray);
 }
+
 
 .related-section {
     margin-top: 3rem;

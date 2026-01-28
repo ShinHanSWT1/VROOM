@@ -70,34 +70,56 @@
         </div>
 
         <!-- Description Section -->
-        <div class="description-section">
-            <div class="author-card">
-                <div class="author-avatar-large">
-                    <i class="icon-user"></i>
-                </div>
-                <div class="author-details">
-                    <div class="author-name-large">
-                        작성자: <c:out value="${errand.nickname}" />
-                    </div>
-                    <div class="author-meta">10분 전 · 1.2km</div>
-                </div>
-
-                <!-- 오른쪽 매너점수 -->
-                <div class="author-score">
-                    <div class="score-label">매너점수</div>
-                    <div class="score-value">
-                        <c:choose>
-                            <c:when test="${not empty errand.mannerScore}">
-                                <fmt:formatNumber value="${errand.mannerScore}" maxFractionDigits="1" />
-                            </c:when>
-                            <c:otherwise>
-                                - 
-                            </c:otherwise>
-                        </c:choose>
-                    </div>
-                </div>
-            </div>
-        </div>
+		<div class="description-section">
+		
+		  <!-- 작성자 카드(좌) + 채팅 버튼(우) -->
+		  <div class="author-chat-row">
+			  <div class="author-card-wrap">
+			    <div class="author-card">
+			      <div class="author-avatar-large">
+			        <i class="icon-user"></i>
+			      </div>
+			
+			      <div class="author-details">
+			        <div class="author-name-large">작성자: <c:out value="${errand.userId}" /></div>
+			        <div class="author-meta"><c:out value="${errand.timeAgo}" /></div>
+			      </div>
+			
+			      <div class="author-score-inline">
+			        <span class="score-label">매너점수 :</span>
+			        <span class="score-value">
+			          <c:choose>
+			            <c:when test="${not empty errand.mannerScore}">
+			              <fmt:formatNumber value="${errand.mannerScore}" maxFractionDigits="1"/>
+			            </c:when>
+			            <c:otherwise>-</c:otherwise>
+			          </c:choose>
+			        </span>
+			      </div>
+			    </div>
+			  </div>
+			
+			  <div class="chat-cta">
+				  <form method="post" action="${pageContext.request.contextPath}/errand/assign/request">
+				    <input type="hidden" name="errandsId" value="${errand.errandsId}" />
+				
+				    <c:choose>
+				      <c:when test="${errand.status eq 'WAITING'}">
+				        <button type="submit" class="btn btn-primary">
+				          채팅하기
+				        </button>
+				      </c:when>
+				      <c:otherwise>
+				        <button type="button" class="btn btn-secondary" disabled>
+				          이미 매칭됨
+				        </button>
+				      </c:otherwise>
+				    </c:choose>
+				
+				  </form>
+				</div>
+			</div>
+		</div>
 
         <!-- Related Errands Section -->
         <div class="related-section">
@@ -146,7 +168,7 @@
                                             <c:out value="${e.dongFullName}" />
                                         </span>
                                         <span class="task-price">
-                                            <c:out value="${e.rewardAmount}" />원
+                                            <fmt:formatNumber value="${e.rewardAmount}" pattern="#,###" />원
                                         </span>
                                     </div>
                                 </div>
