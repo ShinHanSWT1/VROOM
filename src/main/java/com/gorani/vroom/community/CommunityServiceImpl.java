@@ -257,4 +257,22 @@ public class CommunityServiceImpl implements CommunityService{
             }
         }
     }
+
+    // 내가 작성한 글 목록 조회
+    @Override
+    public List<CommunityPostVO> getMyPosts(Long userId) {
+        return communityMapper.selectMyPosts(userId);
+    }
+
+    // 내가 댓글 단 글 목록 조회
+    @Override
+    public List<CommunityPostVO> getMyCommentedPosts(Long userId) {
+        return communityMapper.selectMyCommentedPosts(userId);
+    }
+
+    // 내가 좋아요한 글 목록 조회
+    @Override
+    public List<CommunityPostVO> getMyLikedPosts(Long userId) {
+        return communityMapper.selectMyLikedPosts(userId);
+    }
 }

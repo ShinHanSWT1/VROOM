@@ -79,6 +79,7 @@
             <div class="withdrawal-btn-container">
                 <button class="withdrawal-btn" id="withdrawalBtn">탈퇴하기</button>
             </div>
+
         </main>
     </div>
 </div>
@@ -209,6 +210,18 @@
     </div>
 </div>
 
+<footer class="footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-info">
+                <h3>우리동네 심부름</h3>
+                <p>이웃과 함께하는 따뜻한 심부름 커뮤니티</p>
+            </div>
+            <!-- ... Footer content same as main ... -->
+        </div>
+    </div>
+</footer>
+
 <!-- 숨겨진 데이터 영역 -->
 <div id="errandDataContainer" style="display:none;">
     <c:forEach var="errand" items="${errands}" varStatus="status">
@@ -228,4 +241,5 @@
 
 <script src="<c:url value='/static/user/js/myInfo.js'/>"></script>
 </body>
+
 </html>

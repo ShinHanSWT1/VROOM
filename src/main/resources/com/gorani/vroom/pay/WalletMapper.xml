@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gorani.vroom.pay.WalletMapper">
+
+    <!-- 지갑 조회 -->
+    <select id="getAccountByUserId" parameterType="long" resultType="com.gorani.vroom.pay.WalletVO">
+        SELECT user_id, balance, avail_balance, updated_at, real_account
+        FROM WALLET_ACCOUNTS
+        WHERE user_id = #{userId}
+    </select>
+
+    <!-- 지갑 생성 -->
+    <insert id="createAccount" parameterType="com.gorani.vroom.pay.WalletVO">
+        INSERT INTO WALLET_ACCOUNTS (user_id, balance, avail_balance, real_account)
+        VALUES (#{userId}, 0, 0, #{realAccount})
+    </insert>
+
+    <!-- 충전: balance+, avail+ -->
+    <update id="addBalance" parameterType="map">
+        UPDATE WALLET_ACCOUNTS
+        SET balance = balance + #{amount},
+            avail_balance = avail_balance + #{amount},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE user_id = #{userId}
+    </update>
+
+    <!-- 출금: balance-, avail- (avail >= amount 조건 포함) -->
+    <update id="subtractBalance" parameterType="map">
+        UPDATE WALLET_ACCOUNTS
+        SET balance = balance - #{amount},
+            avail_balance = avail_balance - #{amount},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE user_id = #{userId}
+          AND avail_balance >= #{amount}
+    </update>
+
+    <!-- HOLD: avail만 감소 (심부름 매칭용) -->
+    <update id="holdBalance" parameterType="map">
+        UPDATE WALLET_ACCOUNTS
+        SET avail_balance = avail_balance - #{amount},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE user_id = #{userId}
+          AND avail_balance >= #{amount}
+    </update>
+
+    <!-- RELEASE: avail만 증가 (취소용) -->
+    <update id="releaseBalance" parameterType="map">
+        UPDATE WALLET_ACCOUNTS
+        SET avail_balance = avail_balance + #{amount},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE user_id = #{userId}
+    </update>
+
+    <!-- 거래 기록 -->
+    <insert id="insertTransaction" parameterType="com.gorani.vroom.pay.WalletVO">
+        INSERT INTO WALLET_TRANSACTIONS (txn_type, amount, errand_id, memo, payment_id, user_id)
+        VALUES (#{txnType}, #{amount}, #{errandId}, #{memo}, #{paymentId}, #{userId})
+    </insert>
+
+    <!-- 거래 내역 조회 -->
+    <select id="getTransactions" parameterType="map" resultType="com.gorani.vroom.pay.WalletVO">
+        SELECT id, txn_type, amount, errand_id, created_at, memo, payment_id, user_id
+        FROM WALLET_TRANSACTIONS
+        WHERE user_id = #{userId}
+        ORDER BY created_at DESC
+            LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 거래 내역 개수 -->
+    <select id="getTransactionCount" parameterType="long" resultType="int">
+        SELECT COUNT(*) FROM WALLET_TRANSACTIONS WHERE user_id = #{userId}
+    </select>
+
+</mapper>

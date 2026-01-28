@@ -1,10 +1,8 @@
 package com.gorani.vroom.errand.post;
 
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpSession;
-
+import com.gorani.vroom.errand.assignment.ErrandAssignmentService;
+import com.gorani.vroom.user.auth.UserVO;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,9 +10,9 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.gorani.vroom.errand.assignment.ErrandAssignmentService;
-
-import lombok.RequiredArgsConstructor;
+import javax.servlet.http.HttpSession;
+import java.util.List;
+import java.util.Map;
 
 
 @Controller
@@ -65,7 +63,7 @@ public class ErrandController {
 	    if (errand.getGunguName() != null && errand.getDongName() != null) {
 	        errand.setDongFullName(errand.getGunguName() + " " + errand.getDongName());
 	    }
-		
+
 		List<ErrandListVO> relatedErrands =
 	            errandService.getRelatedErrands(errandsId, errand.getDongCode(), errand.getCategoryId(), 6);
 
@@ -77,7 +75,12 @@ public class ErrandController {
 
 	// 심부름 게시글 작성 화면
 	@GetMapping("/errand/create")
-	public String errandCreateForm(@RequestParam(required = false) String dongCode, Model model) {
+	public String errandCreateForm(@RequestParam(required = false) String dongCode, Model model,
+								    HttpSession session) {
+		UserVO loginUser = (UserVO) session.getAttribute("loginSess");
+		if(loginUser == null) {
+			return "redirect:/auth/login";
+		}
 
 		// 기본 동네 코드 (query 우선)
 		model.addAttribute("defaultDongCode", dongCode);
@@ -93,37 +96,18 @@ public class ErrandController {
 	@PostMapping("/errand/create")
 	public String errandCreateSubmit(@ModelAttribute ErrandCreateVO errandCreateVO, HttpSession session) {
 		
-		// 2) 가장 흔한 케이스: userId가 세션에 Long/Integer/String으로 들어있는 경우
-	    Object userIdObj = session.getAttribute("userId");
-//	    if (userIdObj != null) {
-//	        errandCreateVO.setUserId(Long.valueOf(userIdObj.toString()));
-//	    } else {
-//	        // 3) 다음 케이스: loginUser 객체로 들어있는 경우 -> 타입 모르니 일단 클래스 확인
-//	        Object loginUser = session.getAttribute("loginUser");
-//	        System.out.println("loginUser.class=" + (loginUser == null ? "null" : loginUser.getClass()));
-//
-//	        // ❗ 여기서 loginUser에서 userId를 꺼내는 건 '실제 타입'에 맞춰야 함
-//	        // 타입 확인 후 getter로 꺼내서 setUserId 해야 함.
-//	    }
-//
-//	    // 방어: userId 여전히 null이면 등록 불가 (DB가 거절함)
-//	    if (errandCreateVO.getUserId() == null) {
-//	        throw new IllegalStateException("로그인 userId를 세션에서 찾지 못했습니다.");
-//	        // 또는: return "redirect:/login";
-//	    }
-	    
-	    Long userId = (userIdObj == null) ? 2L : Long.valueOf(userIdObj.toString());
+		// 1. 세션에서 "loginSess" 속성을 UserVO 타입으로 가져옵니다.
+		UserVO loginUser = (UserVO) session.getAttribute("loginSess");
 
-	    errandCreateVO.setUserId(userId);
-	    
+		// 2. 로그인 상태가 아니라면, 로그인 페이지로 리다이렉트합니다.
+		if (loginUser == null) {
+			return "redirect:/auth/login";
+		}
 
-	    System.out.println("POST title=" + errandCreateVO.getTitle());
-	    System.out.println("POST categoryId=" + errandCreateVO.getCategoryId());
-	    System.out.println("POST dongCode = [" + errandCreateVO.getDongCode() + "]");
-	    System.out.println("POST dongFullName = [" + errandCreateVO.getDongFullName() + "]");
 
-	    
-
+		// 3. 로그인된 사용자의 ID를 errandCreateVO 객체에 설정합니다.
+		errandCreateVO.setUserId(loginUser.getUserId());
+		
 		Long errandsId = errandService.createErrand(errandCreateVO);
 		return "redirect:/errand/detail?errandsId=" + errandsId;
 		

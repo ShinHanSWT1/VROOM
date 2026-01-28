@@ -63,4 +63,13 @@ public interface CommunityService {
 
     // 이미지 수정 (keepImageIds 제외한 나머지 삭제 + 새 이미지 추가)
     void updateImages(Long postId, List<Long> keepImageIds, List<String> newImageUrls);
+
+    // 내가 작성한 글 목록 조회
+    List<CommunityPostVO> getMyPosts(Long userId);
+
+    // 내가 댓글 단 글 목록 조회
+    List<CommunityPostVO> getMyCommentedPosts(Long userId);
+
+    // 내가 좋아요한 글 목록 조회
+    List<CommunityPostVO> getMyLikedPosts(Long userId);
 }
