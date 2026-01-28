@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
   initModals();
 });
 
-// 계좌 상태 확인 및 UI 초기화 로직
+// [수정] 계좌 상태 확인 및 UI 초기화 로직
 function checkAccountStatus() {
   const statusContainer = document.getElementById('account-status-container');
   const depositBtn = document.getElementById('depositBtn');
@@ -17,21 +17,29 @@ function checkAccountStatus() {
   fetch(contextPath + '/api/vroompay/status')
           .then(res => res.json())
           .then(data => {
+            console.log("Account Status Response:", data); // [디버깅용] 응답 데이터 확인
+
             if (data.success && data.linked) {
               // 계좌 연결됨
               const account = data.account;
-              statusContainer.innerHTML = `<span>연결된 계좌: <strong>${account.realAccount}</strong></span>`;
+              
+              // 계좌번호 표시 (realAccount가 없으면 '연결됨'만 표시)
+              const accountNum = account.realAccount ? account.realAccount : '연결됨';
+              statusContainer.innerHTML = `<span>연결된 계좌: <strong>${accountNum}</strong></span>`;
               statusContainer.className = 'account-status-container linked';
 
-              // 버튼 활성화 및 잔액 표시
+              // 버튼 활성화
               depositBtn.disabled = false;
               withdrawBtn.disabled = false;
-              balanceDisplay.textContent = Number(account.balance).toLocaleString() + ' 원';
               
-              currentBalance = account.balance;
-              availBalance = account.availBalance;
+              // 잔액 표시 (balance가 없으면 0 처리)
+              const balance = account.balance ? account.balance : 0;
+              balanceDisplay.textContent = Number(balance).toLocaleString() + ' 원';
               
-              // 거래 내역 조회 (나중에 구현)
+              currentBalance = balance;
+              availBalance = account.availBalance ? account.availBalance : 0;
+              
+              // 거래 내역 조회 (아직 구현 안 됨)
               // loadTransactions(1);
 
             } else {
@@ -39,10 +47,8 @@ function checkAccountStatus() {
               statusContainer.innerHTML = `<span>부름페이 계좌가 연결되지 않았습니다.</span><button id="linkAccountBtn">계좌 연결</button>`;
               statusContainer.className = 'account-status-container not-linked';
               
-              // 계좌 연결 버튼에 이벤트 리스너 추가
               document.getElementById('linkAccountBtn').addEventListener('click', linkAccount);
 
-              // 버튼 비활성화 및 잔액 초기화
               depositBtn.disabled = true;
               withdrawBtn.disabled = true;
               balanceDisplay.textContent = '-- 원';
@@ -110,14 +116,99 @@ function updateBalanceDisplay() {
   });
 }
 
-// 충전 버튼 (나중에 구현)
+// [수정] 충전 기능 구현
 document.getElementById('submitDepositBtn').addEventListener('click', function() {
-  alert("충전 기능은 준비 중입니다.");
+  var input = document.getElementById('depositAmount');
+  var memoInput = document.getElementById('depositMemo'); // 메모 입력 필드
+  var amountError = document.getElementById('depositError');
+  var valid = true;
+
+  if (!input.value || !/^\d+$/.test(input.value)) {
+    input.classList.add('error');
+    amountError.textContent = '숫자만 입력해주세요.';
+    amountError.classList.add('active');
+    valid = false;
+  } else {
+    input.classList.remove('error');
+    amountError.classList.remove('active');
+  }
+
+  if (valid) {
+    fetch(contextPath + '/api/vroompay/charge', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        amount: parseInt(input.value),
+        memo: memoInput.value // 메모 값 전송 (없으면 빈 문자열)
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.message);
+        if (data.success) {
+          // 성공 시 잔액 갱신 및 모달 닫기
+          if(data.balance !== undefined) currentBalance = data.balance;
+          if(data.availBalance !== undefined) availBalance = data.availBalance;
+          updateBalanceDisplay();
+          
+          // 모달 닫기 (함수 재사용)
+          var m = document.getElementById('depositModal');
+          m.classList.remove('active');
+          
+          // 입력 필드 초기화
+          input.value = '';
+          memoInput.value = '';
+          
+          // 거래 내역 갱신 (구현 시 주석 해제)
+          // loadTransactions(1);
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("충전 중 오류가 발생했습니다.");
+    });
+  }
 });
 
-// 출금 버튼 (나중에 구현)
+// 출금 기능 구현
 document.getElementById('submitWithdrawBtn').addEventListener('click', function() {
-  alert("출금 기능은 준비 중입니다.");
+  var input = document.getElementById('withdrawAmount');
+  var error = document.getElementById('withdrawError');
+
+  if (!input.value || !/^\d+$/.test(input.value)) {
+    input.classList.add('error');
+    error.textContent = '숫자만 입력해주세요.';
+    error.classList.add('active');
+    return;
+  }
+
+  fetch(contextPath + '/api/vroompay/withdraw', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ amount: parseInt(input.value) })
+  })
+  .then(res => res.json())
+  .then(data => {
+      if (data.success) {
+        alert(data.message);
+        if(data.balance) currentBalance = data.balance;
+        if(data.availBalance) availBalance = data.availBalance;
+        updateBalanceDisplay();
+        
+        var m = document.getElementById('withdrawModal');
+        m.classList.remove('active');
+        
+        loadTransactions(1);
+      } else {
+        input.classList.add('error');
+        error.textContent = data.message;
+        error.classList.add('active');
+      }
+  })
+  .catch(err => {
+      console.error(err);
+      alert("출금 중 오류가 발생했습니다.");
+  });
 });
 
 // 모달 초기화

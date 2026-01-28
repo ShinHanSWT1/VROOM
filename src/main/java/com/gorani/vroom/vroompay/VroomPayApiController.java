@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -44,5 +45,29 @@ public class VroomPayApiController {
         String username = loginUser.getNickname();
 
         return vroomPayService.linkAccount(userId, username);
+    }
+
+    @PostMapping("/charge")
+    public Map<String, Object> charge(@RequestBody Map<String, Object> request, HttpSession session) {
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
+        if (loginUser == null) {
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", false);
+            result.put("message", "로그인이 필요합니다.");
+            return result;
+        }
+        Long userId = loginUser.getUserId();
+
+        if (request.get("amount") == null) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("message", "충전 금액이 입력되지 않았습니다.");
+            return error;
+        }
+
+        BigDecimal amount = new BigDecimal(request.get("amount").toString());
+        String memo = (String) request.get("memo");
+
+        return vroomPayService.charge(userId, amount, memo);
     }
 }

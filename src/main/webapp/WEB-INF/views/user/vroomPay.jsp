@@ -13,7 +13,6 @@
   <div class="dashboard-container">
     <aside class="sidebar">
       <ul class="sidebar-menu">
-        <%-- [수정] 사이드바 항목 클래스 통일 --%>
         <li class="sidebar-item">
             <a href="${pageContext.request.contextPath}/member/myInfo" class="sidebar-link">나의 정보</a>
         </li>
@@ -33,7 +32,6 @@
       <h2 class="page-title">부름 페이</h2>
 
       <div class="pay-info-card">
-        <%-- Row 1: 프로필 + 계좌 상태 --%>
         <div class="profile-section">
           <div class="profile-image-container">
             <c:choose>
@@ -55,7 +53,6 @@
             <%-- JS를 통해 내용이 채워질 영역 --%>
         </div>
 
-        <%-- Row 2: 매너온도 + 충전/출금 버튼 --%>
         <div class="temp-container">
           <span class="temp-label">매너온도</span>
           <div class="temp-bar">
@@ -117,26 +114,14 @@
         <span>금액은 숫자만 입력해주세요. 쉼표(,)는 사용할 수 없습니다.</span>
       </div>
       <div class="form-group">
-        <label class="form-label">계좌 선택</label>
-        <select class="form-input" id="depositBank">
-          <option value="">은행을 선택하세요</option>
-          <option value="신한">신한은행</option>
-          <option value="국민">국민은행</option>
-          <option value="하나">하나은행</option>
-          <option value="우리">우리은행</option>
-          <option value="농협">농협은행</option>
-          <option value="기업">기업은행</option>
-          <option value="SC">SC제일은행</option>
-          <option value="카카오">카카오뱅크</option>
-          <option value="토스">토스뱅크</option>
-        </select>
-        <div class="form-error" id="depositBankError">은행을 선택해주세요.</div>
-      </div>
-      <div class="form-group">
         <label class="form-label">충전 금액</label>
         <input type="text" class="form-input" id="depositAmount" placeholder="예: 10000">
         <div class="form-helper">숫자만 입력하세요 (예: 10000)</div>
         <div class="form-error" id="depositError">쉼표(,)는 사용할 수 없습니다. 숫자만 입력해주세요.</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">메모 (선택)</label>
+        <input type="text" class="form-input" id="depositMemo" placeholder="내용을 입력하세요 (선택사항)">
       </div>
     </div>
     <div class="modal-footer">

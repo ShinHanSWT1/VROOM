@@ -1,5 +1,6 @@
 package com.gorani.vroom.vroompay;
 
+import java.math.BigDecimal;
 import java.util.Map;
 
 public interface VroomPayService {
@@ -8,4 +9,5 @@ public interface VroomPayService {
 
     Map<String, Object> linkAccount(Long userId, String username);
 
+    Map<String, Object> charge(Long userId, BigDecimal amount, String memo);
 }
