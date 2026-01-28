@@ -1,11 +1,14 @@
 package com.gorani.vroom.errand.post;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class ErrandDetailVO {
     private Long errandsId;
     private Long userId;
@@ -20,6 +23,7 @@ public class ErrandDetailVO {
     private String dongCode;
     private String mainImageUrl;
     private java.math.BigDecimal mannerScore; // 또는 Double
+    private String nickname;
     
     private String gunguName;
     private String dongName;

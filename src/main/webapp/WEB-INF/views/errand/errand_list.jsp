@@ -21,7 +21,11 @@
 <section class="write-section">
     <div class="container">
         <div class="write-btn-wrapper">
-            <a href="<c:url value='/errand/create' />" class="write-btn">
+            <a href="#" class="write-btn" id="writeBtn"
+               data-is-logged-in="${not empty sessionScope.loginSess}"
+               data-user-role="${sessionScope.loginSess.role}"
+               data-login-url="${pageContext.request.contextPath}/auth/login"
+               data-create-url="${pageContext.request.contextPath}/errand/create">
                 ✏ 글쓰기
             </a>
         </div>
@@ -221,27 +225,6 @@
 
 				  </div>
 				</c:if>
-
-
-			<!-- <div class="tasks-grid">
-			  <c:forEach var="e" items="${errands}">
-			    카드 HTML
-			  </c:forEach>
-			</div>
-			 -->
-
-			<!-- <div class="tasks-grid">
-			  <c:forEach var="e" items="${errands}">
-			    <div class="task-card">
-			      <div class="task-card-content">
-			        <h3 class="task-card-title">${e.title}</h3>
-			        <div class="task-meta">
-			          <span class="task-price">${e.rewardAmount}원</span>
-			        </div>
-			      </div>
-			    </div>
-			  </c:forEach>
-			</div> -->
         </div>
     </div>
 </section>

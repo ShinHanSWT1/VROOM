@@ -3,18 +3,16 @@
 document.addEventListener('DOMContentLoaded', function () {
     // 1) 필터/검색: 서버 GET 방식 (form submit)
     const filterForm = document.getElementById('filterForm');
-    const categoryFilter = document.getElementById('categoryFilter');
-    const sortFilter = document.getElementById('sortFilter');
-    const neighborhoodFilter = document.getElementById('neighborhoodFilter');
-    const searchInput = document.getElementById('searchInput');
-
-    // select 변경 시 자동 submit
     if (filterForm) {
+        const categoryFilter = document.getElementById('categoryFilter');
+        const sortFilter = document.getElementById('sortFilter');
+        const neighborhoodFilter = document.getElementById('neighborhoodFilter');
+        const searchInput = document.getElementById('searchInput');
+
         if (categoryFilter) categoryFilter.addEventListener('change', () => filterForm.submit());
         if (sortFilter) sortFilter.addEventListener('change', () => filterForm.submit());
         if (neighborhoodFilter) neighborhoodFilter.addEventListener('change', () => filterForm.submit());
 
-        // 검색 input에서 Enter 누르면 submit
         if (searchInput) {
             searchInput.addEventListener('keyup', (e) => {
                 if (e.key === 'Enter') filterForm.submit();
@@ -22,19 +20,25 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // 2) 유저 드롭다운
-    const dropdownBtn = document.getElementById('userDropdownBtn');
-    const dropdownMenu = document.getElementById('userDropdownMenu');
+    // 2) 글쓰기 버튼 권한 확인
+    const writeBtn = document.getElementById('writeBtn');
+    if (writeBtn) {
+        writeBtn.addEventListener('click', function (event) {
+            event.preventDefault(); // 기본 링크 이동 방지
 
-    if (dropdownBtn && dropdownMenu) {
-        dropdownBtn.addEventListener('click', function (e) {
-            e.stopPropagation();
-            dropdownMenu.classList.toggle('active');
-        });
+            const isLoggedIn = this.dataset.isLoggedIn === 'true';
+            const userRole = this.dataset.userRole;
+            const loginUrl = this.dataset.loginUrl;
+            const createUrl = this.dataset.createUrl;
 
-        document.addEventListener('click', function (e) {
-            if (!dropdownMenu.contains(e.target) && !dropdownBtn.contains(e.target)) {
-                dropdownMenu.classList.remove('active');
+            if (!isLoggedIn) {
+                if (confirm("로그인하시겠습니까?")) {
+                    window.location.href = loginUrl;
+                }
+            } else if (userRole === 'ERRANDER') {
+                alert("사용자만 글작성이 가능합니다.");
+            } else { // 'USER' 또는 다른 역할
+                window.location.href = createUrl;
             }
         });
     }

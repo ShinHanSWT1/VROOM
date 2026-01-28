@@ -104,6 +104,7 @@ public class ErrandController {
 			return "redirect:/auth/login";
 		}
 
+
 		// 3. 로그인된 사용자의 ID를 errandCreateVO 객체에 설정합니다.
 		errandCreateVO.setUserId(loginUser.getUserId());
 		
