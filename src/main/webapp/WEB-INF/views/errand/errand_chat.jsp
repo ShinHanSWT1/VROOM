@@ -172,18 +172,18 @@
                     <c:forEach var="msg" items="${messages}">
                         <c:choose>
                             <c:when test="${msg.messageType eq 'SYSTEM'}">
-                                <div class="system-message">${msg.content}</div>
+                                <div class="system-message"><c:out value="${msg.content}"/></div>
                             </c:when>
                             <c:otherwise>
                                 <div class="message ${msg.isMine ? 'mine' : 'other'}">
                                     <c:if test="${!msg.isMine}">
-                                        <div class="message-bubble">${msg.content}</div>
+                                        <div class="message-bubble"><c:out value="${msg.content}"/></div>
                                     </c:if>
                                     <div class="message-time">
                                         <fmt:formatDate value="${msg.createdAt}" pattern="a h:mm"/>
                                     </div>
                                     <c:if test="${msg.isMine}">
-                                        <div class="message-bubble">${msg.content}</div>
+                                        <div class="message-bubble"><c:out value="${msg.content}"/></div>
                                     </c:if>
                                 </div>
                             </c:otherwise>

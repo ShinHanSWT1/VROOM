@@ -54,7 +54,7 @@
   <select id="canChat" resultType="boolean">
 	  SELECT EXISTS(
 	    SELECT 1
-	    FROM errands
+	    FROM ERRANDS
 	    WHERE errands_id = #{errandsId}
 	      AND status NOT IN ('COMPLETED','CANCELED')
 	  )

@@ -21,7 +21,7 @@
     
     <select id="selectErrandsIdByRoomId" resultType="long">
 	  SELECT errands_id
-	  FROM chat_room
+	  FROM CHAT_ROOM
 	  WHERE room_id = #{roomId}
 	</select>
     
