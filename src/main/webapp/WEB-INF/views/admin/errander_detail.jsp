@@ -516,9 +516,9 @@
                 <span class="nav-item-icon">🏃</span>
                 <span class="nav-item-text">부름이 관리</span>
             </a>
-            <a href="#" class="nav-item">
+            <a href="${pageContext.request.contextPath}/admin/errands" class="nav-item">
                 <span class="nav-item-icon">📦</span>
-                <span class="nav-item-text">주문/배차 관리</span>
+                <span class="nav-item-text">심부름/배정 관리</span>
             </a>
             <a href="#" class="nav-item">
                 <span class="nav-item-icon">⚠️</span>

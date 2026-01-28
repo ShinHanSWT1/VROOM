@@ -10,7 +10,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <title>VROOM - 부름이 관리</title>
+    <title>VROOM - 심부름 관리</title>
     <style>
         :root {
             --color-primary: #6B8E23;
@@ -414,7 +414,7 @@
         }
 
         /* Helper Table */
-        .helper-table-section {
+        .errand-table-section {
             background: var(--color-white);
             border-radius: 12px;
             padding: 1.5rem;
@@ -439,16 +439,16 @@
             font-size: 0.9rem;
         }
 
-        .helper-table {
+        .errand-table {
             width: 100%;
             border-collapse: collapse;
         }
 
-        .helper-table thead {
+        .errand-table thead {
             background-color: #F8F9FA;
         }
 
-        .helper-table th {
+        .errand-table th {
             padding: 1rem;
             text-align: left;
             font-weight: 700;
@@ -457,18 +457,46 @@
             border-bottom: 2px solid var(--color-light-gray);
         }
 
-        .helper-table td {
+        .errand-table td {
             padding: 1rem;
             border-bottom: 1px solid var(--color-light-gray);
             font-size: 0.9rem;
         }
 
-        .helper-table tbody tr {
+        .errand-table tbody tr {
             transition: background-color 0.2s ease;
         }
 
-        .helper-table tbody tr:hover {
+        .errand-table tbody tr:hover {
             background-color: #F8F9FA;
+        }
+        .modal-info-full {
+            margin-top: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .modal-textarea {
+            width: 100%;
+            min-height: 120px;
+            resize: none;
+
+            padding: 12px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+
+            border: 1px solid var(--color-light-gray);
+            border-radius: 8px;
+            background-color: #f9fafb;
+
+            color: #333;
+        }
+
+        .modal-textarea:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            background-color: #fff;
         }
 
         /* Status Badge */
@@ -480,32 +508,32 @@
             font-weight: 600;
         }
 
-        .status-badge.APPROVED {
+        .status-badge.WAITING {
             background: #E8F5E9;
             color: #27AE60;
         }
 
-        .status-badge.PENDING {
+        .status-badge.MATCHED {
             background: #FFF9E6;
             color: var(--color-accent);
         }
 
-        .status-badge.REJECTED {
+        .status-badge.HOLD {
             background: #FDEAEA;
             color: #E74C3C;
         }
 
-        .status-badge.ACTIVE {
+        .status-badge.CONFIRMED1 {
             background: #E8F5E9;
             color: #27AE60;
         }
 
-        .status-badge.INACTIVE {
+        .status-badge.COMPLETED {
             background: #F0F0F0;
             color: var(--color-gray);
         }
 
-        .status-badge.SUSPENDED {
+        .status-badge.CONFIRMED2 {
             background: #FDEAEA;
             color: #e77e3c;
         }
@@ -870,12 +898,12 @@
                 flex-direction: column;
             }
 
-            .helper-table {
+            .errand-table {
                 font-size: 0.8rem;
             }
 
-            .helper-table th,
-            .helper-table td {
+            .errand-table th,
+            .errand-table td {
                 padding: 0.5rem;
             }
 
@@ -911,11 +939,11 @@
                 <span class="nav-item-icon">👥</span>
                 <span class="nav-item-text">사용자 관리</span>
             </a>
-            <a href="${pageContext.request.contextPath}/admin/erranders" class="nav-item active">
+            <a href="${pageContext.request.contextPath}/admin/erranders" class="nav-item">
                 <span class="nav-item-icon">🏃</span>
                 <span class="nav-item-text">부름이 관리</span>
             </a>
-            <a href="${pageContext.request.contextPath}/admin/errands" class="nav-item">
+            <a href="${pageContext.request.contextPath}/admin/errands" class="nav-item active">
                 <span class="nav-item-icon">📦</span>
                 <span class="nav-item-text">심부름/배정 관리</span>
             </a>
@@ -961,96 +989,98 @@
 
         <!-- Page Content -->
         <main class="page-content">
-            <h2 class="page-title">부름이 관리</h2>
+            <h2 class="page-title">심부름/배정 관리</h2>
 
             <!-- Summary Section -->
             <section class="summary-section">
                 <h3 class="summary-title">간단 요약 제공</h3>
                 <div class="summary-grid">
                     <div class="summary-card">
-                        <div class="summary-label">전체 부름이</div>
-                        <div class="summary-value">${summary.total}명</div>
+                        <div class="summary-label">총 심부름 게시물 수</div>
+                        <div class="summary-value">${summary.total_count}</div>
                     </div>
                     <div class="summary-card">
-                        <div class="summary-label">활성 부름이</div>
-                        <div class="summary-value">${summary.activated}명</div>
-                        <div class="summary-subtitle">정지 ${summary.banned}명 | 승인 대기 ${summary.waiting}명</div>
+                        <div class="summary-label">미배정 심부름</div>
+                        <div class="summary-value">${summary.unmatched}</div>
+                        <div class="summary-subtitle">D-day 심부름 | ${summary.dday} </div>
                     </div>
                     <div class="summary-card">
-                        <div class="summary-label">오늘 활동</div>
-                        <div class="summary-value">${summary.today_activated}명</div>
-                        <div class="summary-subtitle">최근 7일 활동 ${summary.recent7_activated}명</div>
+                        <div class="summary-label">정직원 수</div>
+                        <div class="summary-value">${summary.errander_count}명</div>
                     </div>
                     <div class="summary-card">
-                        <div class="summary-label">평균 완료율</div>
-                        <div class="summary-value">${summary.avg_complete_rate}%</div>
+                        <div class="summary-label">심부름 평균 완료율</div>
+                        <div class="summary-value">${summary.completed_rate}%</div>
                     </div>
                 </div>
             </section>
 
             <!-- Search Section -->
             <section class="search-section">
-                <h3 class="search-title">부름이 검색</h3>
+                <h3 class="search-title">심부름 검색</h3>
                 <div class="search-bar">
                     <input type="text" class="search-input" id="searchInput"
-                           placeholder="부름이 검색 (ID/닉네임)">
-                    <button class="search-button" onclick="searchErranders()">🔍 검색</button>
+                           placeholder="심부름 검색 (ID/제목)">
+                    <button class="search-button" onclick="searchErrands()">🔍 검색</button>
                 </div>
 
                 <!-- Filters -->
                 <div class="filter-row">
                     <div class="filter-group">
-                        <label class="filter-label">승인상태</label>
-                        <select class="filter-select" id="filterApprovalStatus" onchange="applyFilters()">
-                            <option value="">전체</option>
-                            <option value="APPROVED">승인</option>
-                            <option value="PENDING">승인 대기</option>
-                            <option value="REJECTED">반려</option>
-                        </select>
+                        <label class="filter-label">동네</label>
+                        <div class="location-selectors">
+                            <select id="filterGu" class="filter-select" onchange="loadDongList(this.value)">
+                                <option value="">구 선택</option>
+                                <c:forEach var="gungu" items="${gunguList}">
+                                    <option value="${gungu}" ${gungu == selectedGuName ? 'selected' : ''}>${gungu}</option>
+                                </c:forEach>
+                            </select>
+
+                            <select id="filterDong" class="filter-select">
+                                <option value="">동 선택</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="filter-group">
-                        <label class="filter-label">활동상태</label>
-                        <select class="filter-select" id="filterActivityStatus" onchange="applyFilters()">
-                            <option value="">전체</option>
-                            <option value="ACTIVE">활성</option>
-                            <option value="INACTIVE">비활성</option>
-                            <option value="SUSPENDED">일시정지</option>
-                        </select>
+                        <label class="filter-label">등록기간</label>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="date" id="regStartDate" class="filter-select" style="min-width: 130px;">
+                            <span>~</span>
+                            <input type="date" id="regEndDate" class="filter-select" style="min-width: 130px;">
+                        </div>
                     </div>
+
                     <div class="filter-group">
-                        <label class="filter-label">평점 범위</label>
-                        <select class="filter-select" id="filterRating" onchange="applyFilters()">
-                            <option value="">전체</option>
-                            <option value="5">⭐ 5.0</option>
-                            <option value="4">⭐ 4.0 이상</option>
-                            <option value="3">⭐ 3.0 이상</option>
-                            <option value="2">⭐ 2.0 이상</option>
-                        </select>
+                        <label class="filter-label">마감기간</label>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="date" id="dueStartDate" class="filter-select" style="min-width: 130px;">
+                            <span>~</span>
+                            <input type="date" id="dueEndDate" class="filter-select" style="min-width: 130px;">
+                        </div>
                     </div>
                 </div>
             </section>
 
             <!-- Helper List Table -->
-            <section class="helper-table-section">
+            <section class="errand-table-section">
                 <div class="table-header">
-                    <h3 class="table-title">부름이 목록 테이블</h3>
-                    <span class="table-count">총 <strong id="totalCount">421</strong>명</span>
+                    <h3 class="table-title">심부름 목록 테이블</h3>
+                    <span class="table-count">총 <strong id="totalCount">0</strong>건</span>
                 </div>
 
-                <table class="helper-table">
+                <table class="errand-table">
                     <thead>
                     <tr>
-                        <th>ID | 닉네임</th>
-                        <th>승인</th>
+                        <th>ID</th>
+                        <th>제목</th>
+                        <th>동네</th>
+                        <th>등록시간</th>
                         <th>상태</th>
-                        <th>완료율</th>
-                        <th>평점</th>
-                        <th>승인일자</th>
-                        <th>최근 활동일</th>
-                        <th>관리</th>
+                        <th>희망일</th>
+                        <th>배정</th>
                     </tr>
                     </thead>
-                    <tbody id="helperTableBody">
+                    <tbody id="errandTableBody">
                     </tbody>
                 </table>
 
@@ -1062,23 +1092,22 @@
     </div>
 </div>
 
-<!-- Approval Modal -->
-<div class="modal-overlay" id="approvalModal">
+<!-- Assignment Modal -->
+<div class="modal-overlay" id="assignModal">
     <div class="modal">
         <div class="modal-header">
-            <h3 class="modal-title">부름이 승인 관리</h3>
+            <h3 class="modal-title">심부름 배정</h3>
         </div>
         <div class="modal-body">
-            <!-- 기본 정보 -->
             <div class="modal-section">
-                <div class="modal-section-title">기본 정보</div>
-                <div class="modal-info-grid">
+                <div class="modal-section-title">작성자 정보</div>
+                <div class="modal-info-grid" id="errandSummaryGrid">
                     <div class="modal-info-item">
-                        <span class="modal-info-label">사용자 ID / 부름이 ID</span>
+                        <span class="modal-info-label">작성자 ID</span>
                         <span class="modal-info-value" id="modalUserId">-</span>
                     </div>
                     <div class="modal-info-item">
-                        <span class="modal-info-label">닉네임</span>
+                        <span class="modal-info-label">작성자 닉네임</span>
                         <span class="modal-info-value" id="modalNickname">-</span>
                     </div>
                     <div class="modal-info-item">
@@ -1089,43 +1118,105 @@
                         <span class="modal-info-label">휴대폰</span>
                         <span class="modal-info-value" id="modalContactPhone">-</span>
                     </div>
+
+
+                </div>
+                <br>
+                <div class="modal-section-title">심부름 정보</div>
+                <div class="modal-info-grid">
                     <div class="modal-info-item">
-                        <span class="modal-info-label">활동 상태(활성/비활성)</span>
-                        <span class="modal-info-value" id="modalActivityStatus">-</span>
+                        <span class="modal-info-label">심부름 ID</span>
+                        <span class="modal-info-value" id="summaryErrandId">-</span>
                     </div>
                     <div class="modal-info-item">
-                        <span class="modal-info-label">최근 활동일</span>
-                        <span class="modal-info-value" id="modalLastActivity">-</span>
+                        <span class="modal-info-label">제목</span>
+                        <span class="modal-info-value" id="summaryTitle">-</span>
                     </div>
                     <div class="modal-info-item">
-                        <span class="modal-info-label">활동 동네 1</span>
-                        <span class="modal-info-value" id="modalRegions1">-</span>
+                        <span class="modal-info-label">등록일</span>
+                        <span class="modal-info-value" id="summaryUploadDate">-</span>
                     </div>
                     <div class="modal-info-item">
-                        <span class="modal-info-label">활동 동네 2</span>
-                        <span class="modal-info-value" id="modalRegions2">-</span>
+                        <span class="modal-info-label">희망일</span>
+                        <span class="modal-info-value" id="summaryDesiredDate">-</span>
                     </div>
+                    <div class="modal-info-item">
+                        <span class="modal-info-label">심부름값 / 재료비</span>
+                        <span class="modal-info-value" id="summaryRewardAmount">-</span>
+                    </div>
+                    <div class="modal-info-item">
+                        <span class="modal-info-label">위치</span>
+                        <span class="modal-info-value" id="summaryLocation">-</span>
+                    </div>
+                </div>
+
+                <div class="modal-info-full">
+                    <label class="modal-info-label">심부름 내용</label>
+                    <textarea
+                            id="summaryContent"
+                            class="modal-textarea"
+                            readonly
+                    ></textarea>
                 </div>
             </div>
 
-            <!-- 제출 서류 -->
-            <div class="modal-section">
-                <div class="modal-section-title">제출 서류</div>
-                <div class="document-list" id="documentList">
+            <div class="modal-section" id="assignActionSection" style="display:none;">
+                <div class="modal-section-title">정직원 부름이 배정</div>
+                <div class="search-bar" style="margin-bottom: 10px;">
+                    <input type="text" class="search-input" id="erranderSearch" placeholder="부름이 닉네임 검색">
+                </div>
+                <div style="max-height: 200px; overflow-y: auto; border: 1px solid var(--color-light-gray);">
+                    <table class="errand-table" style="font-size: 0.8rem;">
+                        <thead>
+                        <tr>
+                            <th>ID/닉네임</th>
+                            <th>상태</th>
+                            <th>오늘 배정</th>
+                            <th>최근 배정</th>
+                            <th>선택</th>
+                        </tr>
+                        </thead>
+                        <tbody id="availableErranderList"></tbody>
+                    </table>
+                </div>
+                <div class="filter-group" style="margin-top: 15px;">
+                    <label class="filter-label">배정 사유</label>
+                    <input type="text" id="assignReason" class="search-input" placeholder="사유 입력">
+                </div>
+            </div>
+
+            <div class="modal-section" id="assignedInfoSection" style="display:none;">
+                <div class="modal-section-title">배정 정보</div>
+                <div class="modal-info-grid">
+                    <div class="modal-info-item">
+                        <span class="modal-info-label">배정된 부름이</span>
+                        <span class="modal-info-value" id="infoErrander">-</span>
+                    </div>
+                    <div class="modal-info-item">
+                        <span class="modal-info-label">배정 시각</span>
+                        <span class="modal-info-value" id="infoAssignedAt">-</span>
+                    </div>
+                    <div class="modal-info-item">
+                        <span class="modal-info-label">배정 사유</span>
+                        <span class="modal-info-value" id="infoReason">-</span>
+                    </div>
+                    <div class="modal-info-item">
+                        <span class="modal-info-label">배정자(관리자)</span>
+                        <span class="modal-info-value" id="infoAdmin">-</span>
+                    </div>
                 </div>
             </div>
         </div>
+
         <div class="modal-footer">
-            <button class="modal-button cancel" onclick="closeApprovalModal()">닫기</button>
-            <button class="modal-button reject" onclick="rejectHelper()">반려</button>
+            <button class="modal-button cancel" onclick="closeAssignModal()">닫기</button>
             <button class="modal-button approve" onclick="approveErrander()">승인</button>
         </div>
     </div>
 </div>
 
 <script>
-    // 전역 변수
-    let currentErranderId = null; // 승인/반려 모달용 ID 저장
+    let currentErrandsId = null; // 승인/반려 모달용 ID 저장
 
     $(document).ready(function ()  {
         const sidebar = document.getElementById('sidebar');
@@ -1133,7 +1224,6 @@
         const adminDropdownTrigger = document.getElementById('adminDropdownTrigger');
         const adminDropdown = document.getElementById('adminDropdown');
 
-        // 로컬스토리지 상태 적용
         const savedState = localStorage.getItem('sidebarState');
         if (savedState === 'collapsed') {
             sidebar.classList.add('collapsed');
@@ -1159,9 +1249,9 @@
         });
 
         // 메뉴 활성화
-        const currentPath = window.location.hash || '#erranders'; // URL에 맞게 조정
+        const currentPath = window.location.hash || '#errands'; // URL에 맞게 조정
         $('.nav-item').each(function () {
-            if ($(this).attr('href').includes('erranders')) {
+            if ($(this).attr('href').includes('errands')) {
                 $(this).addClass('active');
             } else {
                 $(this).removeClass('active');
@@ -1169,56 +1259,83 @@
         });
 
         // 초기 데이터 로드
-        loadErranderList(1);
+        loadErrandsList(1);
 
         // 이벤트 리스너
         // 검색 (엔터키 & 버튼)
-        document.querySelector('.search-button').addEventListener('click', () => loadErranderList(1));
+        document.querySelector('.search-button').addEventListener('click', () => loadErrandsList(1));
         document.getElementById('searchInput').addEventListener('keyup', function (e) {
-            if (e.key === 'Enter') loadErranderList(1);
+            if (e.key === 'Enter') loadErrandsList(1);
         });
 
         // 필터 변경 시 자동 검색
-        document.getElementById('filterApprovalStatus').addEventListener('change', () => loadErranderList(1));
-        document.getElementById('filterActivityStatus').addEventListener('change', () => loadErranderList(1));
-        document.getElementById('filterRating').addEventListener('change', () => loadErranderList(1));
+        document.getElementById('filterGu').addEventListener('change', () => loadErrandsList(1));
+        document.getElementById('filterDong').addEventListener('change', () => loadErrandsList(1));
+        document.getElementById('regStartDate').addEventListener('change', () => loadErrandsList(1));
+        document.getElementById('regEndDate').addEventListener('change', () => loadErrandsList(1));
+        document.getElementById('dueStartDate').addEventListener('change', () => loadErrandsList(1));
+        document.getElementById('dueEndDate').addEventListener('change', () => loadErrandsList(1));
     });
 
-    //  부름이 목록 조회
-    function loadErranderList(page) {
-        const keyword = document.getElementById('searchInput').value;
-        const approveStatus = document.getElementById('filterApprovalStatus').value;
-        const activeStatus = document.getElementById('filterActivityStatus').value;
-        const reviewScope = document.getElementById('filterRating').value;
+    function loadDongList(gunguName) {
+        const dongSelect = document.getElementById('filterDong');
+        dongSelect.innerHTML = '<option value="">동 전체</option>';
 
-        // Query String 생성
+        if (!gunguName) return;
+
+        fetch(`${pageContext.request.contextPath}/location/getDongs?gunguName=` + gunguName)
+            .then(res => res.json())
+            .then(data => {
+                data.forEach(dong => {
+                    const option = document.createElement('option');
+                    option.value = dong.dongCode;
+                    option.textContent = dong.dongName;
+                    dongSelect.appendChild(option);
+                });
+            })
+            .catch(err => console.error('동 목록 로드 실패:', err));
+    }
+
+    //  심부름 목록 조회
+    function loadErrandsList(page) {
+        const keyword = document.getElementById('searchInput').value;
+        const gu = document.getElementById('filterGu').value;
+        const dong = document.getElementById('filterDong').value;
+
+        // 시간 범위 값 추출
+        const regStart = document.getElementById('regStartDate').value;
+        const regEnd = document.getElementById('regEndDate').value;
+        const dueStart = document.getElementById('dueStartDate').value;
+        const dueEnd = document.getElementById('dueEndDate').value;
+
         const params = new URLSearchParams({
             page: page,
             keyword: keyword,
-            approveStatus: approveStatus,
-            activeStatus: activeStatus,
-            reviewScope: reviewScope
+            gu: gu,
+            dong: dong,
+            regStart: regStart,
+            regEnd: regEnd,
+            dueStart: dueStart,
+            dueEnd: dueEnd
         });
-
-        fetch('${pageContext.request.contextPath}/api/admin/erranders?' + params)
+        console.log(dong);
+        fetch(`${pageContext.request.contextPath}/api/admin/errands/search?` + params)
             .then(response => response.json())
             .then(data => {
-                // data = { userList: [...], totalCount: 123, pageInfo: {...} }
-                renderTable(data.userList);       // 테이블 그리기
-                renderPagination(data.pageInfo);  // 페이지네이션 그리기
-
-                // 총 개수 업데이트
-                document.getElementById('totalCount').innerText = data.totalCount;
+                console.log(data);
+                renderTable(data.errandList);
+                renderPagination(data.pageInfo);
+                document.getElementById('totalCount').innerText = data.errandList.length;
             })
             .catch(error => {
                 console.error('데이터 로드 실패:', error);
-                // alert('데이터를 불러오는 중 오류가 발생했습니다.');
+                alert('심부름 데이터를 불러오는 중 오류가 발생했습니다.');
             });
     }
 
     // 테이블 HTML 렌더링
     function renderTable(list) {
-        const tbody = document.getElementById('helperTableBody');
+        const tbody = document.getElementById('errandTableBody');
         tbody.innerHTML = ''; // 초기화
 
         if (!list || list.length === 0) {
@@ -1227,73 +1344,74 @@
         }
 
         list.forEach(item => {
-            const erranderId = item.errander_id;
-            const nickname = item.nickname;
-            const approvalStatus = item.approval_status;
-            const activeStatus = item.active_status;
-            const completeRate = item.complete_rate || 0;
-            const ratingAvg = item.rating_avg || 0;
+            const errandId = item.errands_id;
+            const title = item.title || '-';
+            const area = item.dong_full_name || '-';
+            const status = item.status;
 
             // 날짜 포맷팅 (Timestamp -> YYYY-MM-DD)
-            let lastActive = '-';
-            if (item.last_active_at) {
-                const date = new Date(item.last_active_at);
-                lastActive = date.toISOString().split('T')[0];
+            let registAt = '-';
+            if (item.created_at) {
+                const date = new Date(item.created_at);
+                registAt = date.toISOString().split('T')[0];
             }
 
-            let approvedAt = '-';
-            if (item.approved_at) {
-                const date = new Date(item.approved_at);
-                approvedAt = date.toISOString().split('T')[0];
+            let duedateHtml = '-';
+            if (item.desired_at) {
+                const now = new Date();
+                now.setHours(0, 0, 0, 0);
+                const target = new Date(item.desired_at);
+                target.setHours(0, 0, 0, 0);
+
+                // 날짜 차이 계산
+                const diffDays = Math.ceil((target - now) / (1000 * 60 * 60 * 24));
+                const formattedDate = target.toISOString().split('T')[0];
+
+                if (diffDays === 0) {
+                    // D-day: 빨간색 (BANNED 클래스 활용) [cite: 93]
+                    duedateHtml = `<span class="status-badge BANNED">${formattedDate} D-Day</span>`;
+                } else if (diffDays > 0 && diffDays <= 3) {
+                    // D-1 ~ D-3: 주황색 (CONFIRMED2 클래스 활용)
+                    duedateHtml = `<span class="status-badge CONFIRMED2">${formattedDate} D-${diffDays}</span>`;
+                } else {
+                    duedateHtml = formattedDate;
+                }
             }
 
             // 배지 텍스트 및 클래스 설정
-            let approvalText = approvalStatus === 'APPROVED' ? '승인' : (approvalStatus === 'PENDING' ? '승인대기' : '반려');
-            let activityText = '-';
-            if (activeStatus === 'ACTIVE') activityText = '활성';
-            else if (activeStatus === 'INACTIVE') activityText = '비활성';
-            else if (activeStatus === 'SUSPENDED') activityText = '일시정지';
-            else if (activeStatus === 'BANNED') activityText = '정지';
+            let assignText = status === 'WAITING' ? '배정' : '상세';
+            let statusText = '-';
+            if (status === 'WAITING') statusText = '대기';
+            else if (status === 'MATCHED') statusText = '매칭됨';
+            else if (status === 'CONFIRMED1') statusText = '1차';
+            else if (status === 'CONFIRMED2') statusText = '2차(정산대기)';
+            else if (status === 'COMPLETED') statusText = '완료';
+            else if (status === 'HOLD') statusText = '정산보류';
 
-            // 별점 표시
-            const stars = '⭐'.repeat(Math.floor(ratingAvg));
-            const ratingDisplay = ratingAvg > 0 ?
-                `<div class="rating-display"><span class="rating-stars">\${stars}</span> <span class="rating-value">\${ratingAvg}</span></div>` : '-';
-
-            // 활동 상태 드롭다운 HTML 생성
-            const activityStatusHtml = `
-                <div class="status-dropdown">
-                    <button class="status-dropdown-toggle" onclick="toggleActivityStatusDropdown(this, event)">
-                        <span class="status-badge \${activeStatus}">\${activityText}</span>
-                        <span>▼</span>
-                    </button>
-                    <div class="status-dropdown-menu">
-                        <div class="status-dropdown-item" onclick="changeActivityStatus(this, 'ACTIVE', \${erranderId}, event)">활성</div>
-                        <div class="status-dropdown-item" onclick="changeActivityStatus(this, 'INACTIVE', \${erranderId}, event)">비활성</div>
-                        <div class="status-dropdown-item" onclick="changeActivityStatus(this, 'SUSPENDED', \${erranderId}, event)">일시정지</div>
-                        <div class="status-dropdown-item" onclick="changeActivityStatus(this, 'BANNED', \${erranderId}, event)">정지</div>
-                    </div>
-                </div>
-            `;
 
             // 액션 버튼 (승인 대기중이면 승인버튼, 아니면 관리버튼)
             let actionBtnHtml = '';
-            if (approvalStatus === 'APPROVED') {
-                actionBtnHtml = `<button class="action-button" onclick="goToDetail(\${erranderId})">관리</button>`;
+            if (status === 'WAITING') {
+                actionBtnHtml = `<button class="action-button approve" onclick="openAssignModal(\${errandId}, '\${status}')">배정</button>`;
             } else {
-                // 승인 모달 열기
-                actionBtnHtml = `<button class="action-button approve" onclick="openApprovalModal(\${erranderId})">승인</button>`;
+                actionBtnHtml = `<button class="action-button" onclick="openAssignModal(\${errandId}, '\${status}')">상세</button>`;
             }
 
+            // <th>ID</th>
+            // <th>제목</th>
+            // <th>동네</th>
+            // <th>등록시간</th>
+            // <th>상태</th>
+            // <th>희망일</th>
+            // <th>배정</th>
             const row = `
                 <tr>
-                    <td>\${erranderId} / \${nickname}</td>
-                    <td><span class="status-badge \${approvalStatus}">\${approvalText}</span></td>
-                    <td>\${activityStatusHtml}</td>
-                    <td>\${completeRate}%</td>
-                    <td>\${ratingDisplay}</td>
-                    <td>\${approvedAt}</td>
-                    <td>\${lastActive}</td>
+                    <td>\${errandId}</td>
+                    <td>\${title}</td>
+                    <td>\${area}</td>
+                    <td>\${registAt}</td>
+                    <td><span class="status-badge \${status}">\${statusText}</span></td>
+                    <td>\${duedateHtml}</td>
                     <td>\${actionBtnHtml}</td>
                 </tr>
             `;
@@ -1308,14 +1426,14 @@
 
         if (!pageInfo) return;
 
-        const { currentPage, startPage, endPage, totalPage } = pageInfo;
+        const {currentPage, startPage, endPage, totalPage } = pageInfo;
 
         // 이전 버튼
         const prevBtn = document.createElement('button');
         prevBtn.className = 'pagination-button';
         prevBtn.innerText = '이전';
         if (currentPage > 1) {
-            prevBtn.onclick = () => loadErranderList(currentPage - 1);
+            prevBtn.onclick = () => loadErrandsList(currentPage - 1);
         } else {
             prevBtn.disabled = true;
             prevBtn.classList.add('disabled');
@@ -1330,7 +1448,7 @@
             if (i === currentPage) {
                 btn.classList.add('active');
             } else {
-                btn.onclick = () => loadErranderList(i);
+                btn.onclick = () => loadErrandsList(i);
             }
             pagination.appendChild(btn);
         }
@@ -1340,7 +1458,7 @@
         nextBtn.className = 'pagination-button';
         nextBtn.innerText = '다음';
         if (currentPage < totalPage) {
-            nextBtn.onclick = () => loadErranderList(currentPage + 1);
+            nextBtn.onclick = () => loadErrandsList(currentPage + 1);
         } else {
             nextBtn.disabled = true;
             nextBtn.classList.add('disabled');
@@ -1348,212 +1466,176 @@
         pagination.appendChild(nextBtn);
     }
 
-    //  기타 기능 (모달, 이동 등)
+    function openAssignModal(errandId, status) {
+        console.log("openAssignModal: " + errandId + ":" + status);
 
-    // 상세 페이지 이동
-    function goToDetail(erranderId) {
-        window.location.href = '${pageContext.request.contextPath}/admin/erranders/detail/' + erranderId;
-    }
-
-    // 승인 모달 열기
-    function openApprovalModal(erranderId) {
-        currentErranderId = erranderId;
-
-        fetch('${pageContext.request.contextPath}/api/admin/erranders/resume?id=' + erranderId)
-            .then(res => {
-                if (!res.ok) {
-                    throw new Error('서버 응답 에러: ' + res.status);
-                }
-                return res.json();
-            })
+        fetch('${pageContext.request.contextPath}/api/admin/errands/detail?id=' + errandId)
+            .then(res => res.json())
             .then(data => {
-                // 사용자 id, 심부름 id, 닉네임, 이메일, 휴대폰, 활동 상태, 최근활동일, 활동 동네, 제출 서류
-                console.log(data);
+                const detail = data.detail;     // 심부름 및 작성자 정보
+                const history = data.history;   // 배정/매칭 이력 리스트
+                console.log(detail);
+                console.log(history);
+                // 1. 공통 섹션: 심부름 기본 정보 채우기
+                document.getElementById('modalUserId').textContent = detail.user_id;
+                document.getElementById('modalNickname').textContent = detail.user_nickname;
+                document.getElementById('modalContactEmail').textContent = detail.user_email || '-';
+                document.getElementById('modalContactPhone').textContent = detail.user_phone || '-';
+                document.getElementById('summaryErrandId').textContent = detail.errands_id;
+                document.getElementById('summaryTitle').textContent = detail.title;
+                document.getElementById('summaryUploadDate').textContent = new Date(detail.created_at) || '-';
+                document.getElementById('summaryDesiredDate').textContent = new Date(detail.desired_at) || '-';
+                document.getElementById('summaryRewardAmount').textContent = detail.reward_amount + '원 / ' + detail.expense_amount + '원' || '-';
+                document.getElementById('summaryLocation').textContent = detail.dong_full_name || '-';
+                document.getElementById('summaryContent').value = detail.description || '내용이 없습니다'
 
-                // UI 값 채우기 (목록에 없는 상세 정보는 별도 API 호출 필요)
-                document.getElementById('modalUserId').textContent = data.user_id + ' / ' + erranderId;
-                // document.getElementById('modalErranderId').textContent = data.errandId;
-                document.getElementById('modalNickname').textContent = data.nickname;
-                document.getElementById('modalContactPhone').textContent = data.phone || '-';
-                document.getElementById('modalContactEmail').textContent = data.email || '-';
-                document.getElementById('modalActivityStatus').textContent = data.status || '-';
-                document.getElementById('modalLastActivity').textContent = data.last_login_at || '-';
-                document.getElementById('modalRegions1').textContent = data.address1 || '-';
-                document.getElementById('modalRegions2').textContent = data.address2 || '-';
+                // 2. 상태별 섹션 제어 및 데이터 바인딩
+                const assignSection = document.getElementById('assignActionSection');
+                const infoSection = document.getElementById('assignedInfoSection');
+                const approveBtn = document.querySelector('.modal-button.approve');
 
-                // 제출 서류 렌더링
-                const documentList = document.getElementById('documentList');
-                documentList.innerHTML = '';
-                data.documents.forEach(doc => {
-                    const docIcon = doc.doc_type.includes('IDCARD') ? '💳' : '📄';
-                    const docItem = `
-                        <div class="document-item">
-                            <div class="document-icon">${'${'}docIcon}</div>
-                            <div class="document-info">
-                                <div class="document-type">${'${'}doc.doc_type === 'IDCARD' ? '신분증' : '여권' }</div>
-                            </div>
-                            <button class="document-view-btn" onclick="viewDocument('${'${'}doc.file_url}')">보기</button>
-                        </div>
-                    `;
-                    documentList.innerHTML += docItem;
-                });
-                // 나머지 필드는 목록 API에서 가져오지 않았다면 '로딩중' 또는 '-' 처리
-            })
-            .catch(error => {
-                console.error('데이터 로드 실패:', error);
-                // alert('데이터를 불러오는 중 오류가 발생했습니다.');
+                if (status === 'WAITING') {
+                    // [미배정 건] 수동 배정 액션 UI 활성화
+                    assignSection.style.display = 'block';
+                    infoSection.style.display = 'none';
+                    approveBtn.style.display = 'block';
+                    approveBtn.textContent = '배정 확정';
+
+                    // 가용 정직원 목록 로드 함수 호출
+                    loadAvailableErranders();
+                } else {
+                    // [배정 완료 건] 관련 정보 표시 UI 활성화
+                    assignSection.style.display = 'none';
+                    infoSection.style.display = 'block';
+                    approveBtn.style.display = 'none';
+
+                    // 이력 데이터 중 가장 최신(첫 번째) 정보를 상세 섹션에 바인딩
+                    if (history && history.length > 0) {
+                        const latest = history[0];
+                        document.getElementById('infoErrander').textContent = `\${latest.errander_nickname} (\${latest.errander_id || '-'})`;
+                        document.getElementById('infoAssignedAt').textContent = new Date(latest.assigned_at);
+                        document.getElementById('infoReason').textContent = latest.reason || '사유 없음';
+                        document.getElementById('infoAdmin').textContent = latest.admin_name || '시스템 자동';
+                    }
+                }
+
+                // 3. 모달 표시
+                document.getElementById('assignModal').classList.add('show');
             });
-
-
-        document.getElementById('approvalModal').dataset.helperId = erranderId;
-        document.getElementById('approvalModal').classList.add('show');
-
-
     }
 
-    function closeApprovalModal() {
-        document.getElementById('approvalModal').classList.remove('show');
+    function closeAssignModal() {
+        document.getElementById('assignModal').classList.remove('show');
     }
 
     // 모달 외부 클릭 닫기
-    document.getElementById('approvalModal').addEventListener('click', function (e) {
-        if (e.target === this) closeApprovalModal();
+    document.getElementById('assignModal').addEventListener('click', function (e) {
+        if (e.target === this) closeAssignModal();
     });
 
-    // 승인 처리
+    // 가용 정직원 부름이 목록 로드
+    function loadAvailableErranders() {
+        const tbody = document.getElementById('availableErranderList');
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">로딩 중...</td></tr>';
+
+        fetch('${pageContext.request.contextPath}/api/admin/erranders/employees')
+            .then(res => res.json())
+            .then(data => {
+                tbody.innerHTML = ''; // 초기화
+
+                if (!data || data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">배정 가능한 정직원이 없습니다.</td></tr>';
+                    return;
+                }
+
+                data.forEach(item => {
+                    // 최근 배정 시간 포맷팅
+                    let lastTime = '-';
+                    if (item.last_assigned_at) {
+                        const date = new Date(item.last_assigned_at);
+                        // 시:분 형태로 간단히 표시
+                        lastTime = date.getHours().toString().padStart(2, '0') + ':' +
+                            date.getMinutes().toString().padStart(2, '0');
+                    }
+
+                    const row = `
+                    <tr onclick="selectErranderRow(this)">
+                        <td>
+                            <div style="font-weight:bold;">\${item.nickname}</div>
+                            <div style="font-size:0.75rem; color:#888;">ID: \${item.errander_id}</div>
+                        </td>
+                        <td><span class="status-badge ACTIVE">활동중</span></td>
+                        <td style="text-align:center;">\${item.today_count}건</td>
+                        <td style="text-align:center;">\${lastTime}</td>
+                        <td style="text-align:center;">
+                            <input type="radio" name="selectedErrander" value="\${item.errander_id}" style="cursor:pointer;">
+                        </td>
+                    </tr>
+                `;
+                    tbody.innerHTML += row;
+                });
+            })
+            .catch(err => {
+                console.error(err);
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">데이터 로드 실패</td></tr>';
+            });
+    }
+
+    // 행 클릭 시 라디오 버튼 선택되게 하는 UX 편의 함수
+    function selectErranderRow(tr) {
+        const radio = tr.querySelector('input[type="radio"]');
+        if (radio) radio.checked = true;
+    }
+
+    // 배정 처리
+    // 배정 확정 (기존 approveErrander 대체 또는 수정)
     function approveErrander() {
-        if(!confirm(' 부름이 ID: ' + currentErranderId + '을 승인하시겠습니까?')) return;
+        // 1. 선택된 부름이 확인
+        const selectedRadio = document.querySelector('input[name="selectedErrander"]:checked');
+        const assignReason = document.getElementById('assignReason').value;
 
-        fetch('${pageContext.request.contextPath}/api/admin/erranders/approve', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                erranderId: currentErranderId,
-                status: "APPROVED",
-                reason: ""
-            })
-        })
-            .then(res => res.json())
-            .then(data => {
-                if(data.result === 'success'){
-                    alert('승인되었습니다.');
-                    window.location.reload();
-                }
-                else {
-                    alert('승인 처리 실패했습니다: ' + data.message);
-                }
+        // 미배정 상태에서 배정 확정 버튼을 누른 경우 체크
+        const isAssignMode = document.getElementById('assignActionSection').style.display !== 'none';
 
-            });
-
-        closeApprovalModal(); // 목록 갱신
-    }
-
-    // 반려 처리
-    function rejectHelper() {
-        const helperId = document.getElementById('approvalModal').dataset.helperId;
-        const reason = prompt('반려 사유를 입력하세요:');
-        if (!reason) return;
-
-        fetch('${pageContext.request.contextPath}/api/admin/erranders/approve', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                erranderId: currentErranderId,
-                status: "REJECTED",
-                reason: reason
-            })
-        })
-            .then(res => res.json())
-            .then(data => {
-                if(data.result === 'success'){
-                    alert('반려되었습니다.');
-                    window.location.reload();
-                }
-                else {
-                    alert('처리 실패했습니다: ' + data.message);
-                }
-
-            });
-
-        closeApprovalModal();
-    }
-
-    function viewDocument(url) {
-        if (!url) {
-            alert('파일 경로가 존재하지 않습니다.');
-            return;
-        }
-        // 새 창에서 해당 URL 열람
-        url = '${pageContext.request.contextPath}' + '/' + url;
-        window.open(url, '_blank');
-    }
-
-    // 활동 상태 드롭다운 토글
-    function toggleActivityStatusDropdown(button, event) {
-        event.stopPropagation();
-        const dropdown = button.nextElementSibling;
-
-        // 다른 열려있는 드롭다운 닫기
-        document.querySelectorAll('.status-dropdown-menu.show').forEach(menu => {
-            if (menu !== dropdown) {
-                menu.classList.remove('show');
+        if (isAssignMode) {
+            if (!selectedRadio) {
+                alert('배정할 부름이를 선택해주세요.');
+                return;
             }
-        });
 
-        dropdown.classList.toggle('show');
-    }
+            const selectedErranderId = selectedRadio.value;
 
-    // 활동 상태 변경
-    function changeActivityStatus(item, newStatus, erranderId, event) {
-        event.stopPropagation();
+            if (!confirm('부름이(ID:' + selectedErranderId + ')에게 심부름을 배정하시겠습니까?')) return;
 
-        let statusText = '';
-        switch(newStatus) {
-            case 'ACTIVE': statusText = '활성'; break;
-            case 'INACTIVE': statusText = '비활성'; break;
-            case 'SUSPENDED': statusText = '일시정지'; break;
-            case 'BANNED': statusText = '정지'; break;
-            default: statusText = newStatus;
+            // 배정 API 호출
+            fetch('${pageContext.request.contextPath}/api/admin/errands/assign', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    errandId: currentErrandsId, // 전역변수에 저장된 심부름 ID
+                    erranderId: selectedErranderId,
+                    reason: assignReason
+                })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.result === 'success') {
+                        alert('배정이 완료되었습니다.');
+                        window.location.reload();
+                    } else {
+                        alert('배정 실패: ' + data.message);
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('오류가 발생했습니다.');
+                });
+
         }
 
-        <%--if (!confirm('부름이 ID: \${erranderId}의 활동 상태를 ${statusText}(으)로 변경하시겠습니까?')) {--%>
-        <%--    return;--%>
-        <%--}--%>
-
-        // API 호출
-        fetch('${pageContext.request.contextPath}/api/admin/erranders/status', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                erranderId: erranderId,
-                activeStatus: newStatus
-            })
-        })
-            .then(res => res.json())
-            .then(data => {
-                if (data.result === 'success') {
-                    alert('활동 상태가 변경되었습니다.');
-                    window.location.reload();
-                } else {
-                    alert('상태 변경에 실패했습니다.');
-                }
-            })
-            .catch(error => {
-                console.error('상태 변경 실패:', error);
-                alert(error);
-                loadErranderList(1);
-            });
-
-        // 드롭다운 닫기
-        item.closest('.status-dropdown-menu').classList.remove('show');
+        closeAssignModal();
     }
 
-    // 전역 클릭 이벤트로 드롭다운 닫기
-    document.addEventListener('click', function() {
-        document.querySelectorAll('.status-dropdown-menu.show').forEach(menu => {
-            menu.classList.remove('show');
-        });
-    });
 </script>
 </body>
 

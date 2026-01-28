@@ -70,6 +70,7 @@
         });
     }
 
+
     function filterPosts() {
         var guName = $('#guSelect').val();
         var dongCode = $('#dongSelect').val();

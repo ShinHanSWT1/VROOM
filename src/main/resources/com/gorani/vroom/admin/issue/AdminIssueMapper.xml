@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gorani.vroom.admin.issue.AdminIssueMapper">
+
+    <select id="getSummary" resultType="map">
+        SELECT
+            COUNT(CASE WHEN DATE(created_at) = CURRENT_DATE THEN 1 END) AS today_received,
+            COUNT(CASE WHEN status IN ('RECEIVED', 'IN_PROGRESS') THEN 1 END) AS waiting,
+            COUNT(CASE WHEN status = 'RESOLVED' THEN 1 END) AS resolved,
+            COUNT(CASE WHEN priority = 'HIGH' AND status != 'RESOLVED' THEN 1 END) AS emergency,
+            ROUND(AVG(
+                          CASE WHEN status = 'RESOLVED'
+                                   THEN TIMESTAMPDIFF(HOUR, created_at, resolved_at)
+                               ELSE NULL END
+                  ), 1) AS avg_resolution_time
+
+        FROM ISSUE_TICKETS;
+    </select>
+
+    <select id="getIssueCountByType" resultType="map">
+        SELECT
+            type,
+            COUNT(*) as count
+        FROM ISSUE_TICKETS
+        GROUP BY type;
+    </select>
+
+    <select id="searchIssues" resultType="map">
+        SELECT * FROM ISSUE_TICKETS
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (id LIKE CONCAT('%', #{keyword}, '%')
+                OR title LIKE CONCAT('%', #{keyword}, '%')
+                OR user_id LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="type != null and type != ''">
+                AND type = #{type}
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+            <if test="priority != null and priority != ''">
+                AND priority = #{priority}
+            </if>
+            <if test="regStart != null and regStart != ''">
+                AND created_at >= #{regStart}
+            </if>
+            <if test="regEnd != null and regEnd != ''">
+                AND created_at &lt;= CONCAT(#{regEnd}, ' 23:59:59')
+            </if>
+        </where>
+        ORDER BY
+        FIELD(priority, 'HIGH', 'MEDIUM', 'LOW'), -- 긴급 우선 정렬
+        created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countIssue" parameterType="map" resultType="int">
+        SELECT COUNT(*) FROM ISSUE_TICKETS
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (id LIKE CONCAT('%', #{keyword}, '%')
+                OR title LIKE CONCAT('%', #{keyword}, '%')
+                OR user_id LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="type != null and type != ''">
+                AND type = #{type}
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+            <if test="priority != null and priority != ''">
+                AND priority = #{priority}
+            </if>
+            <if test="regStart != null and regStart != ''">
+                AND created_at >= #{regStart}
+            </if>
+            <if test="regEnd != null and regEnd != ''">
+                AND created_at &lt;= CONCAT(#{regEnd}, ' 23:59:59')
+            </if>
+        </where>
+    </select>
+
+    <update id="updateIssuePriority" parameterType="map">
+        UPDATE ISSUE_TICKETS
+        SET priority = #{priority}
+        WHERE id = #{id}
+    </update>
+
+</mapper>
