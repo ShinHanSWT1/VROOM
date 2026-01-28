@@ -31,10 +31,11 @@ function checkAccountStatus() {
               currentBalance = account.balance;
               availBalance = account.availBalance;
               
-              loadTransactions(1);
+              // 거래 내역 조회 (나중에 구현)
+              // loadTransactions(1);
 
             } else {
-              // 계좌 연결 안됨 또는 오류
+              // 계좌 연결 안됨
               statusContainer.innerHTML = `<span>부름페이 계좌가 연결되지 않았습니다.</span><button id="linkAccountBtn">계좌 연결</button>`;
               statusContainer.className = 'account-status-container not-linked';
               
@@ -50,11 +51,6 @@ function checkAccountStatus() {
               list.innerHTML = '<div class="history-item"><div class="item-title" style="grid-column:1/-1;text-align:center;">부름페이 계좌를 연결하여 거래를 시작하세요.</div></div>';
               document.querySelector('.history-count').textContent = '(0)';
               document.getElementById('pagination').innerHTML = '';
-
-              // [수정] 알림 제거
-              // if (!data.success) {
-              //     alert(data.message || '계좌 정보를 불러오는 데 실패했습니다.');
-              // }
             }
           })
           .catch(err => {
@@ -64,7 +60,7 @@ function checkAccountStatus() {
           });
 }
 
-// [수정] 계좌 연결 함수
+// 계좌 연결 함수
 function linkAccount() {
   const btn = document.getElementById('linkAccountBtn');
   btn.disabled = true;
@@ -93,78 +89,17 @@ function linkAccount() {
 }
 
 
-// 거래 내역 조회 (API 경로 수정)
+// 거래 내역 조회 (나중에 구현)
 function loadTransactions(page) {
-  // TODO: VroomPayService에 getTransactionHistory 구현 후, 아래 API 호출 필요
-  // fetch(contextPath + '/api/vroompay/transactions?page=' + page + '&size=' + itemsPerPage)
-  //         .then(res => res.json())
-  //         .then(data => {
-  //           if (data.success) {
-  //             currentBalance = data.balance;
-  //             availBalance = data.availBalance;
-  //             updateBalanceDisplay();
-  //             renderTransactions(data.transactions);
-  //             renderPagination(data.totalPages, data.currentPage);
-  //             document.querySelector('.history-count').textContent = '(' + data.totalCount + ')';
-  //           }
-  //         });
-  // 임시로 거래내역 없음을 표시
-  renderTransactions([]);
-  renderPagination(0, 1);
-  document.querySelector('.history-count').textContent = '(0)';
 }
 
 function renderTransactions(transactions) {
-  var list = document.getElementById('transactionList');
-  list.innerHTML = '';
-
-  if (!transactions || transactions.length === 0) {
-    list.innerHTML = '<div class="history-item"><div class="item-title" style="grid-column:1/-1;text-align:center;">거래 내역이 없습니다.</div></div>';
-    return;
-  }
-
-  var typeLabels = {
-    'CHARGE': '충전', 'WITHDRAW': '출금', 'HOLD': '보류',
-    'RELEASE': '해제', 'PAYOUT': '지급', 'REFUND': '환불'
-  };
-
-  transactions.forEach(function(item) {
-    var el = document.createElement('div');
-    el.className = 'history-item';
-
-    var isPlus = ['CHARGE', 'RELEASE', 'REFUND'].indexOf(item.txnType) !== -1;
-    var color = isPlus ? 'color:#27ae60;' : 'color:#e74c3c;';
-    var prefix = isPlus ? '+' : '-';
-    var label = item.memo || typeLabels[item.txnType] || item.txnType;
-
-    el.innerHTML =
-            '<div class="item-title">' + label + '</div>' +
-            '<div class="item-author">' + formatDate(item.createdAt) + '</div>' +
-            '<div class="item-amount" style="' + color + '">' + prefix + Number(item.amount).toLocaleString() +
-            '원</div>';
-    list.appendChild(el);
-  });
 }
 
 function formatDate(dateStr) {
-  if (!dateStr) return '';
-  var d = new Date(dateStr);
-  return (d.getMonth()+1) + '/' + d.getDate() + ' ' + d.getHours() + ':' +
-          String(d.getMinutes()).padStart(2,'0');
 }
 
 function renderPagination(totalPages, currentPage) {
-  var container = document.getElementById('pagination');
-  container.innerHTML = '';
-  for (var i = 1; i <= totalPages; i++) {
-    var btn = document.createElement('div');
-    btn.className = 'page-btn' + (i === currentPage ? ' active' : '');
-    btn.textContent = i;
-    (function(pageNum) {
-      btn.onclick = function() { loadTransactions(pageNum); };
-    })(i);
-    container.appendChild(btn);
-  }
 }
 
 function updateBalanceDisplay() {
@@ -175,104 +110,14 @@ function updateBalanceDisplay() {
   });
 }
 
-// [수정] 충전 기능 구현
+// 충전 버튼 (나중에 구현)
 document.getElementById('submitDepositBtn').addEventListener('click', function() {
-  var bankSelect = document.getElementById('depositBank');
-  var input = document.getElementById('depositAmount');
-  var bankError = document.getElementById('depositBankError');
-  var amountError = document.getElementById('depositError');
-  var valid = true;
-
-  if (!bankSelect.value) {
-    bankSelect.classList.add('error');
-    bankError.classList.add('active');
-    valid = false;
-  } else {
-    bankSelect.classList.remove('error');
-    bankError.classList.remove('active');
-  }
-
-  if (!input.value || !/^\d+$/.test(input.value)) {
-    input.classList.add('error');
-    amountError.textContent = '숫자만 입력해주세요.';
-    amountError.classList.add('active');
-    valid = false;
-  } else {
-    input.classList.remove('error');
-    amountError.classList.remove('active');
-  }
-
-  if (valid) {
-    fetch(contextPath + '/api/vroompay/charge', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        amount: parseInt(input.value),
-        bankName: bankSelect.value
-      })
-    })
-    .then(res => res.json())
-    .then(data => {
-        alert(data.message);
-        if (data.success) {
-          // 성공 시 잔액 갱신 및 모달 닫기
-          if(data.balance) currentBalance = data.balance;
-          if(data.availBalance) availBalance = data.availBalance;
-          updateBalanceDisplay();
-          
-          // 모달 닫기 (함수 재사용)
-          var m = document.getElementById('depositModal');
-          m.classList.remove('active');
-          
-          loadTransactions(1);
-        }
-    })
-    .catch(err => {
-        console.error(err);
-        alert("충전 중 오류가 발생했습니다.");
-    });
-  }
+  alert("충전 기능은 준비 중입니다.");
 });
 
-// [수정] 출금 기능 구현
+// 출금 버튼 (나중에 구현)
 document.getElementById('submitWithdrawBtn').addEventListener('click', function() {
-  var input = document.getElementById('withdrawAmount');
-  var error = document.getElementById('withdrawError');
-
-  if (!input.value || !/^\d+$/.test(input.value)) {
-    input.classList.add('error');
-    error.textContent = '숫자만 입력해주세요.';
-    error.classList.add('active');
-    return;
-  }
-
-  fetch(contextPath + '/api/vroompay/withdraw', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({ amount: parseInt(input.value) })
-  })
-  .then(res => res.json())
-  .then(data => {
-      if (data.success) {
-        alert(data.message);
-        if(data.balance) currentBalance = data.balance;
-        if(data.availBalance) availBalance = data.availBalance;
-        updateBalanceDisplay();
-        
-        var m = document.getElementById('withdrawModal');
-        m.classList.remove('active');
-        
-        loadTransactions(1);
-      } else {
-        input.classList.add('error');
-        error.textContent = data.message;
-        error.classList.add('active');
-      }
-  })
-  .catch(err => {
-      console.error(err);
-      alert("출금 중 오류가 발생했습니다.");
-  });
+  alert("출금 기능은 준비 중입니다.");
 });
 
 // 모달 초기화
