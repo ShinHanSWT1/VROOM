@@ -151,6 +151,10 @@
         <div class="form-helper">숫자만 입력하세요 (예: 10000). 잔액 범위 내에서만 출금 가능합니다.</div>
         <div class="form-error" id="withdrawError">쉼표(,)는 사용할 수 없습니다. 숫자만 입력해주세요.</div>
       </div>
+      <div class="form-group">
+        <label class="form-label">메모 (선택)</label>
+        <input type="text" class="form-input" id="withdrawMemo" placeholder="내용을 입력하세요 (선택사항)">
+      </div>
     </div>
     <div class="modal-footer">
       <button class="modal-btn modal-btn-cancel" id="cancelWithdrawBtn">취소</button>

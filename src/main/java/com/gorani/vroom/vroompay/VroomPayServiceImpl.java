@@ -32,9 +32,11 @@ public class VroomPayServiceImpl implements VroomPayService {
     @Value("${vroompay.api.charge-url}")
     private String vroomPayApiChargeUrl;
 
+    @Value("${vroompay.api.withdraw-url}")
+    private String vroomPayApiWithdrawUrl;
+
     @Override
     public Map<String, Object> getAccountStatus(Long userId) {
-        // URL의 {userId}를 실제 값으로 치환
         String url = vroomPayApiStatusUrl.replace("{userId}", userId.toString());
         
         HttpHeaders headers = new HttpHeaders();
@@ -43,24 +45,20 @@ public class VroomPayServiceImpl implements VroomPayService {
 
         Map<String, Object> result = new HashMap<>();
         try {
-            // GET 요청 전송
             ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, entity, Map.class);
             
-            // 응답이 있고, 내용이 비어있지 않다면 연결된 것으로 간주
             if (response.getBody() != null && !response.getBody().isEmpty()) {
                 result.put("success", true);
                 result.put("linked", true);
-                result.put("account", response.getBody()); // 계좌 정보(잔액 등) 포함
+                result.put("account", response.getBody());
             } else {
                 result.put("success", true);
                 result.put("linked", false);
             }
         } catch (HttpClientErrorException.NotFound e) {
-            // 404 에러는 계좌가 없는 경우이므로 정상적인 '미연결' 상태로 처리
             result.put("success", true);
             result.put("linked", false);
         } catch (Exception e) {
-            // 그 외 에러는 실제 오류
             result.put("success", false);
             result.put("message", "계좌 정보 조회 중 오류가 발생했습니다: " + e.getMessage());
         }
@@ -102,7 +100,6 @@ public class VroomPayServiceImpl implements VroomPayService {
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("userId", userId);
         requestBody.put("amount", amount);
-        // memo는 필요하다면 추가
         if (memo != null) {
             requestBody.put("memo", memo);
         }
@@ -121,6 +118,37 @@ public class VroomPayServiceImpl implements VroomPayService {
         } catch (Exception e) {
             result.put("success", false);
             result.put("message", "충전에 실패했습니다: " + e.getMessage());
+        }
+        return result;
+    }
+
+    @Override
+    public Map<String, Object> withdraw(Long userId, BigDecimal amount, String memo) {
+        String url = vroomPayApiWithdrawUrl;
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("x-api-key", vroomPayApiKey);
+
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("userId", userId);
+        requestBody.put("amount", amount);
+        if (memo != null) {
+            requestBody.put("memo", memo);
+        }
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+
+        Map<String, Object> result = new HashMap<>();
+        try {
+            ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, entity, Map.class);
+            result.put("success", true);
+            result.put("message", amount + "원이 출금되었습니다.");
+            
+            if (response.getBody() != null) {
+                result.putAll(response.getBody());
+            }
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", "출금에 실패했습니다: " + e.getMessage());
         }
         return result;
     }

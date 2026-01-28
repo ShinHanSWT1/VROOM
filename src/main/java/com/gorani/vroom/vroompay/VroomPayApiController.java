@@ -70,4 +70,28 @@ public class VroomPayApiController {
 
         return vroomPayService.charge(userId, amount, memo);
     }
+
+    @PostMapping("/withdraw")
+    public Map<String, Object> withdraw(@RequestBody Map<String, Object> request, HttpSession session) {
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
+        if (loginUser == null) {
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", false);
+            result.put("message", "로그인이 필요합니다.");
+            return result;
+        }
+        Long userId = loginUser.getUserId();
+
+        if (request.get("amount") == null) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("message", "출금 금액이 입력되지 않았습니다.");
+            return error;
+        }
+
+        BigDecimal amount = new BigDecimal(request.get("amount").toString());
+        String memo = (String) request.get("memo");
+
+        return vroomPayService.withdraw(userId, amount, memo);
+    }
 }

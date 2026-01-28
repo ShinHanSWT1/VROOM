@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
   initModals();
 });
 
-// [수정] 계좌 상태 확인 및 UI 초기화 로직
+// 계좌 상태 확인 및 UI 초기화 로직
 function checkAccountStatus() {
   const statusContainer = document.getElementById('account-status-container');
   const depositBtn = document.getElementById('depositBtn');
@@ -17,29 +17,25 @@ function checkAccountStatus() {
   fetch(contextPath + '/api/vroompay/status')
           .then(res => res.json())
           .then(data => {
-            console.log("Account Status Response:", data); // [디버깅용] 응답 데이터 확인
+            console.log("Account Status Response:", data);
 
             if (data.success && data.linked) {
               // 계좌 연결됨
               const account = data.account;
               
-              // 계좌번호 표시 (realAccount가 없으면 '연결됨'만 표시)
               const accountNum = account.realAccount ? account.realAccount : '연결됨';
               statusContainer.innerHTML = `<span>연결된 계좌: <strong>${accountNum}</strong></span>`;
               statusContainer.className = 'account-status-container linked';
 
-              // 버튼 활성화
               depositBtn.disabled = false;
               withdrawBtn.disabled = false;
               
-              // 잔액 표시 (balance가 없으면 0 처리)
               const balance = account.balance ? account.balance : 0;
               balanceDisplay.textContent = Number(balance).toLocaleString() + ' 원';
               
               currentBalance = balance;
               availBalance = account.availBalance ? account.availBalance : 0;
               
-              // 거래 내역 조회 (아직 구현 안 됨)
               // loadTransactions(1);
 
             } else {
@@ -116,10 +112,10 @@ function updateBalanceDisplay() {
   });
 }
 
-// [수정] 충전 기능 구현
+// 충전 기능 구현
 document.getElementById('submitDepositBtn').addEventListener('click', function() {
   var input = document.getElementById('depositAmount');
-  var memoInput = document.getElementById('depositMemo'); // 메모 입력 필드
+  var memoInput = document.getElementById('depositMemo');
   var amountError = document.getElementById('depositError');
   var valid = true;
 
@@ -139,27 +135,23 @@ document.getElementById('submitDepositBtn').addEventListener('click', function()
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
         amount: parseInt(input.value),
-        memo: memoInput.value // 메모 값 전송 (없으면 빈 문자열)
+        memo: memoInput.value
       })
     })
     .then(res => res.json())
     .then(data => {
         alert(data.message);
         if (data.success) {
-          // 성공 시 잔액 갱신 및 모달 닫기
           if(data.balance !== undefined) currentBalance = data.balance;
           if(data.availBalance !== undefined) availBalance = data.availBalance;
           updateBalanceDisplay();
           
-          // 모달 닫기 (함수 재사용)
           var m = document.getElementById('depositModal');
           m.classList.remove('active');
           
-          // 입력 필드 초기화
           input.value = '';
           memoInput.value = '';
           
-          // 거래 내역 갱신 (구현 시 주석 해제)
           // loadTransactions(1);
         }
     })
@@ -170,9 +162,10 @@ document.getElementById('submitDepositBtn').addEventListener('click', function()
   }
 });
 
-// 출금 기능 구현
+//  출금 기능 구현
 document.getElementById('submitWithdrawBtn').addEventListener('click', function() {
   var input = document.getElementById('withdrawAmount');
+  var memoInput = document.getElementById('withdrawMemo');
   var error = document.getElementById('withdrawError');
 
   if (!input.value || !/^\d+$/.test(input.value)) {
@@ -185,20 +178,26 @@ document.getElementById('submitWithdrawBtn').addEventListener('click', function(
   fetch(contextPath + '/api/vroompay/withdraw', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({ amount: parseInt(input.value) })
+    body: JSON.stringify({ 
+        amount: parseInt(input.value),
+        memo: memoInput.value // 메모 값 전송
+    })
   })
   .then(res => res.json())
   .then(data => {
       if (data.success) {
         alert(data.message);
-        if(data.balance) currentBalance = data.balance;
-        if(data.availBalance) availBalance = data.availBalance;
+        if(data.balance !== undefined) currentBalance = data.balance;
+        if(data.availBalance !== undefined) availBalance = data.availBalance;
         updateBalanceDisplay();
         
         var m = document.getElementById('withdrawModal');
         m.classList.remove('active');
         
-        loadTransactions(1);
+        input.value = '';
+        memoInput.value = '';
+        
+        // loadTransactions(1);
       } else {
         input.classList.add('error');
         error.textContent = data.message;
