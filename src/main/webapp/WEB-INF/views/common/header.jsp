@@ -57,6 +57,7 @@
                 <a href="${pageContext.request.contextPath}/"><h1>VROOM</h1></a>
             </div>
             <nav class="nav-menu">
+                <a href="${pageContext.request.contextPath}/errand/list" class="nav-item">심부름</a>
                 <a href="${pageContext.request.contextPath}/community/" class="nav-item">커뮤니티</a>
 
                 <c:choose>
