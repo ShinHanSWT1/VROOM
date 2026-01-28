@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.servlet.http.HttpSession;
 import java.util.List;
@@ -77,8 +76,23 @@ public class UserProfileController {
 
     // 부름 페이
     @GetMapping("/member/vroomPay")
-    public String vroomPay(Model model) {
-        return "user/vroomPay";
+    public String vroomPay(Model model, HttpSession session) {
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
+        if (loginUser == null) {
+            return "redirect:/auth/login";
+        }
+
+        // 프로필 정보 조회 (상단 프로필 표시용)
+        Long userId = loginUser.getUserId();
+        UserProfileVO profile = userProfileService.getUserProfile(userId);
+        model.addAttribute("profile", profile);
+
+        // CSS 및 페이지 설정
+        model.addAttribute("pageTitle", "부름 페이");
+        model.addAttribute("pageCss", "vroomPay"); // user/css/vroomPay.css 로드
+        model.addAttribute("pageCssDir", "user");  // user 폴더 지정
+
+        return "user/vroomPay"; // user/vroomPay.jsp 반환
     }
 
     // 프로필 수정 페이지
