@@ -113,7 +113,8 @@
             e.status         AS status,
             e.category_id    AS categoryId,
             e.dong_code      AS dongCode,
-            d.full_name      AS dongFullName
+            d.full_name      AS dongFullName,
+        	m.nickname		 AS nickname
         FROM ERRANDS e
         JOIN MEMBERS m
         	ON m.user_id = e.user_id

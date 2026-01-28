@@ -35,13 +35,11 @@ public class ErranderController {
     //  나의 정보
     @GetMapping("/mypage/profile")
     public String profile(Model model, HttpSession session) {
-
         UserVO loginUser = (UserVO) session.getAttribute("loginSess");
         if (loginUser == null) {
             return "redirect:/auth/login";
         }
 
-        // 서비스 호출 시 user_id 만 넘겨
         ErranderProfileVO profile = erranderService.getErranderProfile(loginUser.getUserId());
 
         // 부름이 등록 안 된 유저라면 등록 페이지로 보내기
@@ -86,14 +84,14 @@ public class ErranderController {
         if (loginUser == null) {
             return "redirect:/auth/login";
         }
-        
+
         // 이미 등록된 부름이인지 확인
         ErranderProfileVO profile = erranderService.getErranderProfile(loginUser.getUserId());
         if (profile != null) {
             // 이미 등록되어 있다면 상태에 따라 분기 처리 가능
             return "redirect:/member/myInfo";
         }
-        
+
         return "errander/register";
     }
 
@@ -163,7 +161,7 @@ public class ErranderController {
         }
 
         ErranderProfileVO profile = erranderService.getErranderProfile(loginUser.getUserId());
-        
+
         if (profile == null) {
             response.put("isRegistered", false);
         } else {
@@ -178,7 +176,7 @@ public class ErranderController {
     @GetMapping("/switch")
     public String switchToErrander(HttpSession session) {
         UserVO loginUser = (UserVO) session.getAttribute("loginSess");
-        
+
         if (loginUser != null) {
             // 전환 전 한 번 더 체크 (선택 사항)
             ErranderProfileVO profile = erranderService.getErranderProfile(loginUser.getUserId());
@@ -187,7 +185,7 @@ public class ErranderController {
                 session.setAttribute("loginSess", loginUser);
             }
         }
-        
+
         return "redirect:/";
     }
 }

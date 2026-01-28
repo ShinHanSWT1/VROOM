@@ -23,18 +23,115 @@
 
         <!-- Main Content -->
         <main class="main-content">
+
             <h2 class="page-title">나의 활동</h2>
 
             <div class="activity-section">
                 <div class="activity-tabs">
-                    <button class="activity-tab-btn active" data-type="written">작성한 글</button>
-                    <button class="activity-tab-btn" data-type="commented">댓글단 글</button>
-                    <button class="activity-tab-btn" data-type="saved">저장한 글</button>
+                    <button class="activity-tab-btn active" data-target="list-written">작성한 글</button>
+                    <button class="activity-tab-btn" data-target="list-commented">댓글단 글</button>
+                    <button class="activity-tab-btn" data-target="list-saved">저장한 글</button>
                 </div>
 
-                <div class="activity-list" id="activityList">
-                    <!-- Javascript will populate this -->
+                <div id="list-written" class="activity-list-container active">
+                    <c:choose>
+                        <c:when test="${not empty myPosts}">
+                            <c:forEach var="item" items="${myPosts}">
+                                <div class="activity-list-item" onclick="location.href='${pageContext.request.contextPath}/community/detail/${item.postId}'">
+                                    <div class="item-left">
+                                        <div class="item-title">${item.title}</div>
+                                        <div class="item-meta">
+                                            <span>${item.nickname}</span>
+                                            <span style="margin: 0 0.5rem">|</span>
+                                            <span><fmt:formatDate value="${item.createdAt}" pattern="yyyy.MM.dd"/></span>
+                                            <span style="margin: 0 0.5rem">|</span>
+                                            <span>조회 ${item.viewCount}</span>
+                                        </div>
+                                    </div>
+                                    <div class="item-right">
+                                        <div class="item-thumbnail">
+                                            <span class="duck-icon">🐥</span>
+                                        </div>
+                                        <div class="item-comment-box">
+                                            <span class="comment-count">${item.commentCount}</span>
+                                            <span class="comment-label">댓글</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </c:forEach>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="empty-message">작성한 글이 없습니다.</div>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
+
+                <div id="list-commented" class="activity-list-container">
+                    <c:choose>
+                        <c:when test="${not empty myComments}">
+                            <c:forEach var="item" items="${myComments}">
+                                <div class="activity-list-item" onclick="location.href='${pageContext.request.contextPath}/community/detail/${item.postId}'">
+                                    <div class="item-left">
+                                        <div class="item-title">${item.title}</div>
+                                        <div class="item-meta">
+                                            <span>${item.nickname}</span>
+                                            <span style="margin: 0 0.5rem">|</span>
+                                            <span><fmt:formatDate value="${item.createdAt}" pattern="yyyy.MM.dd"/></span>
+                                            <span style="margin: 0 0.5rem">|</span>
+                                            <span>조회 ${item.viewCount}</span>
+                                        </div>
+                                    </div>
+                                    <div class="item-right">
+                                        <div class="item-thumbnail">
+                                            <span class="duck-icon">🐥</span>
+                                        </div>
+                                        <div class="item-comment-box">
+                                            <span class="comment-count">${item.commentCount}</span>
+                                            <span class="comment-label">댓글</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </c:forEach>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="empty-message">댓글을 단 글이 없습니다.</div>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+
+                <div id="list-saved" class="activity-list-container">
+                    <c:choose>
+                        <c:when test="${not empty myScraps}">
+                            <c:forEach var="item" items="${myScraps}">
+                                <div class="activity-list-item" onclick="location.href='${pageContext.request.contextPath}/community/detail/${item.postId}'">
+                                    <div class="item-left">
+                                        <div class="item-title">${item.title}</div>
+                                        <div class="item-meta">
+                                            <span>${item.nickname}</span>
+                                            <span style="margin: 0 0.5rem">|</span>
+                                            <span><fmt:formatDate value="${item.createdAt}" pattern="yyyy.MM.dd"/></span>
+                                            <span style="margin: 0 0.5rem">|</span>
+                                            <span>조회 ${item.viewCount}</span>
+                                        </div>
+                                    </div>
+                                    <div class="item-right">
+                                        <div class="item-thumbnail">
+                                            <span class="duck-icon">🐥</span>
+                                        </div>
+                                        <div class="item-comment-box">
+                                            <span class="comment-count">${item.commentCount}</span>
+                                            <span class="comment-label">댓글</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </c:forEach>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="empty-message">저장한 글이 없습니다.</div>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+
             </div>
         </main>
     </div>
@@ -44,4 +141,5 @@
 
 <script src="<c:url value='/static/user/js/myActivity.js'/>"></script>
 </body>
+
 </html>

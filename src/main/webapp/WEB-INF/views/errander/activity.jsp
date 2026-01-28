@@ -42,7 +42,7 @@
             <!-- Transaction List -->
             <div class="transaction-list-section" style="margin-top: 2rem;">
                 <h3 class="transaction-list-title">심부름 제목, 날짜, 금액</h3>
-                
+
                 <div id="transactionListContainer">
                     <!-- Transaction items will be dynamically inserted here -->
                 </div>

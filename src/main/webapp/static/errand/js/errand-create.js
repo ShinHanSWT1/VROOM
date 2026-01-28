@@ -1,37 +1,17 @@
 // errand-create.js - 심부름 등록 페이지 전용 스크립트
 
 document.addEventListener('DOMContentLoaded', function () {
-    // Dropdown Logic
-    const dropdownBtn = document.getElementById('userDropdownBtn');
-    const dropdownMenu = document.getElementById('userDropdownMenu');
-
-    if (dropdownBtn && dropdownMenu) {
-        dropdownBtn.addEventListener('click', function (e) {
-            e.stopPropagation();
-            dropdownMenu.classList.toggle('active');
-        });
-
-        document.addEventListener('click', function (e) {
-            if (!dropdownMenu.contains(e.target) && !dropdownBtn.contains(e.target)) {
-                dropdownMenu.classList.remove('active');
-            }
-        });
-    }
 
     // Category Toggle (hidden 즉시 반영)
     const categoryOptions = document.querySelectorAll('#categoryToggle .category-option');
     const catInput = document.getElementById('categoryId');
 
-    if (categoryOptions && catInput) {
+    if (categoryOptions.length > 0 && catInput) {
         categoryOptions.forEach(option => {
             option.addEventListener('click', function () {
                 categoryOptions.forEach(opt => opt.classList.remove('active'));
                 this.classList.add('active');
-
-                const v = this.dataset.category;
-                catInput.value = v;
-
-                console.log('categoryId set immediately =>', v);
+                catInput.value = this.dataset.category;
             });
         });
     }
@@ -42,21 +22,27 @@ document.addEventListener('DOMContentLoaded', function () {
     const uploadCounter = document.querySelector('.upload-counter');
     let uploadedImages = [];
 
-    if (imageUploadArea && imageInput) {
+    if (imageUploadArea && imageInput && uploadCounter) {
         imageUploadArea.addEventListener('click', function () {
-            if (uploadedImages.length >= 10) return;
+            if (uploadedImages.length >= 10) {
+                alert('이미지는 최대 10개까지 업로드할 수 있습니다.');
+                return;
+            }
             imageInput.click();
         });
 
         imageInput.addEventListener('change', function (e) {
             const files = Array.from(e.target.files);
             const remainingSlots = 10 - uploadedImages.length;
+            
+            if (files.length > remainingSlots) {
+                alert(`이미지는 최대 10개까지 등록 가능합니다. ${remainingSlots}개만 추가됩니다.`);
+            }
+            
             const filesToAdd = files.slice(0, remainingSlots);
 
             uploadedImages = uploadedImages.concat(filesToAdd);
-            if (uploadCounter) {
-                uploadCounter.textContent = `${uploadedImages.length}/10`;
-            }
+            uploadCounter.textContent = `${uploadedImages.length}/10`;
 
             if (uploadedImages.length >= 10) {
                 imageUploadArea.style.opacity = '0.5';
@@ -70,40 +56,40 @@ document.addEventListener('DOMContentLoaded', function () {
     const dongNameHidden = document.getElementById('dongFullName');
 
     if (dongSelect && dongNameHidden) {
-        dongSelect.addEventListener('change', () => {
-            const opt = dongSelect.options[dongSelect.selectedIndex];
-            dongNameHidden.value = opt?.dataset?.fullname || '';
-        });
-        const opt = dongSelect.options[dongSelect.selectedIndex];
-        dongNameHidden.value = opt?.dataset?.fullname || '';
+        const updateDongFullName = () => {
+            const selectedOption = dongSelect.options[dongSelect.selectedIndex];
+            dongNameHidden.value = selectedOption ? selectedOption.dataset.fullname || '' : '';
+        };
+        
+        dongSelect.addEventListener('change', updateDongFullName);
+        updateDongFullName(); // 페이지 로드 시 초기값 설정
     }
 
-    // Form Submit
+    // Form Submit Validation
     const errandForm = document.getElementById('errandForm');
     if (errandForm) {
         errandForm.addEventListener('submit', function (e) {
-            const catInput = document.getElementById('categoryId');
-
-            if (!catInput || !catInput.value) {
+            if (!catInput.value) {
                 e.preventDefault();
                 alert('카테고리를 선택해주세요.');
-                return;
+                // 카테고리 섹션으로 스크롤
+                document.getElementById('categoryToggle').scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         });
     }
 
     // Title Counter
-    var input = document.querySelector('input[name="title"]');
-    var counter = document.getElementById('titleCounter');
-    var MAX = 50;
+    const titleInput = document.querySelector('input[name="title"]');
+    const titleCounter = document.getElementById('titleCounter');
+    const MAX_LENGTH = 50;
 
-    if (input && counter) {
-        function render() {
-            counter.textContent = input.value.length + ' / ' + MAX;
-        }
+    if (titleInput && titleCounter) {
+        const updateCounter = () => {
+            titleCounter.textContent = `${titleInput.value.length} / ${MAX_LENGTH}`;
+        };
 
-        input.addEventListener('input', render);
-        input.addEventListener('compositionend', render);
-        render();
+        titleInput.addEventListener('input', updateCounter);
+        titleInput.addEventListener('compositionend', updateCounter); // 한글 조합 시 이벤트 처리
+        updateCounter(); // 초기 렌더링
     }
 });
