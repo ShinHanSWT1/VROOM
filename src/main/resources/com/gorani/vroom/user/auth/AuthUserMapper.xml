@@ -124,4 +124,40 @@
 
     </select>
 
+    <!-- ===================================================== -->
+    <!-- ===================== OAuth 조회 ===================== -->
+    <!-- ===================================================== -->
+
+    <!--
+        [설명]
+        - 소셜 로그인(SNS OAuth) 사용자 조회
+        - provider 관계없이 sns_id 기준 단일 사용자 조회
+        - 삭제되지 않은 사용자(deleted_at IS NULL)만 조회
+    -->
+    <select id="findBySnsId"
+            parameterType="string"
+            resultType="com.gorani.vroom.user.auth.UserVO">
+        SELECT
+            user_id,
+            email,
+            pwd,
+            nickname,
+            role,
+            status,
+            phone,
+            profile_image,
+            manner_score,
+            cancel_rate,
+            dong_code1,
+            dong_code2,
+            provider,
+            sns_id,
+            last_login_at,
+            created_at,
+            deleted_at
+        FROM MEMBERS
+        WHERE sns_id = #{snsId}
+          AND deleted_at IS NULL
+    </select>
+
 </mapper>

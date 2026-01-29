@@ -9,6 +9,7 @@ public interface AuthUserMapper {
     UserVO existsEmail(String email);
     UserVO existsPhone(String phone);
     UserVO existsNickname(String nickname);
+    UserVO findBySnsId(String snsId);
 
     UserVO login(UserVO vo);
 
