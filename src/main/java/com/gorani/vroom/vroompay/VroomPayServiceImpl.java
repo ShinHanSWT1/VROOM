@@ -219,4 +219,10 @@ public class VroomPayServiceImpl implements VroomPayService {
         return vroomPayMapper.selectWalletAccount(userId);
     }
 
+    // 로컬 지갑 계좌 잔액 업데이트
+    @Override
+    public void updateWalletAccount(VroomPayVO vroomPayVO) {
+        vroomPayMapper.updateWalletAccount(vroomPayVO);
+    }
+
 }

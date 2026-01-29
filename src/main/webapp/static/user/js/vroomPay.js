@@ -24,7 +24,7 @@ function checkAccountStatus() {
               const account = data.account;
               
               const accountNum = account.realAccount ? account.realAccount : '연결됨';
-              statusContainer.innerHTML = `<span>연결된 계좌: <strong>${accountNum}</strong></span>`;
+              statusContainer.innerHTML = `<span>연결된 계좌: 신한 <strong>${accountNum}</strong></span>`;
               statusContainer.className = 'account-status-container linked';
 
               depositBtn.disabled = false;
