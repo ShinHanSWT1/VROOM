@@ -37,8 +37,23 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             } else if (userRole === 'ERRANDER') {
                 alert("사용자만 글작성이 가능합니다.");
-            } else { // 'USER' 또는 다른 역할
-                window.location.href = createUrl;
+            } else {
+                // 계좌 연결 여부 체크
+                fetch(contextPath + '/api/vroompay/status')
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success && data.linked) {
+                            window.location.href = createUrl;
+                        } else {
+                            if (confirm("부름페이 계좌 연결이 필요합니다. 연결 페이지로 이동하시겠습니까?")) {
+                                window.location.href = contextPath + '/member/vroomPay';
+                            }
+                        }
+                    })
+                    .catch(err => {
+                        console.error('계좌 상태 확인 오류:', err);
+                        alert("계좌 정보를 확인할 수 없습니다. 다시 시도해주세요.");
+                    });
             }
         });
     }
