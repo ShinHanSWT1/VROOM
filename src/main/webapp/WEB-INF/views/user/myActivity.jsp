@@ -14,7 +14,7 @@
         <aside class="sidebar">
             <ul class="sidebar-menu">
                 <li class="sidebar-item"><a href="<c:url value='/member/myInfo'/>" class="sidebar-link">나의 정보</a></li>
-                <li class="sidebar-item"><a href="<c:url value='/member/vroomPay'/>" class="sidebar-link">부름 페이<br>(계좌 관리)</a></li>
+                <li class="sidebar-item"><a href="<c:url value='/member/vroomPay'/>" class="sidebar-link">부름 페이</a></li>
                 <li class="sidebar-item"><a href="<c:url value='/member/myActivity'/>" class="sidebar-link active">나의 활동</a></li>
                 <li class="sidebar-item"><a href="#" class="sidebar-link">설정</a></li>
                 <li class="sidebar-item"><a href="#" class="sidebar-link">고객지원</a></li>
@@ -30,7 +30,7 @@
                 <div class="activity-tabs">
                     <button class="activity-tab-btn active" data-target="list-written">작성한 글</button>
                     <button class="activity-tab-btn" data-target="list-commented">댓글단 글</button>
-                    <button class="activity-tab-btn" data-target="list-saved">저장한 글</button>
+                    <button class="activity-tab-btn" data-target="list-liked">좋아요 한 글</button>
                 </div>
 
                 <div id="list-written" class="activity-list-container active">
@@ -99,7 +99,7 @@
                     </c:choose>
                 </div>
 
-                <div id="list-saved" class="activity-list-container">
+                <div id="list-liked" class="activity-list-container">
                     <c:choose>
                         <c:when test="${not empty myScraps}">
                             <c:forEach var="item" items="${myScraps}">
@@ -127,7 +127,7 @@
                             </c:forEach>
                         </c:when>
                         <c:otherwise>
-                            <div class="empty-message">저장한 글이 없습니다.</div>
+                            <div class="empty-message">좋아요 한 글이 없습니다.</div>
                         </c:otherwise>
                     </c:choose>
                 </div>

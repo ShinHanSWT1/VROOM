@@ -47,5 +47,18 @@ public interface ChatMapper {
                                               @Param("userId") Long userId);
     
     List<ChatMessageVO> selectMessagesByRoomId(@Param("roomId") Long roomId);
+    
+    String selectErrandStatusByErrandsId(@Param("errandsId") Long errandsId);
 
+    int updateErrandStatusMatchedToConfirm1(@Param("errandsId") Long errandsId);
+
+    int updateErrandStatusMatchedToWaiting(@Param("errandsId") Long errandsId);
+
+    int insertErrandsStatusHistory(@Param("errandsId") Long errandsId,
+                                   @Param("fromStatus") String fromStatus,
+                                   @Param("toStatus") String toStatus,
+                                   @Param("changedByType") String changedByType,
+                                   @Param("changedById") Long changedById);
+    
+    int deactivateParticipantsByRoomId(@Param("roomId") Long roomId);
 }

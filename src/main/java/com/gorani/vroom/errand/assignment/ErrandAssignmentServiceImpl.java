@@ -18,6 +18,29 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
     @Transactional
     public Long requestStartChat(Long errandsId, Long erranderUserId, Long changedByUserId) {
     	
+    	// 0) owner 조회 (먼저!)
+        Long ownerUserId = errandAssignmentMapper.selectOwnerUserId(errandsId);
+
+        // [가드1] 작성자가 호출하면 즉시 막기 (매칭/assignment 생성 금지)
+        if (ownerUserId != null && ownerUserId.equals(erranderUserId)) {
+            System.out.println("[ASSIGN][BLOCK] OWNER cannot start chat. errandsId=" + errandsId + ", userId=" + erranderUserId);
+            // 작성자는 여기서 room을 만들면 안 됨. (부름이가 시작해야 함)
+            // 컨트롤러에서 "방 있으면 입장 / 없으면 안내"로 보내는 게 맞음
+            throw new IllegalStateException("작성자는 채팅 시작(매칭)을 할 수 없습니다. 부름이가 채팅을 시작해야 합니다.");
+            // 또는 return null; (근데 null 반환하면 또 다른 곳에서 NPE 날 수 있음)
+        }
+
+        // 1) errander profile 조회 (부름이만 존재해야 함)
+        Long erranderId = errandAssignmentMapper.selectErranderIdByUserId(erranderUserId);
+        System.out.println("[ASSIGN] erranderUserId=" + erranderUserId);
+        System.out.println("[ASSIGN] erranderId(from profiles)=" + erranderId);
+
+        // [가드2] 부름이 프로필 없으면 매칭 시작 불가
+        if (erranderId == null) {
+            System.out.println("[ASSIGN][BLOCK] errander profile not found. userId=" + erranderUserId);
+            throw new IllegalStateException("부름이 프로필이 없어 채팅 시작이 불가합니다.");
+        }
+    	
     	// DB에서 status 재조회
         String status = errandAssignmentMapper.selectErrandStatus(errandsId);
         System.out.println("[ASSIGN] db status before=" + status);
@@ -35,16 +58,7 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
             throw new IllegalStateException("이미 누군가 선점했거나 요청 불가 상태입니다.");
         }
 
-        // 2) owner 조회
-        Long ownerUserId = errandAssignmentMapper.selectOwnerUserId(errandsId);
-
-        // 3) errander profile 조회
-        Long erranderId = errandAssignmentMapper.selectErranderIdByUserId(erranderUserId);
-        
         System.out.println("[ASSIGN] erranderUserId=" + erranderUserId);
-        System.out.println("[ASSIGN] erranderId(from profiles)=" + erranderId);
-
-        System.out.println("[ASSIGN] ownerUserId=" + ownerUserId + ", errandsId=" + errandsId + ", erranderId=" + erranderId);
 
         // 4) assignment insert
         errandAssignmentMapper.insertMatchedAssignment(ownerUserId, errandsId, erranderId);
