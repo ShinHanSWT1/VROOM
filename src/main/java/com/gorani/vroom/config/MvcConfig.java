@@ -7,17 +7,25 @@ import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ClassPathResource;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.config.annotation.*;
+import org.springframework.core.io.ClassPathResource;
 
 @Configuration
 @MapperScan(basePackages = {"com.gorani.vroom"}, annotationClass = Mapper.class)
 @ComponentScan(basePackages = {"com.gorani.vroom"})
+@PropertySource("classpath:application.properties")
 @EnableWebMvc
 @EnableTransactionManagement
 public class MvcConfig implements WebMvcConfigurer {
+
+    @Bean
+    public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
+        return new PropertySourcesPlaceholderConfigurer();
+    }
 
     // 업로드 경로
     public static final String PROFILE_UPLOAD_PATH = "C:/uploads/profile/";

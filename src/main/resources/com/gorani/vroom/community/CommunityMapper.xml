@@ -390,7 +390,7 @@
 
     <!-- 내가 댓글 단 글 목록 조회 -->
     <select id="selectMyCommentedPosts" resultType="com.gorani.vroom.community.CommunityPostVO">
-        SELECT DISTINCT
+        SELECT
             c.post_id,
             c.title,
             c.view_count,
@@ -398,11 +398,19 @@
             c.created_at,
             m.nickname
         FROM COMMUNITY c
-        JOIN COMMUNITY_COMMENT cc ON c.post_id = cc.post_id
-        JOIN MEMBERS m ON c.user_id = m.user_id
-        WHERE cc.user_id = #{userId}
-          AND c.deleted_at IS NULL
-        ORDER BY c.created_at DESC
+        LEFT JOIN MEMBERS m ON c.user_id = m.user_id
+        WHERE EXISTS (
+            SELECT 1 FROM COMMUNITY_COMMENT cc
+            WHERE cc.post_id = c.post_id
+              AND cc.user_id = #{userId}
+              AND cc.deleted_at IS NULL
+        )
+        AND c.deleted_at IS NULL
+        ORDER BY (
+            SELECT MAX(created_at) FROM COMMUNITY_COMMENT
+            WHERE post_id = c.post_id
+              AND user_id = #{userId}
+        ) DESC
     </select>
 
     <!-- 내가 좋아요한 글 목록 조회 -->
@@ -416,7 +424,7 @@
             m.nickname
         FROM COMMUNITY c
         JOIN COMMUNITY_POST_LIKES l ON c.post_id = l.post_id
-        JOIN MEMBERS m ON c.user_id = m.user_id
+        LEFT JOIN MEMBERS m ON c.user_id = m.user_id
         WHERE l.user_id = #{userId}
           AND c.deleted_at IS NULL
         ORDER BY l.created_at DESC
