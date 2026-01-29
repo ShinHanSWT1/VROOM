@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gorani.vroom.vroompay.VroomPayMapper">
+
+    <insert id="insertWalletTransactions" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO WALLET_TRANSACTIONS (
+            txn_type,
+            amount,
+            errand_id,
+            memo,
+            payment_id,
+            user_id,
+            errander_id
+        ) VALUES (
+            #{txnType},
+            #{amount},
+            #{errandId},
+            #{memo},
+            #{paymentId},
+            #{userId},
+            #{erranderId}
+        )
+    </insert>
+
+    <select id="selectWalletTransactions" resultType="com.gorani.vroom.vroompay.WalletTransactionVO">
+        SELECT
+            id,
+            txn_type AS txnType,
+            amount,
+            errand_id AS errandId,
+            memo,
+            payment_id AS paymentId,
+            user_id AS userId,
+            errander_id AS erranderId,
+            created_at AS createdAt
+        FROM WALLET_TRANSACTIONS
+        WHERE user_id = #{userId}
+        ORDER BY created_at DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countWalletTransactions" resultType="int">
+        SELECT COUNT(*)
+        FROM WALLET_TRANSACTIONS
+        WHERE user_id = #{userId}
+    </select>
+
+    <insert id="insertWalletAccount">
+        INSERT INTO WALLET_ACCOUNTS (
+            user_id,
+            balance,
+            avail_balance,
+            real_account
+        ) VALUES (
+            #{userId},
+            #{balance},
+            #{availBalance},
+            #{realAccount}
+        )
+    </insert>
+
+    <select id="selectWalletAccount" resultType="com.gorani.vroom.vroompay.VroomPayVO">
+        SELECT
+            user_id AS userId,
+            balance,
+            avail_balance AS availBalance,
+            real_account AS realAccount,
+            updated_at AS updatedAt
+        FROM WALLET_ACCOUNTS
+        WHERE user_id = #{userId}
+    </select>
+
+</mapper>
