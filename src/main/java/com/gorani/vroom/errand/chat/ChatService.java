@@ -82,4 +82,6 @@ public interface ChatService {
     ChatRoomVO getChatRoomByErrandsId(Long errandsId);
     
     Long getOwnerUserIdByErrandsId(Long errandsId);
+    
+    boolean canAccessChatRoomByRoomId(Long roomId, Long userId);
 }

@@ -23,8 +23,7 @@
 	  SELECT errands_id
 	  FROM CHAT_ROOM
 	  WHERE room_id = #{roomId}
-	</select>
-    
+	</select>    
     
     <!-- 채팅방 생성 -->
     <insert id="insertChatRoom"
@@ -75,8 +74,7 @@
             cm.message_type,
             cm.content,
             cm.created_at,
-            cm.is_deleted,
-            m.nickname AS senderNickname
+            cm.is_deleted
         FROM CHAT_MESSAGE cm
         LEFT JOIN MEMBERS m ON cm.sender_user_id = m.user_id
         WHERE cm.room_id = #{roomId}

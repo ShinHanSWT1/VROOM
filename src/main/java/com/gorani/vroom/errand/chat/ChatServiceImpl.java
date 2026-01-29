@@ -2,10 +2,12 @@ package com.gorani.vroom.errand.chat;
 
 import java.util.List;
 
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.gorani.vroom.errand.assignment.ErrandAssignmentMapper;
+import com.gorani.vroom.errand.chat.ws.ChatMessagePayload;
 
 import lombok.RequiredArgsConstructor;
 
@@ -15,6 +17,7 @@ public class ChatServiceImpl implements ChatService {
 
     private final ChatMapper chatMapper;
     private final ErrandAssignmentMapper assignmentMapper;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Override
     @Transactional
@@ -114,6 +117,15 @@ public class ChatServiceImpl implements ChatService {
         systemMessage.setMessageType("SYSTEM");
         systemMessage.setContent("심부름이 수락되었습니다! 🎉");
         chatMapper.insertMessage(systemMessage);
+        
+        // STOMP로 현재 방 구독자(작성자/부름이) 모두에게 뿌림
+        ChatMessagePayload payload = new ChatMessagePayload();
+        payload.setRoomId(roomId);
+        payload.setSenderUserId(0L);           // null 비교/JS 파싱 이슈 피하려면 0L 추천
+        payload.setMessageType("SYSTEM");
+        payload.setContent("심부름이 수락되었습니다! 🎉");
+
+        messagingTemplate.convertAndSend("/topic/room." + roomId, payload);
     }
 
     @Override
@@ -177,6 +189,7 @@ public class ChatServiceImpl implements ChatService {
     
     @Override
     public List<ChatMessageVO> getChatMessages(Long roomId, Long userId) {
+    	
 
         // 1) 참가자 검증 (보안/권한)
         ChatParticipantVO participant = chatMapper.selectParticipant(roomId, userId);
@@ -185,11 +198,26 @@ public class ChatServiceImpl implements ChatService {
         }
 
         // 2) 메시지 조회
-        return chatMapper.selectMessagesByRoomId(roomId);
+        List<ChatMessageVO> list = chatMapper.selectMessagesByRoomId(roomId);
+
+        // 3) 서버 렌더링(JSP)용 isMine 세팅
+        for (ChatMessageVO m : list) {
+            boolean mine = (m.getSenderUserId() != null && m.getSenderUserId().equals(userId));
+            m.setIsMine(mine);
+        }
+
+        return list;
     }
     
     @Override
     public Long getOwnerUserIdByErrandsId(Long errandsId) {
         return chatMapper.selectErrandOwnerUserId(errandsId);
+    }
+    
+    @Override
+    public boolean canAccessChatRoomByRoomId(Long roomId, Long userId) {
+        Long errandsId = chatMapper.selectErrandsIdByRoomId(roomId);
+        if (errandsId == null) return false;
+        return canAccessChatRoom(errandsId, userId);
     }
 }

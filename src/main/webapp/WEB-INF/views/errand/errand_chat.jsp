@@ -213,7 +213,9 @@
             </div>
         </div>
     </div>
-
+	
+	<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
     <script>
         // 채팅 관련 JavaScript
         const roomId = ${roomId};
@@ -230,72 +232,84 @@
             const proofBtn = document.getElementById('proofBtn');
             const acceptBtn = document.getElementById('acceptBtn');
             const rejectBtn = document.getElementById('rejectBtn');
+            
+            let stompClient = null;
 
-            // 메시지 전송 함수
-            function sendMessage(messageType = 'TEXT') {
-                const messageText = messageInput.value.trim();
-                if (!messageText && messageType === 'TEXT') return;
+            function connectStomp() {
+                const socket = new SockJS(contextPath + '/ws');
+                stompClient = Stomp.over(socket);
+                stompClient.debug = null;
 
-                // 서버로 메시지 전송
-                fetch(contextPath + '/errand/chat/send', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        roomId: roomId,
-                        content: messageText,
-                        messageType: messageType
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // UI에 메시지 추가
-                        addMessageToUI(messageText, true);
-                        messageInput.value = '';
-                        messagesArea.scrollTop = messagesArea.scrollHeight;
-                    } else {
-                        alert('메시지 전송 실패');
+                stompClient.connect({}, function() {
+                  // 방 구독
+                  stompClient.subscribe('/topic/room.' + roomId, function(message) {
+                    const payload = JSON.parse(message.body);
+                    
+                    if (payload.messageType === 'SYSTEM') {
+                       addSystemMessageToUI(payload.content);
+                       return;
                     }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('메시지 전송 중 오류가 발생했습니다.');
+                    const isMine = (payload.senderUserId === currentUserId);
+                    addMessageToUI(payload.content, isMine);
+                  });
                 });
-            }
+              }
+            
+            function sendMessage(messageType = 'TEXT') {
+            	const messageText = messageInput.value.trim();
+            	if (!messageText) return;
+            	
+            	stompClient.send('/app/chat.send', {}, JSON.stringify({
+            		roomId: roomId,
+            	    senderUserId: currentUserId,
+            	    messageType: messageType,
+            	    content: messageText
+            	}));
+
+           	  	messageInput.value = '';
+           	}  
+            
+            function addSystemMessageToUI(text) {
+           	  const div = document.createElement('div');
+           	  div.className = 'system-message';
+           	  div.textContent = text;
+
+           	  const area = document.getElementById('messagesArea');
+           	  area.appendChild(div);
+           	  area.scrollTop = area.scrollHeight;
+           	}
 
             function addMessageToUI(text, isMine) {
-            	  console.log('[UI] addMessageToUI running', { text, isMine });
+           	  console.log('[UI] addMessageToUI running', { text, isMine });
 
-            	  const messageDiv = document.createElement('div');
-            	  messageDiv.className = 'message ' + (isMine ? 'mine' : 'other');
+           	  const messageDiv = document.createElement('div');
+           	  messageDiv.className = 'message ' + (isMine ? 'mine' : 'other');
 
-            	  const bubble = document.createElement('div');
-            	  bubble.className = 'message-bubble';
-            	  bubble.textContent = text; // 안전 + 확실히 텍스트 들어감
+           	  const bubble = document.createElement('div');
+           	  bubble.className = 'message-bubble';
+           	  bubble.textContent = text;
 
-            	  const time = document.createElement('div');
-            	  time.className = 'message-time';
-            	  time.textContent = new Date().toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit' });
+           	  const time = document.createElement('div');
+           	  time.className = 'message-time';
+           	  time.textContent = new Date().toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit' });
 
-            	  // mine이면 (시간, 말풍선), other이면 (말풍선, 시간) 유지
-            	  if (isMine) {
-            	    messageDiv.appendChild(time);
-            	    messageDiv.appendChild(bubble);
-            	  } else {
-            	    messageDiv.appendChild(bubble);
-            	    messageDiv.appendChild(time);
-            	  }
+           	  // mine이면 (시간, 말풍선), other이면 (말풍선, 시간) 유지
+           	  if (isMine) {
+           	    messageDiv.appendChild(time);
+           	    messageDiv.appendChild(bubble);
+           	  } else {
+           	    messageDiv.appendChild(bubble);
+           	    messageDiv.appendChild(time);
+           	  }
 
-            	  const area = document.getElementById('messagesArea');
-            	  console.log('[UI] messagesArea found?', !!area);
+           	  const area = document.getElementById('messagesArea');
+           	  console.log('[UI] messagesArea found?', !!area);
 
-            	  area.appendChild(messageDiv);
-            	  area.scrollTop = area.scrollHeight;
+           	  area.appendChild(messageDiv);
+           	  area.scrollTop = area.scrollHeight;
 
-            	  console.log('[UI] appended. children=', area.children.length);
-            	}
+           	  console.log('[UI] appended. children=', area.children.length);
+           	}
 
 
             // HTML 이스케이프 함수
@@ -404,11 +418,8 @@
 
             // 페이지 로드시 스크롤을 최하단으로
             messagesArea.scrollTop = messagesArea.scrollHeight;
-
-            // 주기적으로 새 메시지 확인 (폴링 - 실제로는 WebSocket 사용 권장)
-            setInterval(function() {
-                // loadNewMessages();
-            }, 5000);
+            
+            connectStomp();
         });
     </script>
 </body>
