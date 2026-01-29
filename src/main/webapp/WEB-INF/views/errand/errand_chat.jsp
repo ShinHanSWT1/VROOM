@@ -110,10 +110,6 @@
                                 </c:choose>
                             </span>
                         </div>
-                        <div class="detail-item">
-                            <span class="detail-label">상태</span>
-                            <span class="status-badge" id="errandStatus">${chatRoomInfo.status}</span>
-                        </div>
                     </div>
                 </div>
 
@@ -135,11 +131,13 @@
                 <!-- 역할별 액션 버튼 카드 -->
                 <c:if test="${userRole eq 'OWNER'}">
                     <div class="errand-card">
-                        <div class="section-label">💼 심부름 관리</div>
-                        <div class="action-buttons">
-                            <button class="accept-btn" id="acceptBtn">✓ 수락</button>
-                            <button class="reject-btn" id="rejectBtn">✗ 거절</button>
-                        </div>
+                        <div class="errand-card-header">
+				            <div class="section-label">💼 심부름 관리</div>
+				            <div class="action-buttons">
+				                <button class="accept-btn" id="acceptBtn">✓ 수락</button>
+				                <button class="reject-btn" id="rejectBtn">✗ 거절</button>
+				            </div>
+				        </div>
                     </div>
                 </c:if>
             </div>

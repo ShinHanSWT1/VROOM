@@ -107,13 +107,25 @@ public class ChatServiceImpl implements ChatService {
     @Transactional
     public void acceptErrand(Long errandsId, Long roomId, Long userId) {
 
-        // 심부름 상태를 MATCHED로 변경
-        assignmentMapper.updateErrandStatusWaitingToMatched(errandsId);
+    	// 상태 전환: MATCHED -> CONFIRM1 (딱 1번만 성공)
+        int updated = assignmentMapper.updateErrandStatusMatchedToConfirm1(errandsId);
+        if (updated == 0) {
+            throw new IllegalStateException("이미 처리된 요청입니다.");
+        }
+        
+        // 상태 이력 저장 (MATCHED -> CONFIRM1)
+        assignmentMapper.insertStatusHistory(
+            errandsId,
+            "MATCHED",
+            "CONFIRM1",
+            "USER",
+            userId
+        );
 
         // 시스템 메시지 추가
         ChatMessageVO systemMessage = new ChatMessageVO();
         systemMessage.setRoomId(roomId);
-        systemMessage.setSenderUserId(userId);
+        systemMessage.setSenderUserId(0L);
         systemMessage.setMessageType("SYSTEM");
         systemMessage.setContent("심부름이 수락되었습니다! 🎉");
         chatMapper.insertMessage(systemMessage);
@@ -131,29 +143,32 @@ public class ChatServiceImpl implements ChatService {
     @Override
     @Transactional
     public void rejectErrand(Long errandsId, Long roomId, Long userId, Long erranderUserId) {
-
-        // 부름이 참여자 비활성화
-        chatMapper.updateParticipantInactive(roomId, erranderUserId);
-
-        // 심부름 상태를 다시 WAITING으로 변경
-        assignmentMapper.updateErrandStatusToWaiting(errandsId);
-
-        // 시스템 메시지 추가
-        ChatMessageVO systemMessage = new ChatMessageVO();
-        systemMessage.setRoomId(roomId);
-        systemMessage.setSenderUserId(userId);
-        systemMessage.setMessageType("SYSTEM");
-        systemMessage.setContent("심부름이 거절되었습니다.");
-        chatMapper.insertMessage(systemMessage);
+    	
+    	// 상태 전환: MATCHED -> WAITING (딱 1번만 성공)
+        int updated = assignmentMapper.updateErrandStatusMatchedToWaiting(errandsId);
+        if (updated == 0) {
+            throw new IllegalStateException("이미 처리된 요청입니다.");
+        }
         
-        // 상태 이력 저장
+        // 상태 이력 저장 (MATCHED -> WAITING)
         assignmentMapper.insertStatusHistory(
             errandsId,
+            "MATCHED",
             "WAITING",
-            "REJECTED",
-            "OWNER",
+            "USER",
             userId
         );
+
+        // 채팅방 종료 처리: room 전체 participant 비활성화(권장)
+        chatMapper.deactivateParticipantsByRoomId(roomId);
+        
+        // SYSTEM 메시지 DB 저장 (선택: 종료 전에 남기고 싶으면)
+        ChatMessageVO systemMessage = new ChatMessageVO();
+        systemMessage.setRoomId(roomId);
+        systemMessage.setSenderUserId(0L);
+        systemMessage.setMessageType("SYSTEM");
+        systemMessage.setContent("심부름이 거절되었습니다. 다시 부름이를 모집합니다.");
+        chatMapper.insertMessage(systemMessage);
     }
 
     @Override

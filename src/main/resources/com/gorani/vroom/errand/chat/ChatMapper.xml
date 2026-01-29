@@ -129,4 +129,42 @@
           AND cp.user_id = #{userId}
           AND cp.is_active = 1
     </select>
+    
+    <!-- 1) 현재 errands 상태 조회 -->
+	<select id="selectErrandStatusByErrandsId" resultType="string">
+	  SELECT status
+	  FROM ERRANDS
+	  WHERE errands_id = #{errandsId}
+	</select>
+	
+	<!-- 2) MATCHED -> CONFIRM1 (수락: 한번만 성공해야 함) -->
+	<update id="updateErrandStatusMatchedToConfirm1">
+	  UPDATE ERRANDS
+	  SET status = 'CONFIRM1'
+	  WHERE errands_id = #{errandsId}
+	    AND status = 'MATCHED'
+	</update>
+	
+	<!-- 3) MATCHED -> WAITING (거절: 다시 모집) -->
+	<update id="updateErrandStatusMatchedToWaiting">
+	  UPDATE ERRANDS
+	  SET status = 'WAITING'
+	  WHERE errands_id = #{errandsId}
+	    AND status = 'MATCHED'
+	</update>
+	
+	<!-- 4) 상태 히스토리 insert -->
+	<insert id="insertErrandsStatusHistory">
+	  INSERT INTO ERRAND_STATUS_HISTORY
+	    (errands_id, from_status, to_status, changed_by_type, changed_by_id, changed_at)
+	  VALUES
+	    (#{errandsId}, #{fromStatus}, #{toStatus}, #{changedByType}, #{changedById}, NOW())
+	</insert>
+	
+	<!-- 5) 거절 시, room 비활성화 -->
+	<update id="deactivateParticipantsByRoomId">
+	  UPDATE CHAT_PARTICIPANT
+	  SET is_active = 0
+	  WHERE room_id = #{roomId}
+	</update>
 </mapper>
