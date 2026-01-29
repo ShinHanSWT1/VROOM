@@ -70,4 +70,12 @@
         WHERE user_id = #{userId}
     </select>
 
+    <update id="updateWalletAccount">
+        UPDATE WALLET_ACCOUNTS
+        SET balance = #{balance},
+            avail_balance = #{availBalance},
+            updated_at = NOW()
+        WHERE user_id = #{userId}
+    </update>
+
 </mapper>

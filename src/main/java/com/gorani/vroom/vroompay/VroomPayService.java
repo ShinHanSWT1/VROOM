@@ -36,4 +36,7 @@ public interface VroomPayService {
     // 로컬 지갑 계좌 조회
     VroomPayVO getWalletAccount(Long userId);
 
+    // 로컬 지갑 계좌 잔액 업데이트
+    void updateWalletAccount(VroomPayVO vroomPayVO);
+
 }

@@ -71,6 +71,8 @@ public class VroomPayApiController {
                 }
                 if (accountData.get("availBalance") != null) {
                     availBalance = new BigDecimal(accountData.get("availBalance").toString());
+                } else if (accountData.get("avail_balance") != null) {
+                    availBalance = new BigDecimal(accountData.get("avail_balance").toString());
                 }
 
                 VroomPayVO walletAccount = new VroomPayVO();
@@ -80,7 +82,8 @@ public class VroomPayApiController {
                 walletAccount.setAvailBalance(availBalance);
 
                 vroomPayService.insertWalletAccount(walletAccount);
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
 
@@ -110,7 +113,7 @@ public class VroomPayApiController {
 
         Map<String, Object> result = vroomPayService.charge(userId, amount, memo);
 
-        // 충전 성공 시 거래 이력 저장
+        // 충전 성공 시 거래 이력 저장 및 잔액 업데이트
         if (Boolean.TRUE.equals(result.get("success"))) {
             try {
                 WalletTransactionVO txn = new WalletTransactionVO();
@@ -119,7 +122,11 @@ public class VroomPayApiController {
                 txn.setUserId(userId);
                 txn.setMemo(memo);
                 vroomPayService.insertWalletTransactions(txn);
-            } catch (Exception ignored) {
+
+                // 잔액 업데이트
+                updateLocalBalance(userId, result);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
 
@@ -172,7 +179,7 @@ public class VroomPayApiController {
 
         Map<String, Object> result = vroomPayService.withdraw(userId, amount, memo);
 
-        // 출금 성공 시 거래 이력 저장
+        // 출금 성공 시 거래 이력 저장 및 잔액 업데이트
         if (Boolean.TRUE.equals(result.get("success"))) {
             try {
                 WalletTransactionVO txn = new WalletTransactionVO();
@@ -181,7 +188,11 @@ public class VroomPayApiController {
                 txn.setUserId(userId);
                 txn.setMemo(memo);
                 vroomPayService.insertWalletTransactions(txn);
-            } catch (Exception ignored) {
+
+                // 잔액 업데이트
+                updateLocalBalance(userId, result);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
 
@@ -216,5 +227,30 @@ public class VroomPayApiController {
         result.put("currentPage", page);
 
         return result;
+    }
+
+    // 외부 API 응답에서 잔액을 추출하여 로컬 DB 업데이트
+    private void updateLocalBalance(Long userId, Map<String, Object> apiResult) {
+        BigDecimal balance = null;
+        BigDecimal availBalance = null;
+
+        // balance 추출
+        if (apiResult.get("balance") != null) {
+            balance = new BigDecimal(apiResult.get("balance").toString());
+        }
+        // availBalance 추출
+        if (apiResult.get("availBalance") != null) {
+            availBalance = new BigDecimal(apiResult.get("availBalance").toString());
+        } else if (apiResult.get("avail_balance") != null) {
+            availBalance = new BigDecimal(apiResult.get("avail_balance").toString());
+        }
+
+        if (balance != null) {
+            VroomPayVO walletAccount = new VroomPayVO();
+            walletAccount.setUserId(userId);
+            walletAccount.setBalance(balance);
+            walletAccount.setAvailBalance(availBalance != null ? availBalance : balance);
+            vroomPayService.updateWalletAccount(walletAccount);
+        }
     }
 }

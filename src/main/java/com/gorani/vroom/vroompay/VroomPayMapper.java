@@ -18,4 +18,6 @@ public interface VroomPayMapper {
     int insertWalletAccount(VroomPayVO vroomPayVO);
 
     VroomPayVO selectWalletAccount(@Param("userId") Long userId);
+
+    int updateWalletAccount(VroomPayVO vroomPayVO);
 }
