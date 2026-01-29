@@ -20,7 +20,6 @@ function checkAccountStatus() {
             console.log("Account Status Response:", data);
 
             if (data.success && data.linked) {
-              // 계좌 연결됨
               const account = data.account;
               
               const accountNum = account.realAccount ? account.realAccount : '연결됨';
@@ -116,7 +115,7 @@ function renderTransactions(transactions) {
   const list = document.getElementById('transactionList');
 
   if (!transactions || transactions.length === 0) {
-    list.innerHTML = '<div class="history-item"><div class="item-title" style="grid-column:1/-1;text-align:center;">거래 내역이 없습니다.</div></div>';
+    list.innerHTML = '<div class="history-item"><div class="item-type" style="grid-column:1/-1;text-align:center;">거래 내역이 없습니다.</div></div>';
     return;
   }
 
@@ -125,10 +124,11 @@ function renderTransactions(transactions) {
     const typeLabel = getTypeLabel(txn.txnType);
     const amountClass = isPositiveType(txn.txnType) ? 'positive' : 'negative';
     const amountPrefix = isPositiveType(txn.txnType) ? '+' : '-';
-    const memo = txn.memo ? txn.memo : typeLabel;
+    const memo = txn.memo ? truncateText(txn.memo, 20) : '-';
 
     html += '<div class="history-item">';
-    html += '  <div class="item-title">' + memo + '</div>';
+    html += '  <div class="item-type">' + typeLabel + '</div>';
+    html += '  <div class="item-content">' + memo + '</div>';
     html += '  <div class="item-date">' + formatDate(txn.createdAt) + '</div>';
     html += '  <div class="item-amount ' + amountClass + '">' + amountPrefix + Number(txn.amount).toLocaleString() + '원</div>';
     html += '</div>';
@@ -162,6 +162,12 @@ function formatDate(dateStr) {
   const hours = String(date.getHours()).padStart(2, '0');
   const minutes = String(date.getMinutes()).padStart(2, '0');
   return year + '.' + month + '.' + day + ' ' + hours + ':' + minutes;
+}
+
+function truncateText(text, maxLength) {
+  if (!text) return '';
+  if (text.length <= maxLength) return text;
+  return text.substring(0, maxLength) + '...';
 }
 
 function renderPagination(totalPages, currentPage) {
