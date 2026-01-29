@@ -99,27 +99,48 @@
 			    </div>
 			  </div>
 			
+			
+			
 			  <div class="chat-cta">
-				  <form method="post" action="${pageContext.request.contextPath}/errand/assign/request">
-				    <input type="hidden" name="errandsId" value="${errand.errandsId}" />
+				  <c:set var="loginUserId" value="${sessionScope.loginSess.userId}" />
+				  <c:set var="isOwner" value="${loginUserId eq errand.userId}" />
 				
-				    <c:choose>
-				      <c:when test="${errand.status eq 'WAITING'}">
+				  <c:choose>
+				
+				    <c:when test="${isOwner}">
+				      <form method="get" action="${pageContext.request.contextPath}/errand/chat">
+				        <input type="hidden" name="errandsId" value="${errand.errandsId}" />
 				        <button type="submit" class="btn btn-primary">
 				          채팅하기
 				        </button>
-				      </c:when>
-				      <c:otherwise>
-				        <button type="button" class="btn btn-secondary" disabled>
-				          이미 매칭됨
-				        </button>
-				      </c:otherwise>
-				    </c:choose>
+				      </form>
+				    </c:when>
 				
-				  </form>
+				    <c:otherwise>
+				      <form method="post" action="${pageContext.request.contextPath}/errand/assign/request">
+				        <input type="hidden" name="errandsId" value="${errand.errandsId}" />
+				
+				        <c:choose>
+				          <c:when test="${errand.status eq 'WAITING'}">
+				            <button type="submit" class="btn btn-primary">
+				              채팅하기
+				            </button>
+				          </c:when>
+				          <c:otherwise>
+				            <button type="button" class="btn btn-secondary" disabled>
+				              매칭 완료
+				            </button>
+				          </c:otherwise>
+				        </c:choose>
+				      </form>
+				    </c:otherwise>
+				
+				  </c:choose>
 				</div>
 			</div>
 		</div>
+		
+		
 
         <!-- Related Errands Section -->
         <div class="related-section">

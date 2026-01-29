@@ -80,4 +80,8 @@ public interface ChatService {
     boolean canAccessChatRoom(Long errandsId, Long userId);
     
     ChatRoomVO getChatRoomByErrandsId(Long errandsId);
+    
+    Long getOwnerUserIdByErrandsId(Long errandsId);
+    
+    boolean canAccessChatRoomByRoomId(Long roomId, Long userId);
 }

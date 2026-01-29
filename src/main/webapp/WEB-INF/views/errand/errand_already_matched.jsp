@@ -5,7 +5,7 @@
 <html>
 <head>
   <meta charset="UTF-8"/>
-  <title>이미 매칭됨</title>
+  <title>매칭 완료</title>
 </head>
 <body>
     <div class="message-container">
