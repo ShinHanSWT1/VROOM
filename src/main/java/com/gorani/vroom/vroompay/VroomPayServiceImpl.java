@@ -35,6 +35,9 @@ public class VroomPayServiceImpl implements VroomPayService {
     @Value("${vroompay.api.withdraw-url}")
     private String vroomPayApiWithdrawUrl;
 
+    @Value("${vroompay.api.settle-url}")
+    private String vroomPayApiSettleUrl;
+
     @Override
     public Map<String, Object> getAccountStatus(Long userId) {
         String url = vroomPayApiStatusUrl.replace("{userId}", userId.toString());
@@ -149,6 +152,36 @@ public class VroomPayServiceImpl implements VroomPayService {
         } catch (Exception e) {
             result.put("success", false);
             result.put("message", "출금에 실패했습니다: " + e.getMessage());
+        }
+        return result;
+    }
+
+    @Override
+    public Map<String, Object> settleErrand(Long errandId, Long userId, Long erranderId, BigDecimal amount) {
+        String url = vroomPayApiSettleUrl;
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("x-api-key", vroomPayApiKey);
+
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("errandId", errandId);
+        requestBody.put("payerId", userId); // 보내는 사람 (User)
+        requestBody.put("payeeId", erranderId); // 받는 사람 (Errander)
+        requestBody.put("amount", amount);
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+
+        Map<String, Object> result = new HashMap<>();
+        try {
+            ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, entity, Map.class);
+            result.put("success", true);
+            result.put("message", "정산이 완료되었습니다.");
+            
+            if (response.getBody() != null) {
+                result.putAll(response.getBody());
+            }
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", "정산 처리에 실패했습니다: " + e.getMessage());
         }
         return result;
     }
