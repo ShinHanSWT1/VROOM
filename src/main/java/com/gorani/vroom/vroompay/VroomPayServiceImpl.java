@@ -12,6 +12,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -19,6 +20,7 @@ import java.util.Map;
 public class VroomPayServiceImpl implements VroomPayService {
 
     private final RestTemplate restTemplate = new RestTemplate();
+    private final VroomPayMapper vroomPayMapper;
 
     @Value("${vroompay.api.key}")
     private String vroomPayApiKey;
@@ -185,4 +187,36 @@ public class VroomPayServiceImpl implements VroomPayService {
         }
         return result;
     }
+
+    // 계좌 변경 이력 등록
+    @Override
+    public void insertWalletTransactions(WalletTransactionVO walletTransactionVO) {
+        vroomPayMapper.insertWalletTransactions(walletTransactionVO);
+    }
+
+    // 계좌 변경 이력 조회
+    @Override
+    public List<WalletTransactionVO> getWalletTransactions(Long userId, int page, int size) {
+        int offset = (page - 1) * size;
+        return vroomPayMapper.selectWalletTransactions(userId, offset, size);
+    }
+
+    // 계좌 변경 이력 총 개수
+    @Override
+    public int countWalletTransactions(Long userId) {
+        return vroomPayMapper.countWalletTransactions(userId);
+    }
+
+    // 로컬 지갑 계좌 생성
+    @Override
+    public void insertWalletAccount(VroomPayVO vroomPayVO) {
+        vroomPayMapper.insertWalletAccount(vroomPayVO);
+    }
+
+    // 로컬 지갑 계좌 조회
+    @Override
+    public VroomPayVO getWalletAccount(Long userId) {
+        return vroomPayMapper.selectWalletAccount(userId);
+    }
+
 }

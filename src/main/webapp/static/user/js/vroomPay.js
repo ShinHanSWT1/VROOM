@@ -36,7 +36,7 @@ function checkAccountStatus() {
               currentBalance = balance;
               availBalance = account.availBalance ? account.availBalance : 0;
               
-              // loadTransactions(1);
+              loadTransactions(1);
 
             } else {
               // 계좌 연결 안됨
@@ -91,17 +91,112 @@ function linkAccount() {
 }
 
 
-// 거래 내역 조회 (나중에 구현)
+// 거래 내역 조회
 function loadTransactions(page) {
+  fetch(contextPath + '/api/vroompay/transactions?page=' + page + '&size=' + itemsPerPage)
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        renderTransactions(data.transactions);
+        renderPagination(data.totalPages, data.currentPage);
+        document.querySelector('.history-count').textContent = '(' + data.totalCount + ')';
+      } else {
+        const list = document.getElementById('transactionList');
+        list.innerHTML = '<div class="history-item"><div class="item-title" style="grid-column:1/-1;text-align:center;">거래 내역을 불러올 수 없습니다.</div></div>';
+      }
+    })
+    .catch(err => {
+      console.error('Error loading transactions:', err);
+      const list = document.getElementById('transactionList');
+      list.innerHTML = '<div class="history-item"><div class="item-title" style="grid-column:1/-1;text-align:center;">거래 내역 조회 중 오류가 발생했습니다.</div></div>';
+    });
 }
 
 function renderTransactions(transactions) {
+  const list = document.getElementById('transactionList');
+
+  if (!transactions || transactions.length === 0) {
+    list.innerHTML = '<div class="history-item"><div class="item-title" style="grid-column:1/-1;text-align:center;">거래 내역이 없습니다.</div></div>';
+    return;
+  }
+
+  let html = '';
+  transactions.forEach(function(txn) {
+    const typeLabel = getTypeLabel(txn.txnType);
+    const amountClass = isPositiveType(txn.txnType) ? 'positive' : 'negative';
+    const amountPrefix = isPositiveType(txn.txnType) ? '+' : '-';
+    const memo = txn.memo ? txn.memo : typeLabel;
+
+    html += '<div class="history-item">';
+    html += '  <div class="item-title">' + memo + '</div>';
+    html += '  <div class="item-date">' + formatDate(txn.createdAt) + '</div>';
+    html += '  <div class="item-amount ' + amountClass + '">' + amountPrefix + Number(txn.amount).toLocaleString() + '원</div>';
+    html += '</div>';
+  });
+
+  list.innerHTML = html;
+}
+
+function getTypeLabel(txnType) {
+  const labels = {
+    'CHARGE': '충전',
+    'WITHDRAW': '출금',
+    'HOLD': '홀드',
+    'RELEASE': '홀드 해제',
+    'PAYOUT': '정산',
+    'REFUND': '환불'
+  };
+  return labels[txnType] || txnType;
+}
+
+function isPositiveType(txnType) {
+  return txnType === 'CHARGE' || txnType === 'PAYOUT' || txnType === 'REFUND' || txnType === 'RELEASE';
 }
 
 function formatDate(dateStr) {
+  if (!dateStr) return '-';
+  const date = new Date(dateStr);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return year + '.' + month + '.' + day + ' ' + hours + ':' + minutes;
 }
 
 function renderPagination(totalPages, currentPage) {
+  const pagination = document.getElementById('pagination');
+
+  if (totalPages <= 1) {
+    pagination.innerHTML = '';
+    return;
+  }
+
+  let html = '';
+
+  // 이전 버튼
+  if (currentPage > 1) {
+    html += '<button class="page-btn" onclick="loadTransactions(' + (currentPage - 1) + ')">이전</button>';
+  }
+
+  // 페이지 번호
+  const startPage = Math.max(1, currentPage - 2);
+  const endPage = Math.min(totalPages, currentPage + 2);
+
+  for (let i = startPage; i <= endPage; i++) {
+    if (i === currentPage) {
+      html += '<button class="page-btn active">' + i + '</button>';
+    } else {
+      html += '<button class="page-btn" onclick="loadTransactions(' + i + ')">' + i + '</button>';
+    }
+  }
+
+  // 다음 버튼
+  if (currentPage < totalPages) {
+    html += '<button class="page-btn" onclick="loadTransactions(' + (currentPage + 1) + ')">다음</button>';
+  }
+
+  pagination.innerHTML = html;
 }
 
 function updateBalanceDisplay() {
@@ -152,7 +247,7 @@ document.getElementById('submitDepositBtn').addEventListener('click', function()
           input.value = '';
           memoInput.value = '';
           
-          // loadTransactions(1);
+          loadTransactions(1);
         }
     })
     .catch(err => {
@@ -168,9 +263,31 @@ document.getElementById('submitWithdrawBtn').addEventListener('click', function(
   var memoInput = document.getElementById('withdrawMemo');
   var error = document.getElementById('withdrawError');
 
+  // 초기화
+  input.classList.remove('error');
+  error.classList.remove('active');
+
   if (!input.value || !/^\d+$/.test(input.value)) {
     input.classList.add('error');
     error.textContent = '숫자만 입력해주세요.';
+    error.classList.add('active');
+    return;
+  }
+
+  var withdrawAmount = parseInt(input.value);
+
+  // 잔액 검증
+  if (withdrawAmount > currentBalance) {
+    input.classList.add('error');
+    error.textContent = '출금 금액이 잔액보다 큽니다. (현재 잔액: ' + Number(currentBalance).toLocaleString() + '원)';
+    error.classList.add('active');
+    return;
+  }
+
+  // 0원 이하 검증
+  if (withdrawAmount <= 0) {
+    input.classList.add('error');
+    error.textContent = '출금 금액은 0원보다 커야 합니다.';
     error.classList.add('active');
     return;
   }
@@ -197,7 +314,7 @@ document.getElementById('submitWithdrawBtn').addEventListener('click', function(
         input.value = '';
         memoInput.value = '';
         
-        // loadTransactions(1);
+        loadTransactions(1);
       } else {
         input.classList.add('error');
         error.textContent = data.message;
