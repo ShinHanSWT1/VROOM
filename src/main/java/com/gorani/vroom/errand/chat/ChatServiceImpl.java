@@ -18,6 +18,19 @@ public class ChatServiceImpl implements ChatService {
     private final ChatMapper chatMapper;
     private final ErrandAssignmentMapper assignmentMapper;
     private final SimpMessagingTemplate messagingTemplate;
+    
+    private String toChangedByType(String role) {
+        if (role == null) return "SYSTEM";
+        switch (role) {
+            case "OWNER":
+            case "USER": return "USER";
+            case "ERRANDER":
+            case "RUNNER": return "ERRANDER";
+            case "ADMIN": return "ADMIN";
+            default: return "SYSTEM";
+        }
+    }
+
 
     @Override
     @Transactional
@@ -234,5 +247,29 @@ public class ChatServiceImpl implements ChatService {
         Long errandsId = chatMapper.selectErrandsIdByRoomId(roomId);
         if (errandsId == null) return false;
         return canAccessChatRoom(errandsId, userId);
+    }
+    
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public void completeConfirm(Long errandsId, Long ownerUserId) {
+        int updated = assignmentMapper.updateErrandStatusConfirmed1ToConfirmed2(errandsId);
+        System.out.println("[DEBUG] CONFIRMED1->CONFIRMED2 updated=" + updated);
+        
+        if (updated == 0) {
+            throw new IllegalStateException("이미 처리되었거나 현재 상태가 CONFIRMED1이 아닙니다.");
+        }
+
+        assignmentMapper.insertStatusHistory(
+            errandsId,
+            "CONFIRMED1",
+            "CONFIRMED2",
+            "USER",
+            ownerUserId
+        );
+    }
+    
+    @Override
+    public String getErrandStatus(Long errandsId) {
+        return chatMapper.selectErrandStatusByErrandsId(errandsId);
     }
 }

@@ -53,6 +53,10 @@ public class ChatController {
             return "redirect:/errand/list";
         }
         Long errandsId = room.getErrandsId();
+        
+        String errandStatus = chatService.getErrandStatus(errandsId);
+        System.out.println("[DEBUG] roomId=" + roomId + ", errandsId=" + errandsId + ", errandStatus=" + errandStatus);
+        model.addAttribute("errandStatus", errandStatus);
 
         // 3) 채팅방 정보 + 메시지 로딩
         ChatRoomVO chatRoomInfo = chatService.getErrandInfoForChat(errandsId, currentUserId);
@@ -119,6 +123,10 @@ public class ChatController {
             // 참가자 아니면: 이미 다른 부름이가 매칭한 방
             return "errand/errand_already_matched";
         }
+        
+        String errandStatus = chatService.getErrandStatus(errandsId);
+        System.out.println("[DEBUG] errandsId=" + errandsId + ", errandStatus=" + errandStatus);
+        model.addAttribute("errandStatus", errandStatus);
 
         // 4) 채팅방 정보 조회 (심부름 정보 포함)
         ChatRoomVO chatRoomInfo = chatService.getErrandInfoForChat(errandsId, currentUserId);
@@ -285,5 +293,31 @@ public class ChatController {
         List<ChatMessageVO> messages = chatService.getChatMessages(roomId, loginUser.getUserId());
         
         return ResponseEntity.ok(Map.of("success", true, "messages", messages));
+    }
+    
+    @PostMapping("/assign/complete-confirm")
+    @ResponseBody
+    public java.util.Map<String, Object> completeConfirm(@RequestBody java.util.Map<String, Object> body,
+                                                         HttpSession session) {
+    	System.out.println("[HIT] /assign/complete-confirm");
+
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
+        if (loginUser == null) {
+            return java.util.Map.of("ok", false, "message", "로그인이 필요합니다.");
+        }
+
+        Long currentUserId = loginUser.getUserId();
+        Long errandsId = Long.valueOf(String.valueOf(body.get("errandsId")));
+        Long roomId = Long.valueOf(String.valueOf(body.get("roomId")));
+
+        // (권장) OWNER 권한 체크: 참가자 + 역할 확인
+        String role = chatService.getUserRole(roomId, currentUserId);
+        if (!"OWNER".equals(role)) {
+            return Map.of("success", false, "message", "권한이 없습니다.");
+        }
+
+        chatService.completeConfirm(errandsId, currentUserId);
+
+        return Map.of("success", true, "status", "CONFIRMED2");
     }
 }

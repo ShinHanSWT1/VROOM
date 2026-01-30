@@ -13,6 +13,25 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
 
     private final ErrandAssignmentMapper errandAssignmentMapper;
     private final ChatService chatService;
+    
+    private String toChangedByType(String role) {
+        if (role == null) return "SYSTEM";
+
+        // 시스템 내부 role이 OWNER로 오더라도 history는 USER로 기록
+        switch (role) {
+            case "OWNER":
+            case "USER":
+                return "USER";
+            case "ERRANDER":
+            case "RUNNER":
+                return "ERRANDER";
+            case "ADMIN":
+                return "ADMIN";
+            default:
+                return "SYSTEM";
+        }
+    }
+
 
     @Override
     @Transactional

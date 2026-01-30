@@ -17,6 +17,7 @@ public interface ErrandAssignmentMapper {
     int updateErrandStatusToWaiting(@Param("errandsId") Long errandsId);
     
     int updateErrandStatusMatchedToConfirmed1(@Param("errandsId") Long errandsId);
+    int updateErrandStatusConfirmed1ToConfirmed2(@Param("errandsId") Long errandsId);
     int updateErrandStatusMatchedToWaiting(@Param("errandsId") Long errandsId);
 
     int insertMatchedAssignment(

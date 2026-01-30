@@ -285,6 +285,16 @@ body {
     background: #CF3E30;
 }
 
+.complete-btn {
+  background: #2ecc71;
+  color: #fff;
+  font-weight: 600;
+}
+.status-done {
+  font-weight: 600;
+  color: #2ecc71;
+}
+
 /* ========================================
    우측 패널 (채팅)
 ======================================== */

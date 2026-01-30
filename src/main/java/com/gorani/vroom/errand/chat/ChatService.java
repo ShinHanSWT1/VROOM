@@ -84,4 +84,8 @@ public interface ChatService {
     Long getOwnerUserIdByErrandsId(Long errandsId);
     
     boolean canAccessChatRoomByRoomId(Long roomId, Long userId);
+    
+    void completeConfirm(Long errandsId, Long ownerUserId);
+    
+    String getErrandStatus(Long errandsId);
 }

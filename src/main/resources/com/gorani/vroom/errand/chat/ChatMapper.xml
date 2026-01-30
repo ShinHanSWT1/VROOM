@@ -106,6 +106,7 @@
     <select id="selectErrandInfoForChat" resultType="com.gorani.vroom.errand.chat.ChatRoomVO">
         SELECT 
             e.errands_id AS errandsId,
+            e.status AS status,   
             e.title AS errandTitle,
             e.description AS errandDescription,
             CONCAT(ld.gungu_name, ' ', ld.dong_name) AS errandLocation,
