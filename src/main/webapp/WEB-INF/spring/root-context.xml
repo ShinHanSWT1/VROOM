@@ -8,9 +8,14 @@
         http://www.springframework.org/schema/tx
         http://www.springframework.org/schema/tx/spring-tx.xsd">
 
-	<!-- DB Properties -->
+	<!-- Properties 파일 로드 (db.properties + application.properties) -->
 	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-		<property name="location" value="classpath:db.properties"/>
+		<property name="locations">
+			<list>
+				<value>classpath:db.properties</value>
+				<value>classpath:application.properties</value>
+			</list>
+		</property>
 	</bean>
 
 	<!-- DataSource (HikariCP) -->

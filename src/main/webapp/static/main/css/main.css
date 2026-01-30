@@ -2,57 +2,51 @@
    메인 페이지 - Hero Section
 ======================================== */
 .hero-section {
-    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
-    padding: 3rem 0;
+    padding: 4rem 0;
     position: relative;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.hero-section.hero-user {
+    background-color: var(--color-accent);
+    /* #F2A007 per user request */
+}
+
+.hero-section.hero-rider {
+    background-color: var(--color-primary);
+    /* Green per user palette */
 }
 
 .hero-content {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 1.5rem;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+}
+
+.hero-text {
+    max-width: 500px;
 }
 
 .hero-title {
-    font-size: 2.5rem;
+    font-size: 3rem;
     color: var(--color-white);
-    margin-bottom: 1rem;
-    font-weight: 700;
+    margin-bottom: 1.5rem;
+    font-weight: 800;
+    line-height: 1.3;
 }
 
 .hero-subtitle {
     font-size: 1.25rem;
     color: var(--color-white);
     margin-bottom: 2rem;
-    opacity: 0.95;
+    opacity: 0.9;
 }
 
-.hero-notice {
-    background-color: var(--color-white);
-    border-radius: 12px;
-    padding: 1.5rem;
-    max-width: 600px;
-    margin: 0 auto;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-}
-
-.notice-badge {
-    display: inline-block;
-    background-color: var(--color-primary);
-    color: var(--color-white);
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    font-weight: 600;
-    font-size: 0.875rem;
-    margin-bottom: 1rem;
-}
-
-.hero-notice p {
-    color: var(--color-dark);
-    line-height: 1.8;
-    font-size: 0.95rem;
-}
+/* Removed hero-notice */
 
 /* ========================================
    Action Menu (심부름 카테고리 메뉴)
@@ -63,32 +57,43 @@
 }
 
 .menu-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 1.5rem;
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
     margin-bottom: 2rem;
+    flex-wrap: wrap;
 }
 
 .menu-item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 2rem 1rem;
-    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
-    border-radius: 16px;
+    gap: 0.8rem;
+    text-decoration: none;
     cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
 }
 
 .menu-item:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    transform: translateY(-5px);
 }
 
 .menu-icon {
-    font-size: 2.5rem;
-    margin-bottom: 0.75rem;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background-color: #FDF7F3;
+    /* Light orange bg */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    color: var(--color-primary);
+    transition: all 0.3s ease;
+}
+
+.menu-item:hover .menu-icon {
+    background-color: var(--color-tertiary);
 }
 
 .menu-label {
@@ -194,17 +199,20 @@
 }
 
 .task-card {
+    display: block;
     background-color: var(--color-white);
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
     cursor: pointer;
+    text-decoration: none;
+    border: 1px solid var(--color-light-gray);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
 }
 
 .task-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1);
 }
 
 .task-image {
@@ -238,9 +246,9 @@
 }
 
 .task-price {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--color-primary);
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--color-dark);
 }
 
 .task-location {
