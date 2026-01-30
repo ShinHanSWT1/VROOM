@@ -464,9 +464,10 @@
 
         const contextPath = '${pageContext.request.contextPath}';
 
-        fetch(contextPath + '/auth/selectdong?gu=' + encodeURIComponent(selectedGu))
+        fetch(contextPath + '/location/getDongs?gunguName=' + encodeURIComponent(selectedGu))
             .then(res => res.json())
             .then(dongs => {
+
                 dongSelect.disabled = false;
                 dongSelect.innerHTML = '<option value="">동 선택</option>';
 

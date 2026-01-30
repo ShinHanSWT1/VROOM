@@ -22,7 +22,6 @@
         </div>
     </div>
 </section>
-
 <!-- Action Menu -->
 <section class="action-menu">
     <div class="container">

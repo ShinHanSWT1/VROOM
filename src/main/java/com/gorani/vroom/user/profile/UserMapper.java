@@ -31,4 +31,10 @@ public interface UserMapper {
 
     // 회원 탈퇴 처리
     void withdrawUser(Long userId);
+
+    // role 변경
+    void updateRole(
+            @Param("userId") Long userId,
+            @Param("role") String role
+    );
 }

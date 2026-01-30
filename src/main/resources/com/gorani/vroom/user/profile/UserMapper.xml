@@ -76,4 +76,11 @@
         WHERE user_id = #{userId}
     </update>
 
+    <!-- 사용자 role 변경 -->
+    <update id="updateRole" parameterType="map">
+        UPDATE MEMBERS
+        SET role = #{role}
+        WHERE user_id = #{userId}
+    </update>
+
 </mapper>
