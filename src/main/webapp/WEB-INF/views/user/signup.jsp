@@ -526,9 +526,11 @@
     <div class="auth-card">
         <h2 class="auth-title">회원가입</h2>
 
-        <div id="globalError" class="form-msg error">
-                ${signupError}
-        </div>
+        <c:if test="${not empty signupError}">
+            <div id="globalError" class="form-msg error">
+                    ${signupError}
+            </div>
+        </c:if>
 
         <form action="${pageContext.request.contextPath}/auth/signup" method="post" enctype="multipart/form-data" id="signupForm">
             <!-- 이메일 입력 -->
@@ -538,9 +540,11 @@
                         type="email"
                         id="signup-email"
                         name="email"
+                        value="${oauthUser.email}"
                         class="auth-input email-input"
                         placeholder="이메일을 입력하세요"
                         autocomplete="email"
+                        <c:if test="${not empty oauthUser.email}">readonly</c:if>
                 >
                 <span id="emailMsg" class="input-guide"></span>
             </div>
@@ -548,14 +552,25 @@
             <!-- 비밀번호 입력 -->
             <div class="auth-form-group">
                 <label for="signup-password" class="auth-label">비밀번호</label>
-                <input
-                        type="password"
-                        id="signup-password"
-                        name="pwd"
-                        class="auth-input password-input"
-                        placeholder="비밀번호를 입력하세요"
-                        autocomplete="new-password"
-                >
+                <c:if test="${empty oauthUser}">
+                    <input
+                            type="password"
+                            id="signup-password"
+                            name="pwd"
+                            class="auth-input password-input"
+                            placeholder="비밀번호를 입력하세요"
+                            autocomplete="new-password"
+                    >
+                </c:if>
+                <c:if test="${not empty oauthUser}">
+                    <input
+                            type="password"
+                            id="signup-password"
+                            disabled
+                            class="auth-input password-input"
+                            placeholder="카카오 로그인 사용자는 비밀번호가 필요하지 않습니다"
+                    >
+                </c:if>
             </div>
 
             <!-- 닉네임 입력 -->
@@ -565,6 +580,7 @@
                         type="text"
                         id="nickname"
                         name="nickname"
+                        value="${oauthUser.nickname}"
                         class="auth-input"
                         placeholder="닉네임을 입력하세요"
                         autocomplete="nickname"
@@ -641,7 +657,7 @@
 
         <!-- 소셜 회원가입 -->
         <div class="social-login-section">
-            <button type="button" class="social-btn kakao-btn">
+            <button type="button" class="social-btn kakao-btn" onclick="location.href='${pageContext.request.contextPath}/auth/kakao/login'">
                 <span class="kakao-icon"></span>
                 <span>카카오로 시작하기</span>
             </button>
@@ -736,9 +752,22 @@
         });
     });
 
+    // OAuth 사용자 여부 (서버에서 oauthUser 세션으로 판단)
+    const isOAuth = ${not empty oauthUser};
+
     // 이메일 중복 체크
     let emailTimer = null;
     const contextPath = '${pageContext.request.contextPath}';
+
+    // OAuth 회원가입 시 이메일/닉네임 미리 채워져 있으면 유효 처리
+    if (isOAuth) {
+        if ($('#signup-email').val().trim()) {
+            emailValid = true;
+        }
+        if ($('#nickname').val().trim()) {
+            nicknameValid = true;
+        }
+    }
 
     emailInput.addEventListener('input', function () {
         clearTimeout(emailTimer);
@@ -843,13 +872,19 @@
             addrMsg.text('');
         }
 
-        const passwordValue = $('#signup-password').val();
+        const passwordValue = $('#signup-password').val() || '';
+        let passwordValid;
+        if (!isOAuth) {
+            passwordValid = passwordValue.length >= 4;
+        } else {
+            passwordValid = true; // OAuth는 서버에서 처리
+        }
 
         $('#signupBtn').prop('disabled', !(
             emailValid &&
             phoneValid &&
             nicknameValid &&
-            passwordValue.length >= 4 &&
+            passwordValid &&
             dong1Valid &&
             dong2Valid
         ));
@@ -959,6 +994,11 @@
     // 페이지 로드 시 구 목록 로드
     loadGus();
 
+    // OAuth 회원가입 시 초기 버튼 상태 갱신
+    if (isOAuth) {
+        validateSignup();
+    }
+
     // 회원가입 폼 제출 처리 (AJAX)
     $('#signupForm').on('submit', function(e) {
         e.preventDefault();
@@ -981,7 +1021,6 @@
             dataType: 'json',
             success: function(response) {
                 if (response.success) {
-                    alert('정상적으로 회원가입되었습니다.');
                     window.location.href = contextPath + '/auth/login';
                 } else {
                     $('#signupBtn').prop('disabled', false).text(originalBtnText);

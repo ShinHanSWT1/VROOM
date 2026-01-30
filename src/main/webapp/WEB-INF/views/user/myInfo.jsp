@@ -18,7 +18,7 @@
         <aside class="sidebar">
             <ul class="sidebar-menu">
                 <li class="sidebar-item"><a href="<c:url value='/member/myInfo'/>" class="sidebar-link active">나의 정보</a></li>
-                <li class="sidebar-item"><a href="<c:url value='/member/vroomPay'/>" class="sidebar-link">부름 페이<br>(계좌 관리)</a></li>
+                <li class="sidebar-item"><a href="<c:url value='/member/vroomPay'/>" class="sidebar-link">부름 페이</a></li>
                 <li class="sidebar-item"><a href="<c:url value='/member/myActivity'/>" class="sidebar-link">나의 활동</a></li>
                 <li class="sidebar-item"><a href="#" class="sidebar-link">설정</a></li>
                 <li class="sidebar-item"><a href="#" class="sidebar-link">고객지원</a></li>

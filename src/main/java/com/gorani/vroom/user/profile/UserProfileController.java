@@ -61,7 +61,7 @@ public class UserProfileController {
         // 내 회원 번호 가져오기
         Long userId = loginUser.getUserId();
 
-        // CommunityService에서 3가지 활동 내역 가져오기
+        // CommunityService에서 활동 내역 가져오기
         List<CommunityPostVO> myPosts = communityService.getMyPosts(userId);
         List<CommunityPostVO> myComments = communityService.getMyCommentedPosts(userId);
         List<CommunityPostVO> myScraps = communityService.getMyLikedPosts(userId);
@@ -69,7 +69,7 @@ public class UserProfileController {
         //  JSP(화면)로 보따리(Model) 싸서 보내기
         model.addAttribute("myPosts", myPosts);       // 작성한 글
         model.addAttribute("myComments", myComments); // 댓글 단 글
-        model.addAttribute("myScraps", myScraps);     // 저장한 글
+        model.addAttribute("myScraps", myScraps);     // 좋아요 한 글
 
         return "user/myActivity";
     }

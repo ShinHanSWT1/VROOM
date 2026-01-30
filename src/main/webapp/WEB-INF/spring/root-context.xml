@@ -18,6 +18,18 @@
 		</property>
 	</bean>
 
+	<!-- RestTemplate (UTF-8 인코딩 설정) -->
+	<bean id="restTemplate" class="org.springframework.web.client.RestTemplate">
+		<property name="messageConverters">
+			<list>
+				<bean class="org.springframework.http.converter.StringHttpMessageConverter">
+					<constructor-arg value="UTF-8"/>
+				</bean>
+				<bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"/>
+			</list>
+		</property>
+	</bean>
+
 	<!-- DataSource (HikariCP) -->
 	<bean id="dataSource" class="com.zaxxer.hikari.HikariDataSource">
 		<property name="driverClassName" value="${db.driver}"/>
@@ -59,5 +71,4 @@
 
 	<!-- @Transactional 활성화 -->
 	<tx:annotation-driven transaction-manager="transactionManager"/>
-
 </beans>

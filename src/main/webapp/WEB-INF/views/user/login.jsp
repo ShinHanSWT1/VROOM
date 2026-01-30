@@ -451,6 +451,21 @@
             color: var(--color-warm);
         }
 
+        /* 공통 메시지 */
+        .form-msg {
+            display: block;
+            margin-top: 6px;
+            font-size: 0.85rem;
+        }
+
+        .form-msg.error {
+            color: #D32F2F;
+        }
+
+        .form-msg.success {
+            color: #2E7D32;
+        }
+
         /* 반응형 */
         @media (max-width: 768px) {
             .header-container {
@@ -503,6 +518,7 @@
                         type="email"
                         id="email"
                         name="email"
+                        value="${email}"
                         class="auth-input email-input"
                         placeholder="이메일을 입력하세요"
                         autocomplete="email"
@@ -520,6 +536,11 @@
                         placeholder="비밀번호를 입력하세요"
                         autocomplete="current-password"
                 >
+                <c:if test="${not empty loginError}">
+                    <small class="form-msg error">
+                            ${loginError}
+                    </small>
+                </c:if>
             </div>
 
             <!-- 로그인 버튼 -->
@@ -533,7 +554,7 @@
 
         <!-- 소셜 로그인 -->
         <div class="social-login-section">
-            <button type="button" class="social-btn kakao-btn">
+            <button type="button" class="social-btn kakao-btn" onclick="location.href='${pageContext.request.contextPath}/auth/kakao/login'">
                 <span class="kakao-icon"></span>
                 <span>카카오로 시작하기</span>
             </button>
@@ -640,6 +661,12 @@
         if (!this.value) {
             this.style.backgroundColor = 'var(--color-light-gray)';
         }
+    });
+
+    // 로그인 버튼 로딩 처리
+    document.getElementById("loginForm").addEventListener("submit", () => {
+        loginBtn.disabled = true;
+        loginBtn.innerText = "처리 중...";
     });
 </script>
 </body>
