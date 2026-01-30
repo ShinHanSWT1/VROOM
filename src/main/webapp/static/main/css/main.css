@@ -46,6 +46,18 @@
     opacity: 0.9;
 }
 
+/* Hero 3D Canvas */
+.hero-image {
+    flex-shrink: 0;
+}
+
+#hero3d {
+    width: 500px;
+    height: 400px;
+    max-width: 100%;
+    display: block;
+}
+
 /* Removed hero-notice */
 
 /* ========================================

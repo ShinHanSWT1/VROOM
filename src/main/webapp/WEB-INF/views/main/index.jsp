@@ -47,9 +47,16 @@
                         </c:choose>
                     </div>
                     <div class="hero-image">
-                        <!-- Illustration Placeholder -->
-                        <img src="https://d1unjqcospf8gs.cloudfront.net/assets/home/main/3x/image-top-d68ee780d79f01e18a93a0b92eb5e227a177239270e5c54433f021966aa50085.png"
-                            alt="VROOM Main" style="max-width: 500px; width: 100%; height: auto;">
+                       <!--3d UI 렌더링?-->
+                        <c:choose>
+                            <c:when test="${sessionScope.loginSess.role == 'ERRANDER'}">
+                                <canvas id="hero3d"></canvas>
+                            </c:when>
+                            <c:otherwise>
+                                <img src="https://d1unjqcospf8gs.cloudfront.net/assets/home/main/3x/image-top-d68ee780d79f01e18a93a0b92eb5e227a177239270e5c54433f021966aa50085.png"
+                                     alt="VROOM Main" style="max-width: 500px; width: 100%; height: auto;">
+                            </c:otherwise>
+                        </c:choose>
                     </div>
                 </div>
             </section>
@@ -231,5 +238,10 @@
                 });
             </script>
             <script src="<c:url value='/static/main/js/mainFilter.js'/>"></script>
+
+            <c:if test="${sessionScope.loginSess.role == 'ERRANDER'}">
+                <script src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+                <script src="<c:url value='/static/main/js/hero3d.js'/>"></script>
+            </c:if>
 
             <jsp:include page="../common/footer.jsp" />
