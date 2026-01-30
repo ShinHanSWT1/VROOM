@@ -7,12 +7,19 @@
 
     <!-- 채팅방 조회 -->
     <select id="selectChatRoomByErrandsId" resultType="com.gorani.vroom.errand.chat.ChatRoomVO">
-        SELECT room_id, errands_id, errander_id, created_at
-        FROM CHAT_ROOM
-        WHERE errands_id = #{errandsId}
-        LIMIT 1
-    </select>
-    
+	    SELECT cr.room_id, cr.errands_id, cr.errander_id, cr.created_at
+	    FROM CHAT_ROOM cr
+	    WHERE cr.errands_id = #{errandsId}
+	      AND EXISTS (
+	        SELECT 1
+	        FROM CHAT_PARTICIPANT cp
+	        WHERE cp.room_id = cr.room_id
+	          AND cp.is_active = 1
+	      )
+	    ORDER BY cr.room_id DESC
+	    LIMIT 1
+	</select>
+	
     <select id="selectChatRoomById" resultType="com.gorani.vroom.errand.chat.ChatRoomVO">
         SELECT room_id, errands_id, errander_id, created_at
         FROM CHAT_ROOM
@@ -130,17 +137,25 @@
           AND cp.is_active = 1
     </select>
     
-    <!-- 1) 현재 errands 상태 조회 -->
+    <!-- 현재 errands 상태 조회 -->
 	<select id="selectErrandStatusByErrandsId" resultType="string">
 	  SELECT status
 	  FROM ERRANDS
 	  WHERE errands_id = #{errandsId}
 	</select>
 	
-	<!-- 2) MATCHED -> CONFIRM1 (수락: 한번만 성공해야 함) -->
-	<update id="updateErrandStatusMatchedToConfirm1">
+	<!-- 1) WAITING -> MATCHED (채팅 시작: 한번만 성공해야 함) -->
+	<update id="updateErrandStatusWaitingToMatched">
 	  UPDATE ERRANDS
-	  SET status = 'CONFIRM1'
+	  SET status = 'MATCHED'
+	  WHERE errands_id = #{errandsId}
+	    AND status = 'WAITING'
+	</update>
+	
+	<!-- 2) MATCHED -> CONFIRMED1 (수락: 한번만 성공해야 함) -->
+	<update id="updateErrandStatusMatchedToConfirmed1">
+	  UPDATE ERRANDS
+	  SET status = 'CONFIRMED1'
 	  WHERE errands_id = #{errandsId}
 	    AND status = 'MATCHED'
 	</update>

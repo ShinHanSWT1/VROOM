@@ -107,17 +107,17 @@ public class ChatServiceImpl implements ChatService {
     @Transactional
     public void acceptErrand(Long errandsId, Long roomId, Long userId) {
 
-    	// 상태 전환: MATCHED -> CONFIRM1 (딱 1번만 성공)
-        int updated = assignmentMapper.updateErrandStatusMatchedToConfirm1(errandsId);
+    	// 상태 전환: MATCHED -> CONFIRMED1 (딱 1번만 성공)
+        int updated = assignmentMapper.updateErrandStatusMatchedToConfirmed1(errandsId);
         if (updated == 0) {
             throw new IllegalStateException("이미 처리된 요청입니다.");
         }
         
-        // 상태 이력 저장 (MATCHED -> CONFIRM1)
+        // 상태 이력 저장 (MATCHED -> CONFIRMED1)
         assignmentMapper.insertStatusHistory(
             errandsId,
             "MATCHED",
-            "CONFIRM1",
+            "CONFIRMED1",
             "USER",
             userId
         );

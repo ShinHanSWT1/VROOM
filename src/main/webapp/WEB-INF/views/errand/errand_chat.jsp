@@ -395,7 +395,7 @@
                         body: JSON.stringify({
                             errandsId: errandsId,
                             roomId: roomId,
-                            erranderUserId: currentUserId
+                            erranderUserId: erranderUserId
                         })
                     })
                     .then(response => response.json())
