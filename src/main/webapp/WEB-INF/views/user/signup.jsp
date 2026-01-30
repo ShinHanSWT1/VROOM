@@ -175,7 +175,7 @@
             font-weight: 700;
             color: var(--color-dark);
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 12px;
         }
 
         /* 입력 필드 */
@@ -262,6 +262,40 @@
             font-weight: 600;
             color: var(--color-dark);
             margin-bottom: 0.5rem;
+        }
+
+        .form-label {
+            display: block;
+            color: #222;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-label .required {
+            color: #222;
+        }
+
+        .form-label .optional {
+            color: #888;
+            font-weight: 400;
+        }
+
+        /* Progress Bar (접근성: role="progressbar" + aria-valuenow) */
+        .progress-wrapper {
+            width: 100%;
+            height: 8px;
+            background-color: var(--color-light-gray);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: var(--color-primary);
+            border-radius: 4px;
+            transition: width 0.3s ease;
         }
 
         .address-selects {
@@ -526,6 +560,16 @@
     <div class="auth-card">
         <h2 class="auth-title">회원가입</h2>
 
+        <div class="progress-wrapper" aria-hidden="true">
+            <div class="progress-bar"
+                 id="signupProgress"
+                 role="progressbar"
+                 aria-valuemin="0"
+                 aria-valuemax="100"
+                 aria-valuenow="0">
+            </div>
+        </div>
+
         <c:if test="${not empty signupError}">
             <div id="globalError" class="form-msg error">
                     ${signupError}
@@ -568,8 +612,11 @@
                             id="signup-password"
                             disabled
                             class="auth-input password-input"
-                            placeholder="카카오 로그인 사용자는 비밀번호가 필요하지 않습니다"
+                            placeholder="비밀번호 입력 없음"
                     >
+                    <small class="input-guide">
+                        카카오 로그인 계정은 비밀번호를 별도로 설정하지 않습니다.
+                    </small>
                 </c:if>
             </div>
 
@@ -617,7 +664,7 @@
 
             <!-- 주소 1 -->
             <div class="address-group">
-                <label class="address-label">주소 1</label>
+                <label class="form-label">주소 1 <span class="required">*</span></label>
                 <div class="address-selects">
                     <span class="address-sido">서울특별시</span>
                     <select name="gu1" id="gu1" class="address-select">
@@ -632,7 +679,7 @@
 
             <!-- 주소 2 -->
             <div class="address-group">
-                <label class="address-label">주소 2</label>
+                <label class="form-label">주소 2 <span class="optional">(선택)</span></label>
                 <div class="address-selects">
                     <span class="address-sido">서울특별시</span>
                     <select name="gu2" id="gu2" class="address-select">
@@ -709,12 +756,17 @@
     const phoneInput = document.getElementById('phone');
     const signupBtn = document.getElementById('signupBtn');
 
+    // 전화번호: 숫자만 허용 + 11자리 제한
+    phoneInput.addEventListener('input', function () {
+        this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11);
+    });
+
     // 유효성 검사 변수
     let emailValid = false;
     let phoneValid = false;
     let nicknameValid = false;
     let dong1Valid = false;
-    let dong2Valid = false;
+    let dong2Valid = true; // 주소 2는 선택 항목이므로 기본 true
 
     // 모든 입력 필드에 대한 이벤트 리스너
     const inputs = [emailInput, passwordInput, nicknameInput, phoneInput];
@@ -755,6 +807,12 @@
     // OAuth 사용자 여부 (서버에서 oauthUser 세션으로 판단)
     const isOAuth = ${not empty oauthUser};
 
+    // 이메일 형식 검사 (정규식)
+    function isValidEmail(email) {
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return regex.test(email);
+    }
+
     // 이메일 중복 체크
     let emailTimer = null;
     const contextPath = '${pageContext.request.contextPath}';
@@ -773,7 +831,23 @@
         clearTimeout(emailTimer);
 
         const email = $(this).val().trim();
-        if (!email) return;
+        const msg = $('#emailMsg');
+
+        if (!email) {
+            msg.text('');
+            emailValid = false;
+            validateSignup();
+            return;
+        }
+
+        // 형식 검사 (즉시)
+        if (!isValidEmail(email)) {
+            msg.text('이메일 형식이 올바르지 않습니다');
+            msg.attr('class', 'input-guide error');
+            emailValid = false;
+            validateSignup();
+            return;
+        }
 
         emailTimer = setTimeout(() => {
             $.ajax({
@@ -798,10 +872,20 @@
         }, 400); // 0.4초 후 실행
     });
 
-    // 전화번호 중복 체크
+    // 전화번호 중복 체크 (11자리 + 중복 아님)
     phoneInput.addEventListener('blur', function () {
         const phone = $(this).val().trim();
+        const msg = $('#phoneMsg');
+
         if (!phone) return;
+
+        if (phone.length !== 11) {
+            msg.text('전화번호는 11자리여야 합니다');
+            msg.attr('class', 'input-guide error');
+            phoneValid = false;
+            validateSignup();
+            return;
+        }
 
         $.ajax({
             url: contextPath + '/auth/check-phone',
@@ -809,7 +893,6 @@
             data: { phone: phone },
             dataType: 'json',
             success: function(exists) {
-                const msg = $('#phoneMsg');
                 if (exists) {
                     msg.text('✖ 이미 등록된 번호입니다');
                     msg.attr('class', 'input-guide error');
@@ -830,25 +913,42 @@
     nicknameInput.addEventListener('input', function () {
         clearTimeout(nicknameTimer);
 
-        const nickname = $(this).val().trim();
+        const raw = $(this).val();
+        const trimmed = raw.trim();
         const msg = $('#nicknameMsg');
 
-        if (!nickname) {
+        // 1. 앞/뒤 공백 자동 제거 (입력 보정)
+        if (raw !== trimmed) {
+            $(this).val(trimmed);
+        }
+
+        // 2. 중간 공백 실시간 차단 (AJAX 전에 컷)
+        if (trimmed.includes(' ')) {
+            msg.text('닉네임에는 공백을 사용할 수 없습니다.');
+            msg.attr('class', 'input-guide error');
+            nicknameValid = false;
+            validateSignup();
+            return;
+        }
+
+        // 3. 빈 값
+        if (!trimmed) {
             msg.text('');
             nicknameValid = false;
             validateSignup();
             return;
         }
 
+        // 4. 중복 체크 (AJAX)
         nicknameTimer = setTimeout(() => {
             $.ajax({
                 url: contextPath + '/auth/check-nickname',
                 type: 'GET',
-                data: { nickname: nickname },
+                data: { nickname: trimmed },
                 dataType: 'json',
                 success: function (exists) {
                     if (exists) {
-                        msg.text('✖ 이미 사용 중인 닉네임입니다');
+                        msg.text('✖ 이미 사용 중인 닉네임입니다.');
                         msg.attr('class', 'input-guide error');
                         nicknameValid = false;
                     } else {
@@ -862,32 +962,46 @@
         }, 400);
     });
 
-    // 회원가입 버튼 활성화 체크
+    function isSignupReady() {
+        const passwordOk = isOAuth || $('#signup-password').val().length >= 4;
+        return (
+            emailValid &&
+            nicknameValid &&
+            phoneValid &&
+            dong1Valid &&
+            passwordOk
+        );
+    }
+
+    function updateProgress() {
+        let completed = 0;
+        const total = 4;
+
+        if (emailValid) completed++;
+        if (nicknameValid) completed++;
+        if (dong1Valid) completed++;
+
+        // 비밀번호는 OAuth면 무조건 통과
+        const passwordOk = isOAuth || $('#signup-password').val().length >= 4;
+        if (passwordOk) completed++;
+
+        const percent = (completed / total) * 100;
+
+        $('#signupProgress')
+            .css('width', percent + '%')
+            .attr('aria-valuenow', percent);
+    }
+
     function validateSignup() {
         const addrMsg = $('#addrMsg');
-
-        if (!dong1Valid || !dong2Valid) {
-            addrMsg.text('주소 1, 2를 모두 선택해주세요');
+        if (!dong1Valid) {
+            addrMsg.text('주소 1은 필수입니다');
         } else {
             addrMsg.text('');
         }
 
-        const passwordValue = $('#signup-password').val() || '';
-        let passwordValid;
-        if (!isOAuth) {
-            passwordValid = passwordValue.length >= 4;
-        } else {
-            passwordValid = true; // OAuth는 서버에서 처리
-        }
-
-        $('#signupBtn').prop('disabled', !(
-            emailValid &&
-            phoneValid &&
-            nicknameValid &&
-            passwordValid &&
-            dong1Valid &&
-            dong2Valid
-        ));
+        $('#signupBtn').prop('disabled', !isSignupReady());
+        updateProgress();
     }
 
     // 주소 선택 관련 변수는 jQuery로 직접 사용
@@ -908,7 +1022,7 @@
 
         if (!selectedGu) {
             $(dongSelectId).prop('disabled', true).html('<option value="">동 선택</option>');
-            $(dongCodeInputId).val('');
+            $(dongCodeInputId).val('').trigger('change');
             return;
         }
 
@@ -928,7 +1042,7 @@
                     );
                 });
 
-                $(dongCodeInputId).val('');
+                $(dongCodeInputId).val('').trigger('change');
             },
             error: function(err) {
                 console.error('동 조회 실패', err);
@@ -937,40 +1051,38 @@
         });
     }
 
-    // 동 선택 시 dongCode 저장
+    // 동 선택 시 dongCode 저장 (주소 2는 유효성에 영향 없음)
     function handleDongSelect(dongSelectId, dongCodeInputId, which) {
         const dongCode = $(dongSelectId).val();
 
         if (dongCode) {
             $(dongCodeInputId).val(dongCode);
             $(dongSelectId).addClass('has-value');
-
-            if (which === 1) dong1Valid = true;
-            if (which === 2) dong2Valid = true;
         } else {
             $(dongCodeInputId).val('');
             $(dongSelectId).removeClass('has-value');
-
-            if (which === 1) dong1Valid = false;
-            if (which === 2) dong2Valid = false;
         }
 
-        validateSignup();
+        if (which === 1) {
+            $(dongCodeInputId).trigger('change'); // dong1Valid 갱신
+        }
     }
+
+    // 주소1 dongCode1 change → valid 플래그 갱신
+    $('#dongCode1').on('change', function () {
+        dong1Valid = $(this).val() !== '';
+        validateSignup();
+    });
 
     // 구 선택 이벤트 리스너
     $('#gu1').on('change', function() {
         $(this).addClass('has-value');
         loadDongs('#gu1', '#dong1', '#dongCode1');
-        dong1Valid = false;
-        validateSignup();
     });
 
     $('#gu2').on('change', function() {
         $(this).addClass('has-value');
         loadDongs('#gu2', '#dong2', '#dongCode2');
-        dong2Valid = false;
-        validateSignup();
     });
 
     // 동 선택 이벤트 리스너
@@ -999,11 +1111,19 @@
         validateSignup();
     }
 
+    // OAuth 회원가입 + 닉네임이 이미 채워져 있는 경우
+    if (isOAuth && $('#nickname').val().trim()) {
+        $('#nickname').trigger('input');
+    }
+
+    // Progress Bar 초기 표시
+    updateProgress();
+
     // 회원가입 폼 제출 처리 (AJAX)
     $('#signupForm').on('submit', function(e) {
         e.preventDefault();
 
-        if (!emailValid || !phoneValid || !nicknameValid || !dong1Valid || !dong2Valid) {
+        if (!emailValid || !phoneValid || !nicknameValid || !dong1Valid) {
             return false;
         }
 
