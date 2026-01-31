@@ -87,11 +87,31 @@
 	
 	<select id="validateRunnerAndStatus" resultType="int">
 	  SELECT COUNT(*)
-	  FROM ERRANDS e
-	  JOIN errand_assignments a ON a.errands_id = e.errands_id
-	  WHERE e.errands_id = #{errandsId}
-	    AND e.status = 'CONFIRMED1'
+	  FROM ERRAND_ASSIGNMENTS a
+	  JOIN ERRAND_STATUS_HISTORY h
+	    ON h.errands_id = a.errands_id
+	  WHERE a.errands_id = #{errandsId}
 	    AND a.errander_id = #{runnerUserId}
+	    AND h.status = 'CONFIRMED1'
+	    AND h.created_at = (
+	        SELECT MAX(created_at)
+	        FROM ERRAND_STATUS_HISTORY
+	        WHERE errands_id = #{errandsId}
+    )
 	</select>
+	
+	<insert id="insertCompletionProof">
+	    INSERT INTO COMPLETION_PROOFS (errands_id, errander_id, submitted_at, file_url)
+	    VALUES (#{errandsId}, #{erranderId}, NOW(), #{fileUrl})
+	  </insert>
+	
+	  <select id="selectLastInsertedProofId" resultType="long">
+	    SELECT LAST_INSERT_ID()
+	  </select>
+	
+	  <insert id="insertProofMedia">
+	    INSERT INTO PROOF_MEDIA (proof_id, file_url, created_at)
+	    VALUES (#{proofId}, #{fileUrl}, NOW())
+	  </insert>
 	
 </mapper>

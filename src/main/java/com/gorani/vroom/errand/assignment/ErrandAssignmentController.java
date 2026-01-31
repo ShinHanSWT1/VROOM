@@ -2,17 +2,21 @@ package com.gorani.vroom.errand.assignment;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Map;
+import java.util.UUID;
 
 import javax.servlet.http.HttpSession;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
+
 import com.gorani.vroom.user.auth.UserVO;
 
 import lombok.RequiredArgsConstructor;
@@ -65,48 +69,39 @@ public class ErrandAssignmentController {
         }
     }
     
-    /**
-     * 부름이 거래완료(인증사진 업로드)
-     * - CONFIRMED1 상태에서만 업로드 가능
-     * - 업로드 성공 시 CONFIRMED2로 변경(주인님 설계대로)
-     */
-    @PostMapping("/errand/assign/complete-proof")
+    @PostMapping("/errand/chat/assign/complete-proof")
     @ResponseBody
-    public Map<String, Object> uploadCompleteProof(
+    public ResponseEntity<?> uploadCompleteProof(
             @RequestParam("errandsId") Long errandsId,
             @RequestParam("roomId") Long roomId,
-            @RequestParam("proofImage") MultipartFile proofImage,
+            @RequestParam("file") MultipartFile file,
             HttpSession session
     ) {
-        Map<String, Object> result = new HashMap<>();
-
         UserVO loginUser = (UserVO) session.getAttribute("loginSess");
         if (loginUser == null) {
-            result.put("success", false);
-            result.put("error", "로그인이 필요합니다.");
-            return result;
+            return ResponseEntity.status(401)
+                    .body(Map.of("success", false, "message", "로그인이 필요합니다."));
         }
 
-        // RUNNER만 가능
-        String role = loginUser.getRole();
-        if (role == null || "OWNER".equals(role)) {
-            result.put("success", false);
-            result.put("error", "부름이만 인증 업로드가 가능합니다.");
-            return result;
+        if (file == null || file.isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("success", false, "message", "파일이 비었습니다."));
         }
 
-        Long runnerUserId = loginUser.getUserId();
+        Long erranderId = loginUser.getUserId();
 
         try {
-            errandAssignmentService.uploadCompleteProof(errandsId, roomId, runnerUserId, proofImage);
-            result.put("success", true);
-            return result;
+            // 모든 로직은 서비스에서
+            errandAssignmentService.uploadCompleteProof(
+                    errandsId, roomId, erranderId, file
+            );
+
+            return ResponseEntity.ok(Map.of("success", true));
 
         } catch (Exception e) {
             e.printStackTrace();
-            result.put("success", false);
-            result.put("error", e.getMessage());
-            return result;
+            return ResponseEntity.status(500)
+                    .body(Map.of("success", false, "message", e.getMessage()));
         }
     }
 }

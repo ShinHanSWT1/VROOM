@@ -149,7 +149,7 @@
 				            </c:when>
 				
 				            <c:when test="${errandStatus eq 'CONFIRMED1'}">
-						      <div class="status-wait">⏳ 심부름 중 (부름이 완료 인증 대기)</div>
+						      <div class="status-wait">⏳ 심부름 중</div>
 						    </c:when>
 				
 				            <c:when test="${errandStatus eq 'CONFIRMED2'}">
@@ -418,13 +418,97 @@
            	  }
            	}
 
-           	function bindProofBtn() {
-           	  const proofBtn2 = document.getElementById('proofBtn');
-           	  if (!proofBtn2) return;
+            function bindProofBtn() {
+           	  const btn = document.getElementById('proofBtn');
+           	  if (!btn) return;
 
-           	  proofBtn2.addEventListener('click', function() {
-           	    alert('거래완료 버튼 클릭됨(부름이 화면)'); 
+           	  btn.addEventListener('click', () => {
+           	    openProofModal();
            	  });
+           	}
+            
+            function openProofModal() {
+           	  const modal = document.getElementById('proofModal');
+           	  const fileInput = document.getElementById('proofFile');
+           	  const previewWrap = document.getElementById('proofPreview');
+           	  const previewImg = document.getElementById('proofPreviewImg');
+           	  const fileName = document.getElementById('proofFileName');
+
+           	  if (!modal) {
+           	    alert('모달이 없습니다. proofModal HTML을 확인하세요.');
+           	    return;
+           	  }
+
+           	  // 초기화
+           	  fileInput.value = '';
+           	  previewWrap.style.display = 'none';
+           	  previewImg.src = '';
+           	  fileName.textContent = '';
+
+           	  modal.style.display = 'block';
+
+           	  // 파일 선택 시 미리보기
+           	  fileInput.onchange = () => {
+           	    const f = fileInput.files?.[0];
+           	    if (!f) return;
+           	    fileName.textContent = f.name;
+
+           	    const url = URL.createObjectURL(f);
+           	    previewImg.src = url;
+           	    previewWrap.style.display = 'block';
+           	  };
+
+           	  // 닫기/취소
+           	  const closeBtn = document.getElementById('proofCloseBtn');
+           	  const cancelBtn = document.getElementById('proofCancelBtn');
+           	  closeBtn.onclick = () => (modal.style.display = 'none');
+           	  cancelBtn.onclick = () => (modal.style.display = 'none');
+
+           	  // 업로드
+           	  const submitBtn = document.getElementById('proofSubmitBtn');
+           	  submitBtn.onclick = async () => {
+           	    const f = fileInput.files?.[0];
+           	    if (!f) {
+           	      alert('사진을 선택해주세요.');
+           	      return;
+           	    }
+
+           	    // ✅ multipart 전송
+           	    const fd = new FormData();
+           	    fd.append('errandsId', errandsId);
+           	    fd.append('roomId', roomId);
+           	    fd.append('file', f);
+
+           	    try {
+           	      const res = await fetch(contextPath + '/errand/chat/assign/complete-proof', {
+           	        method: 'POST',
+           	        body: fd,
+           	        credentials: 'same-origin'
+           	      });
+
+           	      const data = await res.json();
+           	      if (!res.ok || data.success !== true) {
+           	        alert(data.message || data.error || '업로드 실패');
+           	        return;
+           	      }
+
+           	      // 업로드 성공 -> 모달 닫기
+           	      modal.style.display = 'none';
+
+           	      // UI: 부름이 화면에 "인증 제출 완료" 표시(원하면 STOMP로도 동기화 가능)
+           	      const actionArea = document.getElementById('actionArea');
+           	      if (actionArea) {
+           	        actionArea.innerHTML = `<div class="status-wait">✅ 인증사진 제출 완료 (사용자 확인 대기)</div>`;
+           	      }
+
+           	      // (선택) 시스템 메시지로 채팅창에 알림 띄우기
+           	      addSystemMessageToUI('부름이가 완료 인증사진을 제출했습니다.');
+
+           	    } catch (e) {
+           	      console.error(e);
+           	      alert('업로드 중 오류가 발생했습니다.');
+           	    }
+           	  };
            	}
 
 
@@ -767,6 +851,32 @@
             bindProofUpload();
         });
     </script>
+    <!-- ===== 인증사진 업로드 모달 (ERRANDER 전용) ===== -->
+	<div id="proofModal" class="modal-overlay" style="display:none;">
+	  <div class="modal">
+	    <div class="modal-header">
+	      <div class="modal-title">📸 심부름 완료 인증사진</div>
+	      <button type="button" id="proofCloseBtn" class="modal-close">×</button>
+	    </div>
+	
+	    <div class="modal-body">
+	      <div id="proofUploadInner">
+	        <input type="file" id="proofFile" accept="image/*" />
+	        <div id="proofFileName" style="margin-top:8px; color:#666;"></div>
+	      </div>
+	
+	      <div id="proofPreview" style="display:none; margin-top:12px;">
+	        <img id="proofPreviewImg" src="" alt="미리보기" style="max-width:100%; border-radius:12px;" />
+	      </div>
+	    </div>
+	
+	    <div class="modal-footer">
+	      <button type="button" id="proofCancelBtn" class="btn-secondary">취소</button>
+	      <button type="button" id="proofSubmitBtn" class="btn-primary">업로드</button>
+	    </div>
+	  </div>
+	</div>
+    
 </body>
 
 </html>

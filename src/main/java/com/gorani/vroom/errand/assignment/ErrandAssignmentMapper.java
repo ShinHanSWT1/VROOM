@@ -38,5 +38,15 @@ public interface ErrandAssignmentMapper {
     int insertProof(Long errandsId, Long runnerUserId, Long roomId, String filePath);
 
     int updateStatusConfirmed1ToConfirmed2(Long errandsId);
+    
+    int insertCompletionProof(@Param("errandsId") Long errandsId,
+            @Param("erranderId") Long erranderId,
+            @Param("fileUrl") String fileUrl);
+
+	Long selectLastInsertedProofId();
+	
+	int insertProofMedia(@Param("proofId") Long proofId,
+	       @Param("fileUrl") String fileUrl);
+
 
 }

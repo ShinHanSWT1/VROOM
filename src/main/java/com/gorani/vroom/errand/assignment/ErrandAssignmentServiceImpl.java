@@ -151,4 +151,18 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
             throw new RuntimeException("상태 변경 실패(이미 변경되었거나 조건 불일치)");
         }
     }
+    
+    @Override
+    @Transactional
+    public Long createCompletionProof(Long errandsId, Long erranderId, String fileUrl) {
+        // 1) completion_proofs insert
+        errandAssignmentMapper.insertCompletionProof(errandsId, erranderId, fileUrl);
+        Long proofId = errandAssignmentMapper.selectLastInsertedProofId(); // 또는 useGeneratedKeys로 바로 받기
+
+        // 2) proof_media insert
+        errandAssignmentMapper.insertProofMedia(proofId, fileUrl);
+
+        return proofId;
+    }
+
 }
