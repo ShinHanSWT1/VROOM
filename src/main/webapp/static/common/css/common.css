@@ -17,6 +17,13 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    cursor: url('/vroom/static/img/cursor/default-cursor.png') 16 0, auto;
+}
+
+a, button, select, label[for], input[type="submit"], input[type="button"],
+[onclick], .btn, .sidebar-link, .menu-item, .task-card, .tab-btn, .page-btn,
+[style*="cursor: pointer"], [style*="cursor:pointer"] {
+    cursor: url('/vroom/static/img/cursor/pointer-cursor.png') 16 0, pointer !important;
 }
 
 body {
