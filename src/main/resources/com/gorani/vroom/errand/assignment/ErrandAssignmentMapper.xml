@@ -47,12 +47,21 @@
     WHERE errands_id = #{errandsId}
   </update>
   
-  <update id="updateErrandStatusMatchedToConfirm1" parameterType="long">
+  <update id="updateErrandStatusMatchedToConfirmed1" parameterType="long">
 	  UPDATE ERRANDS
-	  SET status = 'WAITING',
+	  SET status = 'CONFIRMED1',
 	      updated_at = CURRENT_TIMESTAMP
 	  WHERE errands_id = #{errandsId}
 	    AND status = 'MATCHED'
+	</update>
+	
+	<!-- CONFIRMED1 -> CONFIRMED2 (거래 완료: 한번만 성공해야 함) -->
+	<update id="updateErrandStatusConfirmed1ToConfirmed2">
+	  UPDATE ERRANDS
+	  SET status = 'CONFIRMED2',
+	      updated_at = CURRENT_TIMESTAMP
+	  WHERE errands_id = #{errandsId}
+	    AND status = 'CONFIRMED1'
 	</update>
 
   <insert id="insertMatchedAssignment">

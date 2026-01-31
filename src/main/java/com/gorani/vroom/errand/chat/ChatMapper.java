@@ -50,7 +50,7 @@ public interface ChatMapper {
     
     String selectErrandStatusByErrandsId(@Param("errandsId") Long errandsId);
 
-    int updateErrandStatusMatchedToConfirm1(@Param("errandsId") Long errandsId);
+    int updateErrandStatusMatchedToConfirmed1(@Param("errandsId") Long errandsId);
 
     int updateErrandStatusMatchedToWaiting(@Param("errandsId") Long errandsId);
 
@@ -61,4 +61,6 @@ public interface ChatMapper {
                                    @Param("changedById") Long changedById);
     
     int deactivateParticipantsByRoomId(@Param("roomId") Long roomId);
+    
+    int updateErrandStatusWaitingToMatched(@Param("errandsId") Long errandsId);
 }

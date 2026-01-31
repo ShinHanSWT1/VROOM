@@ -497,7 +497,7 @@
         </div>
         <nav class="nav-menu">
             <a href="#" class="nav-item">커뮤니티</a>
-            <a href="#" class="nav-item">실무블로그 전환</a>
+            <a href="#" class="nav-item">부름이 전환</a>
             <a href="${pageContext.request.contextPath}/auth/login" class="nav-item nav-login">로그인</a>
             <a href="${pageContext.request.contextPath}/auth/signup" class="nav-item nav-signup">회원가입</a>
             <a href="#" class="nav-item nav-user">유저</a>

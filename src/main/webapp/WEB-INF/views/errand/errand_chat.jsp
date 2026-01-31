@@ -129,17 +129,34 @@
                 </div>
                 
                 <!-- 역할별 액션 버튼 카드 -->
-                <c:if test="${userRole eq 'OWNER'}">
-                    <div class="errand-card">
-                        <div class="errand-card-header">
-				            <div class="section-label">💼 심부름 관리</div>
-				            <div class="action-buttons">
-				                <button class="accept-btn" id="acceptBtn">✓ 수락</button>
-				                <button class="reject-btn" id="rejectBtn">✗ 거절</button>
-				            </div>
-				        </div>
-                    </div>
-                </c:if>
+				<c:if test="${userRole eq 'OWNER'}">
+				  <div class="errand-card">
+				    <div class="errand-card-header">
+				      <div class="section-label">💼 심부름 관리</div>
+				
+				      <!-- 구조 고정: action-buttons DIV는 항상 존재 -->
+				      <div class="action-buttons" id="actionArea">
+				      
+				        <!-- status는 chatRoomInfo.status가 비었으니, errandStatus 모델로 분기 권장 -->
+				        <c:choose>
+				          <c:when test="${errandStatus eq 'MATCHED'}">
+				            <button class="accept-btn" id="acceptBtn" type="button">✓ 수락</button>
+				            <button class="reject-btn" id="rejectBtn" type="button">✗ 거절</button>
+				          </c:when>
+				
+				          <c:when test="${errandStatus eq 'CONFIRMED1'}">
+				            <button class="complete-btn" id="completeConfirmBtn" type="button">✔ 거래 완료</button>
+				          </c:when>
+				
+				          <c:when test="${errandStatus eq 'CONFIRMED2'}">
+				            <div class="status-done">거래 완료</div>
+				          </c:when>
+				        </c:choose>
+				
+				      </div>
+				    </div>
+				  </div>
+				</c:if>
             </div>
 
             <!-- 우측 패널: 채팅 -->
@@ -395,7 +412,7 @@
                         body: JSON.stringify({
                             errandsId: errandsId,
                             roomId: roomId,
-                            erranderUserId: currentUserId
+                            erranderUserId: erranderUserId
                         })
                     })
                     .then(response => response.json())
@@ -413,11 +430,71 @@
                     });
                 });
             }
+            
+         	// 수락 AJAX 성공했을 때
+            function showCompleteButton() {
+              const area = document.getElementById('actionArea'); // 버튼 영역 div id
+              area.innerHTML = `<button id="completeConfirmBtn" class="complete-btn" type="button">✔ 거래 완료</button>`;
+              bindCompleteConfirm();
+            }
+         	
+            function bindCompleteConfirm() {
+            	  const btn = document.getElementById('completeConfirmBtn');
+            	  if (!btn) return;
 
+            	  btn.addEventListener('click', async () => {
+            	    try {
+            	      const url = `${pageContext.request.contextPath}/errand/chat/assign/complete-confirm`;
+            	      console.log('POST URL=', url);
+
+            	      const res = await fetch(url, {
+            	        method: 'POST',
+            	        headers: { 'Content-Type': 'application/json' },
+            	        credentials: 'same-origin', // ✅ 이거 없으면 loginSess null 뜰 수 있음
+            	        body: JSON.stringify({ errandsId, roomId })
+            	      });
+
+            	      const text = await res.text();
+
+            	      // ✅ 404/500이면 여기서 바로 잡힘
+            	      if (!res.ok) {
+            	        console.error('HTTP ERROR', res.status, text);
+            	        alert(`서버 오류 (${res.status})`);
+            	        return;
+            	      }
+
+            	      // ✅ JSON 파싱 방어
+            	      let data;
+            	      try { data = JSON.parse(text); }
+            	      catch (e) {
+            	        console.error('JSON 파싱 실패:', text);
+            	        alert('서버 응답이 JSON이 아닙니다.');
+            	        return;
+            	      }
+
+            	      // ✅ 서버 응답 표준화: success 기준으로만 판단(네 컨트롤러는 success를 씀)
+            	      if (data.success !== true) {
+            	        alert(data.message || data.error || '거래 완료 처리 실패');
+            	        return;
+            	      }
+
+            	      document.getElementById('actionArea').innerHTML =
+            	        `<div class="status-done">거래 완료</div>`;
+
+            	    } catch (e) {
+            	      console.error(e);
+            	      alert('거래 완료 처리 중 오류가 발생했습니다.');
+            	    }
+            	  }, { once: true });
+            	}
+
+
+           	
             // 페이지 로드시 스크롤을 최하단으로
             messagesArea.scrollTop = messagesArea.scrollHeight;
             
             connectStomp();
+            bindCompleteConfirm();
         });
     </script>
 </body>
