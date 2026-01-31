@@ -6,7 +6,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -100,7 +102,7 @@ public class ErranderServiceImpl implements ErranderService {
 
     @Override
     @Transactional
-    public boolean registerErrander(ErranderProfileVO profileVO, List<String> fileUrls) {
+    public boolean registerErrander(ErranderProfileVO profileVO, List<ErranderDocumentVO> fileUrls) {
         try {
             //  부름이 프로필 등록
             int result = erranderMapper.insertErranderProfile(profileVO);
@@ -111,12 +113,16 @@ public class ErranderServiceImpl implements ErranderService {
 
             // 서류 파일 등록
             if (fileUrls != null && !fileUrls.isEmpty()) {
-                for (String fileUrl : fileUrls) {
-                    erranderMapper.insertErranderDocument(erranderId, fileUrl, "IDENTITY_PROOF", "제출서류");
+                for (ErranderDocumentVO doc : fileUrls) {
+                    erranderMapper.insertErranderDocument(
+                            erranderId,
+                            doc.getFilePath(),
+                            doc.getDocumentType(),
+                            doc.getOriginalName(),
+                            "SUBMITTED"
+                    );
                 }
             }
-
-
             return true;
         } catch (Exception e) {
             log.error("부름이 등록 중 오류 발생", e);

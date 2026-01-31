@@ -100,7 +100,7 @@ public class AdminErrandersServiceImpl implements AdminErrandersService {
 
             // MEMBERS의 role을 ERRANDER로 업데이트
             long userId = mapper.getUserIdByErranderId(erranderId);
-            userProfileService.changeRole(userId, "ERRNADER");
+            userProfileService.changeRole(userId, "ERRANDER");
         }
 
         return dataMap;

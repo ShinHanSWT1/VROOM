@@ -78,7 +78,6 @@
             SELECT COUNT(*)
             FROM MEMBERS m
             JOIN ERRANDER_PROFILES p ON m.user_id = p.user_id
-            WHERE m.role = 'ERRANDER'
 
         <if test="keyword != null and keyword != ''">
             AND (

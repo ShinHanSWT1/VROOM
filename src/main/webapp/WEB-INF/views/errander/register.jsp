@@ -368,31 +368,51 @@
                 </div>
             </div>
 
-            <!-- 서류 제출 1 -->
             <div class="auth-form-group">
-                <label for="document1" class="auth-label">신분증 사본 (필수)</label>
+                <label class="auth-label">신분증 제출(필수)</label>
+                <div>
+                    <select name="idType" class="auth-label" required>
+                        <option value="IDCARD">주민등록증</option>
+                        <option value="DRIVER_LICENSE">운전면허증</option>
+                        <option value="PASSPORT">여권</option>
+                        <option value="ETC">기타 신분증</option>
+                    </select>
+
+                    <input type="file" name="idFile" class="auth-input" accept="image/*,.pdf" required>
+                </div>
+<%--                <small class="text-muted">주민번호 뒷자리는 가리고 업로드해주세요.</small>--%>
+            </div>
+            <div class="auth-form-group">
+                <label for="document2" class="auth-label">통장 사본(필수)</label>
                 <input
-                        type="file"
-                        id="document1"
-                        name="documentFiles"
-                        class="auth-input"
-                        accept="image/*"
-                        required
-                >
+                        type="file" id="document2" name="bankFile" class="auth-input" accept="image/*,.pdf" required>
             </div>
 
+            <!-- 서류 제출 1 -->
+<%--            <div class="auth-form-group">--%>
+<%--                <label for="document1" class="auth-label">신분증 사본 (필수)</label>--%>
+<%--                <input--%>
+<%--                        type="file"--%>
+<%--                        id="document1"--%>
+<%--                        name="documentFiles"--%>
+<%--                        class="auth-input"--%>
+<%--                        accept="image/*"--%>
+<%--                        required--%>
+<%--                >--%>
+<%--            </div>--%>
+
             <!-- 서류 제출 2 -->
-            <div class="auth-form-group">
-                <label for="document2" class="auth-label">통장 사본 (필수)</label>
-                <input
-                        type="file"
-                        id="document2"
-                        name="documentFiles"
-                        class="auth-input"
-                        accept="image/*"
-                        required
-                >
-            </div>
+<%--            <div class="auth-form-group">--%>
+<%--                <label for="document2" class="auth-label">통장 사본 (필수)</label>--%>
+<%--                <input--%>
+<%--                        type="file"--%>
+<%--                        id="document2"--%>
+<%--                        name="documentFiles"--%>
+<%--                        class="auth-input"--%>
+<%--                        accept="image/*"--%>
+<%--                        required--%>
+<%--                >--%>
+<%--            </div>--%>
 
             <!-- 등록 버튼 -->
             <button type="submit" class="auth-btn" id="registerBtn">부름이 등록 신청</button>
