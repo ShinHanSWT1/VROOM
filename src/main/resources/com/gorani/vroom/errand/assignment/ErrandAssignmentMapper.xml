@@ -84,4 +84,14 @@
 	      AND status NOT IN ('COMPLETED','CANCELED')
 	  )
 	</select>
+	
+	<select id="validateRunnerAndStatus" resultType="int">
+	  SELECT COUNT(*)
+	  FROM ERRANDS e
+	  JOIN errand_assignments a ON a.errands_id = e.errands_id
+	  WHERE e.errands_id = #{errandsId}
+	    AND e.status = 'CONFIRMED1'
+	    AND a.errander_id = #{runnerUserId}
+	</select>
+	
 </mapper>

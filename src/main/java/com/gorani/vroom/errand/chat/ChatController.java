@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import com.gorani.vroom.user.auth.UserVO;
 
 import lombok.RequiredArgsConstructor;
@@ -26,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 public class ChatController {
 
     private final ChatService chatService;
+    private final SimpMessagingTemplate messagingTemplate;
     
     @GetMapping("/room")
     public String showChatPageByRoomId(
@@ -202,6 +203,16 @@ public class ChatController {
         }
 
         chatService.acceptErrand(errandsId, roomId, loginUser.getUserId());
+        
+        messagingTemplate.convertAndSend(
+    	    "/topic/room." + roomId,
+    	    Map.of(
+    	        "messageType", "STATUS",
+    	        "status", "CONFIRMED1",
+    	        "errandsId", errandsId,
+    	        "roomId", roomId
+    	    )
+    	);
 
         return ResponseEntity.ok(Map.of("success", true, "message", "심부름이 수락되었습니다."));
     }
@@ -317,6 +328,15 @@ public class ChatController {
         }
 
         chatService.completeConfirm(errandsId, currentUserId);
+        messagingTemplate.convertAndSend(
+    	    "/topic/room." + roomId,
+    	    Map.of(
+    	        "messageType", "STATUS",
+    	        "status", "CONFIRMED2",
+    	        "errandsId", errandsId,
+    	        "roomId", roomId
+    	    )
+    	);
 
         return Map.of("success", true, "status", "CONFIRMED2");
     }

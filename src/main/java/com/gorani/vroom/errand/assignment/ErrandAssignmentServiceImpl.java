@@ -6,6 +6,12 @@ import org.springframework.transaction.annotation.Transactional;
 import com.gorani.vroom.errand.chat.ChatService;
 
 import lombok.RequiredArgsConstructor;
+import java.io.File;
+import java.util.UUID;
+
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
 
 @Service
 @RequiredArgsConstructor
@@ -95,5 +101,54 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
         Long roomId = chatService.getOrCreateChatRoom(errandsId, erranderUserId);
 
         return roomId; // 이제 정상
+    }
+    
+    @Override
+    @Transactional
+    public void uploadCompleteProof(Long errandsId, Long roomId, Long runnerUserId, MultipartFile proofImage) {
+
+        if (proofImage == null || proofImage.isEmpty()) {
+            throw new RuntimeException("업로드 파일이 없습니다.");
+        }
+
+        // 1) 현재 이 runnerUserId가 이 errandsId의 매칭 러너인지 확인 + 상태가 CONFIRMED1인지 확인
+        //    (이 검증을 Mapper WHERE 절로 강제하는 게 가장 안전)
+        int can = errandAssignmentMapper.validateRunnerAndStatus(errandsId, runnerUserId);
+        if (can != 1) {
+            throw new RuntimeException("업로드 권한이 없거나 상태가 올바르지 않습니다.");
+        }
+
+        // 2) 파일 저장 (로컬)
+        String uploadDir = "C:/vroom_upload/proof"; // 서버 환경에 맞게 바꿔
+        new File(uploadDir).mkdirs();
+
+        String original = proofImage.getOriginalFilename();
+        String ext = "";
+        if (original != null && original.contains(".")) {
+            ext = original.substring(original.lastIndexOf("."));
+        }
+
+        String saveName = UUID.randomUUID().toString().replace("-", "") + ext;
+        File dest = new File(uploadDir, saveName);
+
+        try {
+            proofImage.transferTo(dest);
+        } catch (Exception e) {
+            throw new RuntimeException("파일 저장 실패");
+        }
+
+        String savedPath = "/upload/proof/" + saveName; // DB에 저장할 경로 정책대로
+
+        // 3) proof 저장
+        int inserted = errandAssignmentMapper.insertProof(errandsId, runnerUserId, roomId, savedPath);
+        if (inserted != 1) {
+            throw new RuntimeException("인증 정보 저장 실패");
+        }
+
+        // 4) 상태 변경: CONFIRMED1 -> CONFIRMED2 (주인님 설계)
+        int updated = errandAssignmentMapper.updateStatusConfirmed1ToConfirmed2(errandsId);
+        if (updated != 1) {
+            throw new RuntimeException("상태 변경 실패(이미 변경되었거나 조건 불일치)");
+        }
     }
 }

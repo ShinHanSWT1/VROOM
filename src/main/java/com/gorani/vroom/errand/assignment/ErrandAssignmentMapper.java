@@ -31,4 +31,12 @@ public interface ErrandAssignmentMapper {
                             @Param("toStatus") String toStatus,
                             @Param("changedByType") String changedByType,
                             @Param("changedById") Long changedById);
+    
+    int validateRunnerAndStatus(@Param("errandsId") Long errandsId,
+            @Param("runnerUserId") Long runnerUserId);
+
+    int insertProof(Long errandsId, Long runnerUserId, Long roomId, String filePath);
+
+    int updateStatusConfirmed1ToConfirmed2(Long errandsId);
+
 }
