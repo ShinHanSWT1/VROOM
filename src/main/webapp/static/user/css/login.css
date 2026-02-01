@@ -318,6 +318,21 @@
     color: var(--color-warm);
 }
 
+/* 공통 메시지 */
+.form-msg {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.85rem;
+}
+
+.form-msg.error {
+    color: #D32F2F;
+}
+
+.form-msg.success {
+    color: #2E7D32;
+}
+
 /* 반응형 */
 @media (max-width: 768px) {
     .auth-card {

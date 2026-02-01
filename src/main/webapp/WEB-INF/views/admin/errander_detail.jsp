@@ -888,14 +888,37 @@
                 // 제출 서류
                 if (data.authDocuments && data.authDocuments.length > 0) {
                     const documentsHtml = data.authDocuments.map(doc => {
-                        const icon = doc.doc_type === 'IDCARD' ? '🪪' : '📄';
+                        let docIcon = '';
+                        let docText = '';
+                        switch (doc.doc_type){
+                            case 'IDCARD':
+                                docIcon = '💳';
+                                docText = '주민등록증';
+                                break;
+                            case 'PASSPORT':
+                                docIcon = '💷';
+                                docText = '여권';
+                                break;
+                            case 'DRIVER_LICENSE':
+                                docIcon = '🚗';
+                                docText = '운전면허증';
+                                break;
+                            case 'ACCOUNT':
+                                docIcon = '📄';
+                                docText = '통장사본';
+                                break;
+                            default:
+                                docIcon = '📁';
+                                docText = '기타';
+                                break;
+                        }
 
                         return `
                             <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: #F8F9FA; border-radius: 8px;">
-                                <div style="font-size: 1.5rem;">${'${'}icon}</div>
+                                <div style="font-size: 1.5rem;">${'${'}docIcon}</div>
                                 <div style="flex: 1;">
-                                    <div style="font-size: 0.9rem; font-weight: 600;">\${doc.name}</div>
-                                    <div style="font-size: 0.75rem; color: var(--color-gray);">\${doc.doc_type}</div>
+                                    <div style="font-size: 0.9rem; font-weight: 600;">\${docText}</div>
+                                    <div style="font-size: 0.75rem; color: var(--color-gray);">\${doc.name}</div>
                                 </div>
                                 <button onclick="viewDocument('\${doc.file_url}')" style="padding: 0.375rem 0.75rem; background: var(--color-dark); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">보기</button>
                             </div>

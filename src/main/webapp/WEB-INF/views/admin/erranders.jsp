@@ -10,6 +10,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="${pageContext.request.contextPath}/static/common/util.js"></script>
     <title>VROOM - 부름이 관리</title>
     <style>
         :root {
@@ -630,15 +631,18 @@
             max-width: 600px;
             width: 90%;
             max-height: 80vh;
-            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
             z-index: 9999;
         }
 
         .modal-header {
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
+            padding: 1rem 0.5rem;
+            flex-shrink: 0;
             border-bottom: 2px solid var(--color-light-gray);
+            margin-bottom: 0;
         }
 
         .modal-title {
@@ -648,7 +652,12 @@
         }
 
         .modal-body {
-            margin-bottom: 1.5rem;
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+
+            padding: 1.5rem 2rem;
+            margin-bottom: 0;
         }
 
         .modal-section {
@@ -747,10 +756,12 @@
 
         .modal-footer {
             display: flex;
-            gap: 1rem;
-            justify-content: flex-end;
-            padding-top: 1rem;
+            padding: 1rem 0.5rem 0rem 0.5rem;
+            flex-shrink: 0;
             border-top: 2px solid var(--color-light-gray);
+            margin-top: 0;
+            align-items: center;
+            gap: 1rem;
         }
 
         .modal-button {
@@ -787,6 +798,7 @@
         .modal-button.cancel {
             background: var(--color-light-gray);
             color: var(--color-dark);
+            margin-right: auto;
         }
 
         .modal-button.cancel:hover {
@@ -1377,7 +1389,7 @@
                 document.getElementById('modalContactPhone').textContent = data.phone || '-';
                 document.getElementById('modalContactEmail').textContent = data.email || '-';
                 document.getElementById('modalActivityStatus').textContent = data.status || '-';
-                document.getElementById('modalLastActivity').textContent = data.last_login_at || '-';
+                document.getElementById('modalLastActivity').textContent = formatDateTime(data.last_login_at);
                 document.getElementById('modalRegions1').textContent = data.address1 || '-';
                 document.getElementById('modalRegions2').textContent = data.address2 || '-';
 
@@ -1385,12 +1397,35 @@
                 const documentList = document.getElementById('documentList');
                 documentList.innerHTML = '';
                 data.documents.forEach(doc => {
-                    const docIcon = doc.doc_type.includes('IDCARD') ? '💳' : '📄';
+                    let docIcon = '';
+                    let docText = '';
+                    switch (doc.doc_type){
+                        case 'IDCARD':
+                            docIcon = '💳';
+                            docText = '주민등록증';
+                            break;
+                        case 'PASSPORT':
+                            docIcon = '💷';
+                            docText = '여권';
+                            break;
+                        case 'DRIVER_LICENSE':
+                            docIcon = '🚗';
+                            docText = '운전면허증';
+                            break;
+                        case 'ACCOUNT':
+                            docIcon = '📄';
+                            docText = '통장사본';
+                            break;
+                        default:
+                            docIcon = '📁';
+                            docText = '기타';
+                            break;
+                    }
                     const docItem = `
                         <div class="document-item">
                             <div class="document-icon">${'${'}docIcon}</div>
                             <div class="document-info">
-                                <div class="document-type">${'${'}doc.doc_type === 'IDCARD' ? '신분증' : '여권' }</div>
+                                <div class="document-type">${'${'}docText}</div>
                             </div>
                             <button class="document-view-btn" onclick="viewDocument('${'${'}doc.file_url}')">보기</button>
                         </div>

@@ -3,6 +3,7 @@ package com.gorani.vroom.config;
 import com.gorani.vroom.common.util.AdminLoginInterceptor;
 import org.apache.ibatis.annotations.Mapper;
 import org.mybatis.spring.annotation.MapperScan;
+import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +12,7 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.config.annotation.*;
+import org.springframework.core.io.ClassPathResource;
 
 @Configuration
 @MapperScan(basePackages = {"com.gorani.vroom"}, annotationClass = Mapper.class)
@@ -86,5 +88,10 @@ public class MvcConfig implements WebMvcConfigurer {
         return resolver;
     }
 
-
+    @Bean
+    public static PropertyPlaceholderConfigurer properties() {
+        PropertyPlaceholderConfigurer config = new PropertyPlaceholderConfigurer();
+        config.setLocation(new ClassPathResource("application.properties"));
+        return config;
+    }
 }

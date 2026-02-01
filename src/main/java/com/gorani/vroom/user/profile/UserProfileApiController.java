@@ -58,8 +58,12 @@ public class UserProfileApiController {
 
     // 프로필 이미지 수정
     @PostMapping("/image")
-    public ResponseEntity<Map<String, Object>> updateImage(@RequestParam("file") MultipartFile file) {
-        Long userId = 2L; // 테스트용
+    public ResponseEntity<Map<String, Object>> updateImage(@RequestParam("file") MultipartFile file, HttpSession session) {
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
+        if (loginUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("success", false, "message", "로그인이 필요합니다."));
+        }
+        Long userId = loginUser.getUserId();
 
         // 파일 유효성 검사
         if (file.isEmpty()) {
@@ -84,16 +88,24 @@ public class UserProfileApiController {
 
     // 내가 신청한 심부름 목록 조회
     @GetMapping("/errands")
-    public ResponseEntity<List<ErrandsVO>> getMyErrands() {
-        Long userId = 2L; // 테스트용
+    public ResponseEntity<List<ErrandsVO>> getMyErrands(HttpSession session) {
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
+        if (loginUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        Long userId = loginUser.getUserId();
         List<ErrandsVO> errands = userProfileService.getMyErrands(userId);
         return ResponseEntity.ok(errands);
     }
 
     // 신고 등록
     @PostMapping("/report")
-    public ResponseEntity<Map<String, Object>> createRepost(@RequestBody Map<String, Object> request) {
-        Long userId = 2L; // 테스트용
+    public ResponseEntity<Map<String, Object>> createRepost(@RequestBody Map<String, Object> request, HttpSession session) {
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
+        if (loginUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("success", false, "message", "로그인이 필요합니다."));
+        }
+        Long userId = loginUser.getUserId();
 
         try {
             // vo 객체 생성 및 데이터 매핑
@@ -129,8 +141,12 @@ public class UserProfileApiController {
 
     // 회원 탈퇴
     @PostMapping("/withdraw")
-    public ResponseEntity<Map<String, Object>> withdrawUser(@RequestBody Map<String, String> request) {
-        Long userId = 2L; // 테스트용
+    public ResponseEntity<Map<String, Object>> withdrawUser(@RequestBody Map<String, String> request, HttpSession session) {
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
+        if (loginUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("success", false, "message", "로그인이 필요합니다."));
+        }
+        Long userId = loginUser.getUserId();
         String password = request.get("password");
 
         if (password == null || password.isEmpty()) {

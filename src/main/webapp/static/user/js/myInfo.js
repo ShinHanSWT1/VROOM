@@ -1,3 +1,6 @@
+// contextPath 가져오기 (meta 태그에서)
+const contextPath = document.querySelector('meta[name="context-path"]').content;
+
 // HTML data attribute에서 심부름 데이터 읽기
 const myActivities = [];
 document.querySelectorAll('#errandDataContainer .errand-data').forEach(function (el) {
@@ -83,7 +86,7 @@ function renderActivities(filterType, page = 1) {
         taskCard.className = 'task-card';
 
         taskCard.addEventListener('click', function () {
-            window.location.href = '${pageContext.request.contextPath}/errand/detail?errandsId=' + task.errandsId;
+            window.location.href = '' + contextPath + '/errand/detail?errandsId=' + task.errandsId;
         });
 
         // 상태 배지 로직
@@ -287,7 +290,7 @@ reportSubmit.addEventListener('click', () => {
     }
 
     // 백엔드 API 호출
-    fetch('${pageContext.request.contextPath}/api/profile/report', {
+    fetch('' + contextPath + '/api/profile/report', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -359,7 +362,7 @@ withdrawalConfirm.addEventListener('click', () => {
     }
 
     // 백엔드 API 호출
-    fetch('${pageContext.request.contextPath}/api/profile/withdraw', {
+    fetch('' + contextPath + '/api/profile/withdraw', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -373,7 +376,7 @@ withdrawalConfirm.addEventListener('click', () => {
             if (data.success) {
                 alert('회원 탈퇴가 완료되었습니다. 그동안 VROOM을 이용해주셔서 감사합니다.');
                 closeWithdrawalModal();
-                window.location.href = '${pageContext.request.contextPath}/';
+                window.location.href = '' + contextPath + '/';
             } else {
                 alert('탈퇴 실패: ' + data.message);
             }
@@ -504,14 +507,14 @@ modalSave.addEventListener('click', () => {
             const formData = new FormData();
             formData.append('file', file);
 
-            fetch('${pageContext.request.contextPath}/api/profile/image', {
+            fetch('' + contextPath + '/api/profile/image', {
                 method: 'POST',
                 body: formData
             })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        profileImage.innerHTML = '<img src="${pageContext.request.contextPath}' + data.imagePath + '" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">';
+                        profileImage.innerHTML = '<img src="' + contextPath + '' + data.imagePath + '" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">';
                         alert('프로필 이미지가 변경되었습니다.');
                         closeModal();
                     } else {
@@ -544,7 +547,7 @@ modalSave.addEventListener('click', () => {
         }
 
         // Ajax 호출
-        fetch('${pageContext.request.contextPath}/api/profile/nickname', {
+        fetch('' + contextPath + '/api/profile/nickname', {
             method: 'PUT',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({nickname: newNickname})

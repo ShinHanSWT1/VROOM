@@ -14,8 +14,11 @@ public interface ErrandAssignmentMapper {
 
 
     int updateErrandStatusWaitingToMatched(@Param("errandsId") Long errandsId);
-    
     int updateErrandStatusToWaiting(@Param("errandsId") Long errandsId);
+    
+    int updateErrandStatusMatchedToConfirmed1(@Param("errandsId") Long errandsId);
+    int updateErrandStatusConfirmed1ToConfirmed2(@Param("errandsId") Long errandsId);
+    int updateErrandStatusMatchedToWaiting(@Param("errandsId") Long errandsId);
 
     int insertMatchedAssignment(
     	    @org.apache.ibatis.annotations.Param("userId") Long userId,

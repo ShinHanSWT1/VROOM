@@ -99,7 +99,7 @@
             #{fileUrl},
             #{docType},
             #{name},
-            'SUBMITTED'
+            #{status}
         )
     </insert>
 

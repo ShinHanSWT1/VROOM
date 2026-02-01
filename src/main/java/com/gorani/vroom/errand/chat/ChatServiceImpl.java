@@ -2,10 +2,12 @@ package com.gorani.vroom.errand.chat;
 
 import java.util.List;
 
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.gorani.vroom.errand.assignment.ErrandAssignmentMapper;
+import com.gorani.vroom.errand.chat.ws.ChatMessagePayload;
 
 import lombok.RequiredArgsConstructor;
 
@@ -15,6 +17,20 @@ public class ChatServiceImpl implements ChatService {
 
     private final ChatMapper chatMapper;
     private final ErrandAssignmentMapper assignmentMapper;
+    private final SimpMessagingTemplate messagingTemplate;
+    
+    private String toChangedByType(String role) {
+        if (role == null) return "SYSTEM";
+        switch (role) {
+            case "OWNER":
+            case "USER": return "USER";
+            case "ERRANDER":
+            case "RUNNER": return "ERRANDER";
+            case "ADMIN": return "ADMIN";
+            default: return "SYSTEM";
+        }
+    }
+
 
     @Override
     @Transactional
@@ -104,44 +120,68 @@ public class ChatServiceImpl implements ChatService {
     @Transactional
     public void acceptErrand(Long errandsId, Long roomId, Long userId) {
 
-        // 심부름 상태를 MATCHED로 변경
-        assignmentMapper.updateErrandStatusWaitingToMatched(errandsId);
+    	// 상태 전환: MATCHED -> CONFIRMED1 (딱 1번만 성공)
+        int updated = assignmentMapper.updateErrandStatusMatchedToConfirmed1(errandsId);
+        if (updated == 0) {
+            throw new IllegalStateException("이미 처리된 요청입니다.");
+        }
+        
+        // 상태 이력 저장 (MATCHED -> CONFIRMED1)
+        assignmentMapper.insertStatusHistory(
+            errandsId,
+            "MATCHED",
+            "CONFIRMED1",
+            "USER",
+            userId
+        );
 
         // 시스템 메시지 추가
         ChatMessageVO systemMessage = new ChatMessageVO();
         systemMessage.setRoomId(roomId);
-        systemMessage.setSenderUserId(userId);
+        systemMessage.setSenderUserId(0L);
         systemMessage.setMessageType("SYSTEM");
         systemMessage.setContent("심부름이 수락되었습니다! 🎉");
         chatMapper.insertMessage(systemMessage);
+        
+        // STOMP로 현재 방 구독자(작성자/부름이) 모두에게 뿌림
+        ChatMessagePayload payload = new ChatMessagePayload();
+        payload.setRoomId(roomId);
+        payload.setSenderUserId(0L);           // null 비교/JS 파싱 이슈 피하려면 0L 추천
+        payload.setMessageType("SYSTEM");
+        payload.setContent("심부름이 수락되었습니다! 🎉");
+
+        messagingTemplate.convertAndSend("/topic/room." + roomId, payload);
     }
 
     @Override
     @Transactional
     public void rejectErrand(Long errandsId, Long roomId, Long userId, Long erranderUserId) {
-
-        // 부름이 참여자 비활성화
-        chatMapper.updateParticipantInactive(roomId, erranderUserId);
-
-        // 심부름 상태를 다시 WAITING으로 변경
-        assignmentMapper.updateErrandStatusToWaiting(errandsId);
-
-        // 시스템 메시지 추가
-        ChatMessageVO systemMessage = new ChatMessageVO();
-        systemMessage.setRoomId(roomId);
-        systemMessage.setSenderUserId(userId);
-        systemMessage.setMessageType("SYSTEM");
-        systemMessage.setContent("심부름이 거절되었습니다.");
-        chatMapper.insertMessage(systemMessage);
+    	
+    	// 상태 전환: MATCHED -> WAITING (딱 1번만 성공)
+        int updated = assignmentMapper.updateErrandStatusMatchedToWaiting(errandsId);
+        if (updated == 0) {
+            throw new IllegalStateException("이미 처리된 요청입니다.");
+        }
         
-        // 상태 이력 저장
+        // 상태 이력 저장 (MATCHED -> WAITING)
         assignmentMapper.insertStatusHistory(
             errandsId,
+            "MATCHED",
             "WAITING",
-            "REJECTED",
-            "OWNER",
+            "USER",
             userId
         );
+
+        // 채팅방 종료 처리: room 전체 participant 비활성화(권장)
+        chatMapper.deactivateParticipantsByRoomId(roomId);
+        
+        // SYSTEM 메시지 DB 저장 (선택: 종료 전에 남기고 싶으면)
+        ChatMessageVO systemMessage = new ChatMessageVO();
+        systemMessage.setRoomId(roomId);
+        systemMessage.setSenderUserId(0L);
+        systemMessage.setMessageType("SYSTEM");
+        systemMessage.setContent("심부름이 거절되었습니다. 다시 부름이를 모집합니다.");
+        chatMapper.insertMessage(systemMessage);
     }
 
     @Override
@@ -177,6 +217,7 @@ public class ChatServiceImpl implements ChatService {
     
     @Override
     public List<ChatMessageVO> getChatMessages(Long roomId, Long userId) {
+    	
 
         // 1) 참가자 검증 (보안/권한)
         ChatParticipantVO participant = chatMapper.selectParticipant(roomId, userId);
@@ -185,6 +226,50 @@ public class ChatServiceImpl implements ChatService {
         }
 
         // 2) 메시지 조회
-        return chatMapper.selectMessagesByRoomId(roomId);
+        List<ChatMessageVO> list = chatMapper.selectMessagesByRoomId(roomId);
+
+        // 3) 서버 렌더링(JSP)용 isMine 세팅
+        for (ChatMessageVO m : list) {
+            boolean mine = (m.getSenderUserId() != null && m.getSenderUserId().equals(userId));
+            m.setIsMine(mine);
+        }
+
+        return list;
+    }
+    
+    @Override
+    public Long getOwnerUserIdByErrandsId(Long errandsId) {
+        return chatMapper.selectErrandOwnerUserId(errandsId);
+    }
+    
+    @Override
+    public boolean canAccessChatRoomByRoomId(Long roomId, Long userId) {
+        Long errandsId = chatMapper.selectErrandsIdByRoomId(roomId);
+        if (errandsId == null) return false;
+        return canAccessChatRoom(errandsId, userId);
+    }
+    
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public void completeConfirm(Long errandsId, Long ownerUserId) {
+        int updated = assignmentMapper.updateErrandStatusConfirmed1ToConfirmed2(errandsId);
+        System.out.println("[DEBUG] CONFIRMED1->CONFIRMED2 updated=" + updated);
+        
+        if (updated == 0) {
+            throw new IllegalStateException("이미 처리되었거나 현재 상태가 CONFIRMED1이 아닙니다.");
+        }
+
+        assignmentMapper.insertStatusHistory(
+            errandsId,
+            "CONFIRMED1",
+            "CONFIRMED2",
+            "USER",
+            ownerUserId
+        );
+    }
+    
+    @Override
+    public String getErrandStatus(Long errandsId) {
+        return chatMapper.selectErrandStatusByErrandsId(errandsId);
     }
 }

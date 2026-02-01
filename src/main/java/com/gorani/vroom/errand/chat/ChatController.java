@@ -53,6 +53,10 @@ public class ChatController {
             return "redirect:/errand/list";
         }
         Long errandsId = room.getErrandsId();
+        
+        String errandStatus = chatService.getErrandStatus(errandsId);
+        System.out.println("[DEBUG] roomId=" + roomId + ", errandsId=" + errandsId + ", errandStatus=" + errandStatus);
+        model.addAttribute("errandStatus", errandStatus);
 
         // 3) 채팅방 정보 + 메시지 로딩
         ChatRoomVO chatRoomInfo = chatService.getErrandInfoForChat(errandsId, currentUserId);
@@ -85,46 +89,52 @@ public class ChatController {
             return "redirect:/auth/login";
         }
         Long currentUserId = loginUser.getUserId();
-        
-        System.out.println("[ASSIGN] enter request errandsId=" + errandsId);
-        System.out.println("[ASSIGN] userId=" + loginUser.getUserId());
-        
-        // 0) 방 조회
-        ChatRoomVO room = chatService.getChatRoomByErrandsId(errandsId);
-        
-        // 1) 방이 없으면: "부름이만 생성 가능"
-        if (room == null) {
-            // 부름이(프로필 존재)면 여기서 생성하고 진행
-            if (chatService.canAccessChatRoom(errandsId, currentUserId)) {
-                Long roomId = chatService.getOrCreateChatRoom(errandsId, currentUserId);
-                return "redirect:/errand/chat?errandsId=" + errandsId; // 또는 roomId로 보내기
-            }
 
-            // OWNER면 아직 시작 안 함 → 상세로
-            return "redirect:/errand/detail?errandsId=" + errandsId
-                 + "&message=" + java.net.URLEncoder.encode("아직 부름이가 채팅을 시작하지 않았습니다.", java.nio.charset.StandardCharsets.UTF_8);
+        System.out.println("[CHAT] enter request errandsId=" + errandsId);
+        System.out.println("[CHAT] userId=" + currentUserId);
+
+        // 작성자 여부 판단
+        Long ownerUserId = chatService.getOwnerUserIdByErrandsId(errandsId);
+        boolean isOwner = ownerUserId != null && ownerUserId.equals(currentUserId);
+
+        // 1) 방 조회
+        ChatRoomVO room = chatService.getChatRoomByErrandsId(errandsId);
+
+        // 2) 방이 없으면
+        if (room == null) {
+            if (isOwner) {
+                // 작성자: 부름이가 아직 채팅 시작 안함
+                return "redirect:/errand/detail?errandsId=" + errandsId
+                        + "&message=" + java.net.URLEncoder.encode(
+                            "아직 부름이가 채팅을 시작하지 않았습니다.",
+                            java.nio.charset.StandardCharsets.UTF_8
+                        );
+            } else {
+                // 부름이: 방 생성 후 roomId로 입장
+                Long createdRoomId = chatService.getOrCreateChatRoom(errandsId, currentUserId);
+                return "redirect:/errand/chat/room?roomId=" + createdRoomId;
+            }
         }
 
-
-     // 2) 방이 있으면: 참가자 여부로 접근 체크
-        boolean canAccess = chatService.canAccessChatRoom(errandsId, currentUserId);
-        if (!canAccess) {
+        // 3) 방이 있으면: 참가자 권한 체크 (재입장 포함)
+        Long roomId = room.getRoomId();
+        String userRole = chatService.getUserRole(roomId, currentUserId);
+        if (userRole == null) {
+            // 참가자 아니면: 이미 다른 부름이가 매칭한 방
             return "errand/errand_already_matched";
         }
+        
+        String errandStatus = chatService.getErrandStatus(errandsId);
+        System.out.println("[DEBUG] errandsId=" + errandsId + ", errandStatus=" + errandStatus);
+        model.addAttribute("errandStatus", errandStatus);
 
-        // 채팅방 생성 또는 조회
-        Long roomId = room.getRoomId();
-
-        // 사용자 역할 조회
-        String userRole = chatService.getUserRole(roomId, currentUserId);
-
-        // 채팅방 정보 조회 (심부름 정보 포함)
+        // 4) 채팅방 정보 조회 (심부름 정보 포함)
         ChatRoomVO chatRoomInfo = chatService.getErrandInfoForChat(errandsId, currentUserId);
 
-        // 메시지 목록 조회
+        // 5) 메시지 목록 조회
         List<ChatMessageVO> messages = chatService.getChatMessages(roomId, currentUserId);
 
-        // 모델에 데이터 추가
+        // 6) 모델에 데이터 추가
         model.addAttribute("roomId", roomId);
         model.addAttribute("errandsId", errandsId);
         model.addAttribute("currentUserId", currentUserId);
@@ -157,7 +167,7 @@ public class ChatController {
         ChatMessageVO message = chatService.sendMessage(
             roomId, 
             loginUser.getUserId(), 
-            messageType, 
+            messageType,
             content
         );
 
@@ -224,6 +234,47 @@ public class ChatController {
 
         return ResponseEntity.ok(Map.of("success", true, "message", "심부름이 거절되었습니다."));
     }
+    
+    @GetMapping("/enter")
+    public String enterChat(
+            @RequestParam("errandsId") Long errandsId,
+            HttpSession session
+    ) {
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
+        if (loginUser == null) return "redirect:/auth/login";
+
+        Long userId = loginUser.getUserId();
+
+        // 1) 방 조회
+        ChatRoomVO room = chatService.getChatRoomByErrandsId(errandsId);
+
+        // 2) 방이 없으면: 부름이만 생성 가능, 작성자는 안내
+        if (room == null) {
+            Long ownerUserId = chatService.getOwnerUserIdByErrandsId(errandsId);
+            boolean isOwner = ownerUserId != null && ownerUserId.equals(userId);
+
+            if (isOwner) {
+                return "redirect:/errand/detail?errandsId=" + errandsId
+                    + "&message=" + java.net.URLEncoder.encode(
+                        "아직 부름이가 채팅을 시작하지 않았습니다.",
+                        java.nio.charset.StandardCharsets.UTF_8
+                    );
+            }
+
+            // 부름이는 생성 후 입장
+            Long roomId = chatService.getOrCreateChatRoom(errandsId, userId);
+            return "redirect:/errand/chat/room?roomId=" + roomId;
+        }
+
+        // 3) 방이 있으면: 참가자면 재입장 허용, 아니면 차단
+        Long roomId = room.getRoomId();
+        String role = chatService.getUserRole(roomId, userId);
+        if (role == null) {
+            return "errand/errand_already_matched";
+        }
+
+        return "redirect:/errand/chat/room?roomId=" + roomId;
+    }
 
     /**
      * 메시지 목록 조회 (AJAX)
@@ -242,5 +293,31 @@ public class ChatController {
         List<ChatMessageVO> messages = chatService.getChatMessages(roomId, loginUser.getUserId());
         
         return ResponseEntity.ok(Map.of("success", true, "messages", messages));
+    }
+    
+    @PostMapping("/assign/complete-confirm")
+    @ResponseBody
+    public java.util.Map<String, Object> completeConfirm(@RequestBody java.util.Map<String, Object> body,
+                                                         HttpSession session) {
+    	System.out.println("[HIT] /assign/complete-confirm");
+
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
+        if (loginUser == null) {
+            return java.util.Map.of("ok", false, "message", "로그인이 필요합니다.");
+        }
+
+        Long currentUserId = loginUser.getUserId();
+        Long errandsId = Long.valueOf(String.valueOf(body.get("errandsId")));
+        Long roomId = Long.valueOf(String.valueOf(body.get("roomId")));
+
+        // (권장) OWNER 권한 체크: 참가자 + 역할 확인
+        String role = chatService.getUserRole(roomId, currentUserId);
+        if (!"OWNER".equals(role)) {
+            return Map.of("success", false, "message", "권한이 없습니다.");
+        }
+
+        chatService.completeConfirm(errandsId, currentUserId);
+
+        return Map.of("success", true, "status", "CONFIRMED2");
     }
 }

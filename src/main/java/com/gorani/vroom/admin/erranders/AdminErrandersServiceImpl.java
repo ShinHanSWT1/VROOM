@@ -1,9 +1,12 @@
 package com.gorani.vroom.admin.erranders;
 
+import com.gorani.vroom.errander.profile.ErranderService;
+import com.gorani.vroom.user.profile.UserProfileService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
@@ -16,6 +19,8 @@ public class AdminErrandersServiceImpl implements AdminErrandersService {
 
     @Autowired
     private AdminErrandersMapper mapper;
+    @Autowired
+    private UserProfileService userProfileService;
 
     @Override
     public Map<String, Object> getSummary() {
@@ -75,6 +80,7 @@ public class AdminErrandersServiceImpl implements AdminErrandersService {
     }
 
     @Override
+    @Transactional
     public Map<String, Object> approveErrander(Long erranderId, String status, String reason) {
         log.info("승인 요청 받음" + erranderId + " : " + status);
         Map<String, Object> dataMap = new HashMap<>();
@@ -91,6 +97,10 @@ public class AdminErrandersServiceImpl implements AdminErrandersService {
                 activeStatus = "INACTIVE";
             }
             mapper.updateErranderActiveStatus(erranderId, activeStatus);
+
+            // MEMBERS의 role을 ERRANDER로 업데이트
+            long userId = mapper.getUserIdByErranderId(erranderId);
+            userProfileService.changeRole(userId, "ERRANDER");
         }
 
         return dataMap;

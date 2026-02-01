@@ -240,6 +240,61 @@ body {
     color: #2C3E50;
 }
 
+.errand-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* 버튼 공통 */
+.action-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.action-buttons button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* 수락 버튼 */
+.accept-btn {
+    background: #27AE60;
+    color: #fff;
+}
+
+.accept-btn:hover {
+    background: #219150;
+}
+
+/* 거절 버튼 */
+.reject-btn {
+    background: #E74C3C;
+    color: #fff;
+}
+
+.reject-btn:hover {
+    background: #CF3E30;
+}
+
+.complete-btn {
+  background: #2ecc71;
+  color: #fff;
+  font-weight: 600;
+}
+.status-done {
+  font-weight: 600;
+  color: #2ecc71;
+}
+
 /* ========================================
    우측 패널 (채팅)
 ======================================== */

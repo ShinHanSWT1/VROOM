@@ -7,12 +7,19 @@
 
     <!-- 채팅방 조회 -->
     <select id="selectChatRoomByErrandsId" resultType="com.gorani.vroom.errand.chat.ChatRoomVO">
-        SELECT room_id, errands_id, errander_id, created_at
-        FROM CHAT_ROOM
-        WHERE errands_id = #{errandsId}
-        LIMIT 1
-    </select>
-    
+	    SELECT cr.room_id, cr.errands_id, cr.errander_id, cr.created_at
+	    FROM CHAT_ROOM cr
+	    WHERE cr.errands_id = #{errandsId}
+	      AND EXISTS (
+	        SELECT 1
+	        FROM CHAT_PARTICIPANT cp
+	        WHERE cp.room_id = cr.room_id
+	          AND cp.is_active = 1
+	      )
+	    ORDER BY cr.room_id DESC
+	    LIMIT 1
+	</select>
+	
     <select id="selectChatRoomById" resultType="com.gorani.vroom.errand.chat.ChatRoomVO">
         SELECT room_id, errands_id, errander_id, created_at
         FROM CHAT_ROOM
@@ -23,8 +30,7 @@
 	  SELECT errands_id
 	  FROM CHAT_ROOM
 	  WHERE room_id = #{roomId}
-	</select>
-    
+	</select>    
     
     <!-- 채팅방 생성 -->
     <insert id="insertChatRoom"
@@ -75,8 +81,7 @@
             cm.message_type,
             cm.content,
             cm.created_at,
-            cm.is_deleted,
-            m.nickname AS senderNickname
+            cm.is_deleted
         FROM CHAT_MESSAGE cm
         LEFT JOIN MEMBERS m ON cm.sender_user_id = m.user_id
         WHERE cm.room_id = #{roomId}
@@ -101,6 +106,7 @@
     <select id="selectErrandInfoForChat" resultType="com.gorani.vroom.errand.chat.ChatRoomVO">
         SELECT 
             e.errands_id AS errandsId,
+            e.status AS status,   
             e.title AS errandTitle,
             e.description AS errandDescription,
             CONCAT(ld.gungu_name, ' ', ld.dong_name) AS errandLocation,
@@ -131,4 +137,50 @@
           AND cp.user_id = #{userId}
           AND cp.is_active = 1
     </select>
+    
+    <!-- 현재 errands 상태 조회 -->
+	<select id="selectErrandStatusByErrandsId" resultType="string">
+	  SELECT status
+	  FROM ERRANDS
+	  WHERE errands_id = #{errandsId}
+	</select>
+	
+	<!-- 1) WAITING -> MATCHED (채팅 시작: 한번만 성공해야 함) -->
+	<update id="updateErrandStatusWaitingToMatched">
+	  UPDATE ERRANDS
+	  SET status = 'MATCHED'
+	  WHERE errands_id = #{errandsId}
+	    AND status = 'WAITING'
+	</update>
+	
+	<!-- 2) MATCHED -> CONFIRMED1 (수락: 한번만 성공해야 함) -->
+	<update id="updateErrandStatusMatchedToConfirmed1">
+	  UPDATE ERRANDS
+	  SET status = 'CONFIRMED1'
+	  WHERE errands_id = #{errandsId}
+	    AND status = 'MATCHED'
+	</update>
+	
+	<!-- 3) MATCHED -> WAITING (거절: 다시 모집) -->
+	<update id="updateErrandStatusMatchedToWaiting">
+	  UPDATE ERRANDS
+	  SET status = 'WAITING'
+	  WHERE errands_id = #{errandsId}
+	    AND status = 'MATCHED'
+	</update>
+	
+	<!-- 4) 상태 히스토리 insert -->
+	<insert id="insertErrandsStatusHistory">
+	  INSERT INTO ERRAND_STATUS_HISTORY
+	    (errands_id, from_status, to_status, changed_by_type, changed_by_id, changed_at)
+	  VALUES
+	    (#{errandsId}, #{fromStatus}, #{toStatus}, #{changedByType}, #{changedById}, NOW())
+	</insert>
+	
+	<!-- 5) 거절 시, room 비활성화 -->
+	<update id="deactivateParticipantsByRoomId">
+	  UPDATE CHAT_PARTICIPANT
+	  SET is_active = 0
+	  WHERE room_id = #{roomId}
+	</update>
 </mapper>
