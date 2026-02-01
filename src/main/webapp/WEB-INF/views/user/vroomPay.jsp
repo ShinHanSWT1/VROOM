@@ -79,6 +79,7 @@
         </div>
 
         <div class="history-table-header">
+          <div>항목</div>
           <div>내용</div>
           <div>일시</div>
           <div>금액</div>
@@ -120,8 +121,8 @@
         <div class="form-error" id="depositError">쉼표(,)는 사용할 수 없습니다. 숫자만 입력해주세요.</div>
       </div>
       <div class="form-group">
-        <label class="form-label">메모 (선택)</label>
-        <input type="text" class="form-input" id="depositMemo" placeholder="내용을 입력하세요 (선택사항)">
+        <label class="form-label">메모 (선택, 최대 20자)</label>
+        <input type="text" class="form-input" id="depositMemo" placeholder="내용을 입력하세요 (선택사항)" maxlength="20">
       </div>
     </div>
     <div class="modal-footer">
@@ -152,8 +153,8 @@
         <div class="form-error" id="withdrawError">쉼표(,)는 사용할 수 없습니다. 숫자만 입력해주세요.</div>
       </div>
       <div class="form-group">
-        <label class="form-label">메모 (선택)</label>
-        <input type="text" class="form-input" id="withdrawMemo" placeholder="내용을 입력하세요 (선택사항)">
+        <label class="form-label">메모 (선택, 최대 20자)</label>
+        <input type="text" class="form-input" id="withdrawMemo" placeholder="내용을 입력하세요 (선택사항)" maxlength="20">
       </div>
     </div>
     <div class="modal-footer">

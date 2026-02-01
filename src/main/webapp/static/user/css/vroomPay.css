@@ -345,7 +345,7 @@ body {
 
 .history-table-header {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-columns: 1fr 2fr 1.5fr 1fr;
   padding: 1rem 2rem;
   background-color: #FAFAFA;
   border-bottom: 1px solid var(--color-light-gray);
@@ -362,7 +362,7 @@ body {
 
 .history-item {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-columns: 1fr 2fr 1.5fr 1fr;
   padding: 1.25rem 2rem;
   border-bottom: 1px solid var(--color-light-gray);
   align-items: center;
@@ -382,6 +382,21 @@ body {
   font-weight: 500;
   color: var(--color-dark);
   text-align: left;
+}
+
+.item-type {
+  font-weight: 600;
+  color: var(--color-dark);
+}
+
+.item-content {
+  color: var(--color-gray);
+  text-align: center;
+}
+
+.item-date {
+  color: var(--color-gray);
+  font-size: 0.9rem;
 }
 
 .item-author {
