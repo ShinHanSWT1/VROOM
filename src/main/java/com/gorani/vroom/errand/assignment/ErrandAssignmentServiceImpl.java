@@ -1,5 +1,6 @@
 package com.gorani.vroom.errand.assignment;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -7,6 +8,7 @@ import com.gorani.vroom.errand.chat.ChatService;
 
 import lombok.RequiredArgsConstructor;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
@@ -58,6 +60,12 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
         if (erranderId == null) {
             System.out.println("[ASSIGN][BLOCK] errander profile not found. userId=" + erranderUserId);
             throw new IllegalStateException("부름이 프로필이 없어 채팅 시작이 불가합니다.");
+        }
+
+        // active_status가 active 인 부름이만 가능하도록
+        if(!"ACTIVE".equals(errandAssignmentMapper.getErranderActiveStatus(erranderId))) {
+            System.out.println("[ASSIGN][BLOCK] errander status is not valid. userId=" + erranderUserId);
+            throw new IllegalStateException("해당 부름이 계정이 정지된 상태입니다.");
         }
     	
     	// DB에서 status 재조회

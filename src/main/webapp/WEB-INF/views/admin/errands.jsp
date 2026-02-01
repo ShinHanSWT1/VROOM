@@ -658,9 +658,11 @@
             max-width: 600px;
             width: 90%;
             max-height: 80vh;
-            overflow-y: auto;
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
             z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
 
         .modal-header {
@@ -677,6 +679,7 @@
 
         .modal-body {
             margin-bottom: 1.5rem;
+            overflow-y: auto;
         }
 
         .modal-section {

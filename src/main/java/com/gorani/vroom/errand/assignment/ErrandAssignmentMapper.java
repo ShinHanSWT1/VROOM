@@ -31,4 +31,8 @@ public interface ErrandAssignmentMapper {
                             @Param("toStatus") String toStatus,
                             @Param("changedByType") String changedByType,
                             @Param("changedById") Long changedById);
+
+
+    String getErranderActiveStatus(
+            @Param("erranderId") Long erranderId);
 }
