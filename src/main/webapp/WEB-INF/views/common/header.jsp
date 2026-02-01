@@ -275,10 +275,10 @@
         // 읽음 처리 API 호출
         $.post('${pageContext.request.contextPath}/api/notification/read/' + id, function () {
             if (url && url !== 'null' && url !== '') {
-                window.location.href = url; // 페이지 이동
+                window.location.href = '${pageContext.request.contextPath}' + url;
             } else {
-                checkUnread(); // 점 갱신
-                toggleNotification(); // 닫기
+                checkUnread();
+                toggleNotification();
             }
         });
     }
