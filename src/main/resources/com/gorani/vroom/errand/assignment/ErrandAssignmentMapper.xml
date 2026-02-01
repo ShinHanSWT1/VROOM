@@ -65,8 +65,8 @@
     </update>
 
     <insert id="insertMatchedAssignment">
-        INSERT INTO ERRAND_ASSIGNMENTS (user_id, errands_id, errander_id, assign_type, status)
-        VALUES (#{userId}, #{errandsId}, #{erranderId}, 'AUTO', 'MATCHED')
+        INSERT INTO ERRAND_ASSIGNMENTS (admin_id, user_id, errands_id, errander_id, assign_type, status, reason)
+        VALUES (#{adminId}, #{userId}, #{errandsId}, #{erranderId}, #{type}, #{status}, #{reason})
     </insert>
 
     <insert id="insertStatusHistory">
@@ -85,6 +85,12 @@
     <!-- 부름이 상태 조회 -->
     <select id="getErranderActiveStatus" resultType="String">
         SELECT active_status
+        FROM ERRANDER_PROFILES
+        WHERE errander_id = #{erranderId}
+    </select>
+
+    <select id="selectUserIdByErranderId" parameterType="long" resultType="long">
+        SELECT user_id
         FROM ERRANDER_PROFILES
         WHERE errander_id = #{erranderId}
     </select>

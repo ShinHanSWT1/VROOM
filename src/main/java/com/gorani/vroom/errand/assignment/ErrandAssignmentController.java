@@ -1,17 +1,14 @@
 package com.gorani.vroom.errand.assignment;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-
-import javax.servlet.http.HttpSession;
-
+import com.gorani.vroom.user.auth.UserVO;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.gorani.vroom.user.auth.UserVO;
-
-import lombok.RequiredArgsConstructor;
+import javax.servlet.http.HttpSession;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @Controller
 @RequiredArgsConstructor

@@ -10,6 +10,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="${pageContext.request.contextPath}/static/common/util.js"></script>
+
     <title>VROOM - 심부름 관리</title>
     <style>
         :root {
@@ -776,6 +778,77 @@
             background: #1a252f;
         }
 
+        /* --- History Timeline Style --- */
+        .history-section {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 2px solid var(--color-light-gray);
+        }
+
+        .history-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--color-dark);
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 1.5rem;
+            border-left: 2px solid var(--color-light-gray);
+            margin-left: 0.5rem;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: -1.95rem; /* 선 위에 점 배치 */
+            top: 0.2rem;
+            width: 12px;
+            height: 12px;
+            background-color: var(--color-primary);
+            border-radius: 50%;
+            border: 2px solid var(--color-white);
+            box-shadow: 0 0 0 2px var(--color-light-gray);
+        }
+
+        .timeline-content {
+            background: #f8f9fa;
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.3rem;
+            font-size: 0.9rem;
+        }
+
+        .timeline-status {
+            font-weight: 700;
+            color: var(--color-dark);
+        }
+
+        .timeline-date {
+            color: var(--color-gray);
+            font-size: 0.8rem;
+        }
+
+        .timeline-actor {
+            font-size: 0.85rem;
+            color: #555;
+        }
+
         .modal-footer {
             display: flex;
             gap: 1rem;
@@ -1052,7 +1125,6 @@
                             <input type="date" id="regEndDate" class="filter-select" style="min-width: 130px;">
                         </div>
                     </div>
-
                     <div class="filter-group">
                         <label class="filter-label">마감기간</label>
                         <div style="display: flex; align-items: center; gap: 0.5rem;">
@@ -1060,6 +1132,18 @@
                             <span>~</span>
                             <input type="date" id="dueEndDate" class="filter-select" style="min-width: 130px;">
                         </div>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">진행상태</label>
+                        <select class="filter-select" id="filterStatus">
+                            <option value="">전체</option>
+                            <option value="WAITING">대기</option>
+                            <option value="MATCHED">매칭됨</option>
+                            <option value="CONFIRMED1">1차확정</option>
+                            <option value="CONFIRMED2">2차확정(정산대기)</option>
+                            <option value="COMPLETED">완료</option>
+                            <option value="HOLD">정산보류</option>
+                        </select>
                     </div>
                 </div>
             </section>
@@ -1209,6 +1293,12 @@
                     </div>
                 </div>
             </div>
+
+            <div class="history-section">
+                <h4 class="history-title">심부름 히스토리</h4>
+                <div class="timeline" id="modalHistoryList">
+                </div>
+            </div>
         </div>
 
         <div class="modal-footer">
@@ -1278,6 +1368,7 @@
         document.getElementById('regEndDate').addEventListener('change', () => loadErrandsList(1));
         document.getElementById('dueStartDate').addEventListener('change', () => loadErrandsList(1));
         document.getElementById('dueEndDate').addEventListener('change', () => loadErrandsList(1));
+        document.getElementById('filterStatus').addEventListener('change', () => loadErrandsList(1));
     });
 
     function loadDongList(gunguName) {
@@ -1304,6 +1395,7 @@
         const keyword = document.getElementById('searchInput').value;
         const gu = document.getElementById('filterGu').value;
         const dong = document.getElementById('filterDong').value;
+        const status = document.getElementById('filterStatus').value;
 
         // 시간 범위 값 추출
         const regStart = document.getElementById('regStartDate').value;
@@ -1319,7 +1411,8 @@
             regStart: regStart,
             regEnd: regEnd,
             dueStart: dueStart,
-            dueEnd: dueEnd
+            dueEnd: dueEnd,
+            status: status
         });
         console.log(dong);
         fetch(`${pageContext.request.contextPath}/api/admin/errands/search?` + params)
@@ -1386,7 +1479,7 @@
             let statusText = '-';
             if (status === 'WAITING') statusText = '대기';
             else if (status === 'MATCHED') statusText = '매칭됨';
-            else if (status === 'CONFIRMED1') statusText = '1차';
+            else if (status === 'CONFIRMED1') statusText = '1차확정';
             else if (status === 'CONFIRMED2') statusText = '2차(정산대기)';
             else if (status === 'COMPLETED') statusText = '완료';
             else if (status === 'HOLD') statusText = '정산보류';
@@ -1471,14 +1564,19 @@
 
     function openAssignModal(errandId, status) {
         console.log("openAssignModal: " + errandId + ":" + status);
+        currentErrandsId = errandId;
 
         fetch('${pageContext.request.contextPath}/api/admin/errands/detail?id=' + errandId)
             .then(res => res.json())
             .then(data => {
-                const detail = data.detail;     // 심부름 및 작성자 정보
-                const history = data.history;   // 배정/매칭 이력 리스트
+                const detail = data.detail;             // 심부름 및 작성자 정보
+                const assignment = data.assignment;     // 배정 정보
+                const history = data.history;
+
                 console.log(detail);
+                console.log(assignment);
                 console.log(history);
+
                 // 1. 공통 섹션: 심부름 기본 정보 채우기
                 document.getElementById('modalUserId').textContent = detail.user_id;
                 document.getElementById('modalNickname').textContent = detail.user_nickname;
@@ -1486,8 +1584,8 @@
                 document.getElementById('modalContactPhone').textContent = detail.user_phone || '-';
                 document.getElementById('summaryErrandId').textContent = detail.errands_id;
                 document.getElementById('summaryTitle').textContent = detail.title;
-                document.getElementById('summaryUploadDate').textContent = new Date(detail.created_at) || '-';
-                document.getElementById('summaryDesiredDate').textContent = new Date(detail.desired_at) || '-';
+                document.getElementById('summaryUploadDate').textContent = formatDateTime(detail.created_at) || '-';
+                document.getElementById('summaryDesiredDate').textContent = formatDateTime(detail.desired_at) || '-';
                 document.getElementById('summaryRewardAmount').textContent = detail.reward_amount + '원 / ' + detail.expense_amount + '원' || '-';
                 document.getElementById('summaryLocation').textContent = detail.dong_full_name || '-';
                 document.getElementById('summaryContent').value = detail.description || '내용이 없습니다'
@@ -1513,13 +1611,71 @@
                     approveBtn.style.display = 'none';
 
                     // 이력 데이터 중 가장 최신(첫 번째) 정보를 상세 섹션에 바인딩
-                    if (history && history.length > 0) {
-                        const latest = history[0];
+                    if (assignment && assignment.length > 0) {
+                        const latest = assignment[0];
                         document.getElementById('infoErrander').textContent = `\${latest.errander_nickname} (\${latest.errander_id || '-'})`;
-                        document.getElementById('infoAssignedAt').textContent = new Date(latest.assigned_at);
+                        document.getElementById('infoAssignedAt').textContent = formatDateTime(latest.assigned_at);
                         document.getElementById('infoReason').textContent = latest.reason || '사유 없음';
-                        document.getElementById('infoAdmin').textContent = latest.admin_name || '시스템 자동';
+                        document.getElementById('infoAdmin').textContent =
+                            latest?.admin_name
+                                ? `\${latest.admin_name} (\${latest.admin_id})`
+                                : '시스템 자동 (-)';
                     }
+                }
+
+                // 2. History 렌더링 (추가된 부분)
+                const historyList = document.getElementById('modalHistoryList');
+                historyList.innerHTML = ''; // 초기화
+
+                if (data.history && data.history.length > 0) {
+                    data.history.forEach(hist => {
+                        // 날짜 포맷팅 (YYYY-MM-DD HH:mm:ss)
+                        // (common.js의 formatDateTime 함수가 있다면 사용, 없으면 아래 로직 사용)
+                        let dateStr = hist.changed_at ? formatDateTime(hist.changed_at) : '-';
+
+                        // 상태 텍스트 변환 (영어 -> 한글)
+                        const statusMap = {
+                            'WAITING': '대기중',
+                            'MATCHED': '배정완료',
+                            'IN_PROGRESS': '수행중',
+                            'CONFIRMED1': '1차확정',
+                            'CONFIRMED2': '2차(정산대기)',
+                            'COMPLETED': '완료됨',
+                            'CANCELLED': '취소됨',
+                            'HOLD': '보류됨'
+                        };
+                        let statusText = statusMap[hist.to_status] || hist.to_status;
+
+                        if(hist.from_status === 'MATCHED' && hist.to_status === 'WAITING') {
+                            statusText = '취소됨(다시 대기)';
+                        }
+
+                        // 변경자 텍스트 (아이콘 + 타입)
+                        let actorText = '';
+                        if (hist.changed_by_type === 'USER') actorText = '👤 사용자';
+                        else if (hist.changed_by_type === 'ERRANDER') actorText = '🏃 부름이';
+                        else if (hist.changed_by_type === 'ADMIN') actorText = '🛡️ 관리자';
+                        else actorText = '⚙️ 시스템';
+
+                        // HTML 생성
+                        const item = `
+                            <div class="timeline-item">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-content">
+                                    <div class="timeline-header">
+                                        <span class="timeline-status">\${statusText}</span>
+                                        <span class="timeline-date">\${dateStr}</span>
+                                    </div>
+                                    <div class="timeline-actor">
+                                        변경자: <strong>\${actorText}</strong> (ID: \${hist.changed_by_id})
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        historyList.innerHTML += item;
+                    });
+                } else {
+                    historyList.innerHTML = '<p style="color:#999; font-size:0.9rem; padding-left:1rem;">이력이 없습니다.</p>';
                 }
 
                 // 3. 모달 표시
@@ -1591,9 +1747,8 @@
     }
 
     // 배정 처리
-    // 배정 확정 (기존 approveErrander 대체 또는 수정)
     function approveErrander() {
-        // 1. 선택된 부름이 확인
+        // 선택된 부름이 확인
         const selectedRadio = document.querySelector('input[name="selectedErrander"]:checked');
         const assignReason = document.getElementById('assignReason').value;
 
@@ -1607,7 +1762,12 @@
             }
 
             const selectedErranderId = selectedRadio.value;
-
+            console.log(JSON.stringify({
+                errandId: currentErrandsId,
+                erranderId: selectedErranderId,
+                adminId: ${sessionScope.loginAdmin.id},
+                reason: assignReason
+            }));
             if (!confirm('부름이(ID:' + selectedErranderId + ')에게 심부름을 배정하시겠습니까?')) return;
 
             // 배정 API 호출
@@ -1615,8 +1775,9 @@
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
-                    errandId: currentErrandsId, // 전역변수에 저장된 심부름 ID
+                    errandId: currentErrandsId,
                     erranderId: selectedErranderId,
+                    adminId: ${sessionScope.loginAdmin.id},
                     reason: assignReason
                 })
             })

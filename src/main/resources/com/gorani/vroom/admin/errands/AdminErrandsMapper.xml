@@ -52,6 +52,9 @@
             <if test="dueEnd != null and dueEnd != ''">
                 AND desired_at &lt;= CONCAT(#{dueEnd}, ' 23:59:59')
             </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
         </where>
         ORDER BY created_at DESC
         LIMIT #{limit} OFFSET #{offset}
@@ -75,6 +78,15 @@
             <if test="regEnd != null and regEnd != ''">
                 AND created_at &lt;= CONCAT(#{regEnd}, ' 23:59:59')
             </if>
+            <if test="dueStart != null and dueStart != ''">
+                AND desired_at &gt;= #{dueStart}
+            </if>
+            <if test="dueEnd != null and dueEnd != ''">
+                AND desired_at &lt;= CONCAT(#{dueEnd}, ' 23:59:59')
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
         </where>
     </select>
 
@@ -89,10 +101,11 @@
         WHERE e.errands_id = #{errandsId}
     </select>
 
-    <select id="getErrandHistory" parameterType="long" resultType="map">
+    <select id="getErrandAssignmentDetail" parameterType="long" resultType="map">
         SELECT
-            a.id, a.assigned_at, a.status, a.reason,
+            a.id, a.assigned_at, a.status, a.reason,p.errander_id AS errander_id,
             m.nickname AS errander_nickname,
+            admin.id AS admin_id,
             admin.name AS admin_name
         FROM ERRAND_ASSIGNMENTS a
                  LEFT JOIN ERRANDER_PROFILES p ON a.errander_id = p.errander_id
@@ -117,5 +130,14 @@
         WHERE p.is_employee = TRUE
           AND p.active_status = 'ACTIVE'
         ORDER BY today_count ASC, last_assigned_at ASC
+    </select>
+
+
+<!--    List<Map<String, Object>> getErrandHistory(Long errandsId);/-->
+    <select id="getErrandHistory"
+            parameterType="long" resultType="map">
+        SELECT *
+        FROM ERRAND_STATUS_HISTORY
+        WHERE errands_id = #{errandsId}
     </select>
 </mapper>
