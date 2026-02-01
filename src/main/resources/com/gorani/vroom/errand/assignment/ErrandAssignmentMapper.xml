@@ -92,9 +92,9 @@
 	    ON h.errands_id = a.errands_id
 	  WHERE a.errands_id = #{errandsId}
 	    AND a.errander_id = #{runnerUserId}
-	    AND h.status = 'CONFIRMED1'
-	    AND h.created_at = (
-	        SELECT MAX(created_at)
+	    AND h.to_status = 'CONFIRMED1'
+	    AND h.changed_at = (
+	        SELECT MAX(changed_at)
 	        FROM ERRAND_STATUS_HISTORY
 	        WHERE errands_id = #{errandsId}
     )

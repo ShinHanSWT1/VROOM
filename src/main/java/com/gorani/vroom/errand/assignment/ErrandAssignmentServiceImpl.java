@@ -111,15 +111,20 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
             throw new RuntimeException("업로드 파일이 없습니다.");
         }
 
-        // 1) 현재 이 runnerUserId가 이 errandsId의 매칭 러너인지 확인 + 상태가 CONFIRMED1인지 확인
-        //    (이 검증을 Mapper WHERE 절로 강제하는 게 가장 안전)
-        int can = errandAssignmentMapper.validateRunnerAndStatus(errandsId, runnerUserId);
+        // 핵심: userId -> erranderId(부름이 프로필 PK)로 변환
+        Long erranderId = errandAssignmentMapper.selectErranderIdByUserId(runnerUserId);
+        if (erranderId == null) {
+            throw new RuntimeException("부름이 프로필이 없어 업로드가 불가합니다.");
+        }
+
+        // validate도 erranderId로 검사해야 함
+        int can = errandAssignmentMapper.validateRunnerAndStatus(errandsId, erranderId);
         if (can != 1) {
             throw new RuntimeException("업로드 권한이 없거나 상태가 올바르지 않습니다.");
         }
 
         // 2) 파일 저장 (로컬)
-        String uploadDir = "C:/vroom_upload/proof"; // 서버 환경에 맞게 바꿔
+        String uploadDir = "D:/vroom_uploads/proof"; // 주인님 환경에 맞게 통일 추천
         new File(uploadDir).mkdirs();
 
         String original = proofImage.getOriginalFilename();
@@ -137,20 +142,34 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
             throw new RuntimeException("파일 저장 실패");
         }
 
-        String savedPath = "/upload/proof/" + saveName; // DB에 저장할 경로 정책대로
+        // URL 경로도 /uploads/proof 로 통일 (정적 리소스 매핑이 그쪽이면)
+        String savedPath = "/uploads/proof/" + saveName;
 
-        // 3) proof 저장
-        int inserted = errandAssignmentMapper.insertProof(errandsId, runnerUserId, roomId, savedPath);
+        // 3) proof 저장 (erranderId로 저장)
+        int inserted = errandAssignmentMapper.insertCompletionProof(errandsId, erranderId, savedPath);
         if (inserted != 1) {
             throw new RuntimeException("인증 정보 저장 실패");
         }
-
-        // 4) 상태 변경: CONFIRMED1 -> CONFIRMED2 (주인님 설계)
-        int updated = errandAssignmentMapper.updateStatusConfirmed1ToConfirmed2(errandsId);
+        
+        // 4) 상태 변경: CONFIRMED1 -> CONFIRMED2
+        int updated = errandAssignmentMapper.updateErrandStatusConfirmed1ToConfirmed2(errandsId);
         if (updated != 1) {
             throw new RuntimeException("상태 변경 실패(이미 변경되었거나 조건 불일치)");
         }
+        
+        // 5) 히스토리 저장 (CONFIRMED1 -> CONFIRMED2)
+        int hist = errandAssignmentMapper.insertStatusHistory(
+                errandsId,
+                "CONFIRMED1",
+                "CONFIRMED2",
+                "ERRANDER",      // 또는 "RUNNER" / "USER" 너희 규칙대로
+                erranderId       // changed_by_id도 너희 규칙대로 (userId를 쓰는 구조면 userId)
+        );
+        if (hist != 1) {
+            throw new RuntimeException("상태 히스토리 저장 실패");
+        }
     }
+
     
     @Override
     @Transactional

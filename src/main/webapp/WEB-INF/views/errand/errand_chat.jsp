@@ -128,17 +128,13 @@
                     </div>
                 </div>
                 
-                <div style="font-size:12px;color:#999;">
-  DEBUG userRole=[${userRole}] errandStatus=[${errandStatus}] currentUserId=[${currentUserId}]
-</div>
-                
                 
                 <!-- 역할별 액션 버튼 카드 -->
 				<div class="errand-card">
 				  <div class="errand-card-header">
-				    <div class="section-label">💼 심부름 관리</div>
+				    <div class="section-label">💼 심부름 관리</div>				    
 				
-				    <div class="action-buttons" id="actionArea">
+				    <div class="action-buttons" id="actionArea" data-status="${errandStatus}">
 				      <c:choose>
 				
 				        <c:when test="${userRole eq 'USER' or userRole eq 'OWNER'}">
@@ -308,11 +304,31 @@
                 });
               }
             
+            function statusRank(s) {
+           	  const order = {
+           	    WAITING: 0,
+           	    MATCHED: 1,
+           	    CONFIRMED1: 2,
+           	    CONFIRMED2: 3,
+           	    COMPLETED: 4
+           	  };
+           	  return (order[s] ?? -1);
+           	}
+            
             function handleStatusChange(payload) {
            	  // payload.status 예: 'CONFIRMED1', 'CONFIRMED2', 'WAITING', 'MATCHED'
            	  const status = payload.status;
            	  const actionArea = document.getElementById('actionArea');
            	  if (!actionArea) return;
+           	  
+           	  const current = actionArea.getAttribute('data-status'); // 예: CONFIRMED2
+
+           	  // 이미 더 진행된 상태면, 더 낮은 이벤트는 무시 (되돌림 방지)
+           	  if (current && statusRank(status) < statusRank(current)) {
+           	    return;
+           	  }
+           	  
+              actionArea.setAttribute('data-status', status);
 
            	  // role 값이 지금 OWNER/ERRANDER 섞여 있을 수 있어서 방어적으로 처리
            	  const isUser = (userRole === 'USER' || userRole === 'OWNER');
@@ -429,6 +445,7 @@
             
             function openProofModal() {
            	  const modal = document.getElementById('proofModal');
+	          const overlay = document.getElementById('proofOverlay');
            	  const fileInput = document.getElementById('proofFile');
            	  const previewWrap = document.getElementById('proofPreview');
            	  const previewImg = document.getElementById('proofPreviewImg');
@@ -445,7 +462,9 @@
            	  previewImg.src = '';
            	  fileName.textContent = '';
 
-           	  modal.style.display = 'block';
+           	  modal.classList.add('is-open');
+              modal.setAttribute('aria-hidden', 'false');
+              document.body.style.overflow = 'hidden';
 
            	  // 파일 선택 시 미리보기
            	  fileInput.onchange = () => {
@@ -458,11 +477,33 @@
            	    previewWrap.style.display = 'block';
            	  };
 
+           // 닫기 공통 함수
+           	  const close = () => {
+           	    modal.classList.remove('is-open');
+           	    modal.setAttribute('aria-hidden', 'true');
+           	    document.body.style.overflow = '';
+
+           	    // objectURL 메모리 누수 방지(선택)
+           	    if (previewImg?.src?.startsWith('blob:')) {
+           	      try { URL.revokeObjectURL(previewImg.src); } catch (e) {}
+           	    }
+           	  };
+
            	  // 닫기/취소
            	  const closeBtn = document.getElementById('proofCloseBtn');
            	  const cancelBtn = document.getElementById('proofCancelBtn');
-           	  closeBtn.onclick = () => (modal.style.display = 'none');
-           	  cancelBtn.onclick = () => (modal.style.display = 'none');
+
+           	  closeBtn.onclick = close;
+           	  cancelBtn.onclick = close;
+
+           	  // 오버레이 클릭 닫기
+           	  if (overlay) overlay.onclick = close;
+
+           	  // ESC 닫기 (열릴 때만 1회 등록/해제)
+           	  const onKeyDown = (e) => {
+           	    if (e.key === 'Escape') close();
+           	  };
+           	  document.addEventListener('keydown', onKeyDown, { once: true });
 
            	  // 업로드
            	  const submitBtn = document.getElementById('proofSubmitBtn');
@@ -473,7 +514,6 @@
            	      return;
            	    }
 
-           	    // ✅ multipart 전송
            	    const fd = new FormData();
            	    fd.append('errandsId', errandsId);
            	    fd.append('roomId', roomId);
@@ -493,15 +533,13 @@
            	      }
 
            	      // 업로드 성공 -> 모달 닫기
-           	      modal.style.display = 'none';
+           	      close();
 
-           	      // UI: 부름이 화면에 "인증 제출 완료" 표시(원하면 STOMP로도 동기화 가능)
            	      const actionArea = document.getElementById('actionArea');
            	      if (actionArea) {
-           	        actionArea.innerHTML = `<div class="status-wait">✅ 인증사진 제출 완료 (사용자 확인 대기)</div>`;
+           	        actionArea.innerHTML = `<div class="status-wait">✅ 인증 완료</div>`;
            	      }
 
-           	      // (선택) 시스템 메시지로 채팅창에 알림 띄우기
            	      addSystemMessageToUI('부름이가 완료 인증사진을 제출했습니다.');
 
            	    } catch (e) {
@@ -852,27 +890,59 @@
         });
     </script>
     <!-- ===== 인증사진 업로드 모달 (ERRANDER 전용) ===== -->
-	<div id="proofModal" class="modal-overlay" style="display:none;">
-	  <div class="modal">
-	    <div class="modal-header">
-	      <div class="modal-title">📸 심부름 완료 인증사진</div>
-	      <button type="button" id="proofCloseBtn" class="modal-close">×</button>
+	<div id="proofModal" class="v-modal" aria-hidden="true">
+	  <!-- 화면 전체 오버레이 (클릭 시 닫기) -->
+	  <div class="v-modal__overlay" id="proofOverlay"></div>
+	
+	  <!-- 중앙 패널 -->
+	  <div class="v-modal__panel" role="dialog" aria-modal="true" aria-labelledby="proofModalTitle">
+	    <div class="v-modal__header">
+	      <h3 id="proofModalTitle" class="v-modal__title">완료 인증 사진 업로드</h3>
+	      <button type="button" id="proofCloseBtn" class="v-modal__close">✕</button>
 	    </div>
 	
-	    <div class="modal-body">
-	      <div id="proofUploadInner">
+	    <div class="v-modal__body">
+	      <div class="proof-upload">
 	        <input type="file" id="proofFile" accept="image/*" />
-	        <div id="proofFileName" style="margin-top:8px; color:#666;"></div>
-	      </div>
 	
-	      <div id="proofPreview" style="display:none; margin-top:12px;">
-	        <img id="proofPreviewImg" src="" alt="미리보기" style="max-width:100%; border-radius:12px;" />
+	        <div class="proof-filemeta">
+	          <span id="proofFileName" class="proof-filename"></span>
+	        </div>
+	
+	        <div id="proofPreview" class="proof-preview" style="display:none;">
+	          <img id="proofPreviewImg" alt="미리보기" />
+	        </div>
 	      </div>
 	    </div>
 	
-	    <div class="modal-footer">
-	      <button type="button" id="proofCancelBtn" class="btn-secondary">취소</button>
-	      <button type="button" id="proofSubmitBtn" class="btn-primary">업로드</button>
+	    <div class="v-modal__footer">
+	      <button type="button" id="proofCancelBtn" class="v-btn v-btn--ghost">취소</button>
+	      <button type="button" id="proofSubmitBtn" class="v-btn v-btn--primary">업로드</button>
+	    </div>
+	  </div>
+	</div>
+	<div id="proofModal" class="v-modal" aria-hidden="true">
+	  <div class="v-modal__overlay" onclick="closeProofModal()"></div>
+	
+	  <div class="v-modal__panel" role="dialog" aria-modal="true" aria-labelledby="proofModalTitle">
+	    <div class="v-modal__header">
+	      <h3 id="proofModalTitle" class="v-modal__title">완료 인증 사진 업로드</h3>
+	      <button type="button" class="v-modal__close" onclick="closeProofModal()">✕</button>
+	    </div>
+	
+	    <div class="v-modal__body">
+	      <!-- 너가 기존에 쓰던 proofUploadInner / preview 영역 그대로 넣으면 됨 -->
+	      <div id="proofUploadInner">
+	        <input type="file" id="proofFile" accept="image/*">
+	        <div id="proofPreview" style="display:none; margin-top:12px;">
+	          <img id="proofPreviewImg" alt="preview" style="max-width:100%; border-radius:12px;">
+	        </div>
+	      </div>
+	    </div>
+	
+	    <div class="v-modal__footer">
+	      <button type="button" class="v-btn v-btn--ghost" onclick="closeProofModal()">취소</button>
+	      <button type="button" id="proofSubmitBtn" class="v-btn v-btn--primary">업로드</button>
 	    </div>
 	  </div>
 	</div>

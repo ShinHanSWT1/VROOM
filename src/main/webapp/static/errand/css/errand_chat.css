@@ -484,6 +484,109 @@ body {
     transform: translateY(0);
 }
 
+/* 모달 전체 래퍼: 기본은 숨김 */
+.v-modal {
+  position: fixed;
+  inset: 0;              /* top/right/bottom/left:0 */
+  display: none;
+  z-index: 9999;
+}
+
+/* 열렸을 때 */
+.v-modal.is-open {
+  display: block;
+}
+
+/* 배경 오버레이 */
+.v-modal__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+/* 중앙 패널 */
+.v-modal__panel {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+
+  width: min(560px, calc(100vw - 32px));
+  max-height: calc(100vh - 80px);
+  overflow: auto;
+
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 18px 60px rgba(0,0,0,0.25);
+  padding: 18px;
+}
+
+/* 헤더 */
+.v-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.v-modal__title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.v-modal__close {
+  border: none;
+  background: transparent;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 10px;
+}
+
+.v-modal__close:hover {
+  background: rgba(0,0,0,0.05);
+}
+
+/* 바디/푸터 */
+.v-modal__body {
+  padding: 14px 0;
+}
+
+.v-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid #eee;
+}
+
+/* 버튼 (필요하면 네 프로젝트 버튼 스타일로 교체 가능) */
+.v-btn {
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.v-btn--ghost:hover {
+  background: #f3f4f6;
+}
+
+.v-btn--primary {
+  border: none;
+  background: linear-gradient(135deg, #6d5efc 0%, #ff5aa5 100%);
+  color: #fff;
+}
+
+.v-btn--primary:hover {
+  filter: brightness(0.98);
+}
+
 /* ========================================
    스크롤바 스타일
 ======================================== */
