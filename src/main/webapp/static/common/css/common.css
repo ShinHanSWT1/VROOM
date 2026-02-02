@@ -17,13 +17,17 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    cursor: url('/vroom/static/img/cursor/default-cursor.png') 16 0, auto;
+    cursor: url('/vroom/static/common/images/cursor-default.png') 16 0, auto;
 }
 
 a, button, select, label[for], input[type="submit"], input[type="button"],
-[onclick], .btn, .sidebar-link, .menu-item, .task-card, .tab-btn, .page-btn,
+[onclick], .btn, .sidebar-link, .menu-item, .menu-item *, .task-card, .task-card *, .tab-btn, .page-btn,
 [style*="cursor: pointer"], [style*="cursor:pointer"] {
-    cursor: url('/vroom/static/img/cursor/pointer-cursor.png') 16 0, pointer !important;
+    cursor: url('/vroom/static/common/images/cursor-pointer.png') 16 0, pointer !important;
+}
+
+*:active {
+    cursor: url('/vroom/static/common/images/cursor-pointer.png') 16 0, auto !important;
 }
 
 body {

@@ -1,5 +1,6 @@
 package com.gorani.vroom.errander.activity;
 
+import com.gorani.vroom.errand.post.ErrandListVO;
 import com.gorani.vroom.user.auth.UserVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,5 +48,21 @@ public class ErranderActivityController {
 
         Long userId = loginUser.getUserId();
         return activityService.getErranderActivities(userId, year, month);
+    }
+
+    // 특정 날짜 거래 상세 API
+    @GetMapping("/api/daily-detail")
+    @ResponseBody
+    public List<ErrandListVO> getDailyDetail(
+            @RequestParam String date,
+            HttpSession session) {
+
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
+        if (loginUser == null) {
+            return List.of();
+        }
+
+        Long userId = loginUser.getUserId();
+        return activityService.getErranderDetail(userId, date);
     }
 }
