@@ -16,4 +16,7 @@ public interface MainService {
 
     // 인기 커뮤니티 게시글 조회
     List<CommunityPostVO> getMainPopularPostList(String dongCode);
+
+    // 우수 부름이 리뷰 조회
+    List<MainReviewVO> getMainTopReviews();
 }

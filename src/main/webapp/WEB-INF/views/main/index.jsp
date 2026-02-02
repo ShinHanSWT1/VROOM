@@ -53,8 +53,7 @@
                                 <canvas id="hero3d"></canvas>
                             </c:when>
                             <c:otherwise>
-                                <img src="https://d1unjqcospf8gs.cloudfront.net/assets/home/main/3x/image-top-d68ee780d79f01e18a93a0b92eb5e227a177239270e5c54433f021966aa50085.png"
-                                     alt="VROOM Main" style="max-width: 500px; width: 100%; height: auto;">
+                                <canvas id="heroUser3d"></canvas>
                             </c:otherwise>
                         </c:choose>
                     </div>
@@ -163,8 +162,32 @@
                     <div class="section-header">
                         <h2 class="section-title">우수 부름이 리뷰</h2>
                     </div>
+                    <c:if test="${not empty reviewList}">
                     <div class="reviews-carousel">
-                        <div class="reviews-container">
+                        <div class="reviews-container" id="reviewsContainer">
+                            <c:forEach var="review" items="${reviewList}">
+                                <div class="review-card">
+                                    <div class="review-header">
+                                        <div class="reviewer-info">
+                                            <div class="reviewer-avatar">👤</div>
+                                            <div class="reviewer-details">
+                                                <span class="reviewer-name">${review.reviewerName}</span>
+                                            </div>
+                                        </div>
+                                        <div class="review-rating">
+                                            <span class="rating-score">${review.rating}</span>
+                                            <span class="rating-star">★</span>
+                                        </div>
+                                    </div>
+                                    <div class="review-task">
+                                        <span class="task-label">${review.taskCategory} 님이 추천해요!</span>
+                                    </div>
+                                    <div class="review-content">
+                                        <p>${review.content}</p>
+                                    </div>
+                                </div>
+                            </c:forEach>
+                            <%-- 무한 루프를 위한 복제 --%>
                             <c:forEach var="review" items="${reviewList}">
                                 <div class="review-card">
                                     <div class="review-header">
@@ -189,35 +212,22 @@
                             </c:forEach>
                         </div>
                     </div>
+                    </c:if>
+                    <c:if test="${empty reviewList}">
+                        <p style="text-align: center; color: #999; padding: 2rem 0;">등록된 리뷰가 없습니다.</p>
+                    </c:if>
                 </div>
             </section>
 
             <!-- 공지사항 -->
             <section class="notice-section">
                 <div class="container">
-                    <div class="notice-card">
-                        <div class="notice-header">
-                            <span class="notice-icon">📢</span>
-                            <h2 class="notice-title">공지사항</h2>
-                        </div>
-                        <div class="notice-body">
-                            <p class="notice-greeting">안녕하세요, VROOM 이용자 여러분!</p>
-                            <p class="notice-content">
-                                항상 저희 서비스를 이용해주셔서 감사드립니다.<br>
-                                더 나은 서비스 제공을 위한 서버 업데이트를 진행하오니 아래 일정을 확인해주시기 바랍니다.
-                            </p>
-                            <div class="notice-schedule">
-                                <div class="schedule-label">서버 점검 일정</div>
-                                <div class="schedule-detail">
-                                    📅 2025년 2월 11일 (화)<br>
-                                    ⏰ 오후 6시 ~ 자정 (18:00 ~ 24:00)
-                                </div>
-                            </div>
-                            <p class="notice-content" style="margin-top: 1rem;">
-                                점검 시간 동안에는 일시적으로 서비스 이용이 불가하오니<br>
-                                이용에 참고 부탁드리며, 불편을 드려 죄송합니다.
-                            </p>
-                        </div>
+                    <div class="notice-header" style="margin-bottom: 1.5rem;">
+                        <span class="notice-icon">📢</span>
+                        <h2 class="notice-title">공지사항</h2>
+                    </div>
+                    <div id="noticeListArea">
+                        <p style="text-align: center; color: #999;">공지사항을 불러오는 중...</p>
                     </div>
                 </div>
             </section>
@@ -236,12 +246,52 @@
                         alert(message);
                     }
                 });
+
+                // 공지사항 로드
+                $(document).ready(function() {
+                    $.ajax({
+                        url: '${pageContext.request.contextPath}/api/notice/published',
+                        type: 'GET',
+                        success: function(list) {
+                            var area = document.getElementById('noticeListArea');
+                            if (!list || list.length === 0) {
+                                area.innerHTML = '<p style="text-align: center; color: #999;">등록된 공지사항이 없습니다.</p>';
+                                return;
+                            }
+                            var html = '';
+                            list.forEach(function(item, idx) {
+                                var isImportant = (item.isImportant == 1);
+                                var badge = isImportant ? '<span style="display:inline-block; background:#E3F2FD; color:#2196F3; padding:0.25rem 0.6rem; border-radius:12px; font-size:0.75rem; font-weight:600; margin-right:0.5rem;">중요</span>' : '';
+                                var startDate = item.startAt ? new Date(item.startAt).toISOString().substring(0, 10) : '';
+                                var content = item.content || '';
+                                html += '<div class="notice-card" style="margin-bottom: 1rem; cursor: pointer;" onclick="this.querySelector(\'.notice-detail\').style.display = this.querySelector(\'.notice-detail\').style.display === \'none\' ? \'block\' : \'none\';">';
+                                html += '  <div style="display: flex; justify-content: space-between; align-items: center;">';
+                                html += '    <div style="font-weight: 600; font-size: 1rem;">' + badge + item.title + '</div>';
+                                html += '    <span style="color: #999; font-size: 0.85rem;">' + startDate + '</span>';
+                                html += '  </div>';
+                                html += '  <div class="notice-detail" style="display: ' + (idx === 0 ? 'block' : 'none') + '; margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed #eee;">';
+                                html += '    <div style="line-height: 1.8; white-space: pre-line;">' + content + '</div>';
+                                html += '  </div>';
+                                html += '</div>';
+                            });
+                            area.innerHTML = html;
+                        },
+                        error: function() {
+                            document.getElementById('noticeListArea').innerHTML = '<p style="text-align: center; color: #999;">공지사항을 불러올 수 없습니다.</p>';
+                        }
+                    });
+                });
             </script>
             <script src="<c:url value='/static/main/js/mainFilter.js'/>"></script>
 
-            <c:if test="${sessionScope.loginSess.role == 'ERRANDER'}">
-                <script src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-                <script src="<c:url value='/static/main/js/hero3d.js'/>"></script>
-            </c:if>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+            <c:choose>
+                <c:when test="${sessionScope.loginSess.role == 'ERRANDER'}">
+                    <script src="<c:url value='/static/main/js/hero3d.js'/>"></script>
+                </c:when>
+                <c:otherwise>
+                    <script src="<c:url value='/static/main/js/heroUser3d.js'/>"></script>
+                </c:otherwise>
+            </c:choose>
 
             <jsp:include page="../common/footer.jsp" />

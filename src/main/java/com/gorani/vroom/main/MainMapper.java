@@ -19,4 +19,7 @@ public interface MainMapper {
 
     // 최근 커뮤니티 인기 게시글 조회
     List<CommunityPostVO> selectMainPopularPostList(@Param("dongCode") String dongCode);
+
+    // 우수 부름이 리뷰 조회
+    List<MainReviewVO> selectMainTopReviews();
 }

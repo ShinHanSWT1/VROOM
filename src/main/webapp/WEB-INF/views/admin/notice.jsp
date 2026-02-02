@@ -399,7 +399,7 @@
             font-weight: 600;
         }
 
-        .status-badge.ACTIVE {
+        .status-badge.PUBLISHED {
             background: #E8F5E9;
             color: #27AE60;
         }
@@ -417,7 +417,7 @@
         }
 
         /* 종료됨 */
-        .status-badge.HIDDEN {
+        .status-badge.PRIVATE {
             background: #FDEAEA;
             color: #E74C3C;
         }
@@ -709,10 +709,10 @@
                         <label class="filter-label">게시 상태</label>
                         <select id="filterStatus" class="filter-select" onchange="loadNoticeList(1)">
                             <option value="">전체</option>
-                            <option value="ACTIVE">게시중</option>
+                            <option value="PUBLISHED">게시중</option>
                             <option value="SCHEDULED">예약</option>
                             <option value="ENDED">종료</option>
-                            <option value="HIDDEN">비공개</option>
+                            <option value="PRIVATE">비공개</option>
                         </select>
                     </div>
 
@@ -807,9 +807,9 @@
                 <div class="form-group" style="flex: 1;">
                     <label class="form-label">게시 상태</label>
                     <select class="form-select" id="modalStatusSelect">
-                        <option value="ACTIVE">즉시 게시</option>
+                        <option value="PUBLISHED">즉시 게시</option>
                         <option value="SCHEDULED">예약 게시</option>
-                        <option value="HIDDEN">비공개 (임시저장)</option>
+                        <option value="PRIVATE">비공개 (임시저장)</option>
                     </select>
                 </div>
             </div>
@@ -875,50 +875,18 @@
         const status = document.getElementById('filterStatus').value;
         const target = document.getElementById('filterTarget').value;
 
-        // 실제 API 호출: fetch(...)
-
-        // [테스트용 더미 데이터]
-        const dummyData = [
-            {
-                id: 12,
-                title: '시스템 점검 안내',
-                target: 'ALL',
-                status: 'ACTIVE',
-                startDate: '2026-01-07',
-                endDate: '2026-01-08',
-                isImportant: true
+        $.ajax({
+            url: '${pageContext.request.contextPath}/admin/api/notice/list',
+            type: 'GET',
+            data: { keyword: keyword, status: status, target: target },
+            success: function(list) {
+                renderTable(list);
+                document.getElementById('totalCount').innerText = list.length;
             },
-            {
-                id: 11,
-                title: '설 연휴 고객센터 운영 안내',
-                target: 'ALL',
-                status: 'ENDED',
-                startDate: '2025-12-25',
-                endDate: '2025-12-31',
-                isImportant: false
-            },
-            {
-                id: 10,
-                title: '부름이 정산 정책 변경 안내',
-                target: 'ERRANDER',
-                status: 'ACTIVE',
-                startDate: '2026-01-01',
-                endDate: '',
-                isImportant: true
-            },
-            {
-                id: 9,
-                title: '신규 가입 이벤트',
-                target: 'USER',
-                status: 'HIDDEN',
-                startDate: '2026-02-01',
-                endDate: '2026-02-28',
-                isImportant: false
-            },
-        ];
-
-        renderTable(dummyData);
-        document.getElementById('totalCount').innerText = dummyData.length;
+            error: function() {
+                alert('공지 목록을 불러오는데 실패했습니다.');
+            }
+        });
     }
 
     function renderTable(list) {
@@ -934,8 +902,8 @@
             let statusBadge = '';
             let statusText = '';
             switch (item.status) {
-                case 'ACTIVE':
-                    statusBadge = 'ACTIVE';
+                case 'PUBLISHED':
+                    statusBadge = 'PUBLISHED';
                     statusText = '게시중';
                     break;
                 case 'SCHEDULED':
@@ -946,8 +914,8 @@
                     statusBadge = 'ENDED';
                     statusText = '종료';
                     break;
-                case 'HIDDEN':
-                    statusBadge = 'HIDDEN';
+                case 'PRIVATE':
+                    statusBadge = 'PRIVATE';
                     statusText = '비공개';
                     break;
             }
@@ -966,12 +934,14 @@
             }
 
             let titleHtml = item.title;
-            if (item.isImportant) {
+            if (item.isImportant == 1 || item.isImportant === 'Y') {
                 titleHtml = '<span class="status-badge IMPORTANT">중요</span> ' + item.title;
             }
 
-            let period = item.startDate;
-            if (item.endDate) period += ' ~ ' + item.endDate;
+            let startDate = item.startAt ? new Date(item.startAt).toISOString().substring(0, 10) : '';
+            let endDate = item.endAt ? new Date(item.endAt).toISOString().substring(0, 10) : '';
+            let period = startDate;
+            if (endDate) period += ' ~ ' + endDate;
             else period += ' ~ (무기한)';
 
             const row = `
@@ -997,7 +967,7 @@
         document.getElementById('modalContentInput').value = '';
         document.getElementById('modalImportantCheck').checked = false;
         document.getElementById('modalTargetSelect').value = 'ALL';
-        document.getElementById('modalStatusSelect').value = 'ACTIVE';
+        document.getElementById('modalStatusSelect').value = 'PUBLISHED';
         document.getElementById('modalStartDate').value = new Date().toISOString().split('T')[0];
         document.getElementById('modalEndDate').value = '';
 
@@ -1008,23 +978,27 @@
     }
 
     function openEditModal(id) {
-        // 실제로는 API로 상세 정보 조회 필요 (mock data 사용)
-        document.getElementById('modalTitle').innerText = '공지 수정';
-        document.getElementById('modalNoticeId').value = id;
+        $.ajax({
+            url: '${pageContext.request.contextPath}/admin/api/notice/' + id,
+            type: 'GET',
+            success: function(notice) {
+                document.getElementById('modalTitle').innerText = '공지 수정';
+                document.getElementById('modalNoticeId').value = notice.id;
+                document.getElementById('modalTitleInput').value = notice.title;
+                document.getElementById('modalImportantCheck').checked = (notice.isImportant == 1 || notice.isImportant === 'Y');
+                document.getElementById('modalTargetSelect').value = notice.target;
+                document.getElementById('modalStatusSelect').value = notice.status;
+                document.getElementById('modalStartDate').value = notice.startAt ? new Date(notice.startAt).toISOString().substring(0, 10) : '';
+                document.getElementById('modalEndDate').value = notice.endAt ? new Date(notice.endAt).toISOString().substring(0, 10) : '';
+                document.getElementById('modalContentInput').value = notice.content || '';
 
-        // Mock Data Loading...
-        document.getElementById('modalTitleInput').value = '시스템 점검 안내'; // 예시
-        document.getElementById('modalImportantCheck').checked = true;
-        document.getElementById('modalTargetSelect').value = 'ALL';
-        document.getElementById('modalStatusSelect').value = 'ACTIVE';
-        document.getElementById('modalStartDate').value = '2026-01-07';
-        document.getElementById('modalEndDate').value = '2026-01-08';
-        document.getElementById('modalContentInput').value = '시스템 점검이 예정되어 있습니다...';
-
-        // 삭제 버튼 표시
-        document.getElementById('btnDelete').style.display = 'block';
-
-        document.getElementById('noticeModal').classList.add('show');
+                document.getElementById('btnDelete').style.display = 'block';
+                document.getElementById('noticeModal').classList.add('show');
+            },
+            error: function() {
+                alert('공지 정보를 불러오는데 실패했습니다.');
+            }
+        });
     }
 
     function closeModal() {
@@ -1040,21 +1014,61 @@
             return;
         }
 
-        if (confirm(mode + ' 하시겠습니까?')) {
-            // API 호출 로직...
-            alert('저장되었습니다.');
-            closeModal();
-            loadNoticeList(1);
-        }
+        if (!confirm(mode + ' 하시겠습니까?')) return;
+
+        const data = {
+            title: document.getElementById('modalTitleInput').value,
+            content: document.getElementById('modalContentInput').value,
+            target: document.getElementById('modalTargetSelect').value,
+            status: document.getElementById('modalStatusSelect').value,
+            isImportant: document.getElementById('modalImportantCheck').checked ? '1' : '0',
+            startAt: document.getElementById('modalStartDate').value || null,
+            endAt: document.getElementById('modalEndDate').value || null
+        };
+
+        const url = id
+            ? '${pageContext.request.contextPath}/admin/api/notice/' + id
+            : '${pageContext.request.contextPath}/admin/api/notice';
+        const method = id ? 'PUT' : 'POST';
+
+        $.ajax({
+            url: url,
+            type: method,
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            success: function(res) {
+                if (res.success) {
+                    alert('저장되었습니다.');
+                    closeModal();
+                    loadNoticeList(1);
+                }
+            },
+            error: function() {
+                alert('저장에 실패했습니다.');
+            }
+        });
     }
 
     function deleteNotice() {
-        if (confirm('정말 삭제하시겠습니까?')) {
-            // API 호출...
-            alert('삭제되었습니다.');
-            closeModal();
-            loadNoticeList(1);
-        }
+        const id = document.getElementById('modalNoticeId').value;
+        if (!id) return;
+
+        if (!confirm('정말 삭제하시겠습니까?')) return;
+
+        $.ajax({
+            url: '${pageContext.request.contextPath}/admin/api/notice/' + id,
+            type: 'DELETE',
+            success: function(res) {
+                if (res.success) {
+                    alert('삭제되었습니다.');
+                    closeModal();
+                    loadNoticeList(1);
+                }
+            },
+            error: function() {
+                alert('삭제에 실패했습니다.');
+            }
+        });
     }
 </script>
 </body>
