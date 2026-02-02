@@ -38,6 +38,9 @@ public interface ChatMapper {
     // 심부름 작성자 userId 조회
     Long selectErrandOwnerUserId(@Param("errandsId") Long errandsId);
     
+    // 심부름 정보 조회 (채팅방용)
+    ChatRoomVO selectErrandInfoForChat(@Param("errandsId") Long errandsId, 
+                                       @Param("userId") Long userId);
     
     // 사용자가 특정 채팅방의 참여자인지 확인
     int countParticipantByErrandsIdAndUserId(@Param("errandsId") Long errandsId,
@@ -60,12 +63,4 @@ public interface ChatMapper {
     int deactivateParticipantsByRoomId(@Param("roomId") Long roomId);
     
     int updateErrandStatusWaitingToMatched(@Param("errandsId") Long errandsId);
-    
-    int countChatRoomByErrandsId(@Param("errandsId") Long errandsId);
-    
-    ChatRoomVO selectPartnerInfoForChat(@Param("errandsId") Long errandsId,
-            @Param("currentUserId") Long currentUserId);
-    
-    // 심부름 정보 조회 (채팅방용)
-    ChatRoomVO selectErrandInfoForChat(@Param("errandsId") Long errandsId);
 }

@@ -15,7 +15,6 @@ import org.springframework.web.servlet.config.annotation.*;
 import org.springframework.core.io.ClassPathResource;
 
 @Configuration
-//@MapperScan(basePackages = {"com.gorani.vroom"}, annotationClass = Mapper.class)
 @ComponentScan(basePackages = {"com.gorani.vroom"})
 @PropertySource("classpath:application.properties")
 @EnableWebMvc
@@ -92,11 +91,5 @@ public class MvcConfig implements WebMvcConfigurer {
         resolver.setDefaultEncoding("utf-8");
         return resolver;
     }
-//
-//    @Bean
-//    public static PropertyPlaceholderConfigurer properties() {
-//        PropertyPlaceholderConfigurer config = new PropertyPlaceholderConfigurer();
-//        config.setLocation(new ClassPathResource("application.properties"));
-//        return config;
-//    }
+
 }

@@ -1,10 +1,8 @@
 package com.gorani.vroom.errand.post;
 
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpSession;
-
+import com.gorani.vroom.errand.assignment.ErrandAssignmentService;
+import com.gorani.vroom.user.auth.UserVO;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,11 +10,9 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.gorani.vroom.errand.assignment.ErrandAssignmentService;
-import com.gorani.vroom.errand.chat.ChatService;
-import com.gorani.vroom.user.auth.UserVO;
-
-import lombok.RequiredArgsConstructor;
+import javax.servlet.http.HttpSession;
+import java.util.List;
+import java.util.Map;
 
 
 @Controller
@@ -25,7 +21,6 @@ public class ErrandController {
 
 	private final ErrandService errandService;
 	private final ErrandAssignmentService errandAssignmentService;
-	private final ChatService chatService;
 
 	// 심부름 게시글 목록
 	@GetMapping("/errand/list")
@@ -50,87 +45,32 @@ public class ErrandController {
 		model.addAttribute("dongs", errandService.getDongs());
 		model.addAttribute("totalCount", totalCount);
 		model.addAttribute("currentPage", page);
-		System.out.println("4444444444444444444444444444");
 
 		return "errand/errand_list";
 	}
 
 	// 심부름 게시글 상세
 	@GetMapping("/errand/detail")
-	public String errandDetail(@RequestParam("errandsId") Long errandsId, Model model, HttpSession session) {
+	public String errandDetail(@RequestParam("errandsId") Long errandsId, Model model) {
+		ErrandDetailVO errand = errandService.getErrandDetail(errandsId);
 
-	    ErrandDetailVO errand = errandService.getErrandDetail(errandsId);
-	    if (errand == null) return "redirect:/errand/list";
-
-	    // dongFullName 세팅
+		if (errand == null) {
+			// 존재하지 않는 글이면 목록으로 돌려보냄
+			return "redirect:/errand/list";
+		}
+		
+		// dongFullName 세팅
 	    if (errand.getGunguName() != null && errand.getDongName() != null) {
 	        errand.setDongFullName(errand.getGunguName() + " " + errand.getDongName());
 	    }
 
-	    List<ErrandListVO> relatedErrands =
+		List<ErrandListVO> relatedErrands =
 	            errandService.getRelatedErrands(errandsId, errand.getDongCode(), errand.getCategoryId(), 6);
 
-	    // 로그인 유저 (세션에는 userId만 있다고 가정)
-	    Long currentUserId = null;
-	    
-	    // 1) loginSess에서 가져오기 (ChatController에서 쓰는 방식과 통일)
-	    Object loginSess = session.getAttribute("loginSess");
-	    if (loginSess != null) {
-	        try {
-	            // loginSess에 getUserId()가 있으면 가져옴
-	            Object v = loginSess.getClass().getMethod("getUserId").invoke(loginSess);
-	            if (v instanceof Long) currentUserId = (Long) v;
-	            else if (v instanceof Integer) currentUserId = ((Integer) v).longValue();
-	            else if (v instanceof String) currentUserId = Long.valueOf((String) v);
-	        } catch (Exception ignore) {}
-	    }
 
-	    // 2) fallback: userId (혹시 저장돼 있으면)
-	    if (currentUserId == null) {
-	        Object userIdObj = session.getAttribute("userId");
-	        if (userIdObj instanceof Long) currentUserId = (Long) userIdObj;
-	        else if (userIdObj instanceof Integer) currentUserId = ((Integer) userIdObj).longValue();
-	        else if (userIdObj instanceof String) {
-	            try { currentUserId = Long.valueOf((String) userIdObj); } catch (Exception ignore) {}
-	        }
-	    }
-
-	    // 작성자 여부 (ErrandDetailVO.userId = 작성자 id)
-	    Long ownerId = errand.getUserId();
-	    boolean isOwner = (currentUserId != null && ownerId != null && currentUserId.equals(ownerId));
-	    System.out.println("111111111111111111" + ownerId);
-	    // 매칭된 부름이 여부
-	    boolean isMatchedErrander = false;
-	    if (currentUserId != null && !isOwner) {
-	        // 이 게시글에 대해 "현재 유저가 수행자로 매칭되어 있는지"
-	        isMatchedErrander = errandAssignmentService.isMatchedErrander(errandsId, currentUserId);
-	    }
-	    System.out.println("22222222222222222222222" + currentUserId);
-	    // 채팅방 존재 여부
-	    boolean hasChatRoom = false;
-	    if (isOwner || isMatchedErrander) {   // currentUserId null이면 위에서 false라서 안전
-	        hasChatRoom = chatService.existsChatRoomByErrandsId(errandsId);
-	    }
-
-	    // 재입장 가능
-	    boolean canReEnterChat = (isOwner || isMatchedErrander) && hasChatRoom;
-	    
-	    System.out.println("[DETAIL] errandsId=" + errandsId
-	            + " currentUserId=" + currentUserId
-	            + " ownerId=" + ownerId
-	            + " isOwner=" + isOwner
-	            + " isMatchedErrander=" + isMatchedErrander
-	            + " hasChatRoom=" + hasChatRoom
-	            + " canReEnterChat=" + canReEnterChat);
-
-	    model.addAttribute("isOwner", isOwner);
-	    model.addAttribute("isMatchedErrander", isMatchedErrander);
-	    model.addAttribute("hasChatRoom", hasChatRoom);
-	    model.addAttribute("canReEnterChat", canReEnterChat);
-
-	    model.addAttribute("errand", errand);
-	    model.addAttribute("relatedErrands", relatedErrands);
-	    return "errand/errand_detail";
+		model.addAttribute("errand", errand);
+		model.addAttribute("relatedErrands", relatedErrands);
+		return "errand/errand_detail";
 	}
 
 	// 심부름 게시글 작성 화면

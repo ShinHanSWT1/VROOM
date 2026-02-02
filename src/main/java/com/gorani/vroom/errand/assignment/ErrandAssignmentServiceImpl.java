@@ -277,17 +277,5 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
 
         return roomId;
     }
-    
-    @Override
-    public boolean isMatchedErrander(Long errandsId, Long userId) {
-        if (errandsId == null || userId == null) return false;
 
-        // userId → erranderId 변환
-        Long erranderId = errandAssignmentMapper.selectErranderIdByUserId(userId);
-        if (erranderId == null) return false;
-
-        // errander_id 기준으로 매칭 여부 확인
-        return errandAssignmentMapper
-                .countMatchedByErrandAndErrander(errandsId, erranderId) > 0;
-    }
 }

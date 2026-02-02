@@ -104,31 +104,29 @@
     
     <!-- 심부름 정보 조회 (채팅방용) -->
     <select id="selectErrandInfoForChat" resultType="com.gorani.vroom.errand.chat.ChatRoomVO">
-	  <![CDATA[
-	  SELECT 
-	      e.errands_id AS errandsId,
-	      e.status AS status,   
-	      e.title AS errandTitle,
-	      e.description AS errandDescription,
-	      CONCAT(ld.gungu_name, ' ', ld.dong_name) AS errandLocation,
-	      e.reward_amount AS rewardAmount,
-	      e.expense_amount AS expenseAmount,
-	      COALESCE(ei.image_url, '/static/img/errand/noimage.png') AS errandImageUrl,
-	      m.nickname AS ownerNickname
-	  FROM ERRANDS e
-	  LEFT JOIN LEGAL_DONG ld ON e.dong_code = ld.dong_code
-	  LEFT JOIN (
-	    SELECT errands_id, image_url
-	    FROM ERRANDS_IMAGE
-	    WHERE errands_id = #{errandsId}
-	    ORDER BY sort_order ASC, image_id ASC
-	    LIMIT 1
-	  ) ei ON e.errands_id = ei.errands_id
-	  LEFT JOIN MEMBERS m ON e.user_id = m.user_id
-	  WHERE e.errands_id = #{errandsId}
-	  LIMIT 1
-	  ]]>
-	</select>
+        SELECT 
+            e.errands_id AS errandsId,
+            e.status AS status,   
+            e.title AS errandTitle,
+            e.description AS errandDescription,
+            CONCAT(ld.gungu_name, ' ', ld.dong_name) AS errandLocation,
+            e.reward_amount AS rewardAmount,
+            e.expense_amount AS expenseAmount,
+            COALESCE(ei.image_url, '/static/img/errand/noimage.png') AS errandImageUrl,
+            m.nickname AS partnerNickname
+        FROM ERRANDS e
+        LEFT JOIN LEGAL_DONG ld ON e.dong_code = ld.dong_code
+        LEFT JOIN (
+          SELECT errands_id, image_url
+		  FROM ERRANDS_IMAGE
+		  WHERE errands_id = #{errandsId}
+		  ORDER BY sort_order ASC, image_id ASC
+		  LIMIT 1
+		) ei ON e.errands_id = ei.errands_id
+        LEFT JOIN MEMBERS m ON e.user_id = m.user_id
+        WHERE e.errands_id = #{errandsId}
+        LIMIT 1
+    </select>
     
     <!-- 사용자가 특정 심부름의 채팅방 참여자인지 확인 -->
     <select id="countParticipantByErrandsIdAndUserId" resultType="int">
@@ -185,32 +183,4 @@
 	  SET is_active = 0
 	  WHERE room_id = #{roomId}
 	</update>
-	
-	<select id="countChatRoomByErrandsId" resultType="int">
-	  SELECT COUNT(*)
-	  FROM CHAT_ROOM
-	  WHERE errands_id = #{errandsId}
-	</select>
-	
-	<!-- 상대방 정보 조회 (채팅방 헤더용) -->
-	<select id="selectPartnerInfoForChat" resultType="com.gorani.vroom.errand.chat.ChatRoomVO">
-	  <![CDATA[
-	  SELECT
-	      m.user_id        AS partnerUserId,
-	      m.nickname       AS partnerNickname,
-	      m.profile_image  AS partnerProfileImage,
-	      m.manner_score   AS partnerMannerScore
-	  FROM CHAT_ROOM cr
-	  JOIN CHAT_PARTICIPANT cp
-	    ON cp.room_id = cr.room_id
-	   AND cp.is_active = 1
-	  JOIN MEMBERS m
-	    ON m.user_id = cp.user_id
-	  WHERE cr.errands_id = #{errandsId}
-	    AND cp.user_id <> #{currentUserId}
-	  ORDER BY cp.participant_id DESC
-	  LIMIT 1
-	  ]]>
-	</select>
-
 </mapper>

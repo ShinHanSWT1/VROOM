@@ -192,15 +192,7 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public ChatRoomVO getErrandInfoForChat(Long errandsId, Long currentUserId) {
-        ChatRoomVO info = chatMapper.selectErrandInfoForChat(errandsId); // 기존 심부름 정보
-        ChatRoomVO partner = chatMapper.selectPartnerInfoForChat(errandsId, currentUserId);
-
-        if (info != null && partner != null) {
-            info.setPartnerNickname(partner.getPartnerNickname());
-            info.setPartnerProfileImage(partner.getPartnerProfileImage());
-            info.setPartnerMannerScore(partner.getPartnerMannerScore());
-        }
-        return info;
+        return chatMapper.selectErrandInfoForChat(errandsId, currentUserId);
     }
 
     @Override
@@ -279,11 +271,5 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public String getErrandStatus(Long errandsId) {
         return chatMapper.selectErrandStatusByErrandsId(errandsId);
-    }
-    
-    @Override
-    public boolean existsChatRoomByErrandsId(Long errandsId) {
-        if (errandsId == null) return false;
-        return chatMapper.countChatRoomByErrandsId(errandsId) > 0;
     }
 }

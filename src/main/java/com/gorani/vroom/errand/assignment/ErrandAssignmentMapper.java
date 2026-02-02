@@ -53,7 +53,6 @@ public interface ErrandAssignmentMapper {
     String getErranderActiveStatus(
             @Param("erranderId") Long erranderId);
 
-    Long selectUserIdByErranderId(@Param("erranderId") Long erranderId);
-
-    int countMatchedByErrandAndErrander(@Param("errandsId") Long errandsId, @Param("erranderId") Long erranderId);
+    Long selectUserIdByErranderId(
+            @Param("erranderId") Long erranderId);
 }

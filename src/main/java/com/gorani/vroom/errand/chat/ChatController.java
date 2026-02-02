@@ -38,8 +38,7 @@ public class ChatController {
         if (loginUser == null) {
             return "redirect:/auth/login";
         }
-        
-        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+
         Long currentUserId = loginUser.getUserId();
 
         // 1) 참가자 권한 체크 (참가자 아니면 차단)
