@@ -231,10 +231,25 @@ public class ChatController {
         if (loginUser == null) {
             return ResponseEntity.status(401).body(Map.of("error", "로그인이 필요합니다."));
         }
+        
+        if (payload == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "요청 바디가 없습니다."));
+        }
 
-        Long errandsId = Long.valueOf(payload.get("errandsId").toString());
-        Long roomId = Long.valueOf(payload.get("roomId").toString());
-        Long erranderUserId = Long.valueOf(payload.get("erranderUserId").toString());
+        Object e = payload.get("errandsId");
+        Object r = payload.get("roomId");
+        Object u = payload.get("erranderUserId");
+
+        if (e == null || r == null || u == null) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "error", "요청값 누락",
+                "payload", payload
+            ));
+        }
+
+        Long errandsId = Long.valueOf(e.toString());
+        Long roomId = Long.valueOf(r.toString());
+        Long erranderUserId = Long.valueOf(u.toString());
 
         // 권한 체크: OWNER만 거절 가능
         String userRole = chatService.getUserRole(roomId, loginUser.getUserId());

@@ -134,7 +134,7 @@
 				  <div class="errand-card-header">
 				    <div class="section-label">💼 심부름 관리</div>				    
 				
-				    <div class="action-buttons" id="actionArea" data-status="${errandStatus}">
+				    <div class="action-buttons" id="actionArea" data-status="${errandStatus}" data-errander-user-id="${erranderUserId}">
 				      <c:choose>
 				
 				        <c:when test="${userRole eq 'USER' or userRole eq 'OWNER'}">
@@ -300,8 +300,6 @@
             const messagesArea = document.getElementById('messagesArea');
             const attachBtn = document.getElementById('attachBtn');
             const proofBtn = document.getElementById('proofBtn');
-            const acceptBtn = document.getElementById('acceptBtn');
-            const rejectBtn = document.getElementById('rejectBtn');
             
             let stompClient = null;
 
@@ -408,61 +406,78 @@
            	}
             
             function bindAcceptReject() {
-           	  const acceptBtn2 = document.getElementById('acceptBtn');
-           	  const rejectBtn2 = document.getElementById('rejectBtn');
+           	  const actionArea = document.getElementById('actionArea');
+           	  if (!actionArea) return;
 
-           	  if (acceptBtn2) {
-           	    acceptBtn2.addEventListener('click', function() {
+           	  // 중복 바인딩 방지
+           	  if (actionArea.dataset.bound === '1') return;
+           	  actionArea.dataset.bound = '1';
+
+           	  actionArea.addEventListener('click', function(e) {
+           	    const btn = e.target.closest('#acceptBtn, #rejectBtn');
+           	    if (!btn) return;
+
+           	    // 수락
+           	    if (btn.id === 'acceptBtn') {
            	      if (!confirm('이 부름이와 심부름을 진행하시겠습니까?')) return;
 
            	      fetch(contextPath + '/errand/chat/accept', {
            	        method: 'POST',
            	        headers: { 'Content-Type': 'application/json' },
            	        credentials: 'same-origin',
-           	        body: JSON.stringify({ errandsId: errandsId, roomId: roomId })
+           	        body: JSON.stringify({
+           	          errandsId: Number(errandsId),
+           	          roomId: Number(roomId)
+           	        })
            	      })
            	      .then(res => res.json())
            	      .then(data => {
-           	        if (data.success) {
-           	          alert('심부름이 수락되었습니다!');
-           	          // 서버가 STATUS를 뿌려주면 부름이 화면이 즉시 proofBtn으로 바뀜.
-           	        } else {
+           	        if (!data.success) {
            	          alert(data.error || '수락 처리 실패');
+           	          return;
            	        }
+           	        alert('심부름이 수락되었습니다!');
            	      })
            	      .catch(err => {
            	        console.error(err);
-           	        alert('수락 처리 중 오류가 발생했습니다.');
+           	        alert('수락 처리 중 오류');
            	      });
-           	    });
-           	  }
+           	    }
 
-           	  if (rejectBtn2) {
-           	    rejectBtn2.addEventListener('click', function() {
+           	    // 거절
+           	    if (btn.id === 'rejectBtn') {
            	      if (!confirm('정말로 이 심부름을 거절하시겠습니까?')) return;
+
+           	      const erranderUserId = Number(actionArea.dataset.erranderUserId);
+           	      console.log('[DEBUG reject SEND]', { errandsId, roomId, erranderUserId });
 
            	      fetch(contextPath + '/errand/chat/reject', {
            	        method: 'POST',
            	        headers: { 'Content-Type': 'application/json' },
            	        credentials: 'same-origin',
-           	        body: JSON.stringify({ errandsId: errandsId, roomId: roomId })
+           	        body: JSON.stringify({
+           	          errandsId: Number(errandsId),
+           	          roomId: Number(roomId),
+           	          erranderUserId
+           	        })
            	      })
-           	      .then(res => res.json())
-           	      .then(data => {
-           	        if (data.success) {
-           	          alert('심부름이 거절되었습니다.');
-           	          // 거절도 STATUS WAITING을 서버에서 뿌려주면 화면 자동 동기화 가능
-           	        } else {
+           	      .then(res => res.json().catch(() => ({})).then(data => ({res, data})))
+           	      .then(({res, data}) => {
+           	        console.log('[DEBUG reject RES]', res.status, data);
+           	        if (!res.ok || !data.success) {
            	          alert(data.error || '거절 처리 실패');
+           	          return;
            	        }
+           	        alert('심부름이 거절되었습니다.');
            	      })
            	      .catch(err => {
            	        console.error(err);
-           	        alert('거절 처리 중 오류가 발생했습니다.');
+           	        alert('거절 처리 중 오류');
            	      });
-           	    });
-           	  }
+           	    }
+           	  });
            	}
+
 
             function bindProofBtn() {
            	  const btn = document.getElementById('proofBtn');
@@ -724,72 +739,6 @@
 			    input.click();
 			  });
 			}
-
-            // 수락 버튼 클릭 (OWNER만)
-            if (acceptBtn) {
-                acceptBtn.addEventListener('click', function() {
-                    if (!confirm('이 부름이와 심부름을 진행하시겠습니까?')) {
-                        return;
-                    }
-
-                    fetch(contextPath + '/errand/chat/accept', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            errandsId: errandsId,
-                            roomId: roomId
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert('심부름이 수락되었습니다!');
-                            location.reload();
-                        } else {
-                            alert(data.error || '수락 처리 실패');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('수락 처리 중 오류가 발생했습니다.');
-                    });
-                });
-            }
-
-            // 거절 버튼 클릭 (OWNER만)
-            if (rejectBtn) {
-                rejectBtn.addEventListener('click', function() {
-                    if (!confirm('정말로 이 심부름을 거절하시겠습니까?')) {
-                        return;
-                    }
-
-                    fetch(contextPath + '/errand/chat/reject', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            errandsId: errandsId,
-                            roomId: roomId
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert('심부름이 거절되었습니다.');
-                            location.href = contextPath + '/errand/detail?errandsId=' + errandsId;
-                        } else {
-                            alert(data.error || '거절 처리 실패');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('거절 처리 중 오류가 발생했습니다.');
-                    });
-                });
-            }
             
          	// 수락 AJAX 성공했을 때
             function showCompleteButton() {
@@ -915,6 +864,7 @@
             messagesArea.scrollTop = messagesArea.scrollHeight;
             
             connectStomp();
+            bindAcceptReject();
             bindCompleteConfirm();
             bindProofUpload();
         });
