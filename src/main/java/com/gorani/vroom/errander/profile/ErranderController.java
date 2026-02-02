@@ -151,6 +151,13 @@ public class ErranderController {
             return "redirect:/auth/login";
         }
 
+        // 파일 크기 체크 (예: 10MB)
+        long maxFileSize = 10 * 1024 * 1024;
+        if (idFile.getSize() > maxFileSize || bankFile.getSize() > maxFileSize) {
+            redirectAttributes.addFlashAttribute("message", "파일 크기는 각각 10MB를 초과할 수 없습니다.");
+            return "redirect:/errander/register?error=fileSize";
+        }
+
         profileVO.setUserId(loginUser.getUserId());
 
         try {
@@ -160,6 +167,9 @@ public class ErranderController {
             // 신분증 처리
             if (!idFile.isEmpty()) {
                 String savedPath = saveFile(idFile);
+                if (savedPath == null) {
+                    throw new IOException("신분증 파일 저장 실패");
+                }
 
                 documents.add(new ErranderDocumentVO(
                         idType,
@@ -171,6 +181,9 @@ public class ErranderController {
             // 통장 사본 처리
             if (!bankFile.isEmpty()) {
                 String savedPath = saveFile(bankFile);
+                if (savedPath == null) {
+                    throw new IOException("통장 사본 파일 저장 실패");
+                }
 
                 documents.add(new ErranderDocumentVO(
                         "ACCOUNT",
@@ -187,41 +200,17 @@ public class ErranderController {
                 return "redirect:/";
             } else {
                 // 실패 시 다시 등록 페이지로 (에러 메시지 전달 필요할 수 있음)
-                redirectAttributes.addFlashAttribute("message", "이상합니다");
+                redirectAttributes.addFlashAttribute("message", "등록 처리 중 오류가 발생했습니다. 다시 시도해주세요.");
                 return "redirect:/errander/register?error=true";
             }
 
-        /*
-        // 파일 저장 및 경로 리스트 생성
-        List<String> fileUrls = new ArrayList<>();
-        if (documentFiles != null && documentFiles.length > 0) {
-            // 저장 디렉토리 확인
-            File uploadDir = new File(MvcConfig.ERRANDER_DOC_UPLOAD_PATH);
-            if (!uploadDir.exists()) {
-                uploadDir.mkdirs();
-            }
-
-            for (MultipartFile file : documentFiles) {
-                if (!file.isEmpty()) {
-                    try {
-                        String originalFilename = file.getOriginalFilename();
-                        String extension = "";
-                        if (originalFilename != null && originalFilename.contains(".")) {
-                            extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-                        }
-                        String savedFilename = UUID.randomUUID().toString() + extension;
-                        File destFile = new File(MvcConfig.ERRANDER_DOC_UPLOAD_PATH + savedFilename);
-                        file.transferTo(destFile);
-                        fileUrls.add("/uploads/erranderDocs/" + savedFilename);
-                    } catch (IOException e) {
-                        log.error("파일 저장 실패: {}", e.getMessage());
-                    }
-                }
-            }
-        }
-        */
+        } catch (IOException e) {
+            log.error("파일 저장 중 오류 발생: {}", e.getMessage());
+            redirectAttributes.addFlashAttribute("message", "파일 업로드 중 오류가 발생했습니다.");
+            return "redirect:/errander/register?error=io";
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("부름이 등록 중 알 수 없는 오류 발생", e);
+            redirectAttributes.addFlashAttribute("message", "알 수 없는 오류가 발생했습니다.");
             return "redirect:/errander/register?error=server";
         }
     }
@@ -296,4 +285,3 @@ public class ErranderController {
         return "/uploads/erranderDocs/" + savedFilename;
     }
 }
-

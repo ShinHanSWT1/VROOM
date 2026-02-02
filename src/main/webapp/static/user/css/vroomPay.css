@@ -316,6 +316,14 @@
   color: var(--color-dark);
 }
 
+.item-amount.positive {
+    color: #27ae60;
+}
+
+.item-amount.negative {
+    color: #e74c3c;
+}
+
 .pagination {
   display: flex;
   justify-content: center;
