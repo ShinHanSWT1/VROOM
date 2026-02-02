@@ -120,8 +120,9 @@
                         <span class="detail-label">나의 역할</span>
                         <span class="status-badge" id="userRoleDisplay">
                             <c:choose>
-                                <c:when test="${userRole eq 'USER' or userRole eq 'OWNER'}">사용자</c:when>
+                                <c:when test="${userRole eq 'USER'}">심부름 작성자</c:when>
                                 <c:when test="${userRole eq 'ERRANDER'}">부름이</c:when>
+                                <c:otherwise>${userRole}</c:otherwise>
                             </c:choose>
                         </span>
                     </div>
@@ -190,7 +191,7 @@
                         <div class="chat-user-status">
                             <c:choose>
                                 <c:when test="${userRole eq 'OWNER'}">부름이</c:when>
-                                <c:when test="${userRole eq 'ERRANDER'}">사용자</c:when>
+                                <c:when test="${userRole eq 'ERRANDER'}">심부름 작성자</c:when>
                             </c:choose>
                         </div>
                     </div>
