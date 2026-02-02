@@ -290,4 +290,9 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
         return errandAssignmentMapper
                 .countMatchedByErrandAndErrander(errandsId, erranderId) > 0;
     }
+    
+    @Override
+    public boolean isCanceledErrander(Long errandsId, Long userId) {
+        return errandAssignmentMapper.existsCanceledAssignment(errandsId, userId) > 0;
+    }
 }
