@@ -132,4 +132,24 @@
 	    AND status IN ('MATCHED','CONFIRMED1','CONFIRMED2','COMPLETED')
 	</select>
     
+
+    <update id="updateErrandStatusConfirmed2ToCompleted" parameterType="map">
+        UPDATE ERRANDS
+        SET status = 'COMPLETED', updated_at = NOW(), settlement_amount = #{item.amount}
+        WHERE errands_id = #{item.errandsId}
+        AND status = 'CONFIRMED2'
+    </update>
+
+    <update id="updateErrandAssignmentStatusToCompleted" parameterType="map">
+        UPDATE ERRAND_ASSIGNMENTS
+        SET status = 'COMPLETED'
+        WHERE id = #{item.assignmentId}
+        AND status = 'MATCHED'
+    </update>
+
+    <insert id="insertErrandHistoryToCompletedBySystem" parameterType="map">
+        INSERT INTO ERRAND_STATUS_HISTORY (errands_id, from_status, to_status, changed_by_type, changed_at)
+        VALUES (#{item.errandsId}, 'CONFIRMED2', 'COMPLETED', 'SYSTEM', NOW())
+    </insert>
+
 </mapper>

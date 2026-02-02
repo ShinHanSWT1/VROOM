@@ -1,72 +1,5 @@
-/* Dashboard Layout */
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 1.5rem;
-}
-
-.dashboard-container {
-    display: flex;
-    gap: 2rem;
-    padding: 3rem 0;
-    min-height: 80vh;
-}
-
-/* Sidebar */
-.sidebar {
-    width: 250px;
-    flex-shrink: 0;
-}
-
-.sidebar-menu {
-    list-style: none;
-    background-color: var(--color-white);
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
-}
-
-.sidebar-item {
-    border-bottom: 1px solid var(--color-light-gray);
-}
-
-.sidebar-item:last-child {
-    border-bottom: none;
-}
-
-.sidebar-link {
-    display: block;
-    padding: 1.25rem 1.5rem;
-    text-decoration: none;
-    color: var(--color-dark);
-    font-weight: 500;
-    transition: all 0.2s ease;
-}
-
-.sidebar-link:hover {
-    background-color: #f8f9fa;
-    color: var(--color-primary);
-    padding-left: 1.75rem;
-}
-
-.sidebar-link.active {
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
-    color: var(--color-white);
-    font-weight: 700;
-}
-
-/* Main Content */
-.main-content {
-    flex-grow: 1;
-}
-
-/* Activity Page Specific Styles */
-.page-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin-bottom: 2rem;
-    color: var(--color-dark);
-}
+/* myActivity.css - 사용자 나의 활동 전용 스타일 */
+/* 공통 레이아웃은 user-layout.css 참조 */
 
 .activity-section {
     background-color: var(--color-white);
@@ -74,6 +7,7 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
     border: 1px solid var(--color-light-gray);
     overflow: hidden;
+    min-height: 400px; /* 최소 높이 설정 */
 }
 
 .activity-tabs {
@@ -107,6 +41,15 @@
     box-shadow: 0 4px 6px rgba(107, 142, 35, 0.2);
 }
 
+/* 탭 내용 숨김/표시 */
+.activity-list-container {
+    display: none;
+}
+
+.activity-list-container.active {
+    display: block;
+}
+
 .activity-list {
     display: flex;
     flex-direction: column;
@@ -120,6 +63,7 @@
     padding: 1.5rem 2rem;
     border-bottom: 1px solid var(--color-light-gray);
     transition: background-color 0.2s ease;
+    cursor: pointer;
 }
 
 .activity-list-item:hover {
@@ -196,16 +140,29 @@
     color: var(--color-gray);
 }
 
+/* Empty State Style */
+.empty-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    color: var(--color-gray);
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 500;
+    min-height: 300px;
+}
+
+.empty-message::before {
+    content: '📭';
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.7;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
-    .dashboard-container {
-        flex-direction: column;
-    }
-
-    .sidebar {
-        width: 100%;
-    }
-
     .activity-list-item {
         flex-direction: column;
         align-items: flex-start;

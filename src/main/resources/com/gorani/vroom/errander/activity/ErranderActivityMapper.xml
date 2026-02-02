@@ -17,4 +17,20 @@
         ORDER BY earn_date
     </select>
 
+    <select id="getErranderDailyDetail"
+            resultType="com.gorani.vroom.errand.post.ErrandListVO">
+        SELECT
+            errands_id,
+            title,
+            reward_amount,
+            status,
+            created_at,
+            updated_at,
+            dong_full_name
+        FROM ERRANDS
+        WHERE errander_id = #{erranderId}
+          AND status = 'COMPLETED'
+          AND DATE(updated_at) = #{date}
+        ORDER BY updated_at
+    </select>
 </mapper>

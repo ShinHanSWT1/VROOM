@@ -39,7 +39,30 @@
                         </div>
                     </c:otherwise>
                 </c:choose>
-                <h2 class="profile-greeting"> ${profile.nickname}</h2>
+                <div>
+                    <h2 class="profile-greeting" style="margin-bottom: 0.5rem;"> ${profile.nickname}</h2>
+                    <!-- 계정 상태 표시 -->
+                    <div class="account-status-badges" style="display: flex; gap: 0.5rem; font-size: 0.85rem;">
+                        <span style="padding: 2px 8px; border-radius: 12px; background-color: ${profile.activeStatus eq 'ACTIVE' ? '#e8f5e9' : '#ffebee'}; color: ${profile.activeStatus eq 'ACTIVE' ? '#2e7d32' : '#c62828'};">
+                            <c:choose>
+                                <c:when test="${profile.activeStatus eq 'ACTIVE'}">활성 계정</c:when>
+                                <c:when test="${profile.activeStatus eq 'SUSPENDED'}">정지된 계정</c:when>
+                                <c:otherwise>비활성 계정</c:otherwise>
+                            </c:choose>
+                        </span>
+                        <span style="padding: 2px 8px; border-radius: 12px; background-color: ${profile.approvalStatus eq 'APPROVED' ? '#e3f2fd' : '#fff3e0'}; color: ${profile.approvalStatus eq 'APPROVED' ? '#1565c0' : '#ef6c00'};">
+                            <c:choose>
+                                <c:when test="${profile.approvalStatus eq 'APPROVED'}">인증 완료</c:when>
+                                <c:when test="${profile.approvalStatus eq 'PENDING'}">인증 대기</c:when>
+                                <c:when test="${profile.approvalStatus eq 'REJECTED'}">승인 거절</c:when>
+                                <c:otherwise>미인증</c:otherwise>
+                            </c:choose>
+                        </span>
+                        <span style="padding: 2px 8px; border-radius: 12px; background-color: #f3e5f5; color: ${profile.grade == 'VIP' ? '#9b59b6' : (profile.grade == 'PREMIUM' ? '#f39c12' : '#2c3e50')}; font-weight: bold;">
+                            ${profile.memberTypeLabel}
+                        </span>
+                    </div>
+                </div>
             </div>
             
             <!-- Progress Bars -->
@@ -61,38 +84,34 @@
                     <div class="stat-value" id="inProgressCount">${profile.inProgressCount != null ? profile.inProgressCount : 0}건</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-label">[ 완료 ]</div>
+                    <div class="stat-label">[ 전체 완료 ]</div>
                     <div class="stat-value" id="completedCount">${profile.completedCount != null ? profile.completedCount : 0}건</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-label">[ 이번 달 수익 ]</div>
-                    <div class="stat-value" id="thisMonthEarningTotal">₩<fmt:formatNumber value="${profile.thisMonthEarning != null ? profile.thisMonthEarning : 0}" pattern="#,###"/></div>
+                    <div class="stat-label">[ 전체 수익 ]</div>
+                    <div class="stat-value" id="totalEarning"><fmt:formatNumber value="${profile.totalEarning != null ? profile.totalEarning : 0}" pattern="#,###"/> 원</div>
                 </div>
             </div>
         </div>
 
         <!-- Content Grid -->
         <div class="content-grid">
-            <!-- Activity Summary Card -->
+            <!-- Activity Summary Card (Merged) -->
             <div class="info-card">
                 <h3 class="info-card-title">활동 요약</h3>
                 <ul class="info-list">
                     <li class="info-list-item">
                         <span>최근 30일 수행</span>
-                        <strong id="last30DaysCount">15건</strong>
+                        <strong id="last30DaysCount">${profile.last30DaysCompletedCount}건</strong>
                     </li>
                     <li class="info-list-item">
-                        <span>취소율</span>
-                        <strong id="activityCancellationRate">5%</strong>
-                    </li>
-                    <li class="info-list-item">
-                        <span>평균 응답 시간</span>
-                        <strong id="avgResponseTime">12분</strong>
+                        <span>성공률</span>
+                        <strong id="successRate">${profile.successRate}%</strong>
                     </li>
                 </ul>
             </div>
 
-            <!-- 평점 -->
+            <!-- Customer Satisfaction Card -->
             <div class="info-card">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                     <h3 class="info-card-title" style="margin-bottom: 0;">고객 만족도</h3>
@@ -124,59 +143,9 @@
                     </p>
                 </div>
             </div>
-
-            <!-- Income Ratio Card -->
-            <div class="info-card">
-                <h3 class="info-card-title">수행 비율</h3>
-                <ul class="info-list">
-                    <li class="info-list-item">
-                        <span>성공률 100%</span>
-                    </li>
-                    <li class="info-list-item">
-                        <span>재의뢰율</span>
-                    </li>
-                </ul>
-            </div>
-
-            <!-- Account Status Card -->
-            <div class="info-card">
-                <h3 class="info-card-title">계정 상태</h3>
-                <ul class="info-list">
-                    <li class="info-list-item">
-                        <span>
-                            [
-                            <c:choose>
-                                <c:when test="${profile.activeStatus eq 'ACTIVE'}">활성 계정</c:when>
-                                <c:when test="${profile.activeStatus eq 'SUSPENDED'}">정지된 계정</c:when>
-                                <c:otherwise>비활성 계정</c:otherwise>
-                            </c:choose>
-                            ]
-                        </span>
-                    </li>
-
-                    <li class="info-list-item">
-                        <span>
-                            [
-                            <c:choose>
-                                <c:when test="${profile.approvalStatus eq 'APPROVED'}">인증 완료</c:when>
-                                <c:when test="${profile.approvalStatus eq 'PENDING'}">인증 대기</c:when>
-                                <c:when test="${profile.approvalStatus eq 'REJECTED'}">승인 거절</c:when>
-                                <c:otherwise>미인증</c:otherwise>
-                            </c:choose>
-                            ]
-                        </span>
-                    </li>
-
-                    <li class="info-list-item">
-                        <span style="font-weight: bold;
-                                color: ${profile.grade == 'VIP' ? '#9b59b6' : (profile.grade == 'PREMIUM' ? '#f39c12' : '#2c3e50')};">
-                            [ ${profile.memberTypeLabel} ]
-                        </span>
-                    </li>
-                </ul>
-            </div>
         </div>
 
+        <!-- Achievements Section -->
         <div class="info-card">
             <h3 class="info-card-title">[ ACHIEVEMENTS ]</h3>
             <div class="achievement-list">

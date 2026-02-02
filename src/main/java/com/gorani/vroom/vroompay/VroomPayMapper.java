@@ -1,5 +1,6 @@
 package com.gorani.vroom.vroompay;
 
+import com.gorani.vroom.batch.SettlementTargetVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -20,4 +21,19 @@ public interface VroomPayMapper {
     VroomPayVO selectWalletAccount(@Param("userId") Long userId);
 
     int updateWalletAccount(VroomPayVO vroomPayVO);
+
+    List<SettlementTargetVO> selectSettlementTargets(@Param("day") int day);
+
+    int updateAssignmentStatusToComplete(@Param("assignmentId") Long assignmentId);
+
+    Long getPaymentIdForSettlement(
+            @Param("errandsId") Long errandsId,
+            @Param("erranderId") Long erranderId);
+
+    int insertPaymentOrder(PaymentOrderVO paymentVO);
+
+    int updatePaymentStatus(
+            @Param("orderId") Long orderId,
+            @Param("status") String status
+            );
 }
