@@ -68,4 +68,6 @@ public interface ChatMapper {
     
     // 심부름 정보 조회 (채팅방용)
     ChatRoomVO selectErrandInfoForChat(@Param("errandsId") Long errandsId);
+    
+    Long selectErranderUserIdByRoomId(Long roomId);
 }
