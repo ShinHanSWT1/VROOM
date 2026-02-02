@@ -75,6 +75,11 @@ public class ChatController {
         model.addAttribute("chatRoomInfo", chatRoomInfo);
         model.addAttribute("messages", messages);
         model.addAttribute("currentUserNickname", loginUser.getNickname());
+        
+        if ("OWNER".equals(userRole)) {
+            Long erranderUserId = chatService.getErranderUserIdByRoomId(roomId);
+            model.addAttribute("erranderUserId", erranderUserId);
+        }
 
         return "errand/errand_chat";
     }
@@ -156,6 +161,11 @@ public class ChatController {
         model.addAttribute("chatRoomInfo", chatRoomInfo);
         model.addAttribute("messages", messages);
         model.addAttribute("currentUserNickname", loginUser.getNickname());
+        
+        if ("OWNER".equals(userRole)) {
+            Long erranderUserId = chatService.getErranderUserIdByRoomId(roomId);
+            model.addAttribute("erranderUserId", erranderUserId);
+        }
 
         return "errand/errand_chat";
     }
@@ -269,9 +279,13 @@ public class ChatController {
             return ResponseEntity.status(403).body(Map.of("error", "권한이 없습니다."));
         }
 
-        chatService.rejectErrand(errandsId, roomId, loginUser.getUserId(), erranderUserId);
+        try {
+            chatService.rejectErrand(errandsId, roomId, loginUser.getUserId(), erranderUserId);
+            return ResponseEntity.ok(Map.of("success", true, "message", "심부름이 거절되었습니다."));
+        } catch (IllegalStateException ex) {
+            return ResponseEntity.status(409).body(Map.of("success", false, "error", ex.getMessage()));
+        }
 
-        return ResponseEntity.ok(Map.of("success", true, "message", "심부름이 거절되었습니다."));
     }
     
     @GetMapping("/enter")

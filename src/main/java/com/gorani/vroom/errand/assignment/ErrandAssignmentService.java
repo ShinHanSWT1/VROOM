@@ -11,6 +11,8 @@ public interface ErrandAssignmentService {
     boolean isMatchedErrander(Long errandsId, Long userId);
     
     boolean isCanceledErrander(Long errandsId, Long userId);
+    
+    void rejectErrander(Long errandsId, Long erranderId, Long changedByUserId);
 }
 
 

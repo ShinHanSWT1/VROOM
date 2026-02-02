@@ -152,5 +152,11 @@
         WHERE errander_id = #{erranderId}
           AND status IN ('COMPLETED', 'CANCELED')
     </select>
+    
+    <select id="selectErranderIdByUserId" resultType="long">
+	    SELECT errander_id
+	    FROM ERRANDER_PROFILES
+	    WHERE user_id = #{userId}
+	 </select>
 
 </mapper>

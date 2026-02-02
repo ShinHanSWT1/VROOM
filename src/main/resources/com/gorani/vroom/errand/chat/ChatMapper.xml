@@ -212,5 +212,14 @@
 	  LIMIT 1
 	  ]]>
 	</select>
+	
+	<select id="selectErranderUserIdByRoomId" resultType="long">
+	  SELECT cp.user_id
+	  FROM CHAT_PARTICIPANT cp
+	  WHERE cp.room_id = #{roomId}
+	    AND cp.room_role IN ('ERRANDER', 'OWNER')
+	    AND cp.is_active = 1
+	  LIMIT 1
+	</select>
 
 </mapper>

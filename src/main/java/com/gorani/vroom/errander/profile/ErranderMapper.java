@@ -52,5 +52,7 @@ public interface ErranderMapper {
 
     // 전체 수행 건수 (COMPLETED + CANCELED) - 성공률 계산용
     int getTotalAssignedCount(@Param("erranderId") Long erranderId);
+    
+    Long selectErranderIdByUserId(Long userId);
 
 }

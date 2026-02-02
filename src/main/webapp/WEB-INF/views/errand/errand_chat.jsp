@@ -448,8 +448,16 @@
            	    if (btn.id === 'rejectBtn') {
            	      if (!confirm('정말로 이 심부름을 거절하시겠습니까?')) return;
 
-           	      const erranderUserId = Number(actionArea.dataset.erranderUserId);
-           	      console.log('[DEBUG reject SEND]', { errandsId, roomId, erranderUserId });
+	           	    const rawErranderUserId = actionArea.dataset.erranderUserId; // data-errander-user-id 값
+		           	const erranderUserId = Number(rawErranderUserId);
+		
+		           	if (!rawErranderUserId || !Number.isFinite(erranderUserId) || erranderUserId <= 0) {
+		           	  alert('거절 대상 사용자 정보(erranderUserId)가 없습니다. 서버에서 erranderUserId를 내려주고 있는지 확인하세요.');
+		           	  console.error('[ERR] invalid erranderUserId', { rawErranderUserId, erranderUserId });
+		           	  return;
+		           	}
+	
+	           	console.log('[DEBUG reject SEND]', { errandsId, roomId, erranderUserId });
 
            	      fetch(contextPath + '/errand/chat/reject', {
            	        method: 'POST',
