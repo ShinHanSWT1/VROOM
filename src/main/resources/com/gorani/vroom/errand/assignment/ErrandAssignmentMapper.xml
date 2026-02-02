@@ -31,22 +31,6 @@
         WHERE errands_id = #{errandsId}
           AND status = 'WAITING'
     </update>
-
-  <insert id="insertStatusHistory">
-    INSERT INTO ERRAND_STATUS_HISTORY
-      (errands_id, from_status, to_status, changed_by_type, changed_by_id)
-    VALUES
-      (#{errandsId}, #{fromStatus}, #{toStatus}, #{changedByType}, #{changedById})
-  </insert>
-  
-  <select id="canChat" resultType="boolean">
-	  SELECT EXISTS(
-	    SELECT 1
-	    FROM ERRANDS
-	    WHERE errands_id = #{errandsId}
-	      AND status NOT IN ('COMPLETED','CANCELED')
-	  )
-	</select>
 	
 	<select id="validateRunnerAndStatus" resultType="int">
 	  SELECT COUNT(*)

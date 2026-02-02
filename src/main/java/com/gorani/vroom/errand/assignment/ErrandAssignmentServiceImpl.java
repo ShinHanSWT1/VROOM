@@ -1,17 +1,17 @@
 package com.gorani.vroom.errand.assignment;
 
-import com.gorani.vroom.errand.chat.ChatService;
-import com.gorani.vroom.notification.NotificationService;
-import lombok.RequiredArgsConstructor;
 import java.io.File;
 import java.util.UUID;
 
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.gorani.vroom.errand.chat.ChatService;
+import com.gorani.vroom.notification.NotificationService;
+
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -198,6 +198,7 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
         errandAssignmentMapper.insertProofMedia(proofId, fileUrl);
 
         return proofId;
+    }
 
 
     /**
