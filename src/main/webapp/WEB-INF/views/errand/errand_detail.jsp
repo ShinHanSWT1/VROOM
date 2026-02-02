@@ -115,8 +115,8 @@
 					  </c:when>
 					
 					  <c:when test="${(isOwner or isMatchedErrander) and not hasChatRoom}">
-					    <button type="button" class="btn btn-secondary" disabled>
-					      아직 채팅방이 없어요
+					    <button type="button" class="btn btn-secondary">
+					      채팅하기
 					    </button>
 					  </c:when>
 					

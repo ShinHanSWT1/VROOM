@@ -50,6 +50,7 @@ public class ErrandController {
 		model.addAttribute("dongs", errandService.getDongs());
 		model.addAttribute("totalCount", totalCount);
 		model.addAttribute("currentPage", page);
+		System.out.println("4444444444444444444444444444");
 
 		return "errand/errand_list";
 	}
@@ -72,58 +73,55 @@ public class ErrandController {
 	    // 로그인 유저 (세션에는 userId만 있다고 가정)
 	    Long currentUserId = null;
 	    
-	 // 1) 가장 우선: userId
-	    Object userIdObj = session.getAttribute("userId");
-	    if (userIdObj instanceof Long) {
-	        currentUserId = (Long) userIdObj;
-	    } else if (userIdObj instanceof String) {
-	        try { currentUserId = Long.valueOf((String) userIdObj); } catch (Exception ignore) {}
+	    // 1) loginSess에서 가져오기 (ChatController에서 쓰는 방식과 통일)
+	    Object loginSess = session.getAttribute("loginSess");
+	    if (loginSess != null) {
+	        try {
+	            // loginSess에 getUserId()가 있으면 가져옴
+	            Object v = loginSess.getClass().getMethod("getUserId").invoke(loginSess);
+	            if (v instanceof Long) currentUserId = (Long) v;
+	            else if (v instanceof Integer) currentUserId = ((Integer) v).longValue();
+	            else if (v instanceof String) currentUserId = Long.valueOf((String) v);
+	        } catch (Exception ignore) {}
 	    }
 
-	    // 2) fallback: loginSess (프로젝트에서 자주 쓰던 키)
+	    // 2) fallback: userId (혹시 저장돼 있으면)
 	    if (currentUserId == null) {
-	        Object loginSess = session.getAttribute("loginSess");
-	        if (loginSess != null) {
-	            try {
-	                // loginSess가 UserVO/MemberVO 등 어떤 타입이든 getUserId()만 있으면 동작
-	                currentUserId = (Long) loginSess.getClass().getMethod("getUserId").invoke(loginSess);
-	            } catch (Exception ignore) {}
-	        }
-	    }
-
-	    // 3) fallback: loginUser (너가 한때 쓰던 키)
-	    if (currentUserId == null) {
-	        Object loginUser = session.getAttribute("loginUser");
-	        if (loginUser instanceof Long) {
-	            currentUserId = (Long) loginUser;
-	        } else if (loginUser instanceof String) {
-	            try { currentUserId = Long.valueOf((String) loginUser); } catch (Exception ignore) {}
-	        } else if (loginUser != null) {
-	            try {
-	                currentUserId = (Long) loginUser.getClass().getMethod("getUserId").invoke(loginUser);
-	            } catch (Exception ignore) {}
+	        Object userIdObj = session.getAttribute("userId");
+	        if (userIdObj instanceof Long) currentUserId = (Long) userIdObj;
+	        else if (userIdObj instanceof Integer) currentUserId = ((Integer) userIdObj).longValue();
+	        else if (userIdObj instanceof String) {
+	            try { currentUserId = Long.valueOf((String) userIdObj); } catch (Exception ignore) {}
 	        }
 	    }
 
 	    // 작성자 여부 (ErrandDetailVO.userId = 작성자 id)
 	    Long ownerId = errand.getUserId();
 	    boolean isOwner = (currentUserId != null && ownerId != null && currentUserId.equals(ownerId));
-
+	    System.out.println("111111111111111111" + ownerId);
 	    // 매칭된 부름이 여부
 	    boolean isMatchedErrander = false;
 	    if (currentUserId != null && !isOwner) {
 	        // 이 게시글에 대해 "현재 유저가 수행자로 매칭되어 있는지"
 	        isMatchedErrander = errandAssignmentService.isMatchedErrander(errandsId, currentUserId);
 	    }
-
+	    System.out.println("22222222222222222222222" + currentUserId);
 	    // 채팅방 존재 여부
 	    boolean hasChatRoom = false;
-	    if (currentUserId != null && (isOwner || isMatchedErrander)) {
+	    if (isOwner || isMatchedErrander) {   // currentUserId null이면 위에서 false라서 안전
 	        hasChatRoom = chatService.existsChatRoomByErrandsId(errandsId);
 	    }
 
 	    // 재입장 가능
 	    boolean canReEnterChat = (isOwner || isMatchedErrander) && hasChatRoom;
+	    
+	    System.out.println("[DETAIL] errandsId=" + errandsId
+	            + " currentUserId=" + currentUserId
+	            + " ownerId=" + ownerId
+	            + " isOwner=" + isOwner
+	            + " isMatchedErrander=" + isMatchedErrander
+	            + " hasChatRoom=" + hasChatRoom
+	            + " canReEnterChat=" + canReEnterChat);
 
 	    model.addAttribute("isOwner", isOwner);
 	    model.addAttribute("isMatchedErrander", isMatchedErrander);
