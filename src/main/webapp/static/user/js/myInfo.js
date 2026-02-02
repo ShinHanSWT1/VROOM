@@ -568,21 +568,3 @@ modalSave.addEventListener('click', () => {
     }
 });
 
-// Dropdown Logic (Reused)
-document.addEventListener('DOMContentLoaded', function () {
-    const dropdownBtn = document.getElementById('userDropdownBtn');
-    const dropdownMenu = document.getElementById('userDropdownMenu');
-
-    if (dropdownBtn && dropdownMenu) {
-        dropdownBtn.addEventListener('click', function (e) {
-            e.stopPropagation();
-            dropdownMenu.classList.toggle('active');
-        });
-
-        document.addEventListener('click', function (e) {
-            if (!dropdownMenu.contains(e.target) && !dropdownBtn.contains(e.target)) {
-                dropdownMenu.classList.remove('active');
-            }
-        });
-    }
-});

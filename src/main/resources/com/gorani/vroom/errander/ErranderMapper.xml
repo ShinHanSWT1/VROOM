@@ -18,8 +18,10 @@
             ep.last_active_at,
             ep.approved_at,
 
-            ep.grade,    up.nickname,
-            up.profile_image
+            ep.grade,
+            up.nickname,
+            up.profile_image,
+            up.manner_score AS mannerTemp
         FROM ERRANDER_PROFILES ep
                  LEFT JOIN MEMBERS up ON ep.user_id = up.user_id
         WHERE ep.user_id = #{userId}
@@ -109,5 +111,21 @@
         SET role = #{role}
         WHERE user_id = #{userId}
     </update>
+
+    <!-- 정산 대기 금액 (CONFIRMED1 상태) -->
+    <select id="getSettlementWaitingAmount" resultType="int">
+        SELECT COALESCE(SUM(reward_amount), 0)
+        FROM ERRANDS
+        WHERE errander_id = #{erranderId}
+          AND status = 'CONFIRMED1'
+    </select>
+
+    <!-- 수령 예정 금액 (CONFIRMED2 상태) -->
+    <select id="getExpectedAmount" resultType="int">
+        SELECT COALESCE(SUM(reward_amount), 0)
+        FROM ERRANDS
+        WHERE errander_id = #{erranderId}
+          AND status = 'CONFIRMED2'
+    </select>
 
 </mapper>

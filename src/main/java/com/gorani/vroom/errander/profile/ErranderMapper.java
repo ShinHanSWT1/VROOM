@@ -39,4 +39,10 @@ public interface ErranderMapper {
     // 사용자 역할 변경
     int updateUserRole(@Param("userId") Long userId, @Param("role") String role);
 
+    // 정산 대기 금액 (CONFIRMED1 상태)
+    int getSettlementWaitingAmount(@Param("erranderId") Long erranderId);
+
+    // 수령 예정 금액 (CONFIRMED2 상태)
+    int getExpectedAmount(@Param("erranderId") Long erranderId);
+
 }

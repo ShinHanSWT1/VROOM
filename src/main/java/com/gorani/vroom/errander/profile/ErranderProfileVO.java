@@ -16,6 +16,7 @@ public class ErranderProfileVO {
     // MEMBERS 테이블에서 가져올 정보
     private String nickname; // 닉네임
     private String profileImage; // 프로필 이미지
+    private Double mannerTemp; // 매너온도 (manner_score)
 
     // 노란색 바 정보
     private  Double completeRate; // 완료률

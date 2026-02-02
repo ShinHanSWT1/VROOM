@@ -28,8 +28,12 @@
             <link rel="stylesheet" href="<c:url value='/static/community/css/communityWrite.css'/>">
         </c:when>
         <c:when test="${not empty pageCss && not empty pageCssDir}">
+            <c:if test="${pageCssDir == 'user'}">
+                <link rel="stylesheet" href="<c:url value='/static/user/css/user-layout.css'/>">
+            </c:if>
             <c:if test="${pageCssDir == 'errander'}">
                 <link rel="stylesheet" href="<c:url value='/static/errander/css/styles.css'/>">
+                <link rel="stylesheet" href="<c:url value='/static/errander/css/errander-layout.css'/>">
             </c:if>
             <link rel="stylesheet" href="<c:url value='/static/${pageCssDir}/css/${pageCss}.css'/>">
         </c:when>

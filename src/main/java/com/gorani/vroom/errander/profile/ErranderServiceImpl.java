@@ -130,4 +130,20 @@ public class ErranderServiceImpl implements ErranderService {
         }
     }
 
+    @Override
+    public int getSettlementWaitingAmount(Long erranderId) {
+        return erranderMapper.getSettlementWaitingAmount(erranderId);
+    }
+
+    @Override
+    public int getExpectedAmount(Long erranderId) {
+        return erranderMapper.getExpectedAmount(erranderId);
+    }
+
+    @Override
+    public int getThisMonthSettledAmount(Long erranderId) {
+        LocalDate now = LocalDate.now();
+        return erranderMapper.getMonthEarning(erranderId, now.getYear(), now.getMonthValue());
+    }
+
 }
