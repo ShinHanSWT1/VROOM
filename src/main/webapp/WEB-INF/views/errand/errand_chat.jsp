@@ -188,25 +188,27 @@
 				<div class="chat-header">
 				  <div class="chat-header-row">
 				
-				    <!-- 왼쪽: 닉네임 / 매너온도 + 역할 -->
-				    <div class="chat-user-text">
-				      <div class="chat-user-name-row">
-				        <h3 id="chatPartnerName">${chatRoomInfo.partnerNickname}</h3>
-				
-				        <c:if test="${not empty chatRoomInfo.partnerMannerScore}">
-				          <span class="manner-inline">
-						    / <fmt:formatNumber value="${chatRoomInfo.partnerMannerScore}" maxFractionDigits="1" />℃
-						  </span>
-				        </c:if>
-				      </div>
-				
-				      <div class="chat-user-status">
-				        <c:choose>
-				          <c:when test="${userRole eq 'OWNER'}">부름이</c:when>
-				          <c:when test="${userRole eq 'ERRANDER'}">사용자</c:when>
-				        </c:choose>
-				      </div>
-				    </div>
+				    <!-- 왼쪽: 닉네임/온도/역할 -->
+					  <div class="chat-user-info">
+					    <div class="chat-user-text">
+					      <div class="chat-user-name-row">
+					        <h3 id="chatPartnerName">${chatRoomInfo.partnerNickname}</h3>
+					
+					        <c:if test="${not empty chatRoomInfo.partnerMannerScore}">
+					          <span class="manner-inline">
+					            / <fmt:formatNumber value="${chatRoomInfo.partnerMannerScore}" maxFractionDigits="1" />℃
+					          </span>
+					        </c:if>
+					      </div>
+					
+					      <div class="chat-user-status">
+					        <c:choose>
+					          <c:when test="${userRole eq 'OWNER'}">사용자</c:when>
+					          <c:when test="${userRole eq 'ERRANDER'}">부름이</c:when>
+					        </c:choose>
+					      </div>
+					    </div>
+					  </div>
 				
 				    <!-- 오른쪽: 프로필 이미지 -->
 				    <div class="chat-user-avatar-right">
