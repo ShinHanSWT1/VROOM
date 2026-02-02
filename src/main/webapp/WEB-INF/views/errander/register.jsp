@@ -64,7 +64,8 @@
             </div>
             <div class="auth-form-group">
                 <label for="document2" class="auth-label">통장 사본(필수)</label>
-                <input type="file" id="document2" name="bankFile" class="auth-input" accept="image/*,.pdf" required>
+                <input
+                        type="file" id="document2" name="bankFile" class="auth-input" accept="image/*,.pdf" required>
             </div>
 
             <!-- 등록 버튼 -->
