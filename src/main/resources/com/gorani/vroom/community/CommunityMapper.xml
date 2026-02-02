@@ -410,6 +410,7 @@
             SELECT MAX(created_at) FROM COMMUNITY_COMMENT
             WHERE post_id = c.post_id
               AND user_id = #{userId}
+              AND deleted_at IS NULL
         ) DESC
     </select>
 
@@ -427,6 +428,6 @@
         LEFT JOIN MEMBERS m ON c.user_id = m.user_id
         WHERE l.user_id = #{userId}
           AND c.deleted_at IS NULL
-        ORDER BY l.created_at DESC
+        ORDER BY c.created_at DESC
     </select>
 </mapper>

@@ -59,6 +59,10 @@ public class AdminErrandsService {
         result.put("detail", detail);
 
         // 해당 심부름의 배정/매칭 이력 조회
+        List<Map<String, Object>> assignment = mapper.getErrandAssignmentDetail(errandsId);
+        result.put("assignment", assignment);
+
+        // 심부름 상태 변경 이력 조회
         List<Map<String, Object>> history = mapper.getErrandHistory(errandsId);
         result.put("history", history);
 
@@ -70,6 +74,8 @@ public class AdminErrandsService {
     }
 
     public Map<String, Object> assignErrander(Map<String, Object> params) {
+
+        // params: { errandId, erranderId, reason }
 
         return Map.of();
     }

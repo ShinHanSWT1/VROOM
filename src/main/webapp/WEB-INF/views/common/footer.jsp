@@ -24,7 +24,7 @@
     
     <!-- 페이지별 추가 JS -->
     <c:if test="${pageJs != null}">
-        <script src="<c:url value='/resources/js/${pageJs}.js'/>"></script>
+<%--        <script src="<c:url value='/static/main/js/${pageJs}.js'/>"></script>--%>
     </c:if>
 </body>
 </html>

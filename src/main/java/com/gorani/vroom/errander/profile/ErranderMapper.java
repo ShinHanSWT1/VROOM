@@ -39,5 +39,4 @@ public interface ErranderMapper {
     // 사용자 역할 변경
     int updateUserRole(@Param("userId") Long userId, @Param("role") String role);
 
-
 }

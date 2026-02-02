@@ -21,9 +21,13 @@ public interface ErrandAssignmentMapper {
     int updateErrandStatusMatchedToWaiting(@Param("errandsId") Long errandsId);
 
     int insertMatchedAssignment(
-    	    @org.apache.ibatis.annotations.Param("userId") Long userId,
-    	    @org.apache.ibatis.annotations.Param("errandsId") Long errandsId,
-    	    @org.apache.ibatis.annotations.Param("erranderId") Long erranderId
+            @Param("adminId") Long adminId,
+    	    @Param("userId") Long userId,
+    	    @Param("errandsId") Long errandsId,
+    	    @Param("erranderId") Long erranderId,
+            @Param("type") String type,
+            @Param("status") String status,
+            @Param("reason") String reason
     	);
 
     int insertStatusHistory(@Param("errandsId") Long errandsId,
@@ -31,4 +35,24 @@ public interface ErrandAssignmentMapper {
                             @Param("toStatus") String toStatus,
                             @Param("changedByType") String changedByType,
                             @Param("changedById") Long changedById);
+    
+    int validateRunnerAndStatus(@Param("errandsId") Long errandsId,
+            @Param("runnerUserId") Long runnerUserId);
+	
+	int insertCompletionProof(@Param("errandsId") Long errandsId,
+            @Param("erranderId") Long erranderId,
+            @Param("fileUrl") String fileUrl);
+
+	Long selectLastInsertedProofId();
+	
+	int insertProofMedia(@Param("proofId") Long proofId,
+	       @Param("fileUrl") String fileUrl);
+
+
+
+    String getErranderActiveStatus(
+            @Param("erranderId") Long erranderId);
+
+    Long selectUserIdByErranderId(
+            @Param("erranderId") Long erranderId);
 }

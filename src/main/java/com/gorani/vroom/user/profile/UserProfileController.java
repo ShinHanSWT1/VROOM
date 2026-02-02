@@ -60,9 +60,11 @@ public class UserProfileController {
 
         // 내 회원 번호 가져오기
         Long userId = loginUser.getUserId();
+        log.info("=== 나의 활동 조회 === 로그인 userId: {}", userId);
 
         // CommunityService에서 활동 내역 가져오기
         List<CommunityPostVO> myPosts = communityService.getMyPosts(userId);
+        log.info("작성한 글 개수: {}, 목록: {}", myPosts.size(), myPosts);
         List<CommunityPostVO> myComments = communityService.getMyCommentedPosts(userId);
         List<CommunityPostVO> myScraps = communityService.getMyLikedPosts(userId);
 

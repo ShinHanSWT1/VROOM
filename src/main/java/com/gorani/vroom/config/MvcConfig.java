@@ -15,7 +15,6 @@ import org.springframework.web.servlet.config.annotation.*;
 import org.springframework.core.io.ClassPathResource;
 
 @Configuration
-@MapperScan(basePackages = {"com.gorani.vroom"}, annotationClass = Mapper.class)
 @ComponentScan(basePackages = {"com.gorani.vroom"})
 @PropertySource("classpath:application.properties")
 @EnableWebMvc
@@ -32,6 +31,8 @@ public class MvcConfig implements WebMvcConfigurer {
     public static final String ERRAND_UPLOAD_PATH  = "C:/uploads/errand/";
     public static final String COMMUNITY_UPLOAD_PATH = "C:/uploads/community/";
     public static final String ERRANDER_DOC_UPLOAD_PATH = "C:/uploads/erranderDocs/";
+    private static final String PROOF_UPLOAD_PATH = "D:/vroom_uploads/proof/";
+
 
     // View Resolver (JSP)
     @Override
@@ -63,6 +64,9 @@ public class MvcConfig implements WebMvcConfigurer {
         // 부름이 서류 이미지
         registry.addResourceHandler("/uploads/erranderDocs/**")
                 .addResourceLocations("file:/" + ERRANDER_DOC_UPLOAD_PATH);
+        
+        registry.addResourceHandler("/uploads/proof/**")
+        		.addResourceLocations("file:/" + PROOF_UPLOAD_PATH);
     }
 
     // Interceptor
@@ -88,10 +92,4 @@ public class MvcConfig implements WebMvcConfigurer {
         return resolver;
     }
 
-    @Bean
-    public static PropertyPlaceholderConfigurer properties() {
-        PropertyPlaceholderConfigurer config = new PropertyPlaceholderConfigurer();
-        config.setLocation(new ClassPathResource("application.properties"));
-        return config;
-    }
 }

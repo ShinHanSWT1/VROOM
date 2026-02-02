@@ -120,43 +120,65 @@
                         <span class="detail-label">나의 역할</span>
                         <span class="status-badge" id="userRoleDisplay">
                             <c:choose>
-                                <c:when test="${userRole eq 'OWNER'}">심부름 작성자</c:when>
+                                <c:when test="${userRole eq 'USER' or userRole eq 'OWNER'}">사용자</c:when>
                                 <c:when test="${userRole eq 'ERRANDER'}">부름이</c:when>
-                                <c:otherwise>${userRole}</c:otherwise>
                             </c:choose>
                         </span>
                     </div>
                 </div>
                 
+                
                 <!-- 역할별 액션 버튼 카드 -->
-				<c:if test="${userRole eq 'OWNER'}">
-				  <div class="errand-card">
-				    <div class="errand-card-header">
-				      <div class="section-label">💼 심부름 관리</div>
+				<div class="errand-card">
+				  <div class="errand-card-header">
+				    <div class="section-label">💼 심부름 관리</div>				    
 				
-				      <!-- 구조 고정: action-buttons DIV는 항상 존재 -->
-				      <div class="action-buttons" id="actionArea">
-				      
-				        <!-- status는 chatRoomInfo.status가 비었으니, errandStatus 모델로 분기 권장 -->
-				        <c:choose>
-				          <c:when test="${errandStatus eq 'MATCHED'}">
-				            <button class="accept-btn" id="acceptBtn" type="button">✓ 수락</button>
-				            <button class="reject-btn" id="rejectBtn" type="button">✗ 거절</button>
-				          </c:when>
+				    <div class="action-buttons" id="actionArea" data-status="${errandStatus}">
+				      <c:choose>
 				
-				          <c:when test="${errandStatus eq 'CONFIRMED1'}">
-				            <button class="complete-btn" id="completeConfirmBtn" type="button">✔ 거래 완료</button>
-				          </c:when>
+				        <c:when test="${userRole eq 'USER' or userRole eq 'OWNER'}">
+				          <c:choose>
+				            <c:when test="${errandStatus eq 'MATCHED'}">
+				              <button class="accept-btn" id="acceptBtn" type="button">✓ 수락</button>
+				              <button class="reject-btn" id="rejectBtn" type="button">✗ 거절</button>
+				            </c:when>
 				
-				          <c:when test="${errandStatus eq 'CONFIRMED2'}">
-				            <div class="status-done">거래 완료</div>
-				          </c:when>
-				        </c:choose>
+				            <c:when test="${errandStatus eq 'CONFIRMED1'}">
+						      <div class="status-wait">⏳ 심부름 중</div>
+						    </c:when>
 				
-				      </div>
+				            <c:when test="${errandStatus eq 'CONFIRMED2'}">
+				              <div class="status-done">거래 완료</div>
+				            </c:when>
+				          </c:choose>
+				        </c:when>
+				
+				        <c:when test="${userRole eq 'ERRANDER' or userRole eq 'RUNNER'}">
+						  <c:choose>
+						    <c:when test="${errandStatus eq 'MATCHED'}">
+						      <div class="status-wait">사용자 수락 대기중</div>
+						    </c:when>
+						
+						    <c:when test="${errandStatus eq 'CONFIRMED1'}">
+						      <button class="complete-btn" id="proofBtn" type="button">✔ 거래완료</button>
+						    </c:when>
+						
+						    <c:when test="${errandStatus eq 'CONFIRMED2'}">
+						      <div class="status-done">거래 완료</div>
+						    </c:when>
+						  </c:choose>
+						</c:when>
+				
+				        <c:otherwise>
+				          <div class="status-wait">심부름 진행중</div>
+				        </c:otherwise>
+				
+				      </c:choose>
 				    </div>
 				  </div>
-				</c:if>
+				</div>
+
+
             </div>
 
             <!-- 우측 패널: 채팅 -->
@@ -168,7 +190,7 @@
                         <div class="chat-user-status">
                             <c:choose>
                                 <c:when test="${userRole eq 'OWNER'}">부름이</c:when>
-                                <c:when test="${userRole eq 'ERRANDER'}">심부름 작성자</c:when>
+                                <c:when test="${userRole eq 'ERRANDER'}">사용자</c:when>
                             </c:choose>
                         </div>
                     </div>
@@ -238,6 +260,8 @@
         const currentUserId = ${currentUserId};
         const userRole = '${userRole}';
         const contextPath = '${pageContext.request.contextPath}';
+        const assignmentStatus = '${assignmentStatus}'; 
+
 
         document.addEventListener('DOMContentLoaded', function() {
             const messageInput = document.getElementById('messageInput');
@@ -257,18 +281,274 @@
 
                 stompClient.connect({}, function() {
                   // 방 구독
-                  stompClient.subscribe('/topic/room.' + roomId, function(message) {
-                    const payload = JSON.parse(message.body);
-                    
-                    if (payload.messageType === 'SYSTEM') {
-                       addSystemMessageToUI(payload.content);
-                       return;
-                    }
-                    const isMine = (payload.senderUserId === currentUserId);
-                    addMessageToUI(payload.content, isMine);
-                  });
+                	stompClient.subscribe('/topic/room.' + roomId, function(message) {
+               		  const payload = JSON.parse(message.body);
+
+               		  // 1) 시스템 메시지
+               		  if (payload.messageType === 'SYSTEM') {
+               		    addSystemMessageToUI(payload.content);
+               		    return;
+               		  }
+
+               		  // 2) 상태 변경 메시지(수락/거절/완료 등)
+               		  if (payload.messageType === 'STATUS') {
+               		    handleStatusChange(payload); // 아래 함수 추가
+               		    return;
+               		  }
+
+               		  // 3) 일반 채팅 메시지(TEXT 등)
+               		  const isMine = (payload.senderUserId === currentUserId);
+               		  addMessageToUI(payload.content, isMine);
+               		});
                 });
               }
+            
+            function statusRank(s) {
+           	  const order = {
+           	    WAITING: 0,
+           	    MATCHED: 1,
+           	    CONFIRMED1: 2,
+           	    CONFIRMED2: 3,
+           	    COMPLETED: 4
+           	  };
+           	  return (order[s] ?? -1);
+           	}
+            
+            function handleStatusChange(payload) {
+           	  // payload.status 예: 'CONFIRMED1', 'CONFIRMED2', 'WAITING', 'MATCHED'
+           	  const status = payload.status;
+           	  const actionArea = document.getElementById('actionArea');
+           	  if (!actionArea) return;
+           	  
+           	  const current = actionArea.getAttribute('data-status'); // 예: CONFIRMED2
+
+           	  // 이미 더 진행된 상태면, 더 낮은 이벤트는 무시 (되돌림 방지)
+           	  if (current && statusRank(status) < statusRank(current)) {
+           	    return;
+           	  }
+           	  
+              actionArea.setAttribute('data-status', status);
+
+           	  // role 값이 지금 OWNER/ERRANDER 섞여 있을 수 있어서 방어적으로 처리
+           	  const isUser = (userRole === 'USER' || userRole === 'OWNER');
+           	  const isErrander = (userRole === 'ERRANDER' || userRole === 'RUNNER');
+
+           	  if (status === 'CONFIRMED1') {
+           	    // 사용자(작성자): "대기중"
+           	    if (isUser) {
+           	    	actionArea.innerHTML = `<div class="status-wait">⏳ 심부름 중</div>`;
+           	    }
+           	    // 부름이: 거래완료 버튼 즉시 노출
+           	    if (isErrander) {
+           	      actionArea.innerHTML = `<button class="complete-btn" id="proofBtn" type="button">✔ 거래완료</button>`;
+           	      bindProofBtn(); // 버튼 이벤트 바인딩 (아래 함수 추가)
+           	    }
+           	    return;
+           	  }
+
+           	  if (status === 'CONFIRMED2') {
+           	    actionArea.innerHTML = `<div class="status-done">거래 완료</div>`;
+           	    return;
+           	  }
+
+           	  if (status === 'MATCHED') {
+           	    // MATCHED는 "채팅 시작됨" 상태라, 사용자 화면에 수락/거절 버튼이 떠야 함
+           	    if (isUser) {
+           	      actionArea.innerHTML =
+           	        `<button class="accept-btn" id="acceptBtn" type="button">✓ 수락</button>
+           	         <button class="reject-btn" id="rejectBtn" type="button">✗ 거절</button>`;
+           	      bindAcceptReject(); // 아래 함수로 이벤트 다시 연결
+           	    }
+           	    if (isErrander) {
+           	      actionArea.innerHTML = `<div class="status-wait">사용자 수락 대기중</div>`;
+           	    }
+           	    return;
+           	  }
+
+           	  if (status === 'WAITING') {
+           	    // 거절 후 다시 WAITING 복귀 같은 케이스
+           	    if (isUser) actionArea.innerHTML = `<div class="status-wait">상태: WAITING</div>`;
+           	    if (isErrander) actionArea.innerHTML = `<div class="status-wait">상태: WAITING</div>`;
+           	    return;
+           	  }
+
+           	  // 기타 상태
+           	  actionArea.innerHTML = `<div class="status-wait">상태: ${status}</div>`;
+           	}
+            
+            function bindAcceptReject() {
+           	  const acceptBtn2 = document.getElementById('acceptBtn');
+           	  const rejectBtn2 = document.getElementById('rejectBtn');
+
+           	  if (acceptBtn2) {
+           	    acceptBtn2.addEventListener('click', function() {
+           	      if (!confirm('이 부름이와 심부름을 진행하시겠습니까?')) return;
+
+           	      fetch(contextPath + '/errand/chat/accept', {
+           	        method: 'POST',
+           	        headers: { 'Content-Type': 'application/json' },
+           	        credentials: 'same-origin',
+           	        body: JSON.stringify({ errandsId: errandsId, roomId: roomId })
+           	      })
+           	      .then(res => res.json())
+           	      .then(data => {
+           	        if (data.success) {
+           	          alert('심부름이 수락되었습니다!');
+           	          // 서버가 STATUS를 뿌려주면 부름이 화면이 즉시 proofBtn으로 바뀜.
+           	        } else {
+           	          alert(data.error || '수락 처리 실패');
+           	        }
+           	      })
+           	      .catch(err => {
+           	        console.error(err);
+           	        alert('수락 처리 중 오류가 발생했습니다.');
+           	      });
+           	    });
+           	  }
+
+           	  if (rejectBtn2) {
+           	    rejectBtn2.addEventListener('click', function() {
+           	      if (!confirm('정말로 이 심부름을 거절하시겠습니까?')) return;
+
+           	      fetch(contextPath + '/errand/chat/reject', {
+           	        method: 'POST',
+           	        headers: { 'Content-Type': 'application/json' },
+           	        credentials: 'same-origin',
+           	        body: JSON.stringify({ errandsId: errandsId, roomId: roomId })
+           	      })
+           	      .then(res => res.json())
+           	      .then(data => {
+           	        if (data.success) {
+           	          alert('심부름이 거절되었습니다.');
+           	          // 거절도 STATUS WAITING을 서버에서 뿌려주면 화면 자동 동기화 가능
+           	        } else {
+           	          alert(data.error || '거절 처리 실패');
+           	        }
+           	      })
+           	      .catch(err => {
+           	        console.error(err);
+           	        alert('거절 처리 중 오류가 발생했습니다.');
+           	      });
+           	    });
+           	  }
+           	}
+
+            function bindProofBtn() {
+           	  const btn = document.getElementById('proofBtn');
+           	  if (!btn) return;
+
+           	  btn.addEventListener('click', () => {
+           	    openProofModal();
+           	  });
+           	}
+            
+            function openProofModal() {
+           	  const modal = document.getElementById('proofModal');
+	          const overlay = document.getElementById('proofOverlay');
+           	  const fileInput = document.getElementById('proofFile');
+           	  const previewWrap = document.getElementById('proofPreview');
+           	  const previewImg = document.getElementById('proofPreviewImg');
+           	  const fileName = document.getElementById('proofFileName');
+
+           	  if (!modal) {
+           	    alert('모달이 없습니다. proofModal HTML을 확인하세요.');
+           	    return;
+           	  }
+
+           	  // 초기화
+           	  fileInput.value = '';
+           	  previewWrap.style.display = 'none';
+           	  previewImg.src = '';
+           	  fileName.textContent = '';
+
+           	  modal.classList.add('is-open');
+              modal.setAttribute('aria-hidden', 'false');
+              document.body.style.overflow = 'hidden';
+
+           	  // 파일 선택 시 미리보기
+           	  fileInput.onchange = () => {
+           	    const f = fileInput.files?.[0];
+           	    if (!f) return;
+           	    fileName.textContent = f.name;
+
+           	    const url = URL.createObjectURL(f);
+           	    previewImg.src = url;
+           	    previewWrap.style.display = 'block';
+           	  };
+
+           // 닫기 공통 함수
+           	  const close = () => {
+           	    modal.classList.remove('is-open');
+           	    modal.setAttribute('aria-hidden', 'true');
+           	    document.body.style.overflow = '';
+
+           	    // objectURL 메모리 누수 방지(선택)
+           	    if (previewImg?.src?.startsWith('blob:')) {
+           	      try { URL.revokeObjectURL(previewImg.src); } catch (e) {}
+           	    }
+           	  };
+
+           	  // 닫기/취소
+           	  const closeBtn = document.getElementById('proofCloseBtn');
+           	  const cancelBtn = document.getElementById('proofCancelBtn');
+
+           	  closeBtn.onclick = close;
+           	  cancelBtn.onclick = close;
+
+           	  // 오버레이 클릭 닫기
+           	  if (overlay) overlay.onclick = close;
+
+           	  // ESC 닫기 (열릴 때만 1회 등록/해제)
+           	  const onKeyDown = (e) => {
+           	    if (e.key === 'Escape') close();
+           	  };
+           	  document.addEventListener('keydown', onKeyDown, { once: true });
+
+           	  // 업로드
+           	  const submitBtn = document.getElementById('proofSubmitBtn');
+           	  submitBtn.onclick = async () => {
+           	    const f = fileInput.files?.[0];
+           	    if (!f) {
+           	      alert('사진을 선택해주세요.');
+           	      return;
+           	    }
+
+           	    const fd = new FormData();
+           	    fd.append('errandsId', errandsId);
+           	    fd.append('roomId', roomId);
+           	    fd.append('file', f);
+
+           	    try {
+           	      const res = await fetch(contextPath + '/errand/chat/assign/complete-proof', {
+           	        method: 'POST',
+           	        body: fd,
+           	        credentials: 'same-origin'
+           	      });
+
+           	      const data = await res.json();
+           	      if (!res.ok || data.success !== true) {
+           	        alert(data.message || data.error || '업로드 실패');
+           	        return;
+           	      }
+
+           	      // 업로드 성공 -> 모달 닫기
+           	      close();
+
+           	      const actionArea = document.getElementById('actionArea');
+           	      if (actionArea) {
+           	        actionArea.innerHTML = `<div class="status-wait">✅ 인증 완료</div>`;
+           	      }
+
+           	      addSystemMessageToUI('부름이가 완료 인증사진을 제출했습니다.');
+
+           	    } catch (e) {
+           	      console.error(e);
+           	      alert('업로드 중 오류가 발생했습니다.');
+           	    }
+           	  };
+           	}
+
+
             
             function sendMessage(messageType = 'TEXT') {
             	const messageText = messageInput.value.trim();
@@ -356,13 +636,63 @@
                 alert('파일 첨부 기능은 추후 구현 예정입니다.');
             });
 
-            // 인증 사진 버튼 클릭 (부름이만)
-            if (proofBtn) {
-                proofBtn.addEventListener('click', function() {
-                    alert('인증 사진 업로드 기능은 추후 구현 예정입니다.');
-                    // 실제 구현시에는 파일 선택 후 PROOF_IMAGE 타입으로 전송
-                });
-            }
+            // 인증 사진 버튼 클릭 (부름이만) - 거래완료(인증사진 업로드)
+			if (proofBtn) {
+			  proofBtn.addEventListener('click', async function () {
+			    // 파일 선택창
+			    const input = document.createElement('input');
+			    input.type = 'file';
+			    input.accept = 'image/*';
+			
+			    input.onchange = async () => {
+			      if (!input.files || input.files.length === 0) return;
+			
+			      const file = input.files[0];
+			
+			      const form = new FormData();
+			      form.append('errandsId', errandsId);
+			      form.append('roomId', roomId);
+			      form.append('proofImage', file);
+			
+			      try {
+			        const res = await fetch(contextPath + '/errand/assign/complete-proof', {
+			          method: 'POST',
+			          credentials: 'same-origin',
+			          body: form
+			        });
+			
+			        const text = await res.text();
+			        if (!res.ok) {
+			          console.error('HTTP ERROR', res.status, text);
+			          alert(`서버 오류 (${res.status})`);
+			          return;
+			        }
+			
+			        let data;
+			        try { data = JSON.parse(text); }
+			        catch (e) {
+			          console.error('JSON 파싱 실패:', text);
+			          alert('서버 응답이 JSON이 아닙니다.');
+			          return;
+			        }
+			
+			        if (data.success !== true) {
+			          alert(data.error || data.message || '인증 업로드 실패');
+			          return;
+			        }
+			
+			        alert('인증사진 업로드 완료!');
+			        location.reload();
+			
+			      } catch (e) {
+			        console.error(e);
+			        alert('인증 업로드 중 오류가 발생했습니다.');
+			      }
+			    };
+			
+			    input.click();
+			  });
+			}
 
             // 수락 버튼 클릭 (OWNER만)
             if (acceptBtn) {
@@ -411,8 +741,7 @@
                         },
                         body: JSON.stringify({
                             errandsId: errandsId,
-                            roomId: roomId,
-                            erranderUserId: erranderUserId
+                            roomId: roomId
                         })
                     })
                     .then(response => response.json())
@@ -438,32 +767,93 @@
               bindCompleteConfirm();
             }
          	
+            function bindProofUpload() {
+           	  const proofBtn = document.getElementById('proofBtn');
+           	  if (!proofBtn) return;
+
+           	  proofBtn.addEventListener('click', async () => {
+           	    // 파일 선택창 띄우기
+           	    const input = document.createElement('input');
+           	    input.type = 'file';
+           	    input.accept = 'image/*';
+
+           	    input.onchange = async () => {
+           	      if (!input.files || input.files.length === 0) return;
+
+           	      const file = input.files[0];
+
+           	      const form = new FormData();
+           	      form.append('errandsId', errandsId);
+           	      form.append('roomId', roomId);
+           	      form.append('proofImage', file);
+
+           	      try {
+           	        const res = await fetch(contextPath + '/errand/chat/assign/complete-proof', {
+           	          method: 'POST',
+           	          credentials: 'same-origin',
+           	          body: form
+           	        });
+
+           	        const text = await res.text();
+           	        if (!res.ok) {
+           	          console.error('HTTP ERROR', res.status, text);
+           	          alert(`서버 오류 (${res.status})`);
+           	          return;
+           	        }
+
+           	        let data;
+           	        try { data = JSON.parse(text); }
+           	        catch (e) {
+           	          console.error('JSON 파싱 실패:', text);
+           	          alert('서버 응답이 JSON이 아닙니다.');
+           	          return;
+           	        }
+
+           	        if (data.success !== true) {
+           	          alert(data.message || data.error || '인증 업로드 실패');
+           	          return;
+           	        }
+
+           	        alert('인증사진 업로드 완료!');
+           	        location.reload();
+
+           	      } catch (e) {
+           	        console.error(e);
+           	        alert('인증 업로드 중 오류가 발생했습니다.');
+           	      }
+           	    };
+
+           	    input.click();
+           	  }, { once: true });
+           	}
+
+         	
             function bindCompleteConfirm() {
             	  const btn = document.getElementById('completeConfirmBtn');
             	  if (!btn) return;
 
             	  btn.addEventListener('click', async () => {
             	    try {
-            	      const url = `${pageContext.request.contextPath}/errand/chat/assign/complete-confirm`;
+           	    	  const url = contextPath + '/errand/chat/assign/complete-confirm';
             	      console.log('POST URL=', url);
 
             	      const res = await fetch(url, {
             	        method: 'POST',
             	        headers: { 'Content-Type': 'application/json' },
-            	        credentials: 'same-origin', // ✅ 이거 없으면 loginSess null 뜰 수 있음
+            	        credentials: 'same-origin', // 이거 없으면 loginSess null 뜰 수 있음
             	        body: JSON.stringify({ errandsId, roomId })
             	      });
 
             	      const text = await res.text();
 
-            	      // ✅ 404/500이면 여기서 바로 잡힘
+            	      // 404/500이면 여기서 바로 잡힘
             	      if (!res.ok) {
             	        console.error('HTTP ERROR', res.status, text);
             	        alert(`서버 오류 (${res.status})`);
             	        return;
             	      }
 
-            	      // ✅ JSON 파싱 방어
+            	      // JSON 파싱 방어
             	      let data;
             	      try { data = JSON.parse(text); }
             	      catch (e) {
@@ -472,7 +862,7 @@
             	        return;
             	      }
 
-            	      // ✅ 서버 응답 표준화: success 기준으로만 판단(네 컨트롤러는 success를 씀)
+            	      // 서버 응답 표준화: success 기준으로만 판단(네 컨트롤러는 success를 씀)
             	      if (data.success !== true) {
             	        alert(data.message || data.error || '거래 완료 처리 실패');
             	        return;
@@ -495,8 +885,67 @@
             
             connectStomp();
             bindCompleteConfirm();
+            bindProofUpload();
         });
     </script>
+    <!-- ===== 인증사진 업로드 모달 (ERRANDER 전용) ===== -->
+	<div id="proofModal" class="v-modal" aria-hidden="true">
+	  <!-- 화면 전체 오버레이 (클릭 시 닫기) -->
+	  <div class="v-modal__overlay" id="proofOverlay"></div>
+	
+	  <!-- 중앙 패널 -->
+	  <div class="v-modal__panel" role="dialog" aria-modal="true" aria-labelledby="proofModalTitle">
+	    <div class="v-modal__header">
+	      <h3 id="proofModalTitle" class="v-modal__title">완료 인증 사진 업로드</h3>
+	      <button type="button" id="proofCloseBtn" class="v-modal__close">✕</button>
+	    </div>
+	
+	    <div class="v-modal__body">
+	      <div class="proof-upload">
+	        <input type="file" id="proofFile" accept="image/*" />
+	
+	        <div class="proof-filemeta">
+	          <span id="proofFileName" class="proof-filename"></span>
+	        </div>
+	
+	        <div id="proofPreview" class="proof-preview" style="display:none;">
+	          <img id="proofPreviewImg" alt="미리보기" />
+	        </div>
+	      </div>
+	    </div>
+	
+	    <div class="v-modal__footer">
+	      <button type="button" id="proofCancelBtn" class="v-btn v-btn--ghost">취소</button>
+	      <button type="button" id="proofSubmitBtn" class="v-btn v-btn--primary">업로드</button>
+	    </div>
+	  </div>
+	</div>
+	<div id="proofModal" class="v-modal" aria-hidden="true">
+	  <div class="v-modal__overlay" onclick="closeProofModal()"></div>
+	
+	  <div class="v-modal__panel" role="dialog" aria-modal="true" aria-labelledby="proofModalTitle">
+	    <div class="v-modal__header">
+	      <h3 id="proofModalTitle" class="v-modal__title">완료 인증 사진 업로드</h3>
+	      <button type="button" class="v-modal__close" onclick="closeProofModal()">✕</button>
+	    </div>
+	
+	    <div class="v-modal__body">
+	      <!-- 너가 기존에 쓰던 proofUploadInner / preview 영역 그대로 넣으면 됨 -->
+	      <div id="proofUploadInner">
+	        <input type="file" id="proofFile" accept="image/*">
+	        <div id="proofPreview" style="display:none; margin-top:12px;">
+	          <img id="proofPreviewImg" alt="preview" style="max-width:100%; border-radius:12px;">
+	        </div>
+	      </div>
+	    </div>
+	
+	    <div class="v-modal__footer">
+	      <button type="button" class="v-btn v-btn--ghost" onclick="closeProofModal()">취소</button>
+	      <button type="button" id="proofSubmitBtn" class="v-btn v-btn--primary">업로드</button>
+	    </div>
+	  </div>
+	</div>
+    
 </body>
 
 </html>
