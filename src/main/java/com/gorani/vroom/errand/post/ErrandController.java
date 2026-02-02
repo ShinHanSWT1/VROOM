@@ -1,10 +1,13 @@
 package com.gorani.vroom.errand.post;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpSession;
 
+import com.gorani.vroom.vroompay.VroomPayService;
+import com.gorani.vroom.vroompay.VroomPayVO;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +20,7 @@ import com.gorani.vroom.errand.chat.ChatService;
 import com.gorani.vroom.user.auth.UserVO;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 
 @Controller
@@ -26,6 +30,7 @@ public class ErrandController {
 	private final ErrandService errandService;
 	private final ErrandAssignmentService errandAssignmentService;
 	private final ChatService chatService;
+	private final VroomPayService vroomPayService;
 
 	// 심부름 게시글 목록
 	@GetMapping("/errand/list")
@@ -154,7 +159,9 @@ public class ErrandController {
 	
 	// 심부름 게시글 작성 등록
 	@PostMapping("/errand/create")
-	public String errandCreateSubmit(@ModelAttribute ErrandCreateVO errandCreateVO, HttpSession session) {
+	public String errandCreateSubmit(@ModelAttribute ErrandCreateVO errandCreateVO,
+									 HttpSession session,
+									 RedirectAttributes rttr) {
 		
 		// 1. 세션에서 "loginSess" 속성을 UserVO 타입으로 가져옵니다.
 		UserVO loginUser = (UserVO) session.getAttribute("loginSess");
@@ -164,9 +171,24 @@ public class ErrandController {
 			return "redirect:/auth/login";
 		}
 
-
 		// 3. 로그인된 사용자의 ID를 errandCreateVO 객체에 설정합니다.
 		errandCreateVO.setUserId(loginUser.getUserId());
+
+		// -- 페이가 부족한 경우 create 못하고 충전해야함
+		// 현재 유저의 잔액 조회
+		VroomPayVO vroomPayVO = vroomPayService.getWalletAccount(loginUser.getUserId());
+		long currentBalance = vroomPayVO.getAvailBalance().longValueExact();
+
+		// 심부름 가격 조회
+		long errandPrice = errandCreateVO.getRewardAmount() + errandCreateVO.getExpenseAmount();
+
+		// 잔액 비교
+		if (currentBalance < errandPrice) {
+			// 잔액이 부족한 경우 처리
+			// 충전 페이지로 리다이렉트 하면서 메시지 전달
+			rttr.addFlashAttribute("msg", "보유 페이가 부족합니다. 충전 후 다시 시도해주세요.");
+			return "redirect:/pay/charge";
+		}
 		
 		Long errandsId = errandService.createErrand(errandCreateVO);
 		return "redirect:/errand/detail?errandsId=" + errandsId;

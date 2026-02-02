@@ -1,22 +1,28 @@
 package com.gorani.vroom.errand.post;
 
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.gorani.vroom.vroompay.PaymentOrderVO;
+import com.gorani.vroom.vroompay.VroomPayService;
+import org.springframework.objenesis.instantiator.gcj.GCJInstantiator;
 import org.springframework.stereotype.Service;
 
 import com.gorani.vroom.common.util.CategoryImageUtil;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class ErrandServiceImpl implements ErrandService {
 
     private final ErrandMapper errandMapper;
+    private final VroomPayService vroomPayService;
 
 
     @Override
@@ -112,6 +118,7 @@ public class ErrandServiceImpl implements ErrandService {
     }
     
     @Override
+    @Transactional
     public Long createErrand(ErrandCreateVO errandCreateVO) {
 
         if (errandCreateVO == null) {
@@ -143,6 +150,15 @@ public class ErrandServiceImpl implements ErrandService {
             // 생성키를 VO로 못 받는 설정이면 다른 방식(selectKey / LAST_INSERT_ID())로 바꿔야 함
             throw new IllegalStateException("errandsId was not generated/assigned to VO");
         }
+
+        // TODO: 부름페이에서 주문서 생성 및 돈 홀드
+        PaymentOrderVO vo = new PaymentOrderVO();
+        vo.setAmount(new BigDecimal(errandCreateVO.getRewardAmount() + errandCreateVO.getExpenseAmount()));
+        vo.setErrandsId(errandCreateVO.getErrandsId());
+        vo.setUserId(errandCreateVO.getUserId());
+        vo.setMerchantUid("ORDERS_" + errandCreateVO.getErrandsId() + "_" + LocalDateTime.now());
+
+        vroomPayService.createAndHoldPaymentOrder(vo);
 
         return errandCreateVO.getErrandsId();
     }

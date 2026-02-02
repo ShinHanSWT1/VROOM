@@ -167,6 +167,7 @@ public class VroomPayServiceImpl implements VroomPayService {
     }
 
     @Override
+    @Transactional
     public Map<String, Object> settleErrand(Long errandId, Long userId, Long erranderId, BigDecimal amount) {
 
         // 정산 완료하기 위해 orderId를 가져와야함
@@ -218,15 +219,18 @@ public class VroomPayServiceImpl implements VroomPayService {
                 // TODO: WALLET_ACCOUNT 정합성 유지
                 // TODO: erranderId로 UserId 가져와야함
                 Long erranderUserId = vroomPayMapper.getErranderUserIdByErranderId(resBody.getErranderId());
-                Map<String, Object> account = getAccountStatus(erranderUserId);
+                Map<String, Object> data = getAccountStatus(erranderUserId);
+                if (Boolean.TRUE.equals(data.get("success")) && data.get("account") != null) {
+                    Map<String, Object> account = (Map<String, Object>) data.get("account");
 
-                VroomPayVO payVO = new VroomPayVO();
-                payVO.setUserId(Long.parseLong(String.valueOf(account.get("userId"))));
-                payVO.setBalance(new BigDecimal(String.valueOf(account.get("balance"))));
-                payVO.setAvailBalance(new BigDecimal(String.valueOf(account.get("availBalance"))));
-                payVO.setRealAccount(account.get("realAccount").toString());
+                    VroomPayVO payVO = new VroomPayVO();
+                    payVO.setUserId(Long.parseLong(String.valueOf(account.get("userId"))));
+                    payVO.setBalance(new BigDecimal(String.valueOf(account.get("balance"))));
+                    payVO.setAvailBalance(new BigDecimal(String.valueOf(account.get("availBalance"))));
+                    payVO.setRealAccount(account.get("realAccount").toString());
 
-                updateWalletAccount(payVO);
+                    updateWalletAccount(payVO);
+                }
 
 
                 // 알림
@@ -252,6 +256,9 @@ public class VroomPayServiceImpl implements VroomPayService {
     @Transactional
     @Override
     public Map<String, Object> createAndHoldPaymentOrder(PaymentOrderVO payment) {
+
+        // 이전에 pay가 부족한 경우 실패
+
 
         String url = vroomPayApiOrderUrl;
         HttpHeaders headers = new HttpHeaders();
@@ -316,14 +323,21 @@ public class VroomPayServiceImpl implements VroomPayService {
                 insertWalletTransactions(transactionVO);
 
                 // WALLET_ACOCOUNT 정합성 유지
-                Map<String, Object> account = getAccountStatus(resBody.getUserId());
-                VroomPayVO payVO = new VroomPayVO();
-                payVO.setUserId(Long.parseLong(String.valueOf(account.get("userId"))));
-                payVO.setBalance(new BigDecimal(String.valueOf(account.get("balance"))));
-                payVO.setAvailBalance(new BigDecimal(String.valueOf(account.get("availBalance"))));
-                payVO.setRealAccount(account.get("realAccount").toString());
+                Map<String, Object> data = getAccountStatus(resBody.getUserId());
+                log.info("페이 계좌: " + data);
 
-                updateWalletAccount(payVO);
+                if (Boolean.TRUE.equals(data.get("success")) && data.get("account") != null) {
+                    Map<String, Object> account = (Map<String, Object>) data.get("account");
+
+                    VroomPayVO payVO = new VroomPayVO();
+                    payVO.setUserId(Long.parseLong(String.valueOf(account.get("userId"))));
+                    payVO.setBalance(new BigDecimal(String.valueOf(account.get("balance"))));
+                    payVO.setAvailBalance(new BigDecimal(String.valueOf(account.get("availBalance"))));
+                    payVO.setRealAccount(account.get("realAccount").toString());
+
+                    // 지갑 업데이트
+                    updateWalletAccount(payVO);
+                }
 
             }
 
@@ -370,8 +384,16 @@ public class VroomPayServiceImpl implements VroomPayService {
 
     // 로컬 지갑 계좌 잔액 업데이트
     @Override
-    public void updateWalletAccount(VroomPayVO vroomPayVO) {
-        vroomPayMapper.updateWalletAccount(vroomPayVO);
+    @Transactional
+    public int updateWalletAccount(VroomPayVO vroomPayVO) {
+        int result = vroomPayMapper.updateWalletAccount(vroomPayVO);
+
+        log.info("지갑 업데이트: " + vroomPayVO + ":" + result);
+        if(result != 1){
+            // TODO: 업데이트 실패 시 처리
+        }
+
+        return result;
     }
 
 }

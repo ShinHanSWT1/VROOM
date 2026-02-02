@@ -43,7 +43,7 @@ public interface VroomPayService {
     VroomPayVO getWalletAccount(Long userId);
 
     // 로컬 지갑 계좌 잔액 업데이트
-    void updateWalletAccount(VroomPayVO vroomPayVO);
+    int updateWalletAccount(VroomPayVO vroomPayVO);
 
 //    Map<String, Object> processSettlement(Long erranderUserId, BigDecimal amount);
 }
