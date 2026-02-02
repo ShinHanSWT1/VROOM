@@ -192,7 +192,15 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public ChatRoomVO getErrandInfoForChat(Long errandsId, Long currentUserId) {
-        return chatMapper.selectErrandInfoForChat(errandsId, currentUserId);
+        ChatRoomVO info = chatMapper.selectErrandInfoForChat(errandsId); // 기존 심부름 정보
+        ChatRoomVO partner = chatMapper.selectPartnerInfoForChat(errandsId, currentUserId);
+
+        if (info != null && partner != null) {
+            info.setPartnerNickname(partner.getPartnerNickname());
+            info.setPartnerProfileImage(partner.getPartnerProfileImage());
+            info.setPartnerMannerScore(partner.getPartnerMannerScore());
+        }
+        return info;
     }
 
     @Override
