@@ -107,6 +107,15 @@
     box-shadow: 0 4px 6px rgba(107, 142, 35, 0.2);
 }
 
+/* 탭 내용 숨김/표시 */
+.activity-list-container {
+    display: none;
+}
+
+.activity-list-container.active {
+    display: block;
+}
+
 .activity-list {
     display: flex;
     flex-direction: column;

@@ -44,7 +44,7 @@
                         <div class="temp-bar-container">
                             <div class="temp-bar-fill"></div>
                         </div>
-                        <span class="temp-value-text">36.5℃</span>
+                        <span class="temp-value-text">${profile.mannerTemp}℃</span>
                     </div>
                 </div>
                 <div class="profile-actions">
