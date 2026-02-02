@@ -1,6 +1,8 @@
 package com.gorani.vroom.vroompay;
 
+import com.gorani.vroom.notification.NotificationService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -15,12 +17,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class VroomPayServiceImpl implements VroomPayService {
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final VroomPayMapper vroomPayMapper;
+    private final NotificationService notificationService;
 
     @Value("${vroompay.api.key}")
     private String vroomPayApiKey;
@@ -43,7 +47,7 @@ public class VroomPayServiceImpl implements VroomPayService {
     @Override
     public Map<String, Object> getAccountStatus(Long userId) {
         String url = vroomPayApiStatusUrl.replace("{userId}", userId.toString());
-        
+
         HttpHeaders headers = new HttpHeaders();
         headers.set("x-api-key", vroomPayApiKey);
         HttpEntity<String> entity = new HttpEntity<>(headers);
@@ -51,7 +55,7 @@ public class VroomPayServiceImpl implements VroomPayService {
         Map<String, Object> result = new HashMap<>();
         try {
             ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, entity, Map.class);
-            
+
             if (response.getBody() != null && !response.getBody().isEmpty()) {
                 result.put("success", true);
                 result.put("linked", true);
@@ -116,7 +120,7 @@ public class VroomPayServiceImpl implements VroomPayService {
             ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, entity, Map.class);
             result.put("success", true);
             result.put("message", amount + "원이 충전되었습니다.");
-            
+
             if (response.getBody() != null) {
                 result.putAll(response.getBody());
             }
@@ -147,7 +151,7 @@ public class VroomPayServiceImpl implements VroomPayService {
             ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, entity, Map.class);
             result.put("success", true);
             result.put("message", amount + "원이 출금되었습니다.");
-            
+
             if (response.getBody() != null) {
                 result.putAll(response.getBody());
             }
@@ -177,9 +181,23 @@ public class VroomPayServiceImpl implements VroomPayService {
             ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, entity, Map.class);
             result.put("success", true);
             result.put("message", "정산이 완료되었습니다.");
-            
+
             if (response.getBody() != null) {
                 result.putAll(response.getBody());
+
+                // TODO: 정산 완료에 따라 transaction에 추가
+                // TODO: updateLocalBalance
+
+                // 알림
+                notificationService.send(
+                        erranderId,
+                        "PAY",
+                        "심부름값을 받았습니다!",
+                        "/errander/mypage/pay"
+
+                );
+
+                log.info("정산 정보" + response);
             }
         } catch (Exception e) {
             result.put("success", false);

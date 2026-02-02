@@ -79,11 +79,11 @@
     </update>
 
     <select id="selectSettlementTargets"
-            parameterType="int" resultType="com.gorani.vroom.batch.SettlementTargetVO">
-        SELECT ea.id           AS assignment_id,
-               ea.errands_id,
-               e.user_id        AS user_id,
-               ep.user_id      AS errander_user_id,
+            parameterType="map" resultType="com.gorani.vroom.batch.SettlementTargetVO">
+        SELECT ea.id           AS assignmentId,
+               ea.errands_id   AS errandsId,
+               e.user_id       AS userId,
+               ep.user_id      AS erranderUserId,
                e.reward_amount AS amount
         FROM ERRANDS e
                  JOIN ERRAND_ASSIGNMENTS ea ON e.errands_id = ea.errands_id
@@ -93,6 +93,7 @@
           <![CDATA[
           AND e.updated_at < DATE_SUB(NOW(), INTERVAL #{days} DAY)
           ]]>
+        ORDER BY ea.id ASC
     </select>
 
     <update id="updateAssignmentStatusToComplete" parameterType="long">
