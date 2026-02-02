@@ -6,9 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Service
@@ -40,7 +38,7 @@ public class ErranderServiceImpl implements ErranderService {
         profile.setCompletedCount(completedCount);
 
 
-        // 완료율 계산하기
+        // 완료율 계산하기 (기존 로직 유지 - 노란색 바)
         int totalErrands = inProgressCount + completedCount;
         double realRate = 0.0;
 
@@ -84,18 +82,29 @@ public class ErranderServiceImpl implements ErranderService {
         profile.setReviewCount(reviewCount);
 
 
+        // 전체 수익 조회
+        int totalEarning = erranderMapper.getTotalEarning(erranderId);
+        profile.setTotalEarning((long) totalEarning);
 
 
-        // 서비스 내부에서 현재 날짜 구하기
-        LocalDate now = LocalDate.now();
-        int year = now.getYear();
-        int month = now.getMonthValue();
+        // 1. 최근 30일 수행 건수 (COMPLETED 기준)
+        int last30DaysCount = erranderMapper.getLast30DaysCompletedCount(erranderId);
+        profile.setLast30DaysCompletedCount(last30DaysCount);
 
-        // 달 별 수익
-        int monthEarning = erranderMapper.getMonthEarning(erranderId, now.getYear(), now.getMonthValue());
-
-        // 이번달의 돈
-        profile.setThisMonthEarning((long) monthEarning);
+        // 2. 성공률 (COMPLETED / (COMPLETED + CANCELED)) * 100
+        int totalAssigned = erranderMapper.getTotalAssignedCount(erranderId);
+        double successRate = 0.0;
+        if (totalAssigned > 0) {
+            
+            // 분모가 0이 아닐 때 계산
+            successRate = (double) completedCount / totalAssigned * 100.0;
+            successRate = Math.round(successRate * 10) / 10.0;
+        } else {
+            // 수행 내역이 없으면 100%로 표시하거나 0%로 표시 (정책 결정 필요, 여기선 0으로)
+            if (completedCount > 0) successRate = 100.0; // 취소 없이 완료만 있으면 100%
+            else successRate = 0.0;
+        }
+        profile.setSuccessRate(successRate);
 
         return profile;
     }
