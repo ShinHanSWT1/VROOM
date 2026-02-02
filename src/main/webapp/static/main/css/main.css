@@ -344,19 +344,24 @@
    리뷰 캐러셀
 ======================================== */
 .reviews-carousel {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-}
-
-.reviews-carousel::-webkit-scrollbar {
-    display: none;
+    overflow: hidden;
+    position: relative;
 }
 
 .reviews-container {
     display: flex;
     gap: 1.5rem;
     padding-bottom: 1rem;
+    animation: reviewScroll 18s linear infinite;
+}
+
+.reviews-container:hover {
+    animation-play-state: paused;
+}
+
+@keyframes reviewScroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
 }
 
 .review-card {
