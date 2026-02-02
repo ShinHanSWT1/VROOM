@@ -43,6 +43,14 @@
           AND status = 'COMPLETED'
     </select>
 
+    <!-- 전체 수익  -->
+    <select id="getTotalEarning" resultType="int">
+        SELECT COALESCE(SUM(reward_amount), 0)
+        FROM ERRANDS
+        WHERE errander_id = #{erranderId}
+          AND status = 'COMPLETED'
+    </select>
+
     <!-- 월별 수익 -->
     <select id="getMonthEarning" resultType="int">
         SELECT COALESCE(SUM(reward_amount), 0)
@@ -126,6 +134,23 @@
         FROM ERRANDS
         WHERE errander_id = #{erranderId}
           AND status = 'CONFIRMED2'
+    </select>
+
+    <!-- 최근 30일 수행 건수 (COMPLETED) -->
+    <select id="getLast30DaysCompletedCount" resultType="int">
+        SELECT COUNT(*)
+        FROM ERRANDS
+        WHERE errander_id = #{erranderId}
+          AND status = 'COMPLETED'
+          AND updated_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+    </select>
+
+    <!-- 전체 수행 건수 (COMPLETED + CANCELED) - 성공률 계산용 -->
+    <select id="getTotalAssignedCount" resultType="int">
+        SELECT COUNT(*)
+        FROM ERRANDS
+        WHERE errander_id = #{erranderId}
+          AND status IN ('COMPLETED', 'CANCELED')
     </select>
 
 </mapper>

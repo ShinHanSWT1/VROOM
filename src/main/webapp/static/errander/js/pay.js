@@ -41,10 +41,10 @@ function formatAmount(amount) {
     if (amount === null || amount === undefined || amount === 0) {
         return '-';
     }
-    return '₩' + Number(amount).toLocaleString();
+    return Number(amount).toLocaleString() + ' 원';
 }
 
-// 계좌 상태 확인 및 UI 초기화 (사용자 vroomPay.js와 동일)
+// 계좌 상태 확인 및 UI 초기화
 function checkAccountStatus() {
     const statusContainer = document.getElementById('account-status-container');
     const depositBtn = document.getElementById('depositBtn');
