@@ -115,4 +115,10 @@ public interface CommunityMapper {
 
     // 내가 좋아요한 글 목록 조회
     List<CommunityPostVO> selectMyLikedPosts(@Param("userId") Long userId);
+
+    // 댓글 작성자 userId 조회
+    Long selectCommentUserId(@Param("commentId") Long commentId);
+
+    // 게시글 작성자 userId 조회
+    Long selectPostUserId(@Param("postId") Long postId);
 }
