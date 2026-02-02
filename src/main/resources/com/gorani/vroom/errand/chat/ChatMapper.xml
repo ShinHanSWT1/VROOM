@@ -183,4 +183,11 @@
 	  SET is_active = 0
 	  WHERE room_id = #{roomId}
 	</update>
+	
+	<select id="countChatRoomByErrandsId" resultType="int">
+	  SELECT COUNT(*)
+	  FROM CHAT_ROOM
+	  WHERE errands_id = #{errandsId}
+	</select>
+	
 </mapper>

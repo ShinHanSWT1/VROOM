@@ -272,4 +272,10 @@ public class ChatServiceImpl implements ChatService {
     public String getErrandStatus(Long errandsId) {
         return chatMapper.selectErrandStatusByErrandsId(errandsId);
     }
+    
+    @Override
+    public boolean existsChatRoomByErrandsId(Long errandsId) {
+        if (errandsId == null) return false;
+        return chatMapper.countChatRoomByErrandsId(errandsId) > 0;
+    }
 }

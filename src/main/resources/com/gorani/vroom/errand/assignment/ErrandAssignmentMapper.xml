@@ -123,4 +123,13 @@
         FROM ERRANDER_PROFILES
         WHERE errander_id = #{erranderId}
     </select>
+  
+    <select id="countMatchedByErrandAndErrander" resultType="int">
+	  SELECT COUNT(*)
+	  FROM ERRAND_ASSIGNMENTS
+	  WHERE errands_id = #{errandsId}
+	    AND errander_id = #{erranderId}
+	    AND status IN ('MATCHED','CONFIRMED1','CONFIRMED2','COMPLETED')
+	</select>
+    
 </mapper>

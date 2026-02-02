@@ -63,4 +63,6 @@ public interface ChatMapper {
     int deactivateParticipantsByRoomId(@Param("roomId") Long roomId);
     
     int updateErrandStatusWaitingToMatched(@Param("errandsId") Long errandsId);
+    
+    int countChatRoomByErrandsId(@Param("errandsId") Long errandsId);
 }

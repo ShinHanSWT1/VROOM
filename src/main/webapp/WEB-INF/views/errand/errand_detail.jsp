@@ -107,33 +107,33 @@
 				
 				  <c:choose>
 				
-				    <c:when test="${isOwner}">
-				      <form method="get" action="${pageContext.request.contextPath}/errand/chat">
-				        <input type="hidden" name="errandsId" value="${errand.errandsId}" />
-				        <button type="submit" class="btn btn-primary">
-				          채팅하기
-				        </button>
-				      </form>
-				    </c:when>
-				
-				    <c:otherwise>
-				      <form method="post" action="${pageContext.request.contextPath}/errand/assign/request">
-				        <input type="hidden" name="errandsId" value="${errand.errandsId}" />
-				
-				        <c:choose>
-				          <c:when test="${errand.status eq 'WAITING'}">
-				            <button type="submit" class="btn btn-primary">
-				              채팅하기
-				            </button>
-				          </c:when>
-				          <c:otherwise>
-				            <button type="button" class="btn btn-secondary" disabled>
-				              매칭 완료
-				            </button>
-				          </c:otherwise>
-				        </c:choose>
-				      </form>
-				    </c:otherwise>
+				    <c:when test="${canReEnterChat}">
+					    <form method="get" action="${pageContext.request.contextPath}/errand/chat">
+					      <input type="hidden" name="errandsId" value="${errand.errandsId}" />
+					      <button type="submit" class="btn btn-primary">채팅하기</button>
+					    </form>
+					  </c:when>
+					
+					  <c:when test="${(isOwner or isMatchedErrander) and not hasChatRoom}">
+					    <button type="button" class="btn btn-secondary" disabled>
+					      아직 채팅방이 없어요
+					    </button>
+					  </c:when>
+					
+					  <c:otherwise>
+					    <form method="post" action="${pageContext.request.contextPath}/errand/assign/request">
+					      <input type="hidden" name="errandsId" value="${errand.errandsId}" />
+					
+					      <c:choose>
+					        <c:when test="${errand.status eq 'WAITING'}">
+					          <button type="submit" class="btn btn-primary">채팅하기</button>
+					        </c:when>
+					        <c:otherwise>
+					          <button type="button" class="btn btn-secondary" disabled>매칭 완료</button>
+					        </c:otherwise>
+					      </c:choose>
+					    </form>
+					  </c:otherwise>
 				
 				  </c:choose>
 				</div>
