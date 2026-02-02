@@ -155,4 +155,10 @@ public class ErranderServiceImpl implements ErranderService {
         return erranderMapper.getMonthEarning(erranderId, now.getYear(), now.getMonthValue());
     }
 
+    @Override
+    public List<ErranderReviewVO> getErranderReviews(Long erranderId, int page, int size) {
+        int offset = (page - 1) * size;
+        return erranderMapper.getErranderReviews(erranderId, offset, size);
+    }
+
 }

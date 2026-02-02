@@ -153,4 +153,23 @@
           AND status IN ('COMPLETED', 'CANCELED')
     </select>
 
+    <!-- 리뷰 목록 조회  -->
+    <select id="getErranderReviews" resultType="com.gorani.vroom.errander.profile.ErranderReviewVO">
+        SELECT
+            r.review_id,
+            r.errand_id,
+            r.rating,
+            r.comment,
+            r.created_at,
+            e.title AS errandTitle,
+            m.nickname AS reviewerNickname,
+            m.profile_image AS reviewerImage
+        FROM REVIEWS r
+                 JOIN ERRANDS e ON r.errand_id = e.errands_id
+                 JOIN MEMBERS m ON e.user_id = m.user_id
+        WHERE e.errander_id = #{erranderId}
+        ORDER BY r.created_at DESC
+            LIMIT #{limit} OFFSET #{offset}
+    </select>
+
 </mapper>
