@@ -39,4 +39,5 @@ public interface VroomPayService {
     // 로컬 지갑 계좌 잔액 업데이트
     void updateWalletAccount(VroomPayVO vroomPayVO);
 
+//    Map<String, Object> processSettlement(Long erranderUserId, BigDecimal amount);
 }
