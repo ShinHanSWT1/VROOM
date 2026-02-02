@@ -29,4 +29,11 @@ public interface VroomPayMapper {
     Long getPaymentIdForSettlement(
             @Param("errandsId") Long errandsId,
             @Param("erranderId") Long erranderId);
+
+    int insertPaymentOrder(PaymentOrderVO paymentVO);
+
+    int updatePaymentStatus(
+            @Param("orderId") Long orderId,
+            @Param("status") String status
+            );
 }

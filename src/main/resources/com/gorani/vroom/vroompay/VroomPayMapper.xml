@@ -111,4 +111,14 @@
         AND e.status IN ('CONFIRMED2', 'HOLD')
     </select>
 
+    <insert id="insertPaymentOrder">
+        INSERT INTO PAYMENT_ORDERS (id, amount, errands_id, user_id, status, created_at)
+        VALUES (#{id}, #{amount}, #{errandsId}, #{userId}, #{status}, #{createdAt})
+    </insert>
+
+    <update id="updatePaymentStatus">
+        UPDATE PAYMENT_ORDERS
+        SET status = #{status}
+        WHERE id = #{orderId}
+    </update>
 </mapper>
