@@ -61,6 +61,8 @@ public class AuthController {
                                       @RequestParam(required = false) MultipartFile profile,
                                       HttpSession session) {
 
+        System.out.println("🔥 /auth/signup 컨트롤러 진입");
+
         // =================== OAuth 병합용 세션 조회 ===================
         // - 카카오 콜백에서 임시로 담아둔 oauthSignupUser가 있으면 OAuth 가입 흐름
         // - 여기서는 "조회"만 하고, 병합/저장은 Service에서 처리한다 (책임 분리)
@@ -68,7 +70,9 @@ public class AuthController {
 
         try {
             // =================== 회원가입 처리 (LOCAL / OAuth 공통 진입점) ===================
+            System.out.println("🔥 AuthService.signup() 호출 직전");
             authService.signup(vo, profile, oauthUser);
+            System.out.println("🔥 AuthService.signup() 정상 종료");
 
             // =================== OAuth 임시 세션 정리 ===================
             // - OAuth로 들어온 가입이 성공했다면 임시 데이터는 즉시 제거 (중복 가입 방지)
@@ -82,6 +86,7 @@ public class AuthController {
             );
 
         } catch (IllegalArgumentException e) {
+            e.printStackTrace();
             log.info("catch:" + e.getMessage());
             return Map.of(
                     "success", false,
@@ -90,6 +95,7 @@ public class AuthController {
             );
 
         } catch (Exception e) {
+            e.printStackTrace();
             log.error("회원가입 서버 오류", e);
             return Map.of(
                     "success", false,

@@ -231,6 +231,9 @@
 
 <jsp:include page="../common/footer.jsp"/>
 
+<script>
+    const contextPath = "${pageContext.request.contextPath}";
+</script>
 <script src="<c:url value='/static/errand/js/errand-list.js'/>"></script>
 </body>
 </html>

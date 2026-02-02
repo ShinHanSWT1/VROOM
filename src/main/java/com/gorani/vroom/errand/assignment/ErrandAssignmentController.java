@@ -11,15 +11,17 @@ import java.util.UUID;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.http.ResponseEntity;
+import com.gorani.vroom.user.auth.UserVO;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.gorani.vroom.user.auth.UserVO;
-
-import lombok.RequiredArgsConstructor;
+import javax.servlet.http.HttpSession;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @Controller
 @RequiredArgsConstructor
@@ -64,7 +66,7 @@ public class ErrandAssignmentController {
 
         } catch (Exception e) {
             // 예외는 사용자에게 부드럽게 안내
-            String msg = URLEncoder.encode("채팅 시작에 실패했습니다. 잠시 후 다시 시도해주세요.", StandardCharsets.UTF_8);
+            String msg = URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8);
             return "redirect:/errand/detail?errandsId=" + errandsId + "&message=" + msg;
         }
     }

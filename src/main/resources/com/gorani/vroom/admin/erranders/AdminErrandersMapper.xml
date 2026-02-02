@@ -48,7 +48,6 @@
                 p.approved_at
             FROM MEMBERS m
             JOIN ERRANDER_PROFILES p ON m.user_id = p.user_id
-            WHERE m.role = 'ERRANDER'
 
             <if test="keyword != null and keyword != ''">
                 AND (
@@ -79,7 +78,6 @@
             SELECT COUNT(*)
             FROM MEMBERS m
             JOIN ERRANDER_PROFILES p ON m.user_id = p.user_id
-            WHERE m.role = 'ERRANDER'
 
         <if test="keyword != null and keyword != ''">
             AND (
@@ -339,5 +337,13 @@
         UPDATE ERRANDER_PROFILES SET admin_memo = #{adminMemo}
         WHERE errander_id = #{erranderId}
     </update>
+
+    <!-- erranderId로 UserId 찾기 -->
+    <select id="getUserIdByErranderId"
+            parameterType="long" resultType="long">
+        SELECT e.user_id
+        FROM ERRANDER_PROFILES e JOIN MEMBERS m ON e.user_id = m.user_id
+        WHERE e.errander_id = #{erranderId}
+    </select>
 
 </mapper>

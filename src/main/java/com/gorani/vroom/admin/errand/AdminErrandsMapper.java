@@ -16,9 +16,14 @@ public interface AdminErrandsMapper {
     // 필터링된 전체 개수 조회
     int countErrandList(Map<String, Object> param);
 
-    List<Map<String, Object>> getErrandHistory(Long errandsId);
+    List<Map<String, Object>> getErrandAssignmentDetail(
+            @Param("errandsId") Long errandsId);
 
-    Map<String, Object> getErrandDetail(Long errandsId);
+    List<Map<String, Object>> getErrandHistory(
+            @Param("errandsId") Long errandsId);
+
+    Map<String, Object> getErrandDetail(
+            @Param("errandsId") Long errandsId);
 
     List<Map<String, Object>> getAvailableEmployees();
 }

@@ -3,6 +3,8 @@ package com.gorani.vroom.errander.profile;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Map;
+
 @Mapper
 public interface ErranderMapper {
 
@@ -26,11 +28,15 @@ public interface ErranderMapper {
     int insertErranderProfile(ErranderProfileVO profileVO);
 
     // 부름이 서류 등록
-    int insertErranderDocument(@Param("erranderId") Long erranderId, 
-                               @Param("fileUrl") String fileUrl, 
-                               @Param("docType") String docType, 
-                               @Param("name") String name);
+    int insertErranderDocument(
+            @Param("erranderId") Long erranderId,
+            @Param("fileUrl") String fileUrl,
+            @Param("docType") String docType,
+            @Param("name") String name,
+            @Param("status") String status
+    );
 
     // 사용자 역할 변경
     int updateUserRole(@Param("userId") Long userId, @Param("role") String role);
+
 }

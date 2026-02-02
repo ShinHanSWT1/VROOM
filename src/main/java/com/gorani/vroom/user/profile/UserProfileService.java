@@ -27,4 +27,7 @@ public interface UserProfileService {
 
     // 회원 탈퇴 (비밀번호 확인 후 탈퇴 처리)
     boolean withdrawUser(Long userId, String password);
+
+    // role 업데이트
+    void changeRole(Long userId, String role);
 }

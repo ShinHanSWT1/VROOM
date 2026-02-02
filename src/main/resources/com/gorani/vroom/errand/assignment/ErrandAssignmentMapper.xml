@@ -1,73 +1,36 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
-  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.gorani.vroom.errand.assignment.ErrandAssignmentMapper">
 
-	<select id="selectErrandStatus" parameterType="long" resultType="string">
-	  SELECT status
-	  FROM ERRANDS
-	  WHERE errands_id = #{errandsId}
-	</select>
+    <select id="selectErrandStatus" parameterType="long" resultType="string">
+        SELECT status
+        FROM ERRANDS
+        WHERE errands_id = #{errandsId}
+    </select>
 
-  <select id="selectOwnerUserId" resultType="long">
-    SELECT user_id
-    FROM ERRANDS
-    WHERE errands_id = #{errandsId}
-  </select>
-  
-  <select id="selectErranderIdByUserId" resultType="long">
-    SELECT errander_id
-    FROM ERRANDER_PROFILES
-    WHERE user_id = #{userId}
-    LIMIT 1
-  </select>
+    <select id="selectOwnerUserId" resultType="long">
+        SELECT user_id
+        FROM ERRANDS
+        WHERE errands_id = #{errandsId}
+    </select>
 
-  <update id="updateErrandStatusWaitingToMatched">
-    UPDATE ERRANDS
-    SET status = 'MATCHED',
-        updated_at = CURRENT_TIMESTAMP
-    WHERE errands_id = #{errandsId}
-      AND status = 'WAITING'
-  </update>
-  
-  <update id="updateErrandStatusMatchedToWaiting" parameterType="long">
-	  UPDATE ERRANDS
-	  SET status = 'WAITING',
-	      updated_at = CURRENT_TIMESTAMP
-	  WHERE errands_id = #{errandsId}
-	    AND status = 'MATCHED'
-	</update>
-  
-  <update id="updateErrandStatusToWaiting">
-    UPDATE ERRANDS
-    SET status = 'WAITING',
-        updated_at = CURRENT_TIMESTAMP
-    WHERE errands_id = #{errandsId}
-  </update>
-  
-  <update id="updateErrandStatusMatchedToConfirmed1" parameterType="long">
-	  UPDATE ERRANDS
-	  SET status = 'CONFIRMED1',
-	      updated_at = CURRENT_TIMESTAMP
-	  WHERE errands_id = #{errandsId}
-	    AND status = 'MATCHED'
-	</update>
-	
-	<!-- CONFIRMED1 -> CONFIRMED2 (거래 완료: 한번만 성공해야 함) -->
-	<update id="updateErrandStatusConfirmed1ToConfirmed2">
-	  UPDATE ERRANDS
-	  SET status = 'CONFIRMED2',
-	      updated_at = CURRENT_TIMESTAMP
-	  WHERE errands_id = #{errandsId}
-	    AND status = 'CONFIRMED1'
-	</update>
+    <select id="selectErranderIdByUserId" resultType="long">
+        SELECT errander_id
+        FROM ERRANDER_PROFILES
+        WHERE user_id = #{userId}
+        LIMIT 1
+    </select>
 
-  <insert id="insertMatchedAssignment">
-    INSERT INTO ERRAND_ASSIGNMENTS (user_id, errands_id, errander_id, assign_type, status)
-    VALUES (#{userId}, #{errandsId}, #{erranderId}, 'AUTO', 'MATCHED')
-  </insert>
+    <update id="updateErrandStatusWaitingToMatched">
+        UPDATE ERRANDS
+        SET status     = 'MATCHED',
+            updated_at = CURRENT_TIMESTAMP
+        WHERE errands_id = #{errandsId}
+          AND status = 'WAITING'
+    </update>
 
   <insert id="insertStatusHistory">
     INSERT INTO ERRAND_STATUS_HISTORY
@@ -114,4 +77,66 @@
 	    VALUES (#{proofId}, #{fileUrl}, NOW())
 	  </insert>
 	
+    <update id="updateErrandStatusMatchedToWaiting" parameterType="long">
+        UPDATE ERRANDS
+        SET status     = 'WAITING',
+            updated_at = CURRENT_TIMESTAMP
+        WHERE errands_id = #{errandsId}
+          AND status = 'MATCHED'
+    </update>
+
+    <update id="updateErrandStatusToWaiting">
+        UPDATE ERRANDS
+        SET status     = 'WAITING',
+            updated_at = CURRENT_TIMESTAMP
+        WHERE errands_id = #{errandsId}
+    </update>
+
+    <update id="updateErrandStatusMatchedToConfirmed1" parameterType="long">
+        UPDATE ERRANDS
+        SET status     = 'CONFIRMED1',
+            updated_at = CURRENT_TIMESTAMP
+        WHERE errands_id = #{errandsId}
+          AND status = 'MATCHED'
+    </update>
+
+    <!-- CONFIRMED1 -> CONFIRMED2 (거래 완료: 한번만 성공해야 함) -->
+    <update id="updateErrandStatusConfirmed1ToConfirmed2">
+        UPDATE ERRANDS
+        SET status     = 'CONFIRMED2',
+            updated_at = CURRENT_TIMESTAMP
+        WHERE errands_id = #{errandsId}
+          AND status = 'CONFIRMED1'
+    </update>
+
+    <insert id="insertMatchedAssignment">
+        INSERT INTO ERRAND_ASSIGNMENTS (admin_id, user_id, errands_id, errander_id, assign_type, status, reason)
+        VALUES (#{adminId}, #{userId}, #{errandsId}, #{erranderId}, #{type}, #{status}, #{reason})
+    </insert>
+
+    <insert id="insertStatusHistory">
+        INSERT INTO ERRAND_STATUS_HISTORY
+            (errands_id, from_status, to_status, changed_by_type, changed_by_id)
+        VALUES (#{errandsId}, #{fromStatus}, #{toStatus}, #{changedByType}, #{changedById})
+    </insert>
+
+    <select id="canChat" resultType="boolean">
+        SELECT EXISTS(SELECT 1
+                      FROM ERRANDS
+                      WHERE errands_id = #{errandsId}
+                        AND status NOT IN ('COMPLETED', 'CANCELED'))
+    </select>
+
+    <!-- 부름이 상태 조회 -->
+    <select id="getErranderActiveStatus" resultType="String">
+        SELECT active_status
+        FROM ERRANDER_PROFILES
+        WHERE errander_id = #{erranderId}
+    </select>
+
+    <select id="selectUserIdByErranderId" parameterType="long" resultType="long">
+        SELECT user_id
+        FROM ERRANDER_PROFILES
+        WHERE errander_id = #{erranderId}
+    </select>
 </mapper>

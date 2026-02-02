@@ -1,9 +1,12 @@
 package com.gorani.vroom.admin.erranders;
 
+import com.gorani.vroom.notification.NotificationService;
+import com.gorani.vroom.user.profile.UserProfileService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
@@ -16,6 +19,10 @@ public class AdminErrandersServiceImpl implements AdminErrandersService {
 
     @Autowired
     private AdminErrandersMapper mapper;
+    @Autowired
+    private UserProfileService userProfileService;
+    @Autowired
+    private NotificationService notificationService;
 
     @Override
     public Map<String, Object> getSummary() {
@@ -75,6 +82,7 @@ public class AdminErrandersServiceImpl implements AdminErrandersService {
     }
 
     @Override
+    @Transactional
     public Map<String, Object> approveErrander(Long erranderId, String status, String reason) {
         log.info("승인 요청 받음" + erranderId + " : " + status);
         Map<String, Object> dataMap = new HashMap<>();
@@ -85,12 +93,39 @@ public class AdminErrandersServiceImpl implements AdminErrandersService {
         } else {
             dataMap.put("result", "success");
             String activeStatus = "";
+
+            long userId = mapper.getUserIdByErranderId(erranderId);
+
+            // 승인처리
             if (status.equals("APPROVED")) {
                 activeStatus = "ACTIVE";
-            } else if (status.equals("REJECTED")) {
+
+                // MEMBERS의 role을 ERRANDER로 업데이트
+                userProfileService.changeRole(userId, "ERRANDER");
+
+                // 알림 보내기
+                notificationService.send(
+                        userId,
+                        "ETC",
+                        "부름이가 정상 승인되었습니다.",
+                        "/"
+                );
+
+            } // 반려처리
+            else if (status.equals("REJECTED")) {
                 activeStatus = "INACTIVE";
+
+                // 알림 보내기
+                notificationService.send(
+                        userId,
+                        "ETC",
+                        "부름이가 반려 처리 되었습니다.",
+                        "/errander/register"
+                );
             }
             mapper.updateErranderActiveStatus(erranderId, activeStatus);
+
+
         }
 
         return dataMap;

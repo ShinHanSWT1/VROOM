@@ -8,5 +8,5 @@ public interface ErranderService {
     ErranderProfileVO getErranderProfile(Long userId);
 
     // 부름이 등록
-    boolean registerErrander(ErranderProfileVO profileVO, List<String> fileUrls);
+    boolean registerErrander(ErranderProfileVO profileVO, List<ErranderDocumentVO> fileUrls);
 }

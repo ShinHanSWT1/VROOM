@@ -422,19 +422,32 @@
         .region-content-body {
             display: flex;
             flex-direction: row;
+            width: 100%;
+            height: 100%;
             gap: 1.5rem;
-            flex: 1;                /* 남은 높이 채우기 */
-            min-height: 0;          /* 내부 스크롤 버그 방지 */
+            padding: 0.5rem;
+            box-sizing: border-box;
         }
 
         .region-chart-wrapper {
+            flex: 1;
+            min-width: 0;
             position: relative;
-            height: auto;
+            height: 100%;
+            display: flex;
+            align-items: center;
         }
 
         .region-table-wrapper {
             flex: 1;
+            min-width: 0;
+            height: 100%;
             overflow-y: auto;
+        }
+
+        .region-chart-wrapper canvas {
+            max-width: 100% !important;
+            max-height: 100% !important;
         }
 
         /* Stats List */
@@ -734,32 +747,34 @@
                 </div>
 
                 <!-- 지역별 정보 -->
-                <div class="dashboard-card region-card"> <div class="dashboard-card-header">
-                    <h3 class="dashboard-card-title">지역별 심부름 등록 수 TOP 5</h3>
-                    <a href="#" class="dashboard-card-action">상세보기 →</a>
-                </div>
+                <div class="dashboard-card region-card">
+                    <div class="dashboard-card-header">
+                        <h3 class="dashboard-card-title">지역별 심부름 등록 수 TOP 5</h3>
+                        <a href="#" class="dashboard-card-action">상세보기 →</a>
+                    </div>
+                    <div class="chart-placeholder">
+                        <div class="region-content-body">
 
-                    <div class="region-content-body">
-
-                        <div class="region-chart-wrapper">
-                            <canvas id="errandRegionChart"></canvas>
-                            <div id="noDataTextRegion" class="no-data-text" style="display:none;">
-                                데이터가 없습니다
+                            <div class="region-chart-wrapper">
+                                <canvas id="errandRegionChart"></canvas>
+                                <div id="noDataTextRegion" class="no-data-text" style="display:none;">
+                                    데이터가 없습니다
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="region-table-wrapper">
-                            <table class="region-table data-table"> <thead>
-                            <tr>
-                                <th>지역</th>
-                                <th>등록 수</th>
-                                <th>완료율</th>
-                                <th>평균 금액</th>
-                            </tr>
-                            </thead>
-                                <tbody id="regionSummaryBody">
-                                </tbody>
-                            </table>
+                            <div class="region-table-wrapper">
+                                <table class="region-table data-table"> <thead>
+                                <tr>
+                                    <th>지역</th>
+                                    <th>등록 수</th>
+                                    <th>완료율</th>
+                                    <th>평균 금액</th>
+                                </tr>
+                                </thead>
+                                    <tbody id="regionSummaryBody">
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -990,11 +1005,11 @@
                         data: chartValues,
                         backgroundColor: barColors,
                         hoverBackgroundColor: barHoverColors,
-                        borderWidth: 1,
+                        // borderWidth: 1,
 
                         borderRadius: 6,          // 둥근 막대
-                        barThickness: 28,         // 막대 두께 고정
-                        maxBarThickness: 32,
+                        barThickness: 32,         // 막대 두께 고정
+                        maxBarThickness: 40,
                         categoryPercentage: 0.6,  // 카테고리 간격
                         barPercentage: 0.8
                     }]

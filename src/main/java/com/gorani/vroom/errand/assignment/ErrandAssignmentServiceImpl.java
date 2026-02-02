@@ -1,10 +1,7 @@
 package com.gorani.vroom.errand.assignment;
 
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.gorani.vroom.errand.chat.ChatService;
-
+import com.gorani.vroom.notification.NotificationService;
 import lombok.RequiredArgsConstructor;
 import java.io.File;
 import java.util.UUID;
@@ -12,14 +9,19 @@ import java.util.UUID;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
 
     private final ErrandAssignmentMapper errandAssignmentMapper;
     private final ChatService chatService;
-    
+    private final NotificationService notificationService;
+
     private String toChangedByType(String role) {
         if (role == null) return "SYSTEM";
 
@@ -42,8 +44,8 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
     @Override
     @Transactional
     public Long requestStartChat(Long errandsId, Long erranderUserId, Long changedByUserId) {
-    	
-    	// 0) owner 조회 (먼저!)
+
+        // 0) owner 조회 (먼저!)
         Long ownerUserId = errandAssignmentMapper.selectOwnerUserId(errandsId);
 
         // [가드1] 작성자가 호출하면 즉시 막기 (매칭/assignment 생성 금지)
@@ -65,8 +67,14 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
             System.out.println("[ASSIGN][BLOCK] errander profile not found. userId=" + erranderUserId);
             throw new IllegalStateException("부름이 프로필이 없어 채팅 시작이 불가합니다.");
         }
-    	
-    	// DB에서 status 재조회
+
+        // active_status가 active 인 부름이만 가능하도록
+        if (!"ACTIVE".equals(errandAssignmentMapper.getErranderActiveStatus(erranderId))) {
+            System.out.println("[ASSIGN][BLOCK] errander status is not valid. userId=" + erranderUserId);
+            throw new IllegalStateException("해당 부름이 계정이 정지된 상태입니다.");
+        }
+
+        // DB에서 status 재조회
         String status = errandAssignmentMapper.selectErrandStatus(errandsId);
         System.out.println("[ASSIGN] db status before=" + status);
 
@@ -86,19 +94,27 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
         System.out.println("[ASSIGN] erranderUserId=" + erranderUserId);
 
         // 4) assignment insert
-        errandAssignmentMapper.insertMatchedAssignment(ownerUserId, errandsId, erranderId);
+        errandAssignmentMapper.insertMatchedAssignment(null, ownerUserId, errandsId, erranderId, "AUTO", "MATCHED", null);
 
         // 5) status history
         errandAssignmentMapper.insertStatusHistory(
-            errandsId,
-            "WAITING",
-            "MATCHED",
-            "ERRANDER",
-            changedByUserId
+                errandsId,
+                "WAITING",
+                "MATCHED",
+                "ERRANDER",
+                changedByUserId
         );
 
         // 6) 채팅방 생성
         Long roomId = chatService.getOrCreateChatRoom(errandsId, erranderUserId);
+
+        // + 알림 보내기
+        notificationService.send(
+                ownerUserId,
+                "ERRAND",
+                "심부름이 매칭되었습니다",
+                "/errand/detail?errandsId=" + errandsId
+        );
 
         return roomId; // 이제 정상
     }
@@ -182,6 +198,83 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
         errandAssignmentMapper.insertProofMedia(proofId, fileUrl);
 
         return proofId;
+
+
+    /**
+     * 관리자에 의한 심부름 수동 배정
+     * - 상태 변경 (WAITING -> MATCHED)
+     * - 배정 정보 Insert
+     * - 이력 기록 (ADMIN)
+     * - 채팅방 생성
+     *
+     * @return
+     */
+    @Override
+    @Transactional
+    public Long assignErranderByAdmin(Long errandsId, Long erranderId, Long adminId, String reason) {
+        Long roomId = null;
+
+        // 1. 심부름 작성자(Owner) ID 조회 (채팅방 생성용)
+        Long ownerUserId = errandAssignmentMapper.selectOwnerUserId(errandsId);
+        if (ownerUserId == null) {
+            throw new IllegalStateException("존재하지 않는 심부름입니다.");
+        }
+
+        // 2. 부름이(Errander)의 User ID 조회
+        Long erranderUserId = errandAssignmentMapper.selectUserIdByErranderId(erranderId);
+        if (erranderUserId == null) {
+            throw new IllegalStateException("유효하지 않는 부름이 ID입니다.");
+        }
+        if (ownerUserId.equals(erranderUserId)) {
+            System.out.println("[ASSIGN][BLOCK] OWNER cannot start chat. errandsId=" + errandsId + ", userId=" + erranderUserId);
+            throw new IllegalStateException("작성자는 채팅 시작(매칭)을 할 수 없습니다. 부름이가 채팅을 시작해야 합니다.");
+        }
+
+        // 3. 현재 심부름 상태 확인 (WAITING이어야 배정 가능)
+        String status = errandAssignmentMapper.selectErrandStatus(errandsId);
+        if (!"WAITING".equals(status)) {
+            throw new IllegalStateException("대기(WAITING) 상태의 심부름만 배정할 수 있습니다. 현재상태: " + status);
+        }
+
+        // 4. 상태 변경 (WAITING -> MATCHED)
+        int updated = errandAssignmentMapper.updateErrandStatusWaitingToMatched(errandsId);
+        if (updated == 0) {
+            throw new IllegalStateException("심부름 상태 변경에 실패했습니다. 이미 배정되었을 수 있습니다.");
+        }
+
+        // 5. 배정 정보 저장 (Assignment Insert)
+        errandAssignmentMapper.insertMatchedAssignment(adminId, ownerUserId, errandsId, erranderId, "MANUAL", "MATCHED", reason);
+
+        // 6. 상태 변경 이력 저장 (Changed By ADMIN)
+        // 사유(Reason)를 저장할 컬럼이 있다면 Mapper를 수정하여 reason도 전달하세요.
+        errandAssignmentMapper.insertStatusHistory(
+                errandsId,
+                "WAITING",
+                "MATCHED",
+                "ADMIN",    // 변경 주체: 관리자
+                adminId     // 관리자 ID
+        );
+
+        // 7. 채팅방 생성 (Owner <-> Errander)
+        // 채팅방이 있어야 소통이 가능하므로 필수입니다.
+        try {
+            roomId = chatService.getOrCreateChatRoom(errandsId, erranderUserId);
+            if (roomId != null) {
+                // + 알림 보내기
+                notificationService.send(
+                        ownerUserId,
+                        "ERRAND",
+                        "심부름에 부름이가 배정되었습니다",
+                        "/errand/detail?errandsId=" + errandsId
+                );
+            }
+        } catch (Exception e) {
+            log.error("관리자 배정 후 채팅방 생성 실패: errandsId={}", errandsId, e);
+            // 채팅방 실패가 배정 취소로 이어져야 한다면 throw e;
+            // 채팅방은 나중에 만들어도 된다면 로그만 남김 (비즈니스 요건에 따름)
+        }
+
+        return roomId;
     }
 
 }

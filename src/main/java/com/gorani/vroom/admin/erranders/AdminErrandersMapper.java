@@ -71,4 +71,8 @@ public interface AdminErrandersMapper {
     List<Map<String, Object>> getDocuments(
             @Param("erranderId") Long erranderId
     );
+
+    long getUserIdByErranderId(
+            @Param("erranderId") Long erranderId
+    );
 }

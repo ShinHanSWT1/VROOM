@@ -7,6 +7,7 @@ public interface ErrandAssignmentService {
     void uploadCompleteProof(Long errandsId, Long roomId, Long runnerUserId, MultipartFile proofImage);
     
     Long createCompletionProof(Long errandsId, Long erranderId, String fileUrl);
+    Long assignErranderByAdmin(Long errandsId, Long erranderId, Long adminId, String reason);
 }
 
 

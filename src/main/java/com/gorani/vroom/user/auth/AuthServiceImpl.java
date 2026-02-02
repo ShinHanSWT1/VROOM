@@ -23,8 +23,22 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void signup(UserVO vo, MultipartFile profile, UserVO oauthUser) throws Exception {
 
+        System.out.println("🔥 AuthServiceImpl.signup() 진입");
+
         // =====================================================
-        // ============ 0. OAuth 병합 + 랜덤 비번 처리 ============
+        // ================= 0. 입력값 정규화 ==================
+        // =====================================================
+        // 서버 기준 데이터 정합성 확보 (프론트 신뢰 ❌)
+        vo.setEmail(vo.getEmail() != null ? vo.getEmail().trim() : null);
+        vo.setNickname(vo.getNickname() != null ? vo.getNickname().trim() : null);
+        vo.setPhone(vo.getPhone() != null ? vo.getPhone().trim() : null);
+
+        if (vo.getDongCode2() != null && vo.getDongCode2().isBlank()) {
+            vo.setDongCode2(null);
+        }
+
+        // =====================================================
+        // ============ 1. OAuth 병합 + 랜덤 비번 처리 ============
         // =====================================================
         // - OAuth로 가입하는 경우, snsId/provider 등 신뢰 가능한 값은 서버가 강제로 주입한다.
         // - pwd는 사용자가 입력하지 않으므로 DB NOT NULL 충족용 랜덤값을 서버에서 생성한다.
@@ -36,7 +50,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // =====================================================
-        // ================= 1. 입력값/중복 검증 =================
+        // ================= 2. 입력값/중복 검증 =================
         // =====================================================
         // ⚠️ 주의:
         // - OAuth 경로로 들어와도 "최종 저장"은 일반 회원가입과 동일하게 제약을 만족해야 한다.
@@ -46,6 +60,9 @@ public class AuthServiceImpl implements AuthService {
         if (vo.getEmail() == null || vo.getEmail().isBlank()) {
             throw new IllegalArgumentException("이메일은 필수입니다.");
         }
+        if (!vo.getEmail().matches("^[^@]+@[^@]+\\.[^@]+$")) {
+            throw new IllegalArgumentException("이메일 형식이 올바르지 않습니다.");
+        }
         if (existsEmail(vo.getEmail())) {
             throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
         }
@@ -53,6 +70,9 @@ public class AuthServiceImpl implements AuthService {
         // 1. 전화번호 중복 체크
         if (vo.getPhone() == null || vo.getPhone().isBlank()) {
             throw new IllegalArgumentException("전화번호는 필수입니다.");
+        }
+        if (!vo.getPhone().matches("^\\d{11}$")) {
+            throw new IllegalArgumentException("전화번호는 숫자 11자리여야 합니다.");
         }
         if (existsPhone(vo.getPhone())) {
             throw new IllegalArgumentException("이미 가입된 전화번호입니다.");
@@ -62,6 +82,9 @@ public class AuthServiceImpl implements AuthService {
         if (vo.getNickname() == null || vo.getNickname().isBlank()) {
             throw new IllegalArgumentException("닉네임은 필수입니다.");
         }
+        if (vo.getNickname().contains(" ")) {
+            throw new IllegalArgumentException("닉네임에는 공백을 사용할 수 없습니다.");
+        }
         if (existsNickname(vo.getNickname())) {
             throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
         }
@@ -70,12 +93,12 @@ public class AuthServiceImpl implements AuthService {
         if (vo.getDongCode1() == null || vo.getDongCode1().isBlank()) {
             throw new IllegalArgumentException("주소 1은 필수입니다.");
         }
-        if (vo.getDongCode2() == null || vo.getDongCode2().isBlank()) {
-            throw new IllegalArgumentException("주소 2는 필수입니다.");
-        }
+//        if (vo.getDongCode2() == null || vo.getDongCode2().isBlank()) {
+//            throw new IllegalArgumentException("주소 2는 필수입니다.");
+//        }
 
         // =====================================================
-        // ================= 2. 프로필 이미지 처리 ===============
+        // ================= 3. 프로필 이미지 처리 ===============
         // =====================================================
         if (profile != null && !profile.isEmpty()) {
             String fileName = saveFile(profile);
@@ -83,7 +106,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // =====================================================
-        // =================== 3. 기본값 세팅 ===================
+        // =================== 4. 기본값 세팅 ===================
         // =====================================================
         vo.setRole("USER");
         vo.setStatus("ACTIVE");
@@ -101,7 +124,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // =====================================================
-        // ================= 4. 비밀번호 암호화 ==================
+        // ================= 5. 비밀번호 암호화 ==================
         // =====================================================
         // - LOCAL: 사용자가 입력한 비번을 md5
         // - OAuth: ensureOAuthPassword()에서 이미 md5 세팅 완료 → 여기서 다시 하면 안 됨
@@ -113,7 +136,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // =====================================================
-        // ==================== 5. DB INSERT ====================
+        // ==================== 6. DB INSERT ====================
         // =====================================================
         int result = authUserMapper.insertUser(vo);
         if (result != 1) {
