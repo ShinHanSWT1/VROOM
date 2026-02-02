@@ -51,8 +51,58 @@ public class ErranderController {
 
     // 부름 페이
     @GetMapping("/mypage/pay")
-    public String pay() {
+    public String pay(Model model, HttpSession session) {
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
+        if (loginUser == null) {
+            return "redirect:/auth/login";
+        }
+
+        ErranderProfileVO profile = erranderService.getErranderProfile(loginUser.getUserId());
+        if (profile == null) {
+            return "redirect:/errander/register";
+        }
+
+        model.addAttribute("profile", profile);
         return "errander/pay";
+    }
+
+    // 부름 페이 - 정산 요약 API
+    @ResponseBody
+    @GetMapping("/api/pay/summary")
+    public ResponseEntity<Map<String, Object>> getPaySummary(HttpSession session) {
+        Map<String, Object> response = new HashMap<>();
+
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
+        if (loginUser == null) {
+            response.put("success", false);
+            response.put("message", "로그인이 필요합니다.");
+            return ResponseEntity.ok(response);
+        }
+
+        ErranderProfileVO profile = erranderService.getErranderProfile(loginUser.getUserId());
+        if (profile == null) {
+            response.put("success", false);
+            response.put("message", "부름이 등록이 필요합니다.");
+            return ResponseEntity.ok(response);
+        }
+
+        Long erranderId = profile.getErranderId();
+
+        // 정산 대기 금액 (CONFIRMED1)
+        int settlementWaiting = erranderService.getSettlementWaitingAmount(erranderId);
+
+        // 수령 예정 금액 (CONFIRMED2)
+        int expectedAmount = erranderService.getExpectedAmount(erranderId);
+
+        // 이번 달 정산 수익 (COMPLETED)
+        int thisMonthSettled = erranderService.getThisMonthSettledAmount(erranderId);
+
+        response.put("success", true);
+        response.put("settlementWaiting", settlementWaiting);
+        response.put("expectedAmount", expectedAmount);
+        response.put("thisMonthSettled", thisMonthSettled);
+
+        return ResponseEntity.ok(response);
     }
 
     // 설정
