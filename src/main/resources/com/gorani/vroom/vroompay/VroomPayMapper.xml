@@ -121,4 +121,10 @@
         SET status = #{status}
         WHERE id = #{orderId}
     </update>
+
+    <select id="getErranderUserIdByErranderId" resultType="long">
+        SELECT m.user_id
+        FROM ERRANDER_PROFILES p JOIN MEMBERS m ON p.user_id = m.user_id
+        WHERE p.errander_id = #{erranderId}
+    </select>
 </mapper>

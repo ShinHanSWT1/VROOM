@@ -36,4 +36,7 @@ public interface VroomPayMapper {
             @Param("orderId") Long orderId,
             @Param("status") String status
             );
+
+    Long getErranderUserIdByErranderId(
+            @Param("erranderId") Long erranderId);
 }

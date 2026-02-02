@@ -4,10 +4,7 @@ import com.gorani.vroom.notification.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
@@ -185,6 +182,7 @@ public class VroomPayServiceImpl implements VroomPayService {
 
         String url = vroomPayApiSettleUrl.replace("{orderId}", orderId.toString());
         HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("x-api-key", vroomPayApiKey);
 
         HttpEntity<String> entity = new HttpEntity<>(headers);
@@ -195,21 +193,41 @@ public class VroomPayServiceImpl implements VroomPayService {
         requestBody.put("payeeId", erranderId); // 받는 사람 (Errander)
         requestBody.put("amount", amount);
 
-//        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
-
-
         Map<String, Object> result = new HashMap<>();
         try {
-            ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, entity, Map.class);
+            ResponseEntity<PaymentOrderVO> response = restTemplate.exchange(url, HttpMethod.POST, entity, PaymentOrderVO.class);
 
             result.put("success", true);
             result.put("message", "정산이 완료되었습니다.");
 
-            if (response.getBody() != null) {
-                result.putAll(response.getBody());
+            PaymentOrderVO resBody = response.getBody();
 
-                // TODO: 정산 완료에 따라 transaction에 추가
-                // TODO: updateLocalBalance
+            if (resBody != null) {
+                result.put("data", resBody);
+
+                // 정산 완료에 따라 TRANSACTION PAYOUT
+                WalletTransactionVO transactionVO = new WalletTransactionVO();
+                transactionVO.setPaymentId(resBody.getId());
+                transactionVO.setAmount(resBody.getAmount());
+                transactionVO.setTxnType("PAYOUT");
+                transactionVO.setErrandId(resBody.getErrandsId());
+                transactionVO.setErranderId(resBody.getErranderId());
+
+                insertWalletTransactions(transactionVO);
+
+                // TODO: WALLET_ACCOUNT 정합성 유지
+                // TODO: erranderId로 UserId 가져와야함
+                Long erranderUserId = vroomPayMapper.getErranderUserIdByErranderId(resBody.getErranderId());
+                Map<String, Object> account = getAccountStatus(erranderUserId);
+
+                VroomPayVO payVO = new VroomPayVO();
+                payVO.setUserId(Long.parseLong(String.valueOf(account.get("userId"))));
+                payVO.setBalance(new BigDecimal(String.valueOf(account.get("balance"))));
+                payVO.setAvailBalance(new BigDecimal(String.valueOf(account.get("availBalance"))));
+                payVO.setRealAccount(account.get("realAccount").toString());
+
+                updateWalletAccount(payVO);
+
 
                 // 알림
                 notificationService.send(
@@ -237,6 +255,7 @@ public class VroomPayServiceImpl implements VroomPayService {
 
         String url = vroomPayApiOrderUrl;
         HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("x-api-key", vroomPayApiKey);
 
         // 전달할 값 저장
@@ -259,6 +278,7 @@ public class VroomPayServiceImpl implements VroomPayService {
             if (response.getBody() != null) {
                 result.put("data", response.getBody());
                 result.put("orderId", response.getBody().getId());
+
                 // vroom의 payment에 저장
                 vroomPayMapper.insertPaymentOrder(response.getBody());
             }
@@ -274,14 +294,37 @@ public class VroomPayServiceImpl implements VroomPayService {
         HttpEntity<Map<String, Object>> httpEntity = new HttpEntity<>(requestBody, headers);
 
         try {
-            ResponseEntity<PaymentOrderVO> response = restTemplate.exchange(url, HttpMethod.POST, entity, PaymentOrderVO.class);
+            ResponseEntity<PaymentOrderVO> response = restTemplate.exchange(url, HttpMethod.POST, httpEntity, PaymentOrderVO.class);
             result.put("success", true);
             result.put("message", "PENDING으로 변경되었습니다");
+            PaymentOrderVO resBody = response.getBody();
 
-            if (response.getBody() != null) {
-                result.put("data", response.getBody());
-                // 로컬 Payment에 status를 PENDING으로 업데이트
-                vroomPayMapper.updatePaymentStatus(response.getBody().getId(), "PENDING");
+            if (resBody != null) {
+                result.put("data", resBody);
+
+                // vroom.Payment에 status = PENDING으로 업데이트
+                vroomPayMapper.updatePaymentStatus(resBody.getId(), "PENDING");
+
+                // TRANSACTION 에 HOLD 추가
+                WalletTransactionVO transactionVO = new WalletTransactionVO();
+                transactionVO.setPaymentId(resBody.getId());
+                transactionVO.setAmount(resBody.getAmount());
+                transactionVO.setTxnType("HOLD");
+                transactionVO.setErrandId(resBody.getErrandsId());
+                transactionVO.setUserId(resBody.getUserId());
+
+                insertWalletTransactions(transactionVO);
+
+                // WALLET_ACOCOUNT 정합성 유지
+                Map<String, Object> account = getAccountStatus(resBody.getUserId());
+                VroomPayVO payVO = new VroomPayVO();
+                payVO.setUserId(Long.parseLong(String.valueOf(account.get("userId"))));
+                payVO.setBalance(new BigDecimal(String.valueOf(account.get("balance"))));
+                payVO.setAvailBalance(new BigDecimal(String.valueOf(account.get("availBalance"))));
+                payVO.setRealAccount(account.get("realAccount").toString());
+
+                updateWalletAccount(payVO);
+
             }
 
         } catch (Exception e) {
