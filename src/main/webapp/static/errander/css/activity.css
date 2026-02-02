@@ -1,60 +1,7 @@
 /* ========================================
    Errander Activity Page - 나의 거래
 ======================================== */
-
-.mypage-layout {
-    display: flex;
-    gap: 2rem;
-    max-width: 1200px;
-    margin: 2rem auto;
-    padding: 0 1.5rem;
-}
-
-.mypage-sidebar {
-    width: 200px;
-    flex-shrink: 0;
-}
-
-.mypage-content {
-    flex: 1;
-}
-
-.sidebar-menu {
-    background-color: var(--color-white);
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.sidebar-item {
-    display: block;
-    padding: 1rem 1.5rem;
-    color: var(--color-dark);
-    text-decoration: none;
-    border-bottom: 1px solid var(--color-light-gray);
-    transition: all 0.3s ease;
-}
-
-.sidebar-item:last-child {
-    border-bottom: none;
-}
-
-.sidebar-item:hover {
-    background-color: var(--color-light-gray);
-}
-
-.sidebar-item.active {
-    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
-    color: var(--color-dark);
-    font-weight: 600;
-}
-
-.page-title {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--color-dark);
-    margin-bottom: 2rem;
-}
+/* 공통 레이아웃은 errander-layout.css 참조 */
 
 .activity-layout {
     display: block;
@@ -78,12 +25,12 @@
 }
 
 .fc .fc-button-primary {
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+    background-color: var(--color-primary);
     border: none;
 }
 
 .fc .fc-button-primary:hover {
-    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
+    background-color: #5a7a1e;
 }
 
 .fc .fc-daygrid-day.fc-day-today {
@@ -94,9 +41,9 @@
     cursor: pointer;
     padding: 2px 4px;
     font-size: 0.75rem;
-    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
+    background-color: var(--color-primary);
     border: none;
-    color: var(--color-dark);
+    color: var(--color-white);
 }
 
 .transaction-list-section {
@@ -112,7 +59,8 @@
     margin-bottom: 1.5rem;
     text-align: center;
     padding: 1rem;
-    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
+    background-color: var(--color-primary);
+    color: var(--color-white);
     border-radius: 8px;
 }
 
@@ -146,7 +94,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
+    background-color: var(--color-primary);
     border-radius: 8px;
     font-size: 1.5rem;
 }
@@ -176,8 +124,8 @@
 .view-all-btn {
     width: 100%;
     padding: 1rem;
-    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
-    color: var(--color-dark);
+    background-color: var(--color-primary);
+    color: var(--color-white);
     border: none;
     border-radius: 8px;
     font-size: 1rem;
@@ -191,23 +139,4 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-@media (max-width: 768px) {
-    .mypage-layout {
-        flex-direction: column;
-    }
-    
-    .mypage-sidebar {
-        width: 100%;
-    }
-    
-    .sidebar-menu {
-        display: flex;
-        overflow-x: auto;
-    }
-    
-    .sidebar-item {
-        white-space: nowrap;
-        border-bottom: none;
-        border-right: 1px solid var(--color-light-gray);
-    }
-}
+/* 공통 반응형은 errander-layout.css 참조 */
