@@ -430,4 +430,14 @@
           AND c.deleted_at IS NULL
         ORDER BY c.created_at DESC
     </select>
+
+    <!-- 댓글 작성자 userId 조회 -->
+    <select id="selectCommentUserId" resultType="Long">
+        SELECT user_id FROM COMMUNITY_COMMENT WHERE comment_id = #{commentId}
+    </select>
+
+    <!-- 게시글 작성자 userId 조회 -->
+    <select id="selectPostUserId" resultType="Long">
+        SELECT user_id FROM COMMUNITY WHERE post_id = #{postId}
+    </select>
 </mapper>

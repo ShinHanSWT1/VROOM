@@ -29,8 +29,7 @@
             <div class="activity-section">
                 <div class="activity-tabs">
                     <button class="activity-tab-btn active" data-target="list-written">작성한 글</button>
-                    <button class="activity-tab-btn" data-target="list-commented">댓글단 글</button>
-                    <button class="activity-tab-btn" data-target="list-liked">좋아요 한 글</button>
+                    <button class="activity-tab-btn" data-target="list-commented">댓글단 글</button<button class="activity-tab-btn" data-target="list-liked">좋아요 한 글</button>
                 </div>
 
                 <div id="list-written" class="activity-list-container active">
