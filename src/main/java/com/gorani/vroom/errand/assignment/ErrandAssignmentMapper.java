@@ -56,4 +56,6 @@ public interface ErrandAssignmentMapper {
     Long selectUserIdByErranderId(@Param("erranderId") Long erranderId);
 
     int countMatchedByErrandAndErrander(@Param("errandsId") Long errandsId, @Param("erranderId") Long erranderId);
+    
+    int existsCanceledAssignment(Long errandsId, Long userId);
 }
