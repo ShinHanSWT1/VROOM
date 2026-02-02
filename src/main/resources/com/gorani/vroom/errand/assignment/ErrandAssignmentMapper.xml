@@ -32,6 +32,51 @@
           AND status = 'WAITING'
     </update>
 
+  <insert id="insertStatusHistory">
+    INSERT INTO ERRAND_STATUS_HISTORY
+      (errands_id, from_status, to_status, changed_by_type, changed_by_id)
+    VALUES
+      (#{errandsId}, #{fromStatus}, #{toStatus}, #{changedByType}, #{changedById})
+  </insert>
+  
+  <select id="canChat" resultType="boolean">
+	  SELECT EXISTS(
+	    SELECT 1
+	    FROM ERRANDS
+	    WHERE errands_id = #{errandsId}
+	      AND status NOT IN ('COMPLETED','CANCELED')
+	  )
+	</select>
+	
+	<select id="validateRunnerAndStatus" resultType="int">
+	  SELECT COUNT(*)
+	  FROM ERRAND_ASSIGNMENTS a
+	  JOIN ERRAND_STATUS_HISTORY h
+	    ON h.errands_id = a.errands_id
+	  WHERE a.errands_id = #{errandsId}
+	    AND a.errander_id = #{runnerUserId}
+	    AND h.to_status = 'CONFIRMED1'
+	    AND h.changed_at = (
+	        SELECT MAX(changed_at)
+	        FROM ERRAND_STATUS_HISTORY
+	        WHERE errands_id = #{errandsId}
+    )
+	</select>
+	
+	<insert id="insertCompletionProof">
+	    INSERT INTO COMPLETION_PROOFS (errands_id, errander_id, submitted_at, file_url)
+	    VALUES (#{errandsId}, #{erranderId}, NOW(), #{fileUrl})
+	  </insert>
+	
+	  <select id="selectLastInsertedProofId" resultType="long">
+	    SELECT LAST_INSERT_ID()
+	  </select>
+	
+	  <insert id="insertProofMedia">
+	    INSERT INTO PROOF_MEDIA (proof_id, file_url, created_at)
+	    VALUES (#{proofId}, #{fileUrl}, NOW())
+	  </insert>
+	
     <update id="updateErrandStatusMatchedToWaiting" parameterType="long">
         UPDATE ERRANDS
         SET status     = 'WAITING',

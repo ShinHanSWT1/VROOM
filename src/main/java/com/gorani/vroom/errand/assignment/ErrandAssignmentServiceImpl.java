@@ -3,6 +3,12 @@ package com.gorani.vroom.errand.assignment;
 import com.gorani.vroom.errand.chat.ChatService;
 import com.gorani.vroom.notification.NotificationService;
 import lombok.RequiredArgsConstructor;
+import java.io.File;
+import java.util.UUID;
+
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -112,6 +118,86 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
 
         return roomId; // 이제 정상
     }
+    
+    @Override
+    @Transactional
+    public void uploadCompleteProof(Long errandsId, Long roomId, Long runnerUserId, MultipartFile proofImage) {
+
+        if (proofImage == null || proofImage.isEmpty()) {
+            throw new RuntimeException("업로드 파일이 없습니다.");
+        }
+
+        // 핵심: userId -> erranderId(부름이 프로필 PK)로 변환
+        Long erranderId = errandAssignmentMapper.selectErranderIdByUserId(runnerUserId);
+        if (erranderId == null) {
+            throw new RuntimeException("부름이 프로필이 없어 업로드가 불가합니다.");
+        }
+
+        // validate도 erranderId로 검사해야 함
+        int can = errandAssignmentMapper.validateRunnerAndStatus(errandsId, erranderId);
+        if (can != 1) {
+            throw new RuntimeException("업로드 권한이 없거나 상태가 올바르지 않습니다.");
+        }
+
+        // 2) 파일 저장 (로컬)
+        String uploadDir = "D:/vroom_uploads/proof"; // 주인님 환경에 맞게 통일 추천
+        new File(uploadDir).mkdirs();
+
+        String original = proofImage.getOriginalFilename();
+        String ext = "";
+        if (original != null && original.contains(".")) {
+            ext = original.substring(original.lastIndexOf("."));
+        }
+
+        String saveName = UUID.randomUUID().toString().replace("-", "") + ext;
+        File dest = new File(uploadDir, saveName);
+
+        try {
+            proofImage.transferTo(dest);
+        } catch (Exception e) {
+            throw new RuntimeException("파일 저장 실패");
+        }
+
+        // URL 경로도 /uploads/proof 로 통일 (정적 리소스 매핑이 그쪽이면)
+        String savedPath = "/uploads/proof/" + saveName;
+
+        // 3) proof 저장 (erranderId로 저장)
+        int inserted = errandAssignmentMapper.insertCompletionProof(errandsId, erranderId, savedPath);
+        if (inserted != 1) {
+            throw new RuntimeException("인증 정보 저장 실패");
+        }
+        
+        // 4) 상태 변경: CONFIRMED1 -> CONFIRMED2
+        int updated = errandAssignmentMapper.updateErrandStatusConfirmed1ToConfirmed2(errandsId);
+        if (updated != 1) {
+            throw new RuntimeException("상태 변경 실패(이미 변경되었거나 조건 불일치)");
+        }
+        
+        // 5) 히스토리 저장 (CONFIRMED1 -> CONFIRMED2)
+        int hist = errandAssignmentMapper.insertStatusHistory(
+                errandsId,
+                "CONFIRMED1",
+                "CONFIRMED2",
+                "ERRANDER",      // 또는 "RUNNER" / "USER" 너희 규칙대로
+                erranderId       // changed_by_id도 너희 규칙대로 (userId를 쓰는 구조면 userId)
+        );
+        if (hist != 1) {
+            throw new RuntimeException("상태 히스토리 저장 실패");
+        }
+    }
+
+    
+    @Override
+    @Transactional
+    public Long createCompletionProof(Long errandsId, Long erranderId, String fileUrl) {
+        // 1) completion_proofs insert
+        errandAssignmentMapper.insertCompletionProof(errandsId, erranderId, fileUrl);
+        Long proofId = errandAssignmentMapper.selectLastInsertedProofId(); // 또는 useGeneratedKeys로 바로 받기
+
+        // 2) proof_media insert
+        errandAssignmentMapper.insertProofMedia(proofId, fileUrl);
+
+        return proofId;
 
 
     /**

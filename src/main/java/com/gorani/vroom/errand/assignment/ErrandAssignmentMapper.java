@@ -35,6 +35,19 @@ public interface ErrandAssignmentMapper {
                             @Param("toStatus") String toStatus,
                             @Param("changedByType") String changedByType,
                             @Param("changedById") Long changedById);
+    
+    int validateRunnerAndStatus(@Param("errandsId") Long errandsId,
+            @Param("runnerUserId") Long runnerUserId);
+	
+	int insertCompletionProof(@Param("errandsId") Long errandsId,
+            @Param("erranderId") Long erranderId,
+            @Param("fileUrl") String fileUrl);
+
+	Long selectLastInsertedProofId();
+	
+	int insertProofMedia(@Param("proofId") Long proofId,
+	       @Param("fileUrl") String fileUrl);
+
 
 
     String getErranderActiveStatus(
