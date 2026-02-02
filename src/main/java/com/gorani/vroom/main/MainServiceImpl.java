@@ -31,4 +31,10 @@ public class MainServiceImpl implements MainService {
     public List<CommunityPostVO> getMainPopularPostList(String dongCode) {
         return mainMapper.selectMainPopularPostList(dongCode);
     }
+
+    // 우수 부름이 리뷰 조회
+    @Override
+    public List<MainReviewVO> getMainTopReviews() {
+        return mainMapper.selectMainTopReviews();
+    }
 }

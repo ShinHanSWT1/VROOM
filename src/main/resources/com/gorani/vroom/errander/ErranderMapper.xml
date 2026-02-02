@@ -152,6 +152,12 @@
         WHERE errander_id = #{erranderId}
           AND status IN ('COMPLETED', 'CANCELED')
     </select>
+    
+    <select id="selectErranderIdByUserId" resultType="long">
+	    SELECT errander_id
+	    FROM ERRANDER_PROFILES
+	    WHERE user_id = #{userId}
+	 </select>
 
     <!-- 리뷰 목록 조회  -->
     <select id="getErranderReviews" resultType="com.gorani.vroom.errander.profile.ErranderReviewVO">

@@ -24,7 +24,7 @@
     --my-message-bg: #6B8E23;
     --my-message-text: #ffffff;
     --other-message-bg: #f0f0f0;
-    --other-message-text: #ffffff;
+    --other-message-text: #000000;
     --input-bg: #ffffff;
     --input-border: #e0e0e0;
     --button-primary: #6B8E23;
@@ -132,6 +132,11 @@ body {
   flex-direction:column;
   gap:4px;
   min-width:0;
+}
+
+.chat-user-text,
+.chat-user-text * {
+  color: #ffffff;
 }
 
 .chat-user-name-row{

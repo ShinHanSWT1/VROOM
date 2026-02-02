@@ -4,9 +4,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,7 +17,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
+
+import com.gorani.vroom.errand.assignment.ErrandAssignmentService;
 import com.gorani.vroom.user.auth.UserVO;
 
 import lombok.RequiredArgsConstructor;
@@ -27,6 +30,7 @@ public class ChatController {
 
     private final ChatService chatService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final ErrandAssignmentService errandAssignmentService;
     
     @GetMapping("/room")
     public String showChatPageByRoomId(
@@ -71,6 +75,11 @@ public class ChatController {
         model.addAttribute("chatRoomInfo", chatRoomInfo);
         model.addAttribute("messages", messages);
         model.addAttribute("currentUserNickname", loginUser.getNickname());
+        
+        if ("OWNER".equals(userRole)) {
+            Long erranderUserId = chatService.getErranderUserIdByRoomId(roomId);
+            model.addAttribute("erranderUserId", erranderUserId);
+        }
 
         return "errand/errand_chat";
     }
@@ -83,7 +92,8 @@ public class ChatController {
     public String showChatPage(
             @RequestParam("errandsId") Long errandsId,
             HttpSession session,
-            Model model
+            Model model,
+            HttpServletRequest request
     ) {
         // 세션에서 사용자 정보 가져오기
         UserVO loginUser = (UserVO) session.getAttribute("loginSess");
@@ -91,6 +101,8 @@ public class ChatController {
             return "redirect:/auth/login";
         }
         Long currentUserId = loginUser.getUserId();
+        
+        String errandStatus = chatService.getErrandStatus(errandsId);
 
         System.out.println("[CHAT] enter request errandsId=" + errandsId);
         System.out.println("[CHAT] userId=" + currentUserId);
@@ -98,6 +110,12 @@ public class ChatController {
         // 작성자 여부 판단
         Long ownerUserId = chatService.getOwnerUserIdByErrandsId(errandsId);
         boolean isOwner = ownerUserId != null && ownerUserId.equals(currentUserId);
+        
+        if ("WAITING".equals(errandStatus)) {
+            model.addAttribute("message", "거절된 매칭입니다.");
+            model.addAttribute("redirectUrl", request.getContextPath() + "/errand/list");
+            return "common/alert_redirect";
+        }
 
         // 1) 방 조회
         ChatRoomVO room = chatService.getChatRoomByErrandsId(errandsId);
@@ -126,7 +144,6 @@ public class ChatController {
             return "errand/errand_already_matched";
         }
         
-        String errandStatus = chatService.getErrandStatus(errandsId);
         System.out.println("[DEBUG] errandsId=" + errandsId + ", errandStatus=" + errandStatus);
         model.addAttribute("errandStatus", errandStatus);
 
@@ -144,6 +161,11 @@ public class ChatController {
         model.addAttribute("chatRoomInfo", chatRoomInfo);
         model.addAttribute("messages", messages);
         model.addAttribute("currentUserNickname", loginUser.getNickname());
+        
+        if ("OWNER".equals(userRole)) {
+            Long erranderUserId = chatService.getErranderUserIdByRoomId(roomId);
+            model.addAttribute("erranderUserId", erranderUserId);
+        }
 
         return "errand/errand_chat";
     }
@@ -231,10 +253,25 @@ public class ChatController {
         if (loginUser == null) {
             return ResponseEntity.status(401).body(Map.of("error", "로그인이 필요합니다."));
         }
+        
+        if (payload == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "요청 바디가 없습니다."));
+        }
 
-        Long errandsId = Long.valueOf(payload.get("errandsId").toString());
-        Long roomId = Long.valueOf(payload.get("roomId").toString());
-        Long erranderUserId = Long.valueOf(payload.get("erranderUserId").toString());
+        Object e = payload.get("errandsId");
+        Object r = payload.get("roomId");
+        Object u = payload.get("erranderUserId");
+
+        if (e == null || r == null || u == null) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "error", "요청값 누락",
+                "payload", payload
+            ));
+        }
+
+        Long errandsId = Long.valueOf(e.toString());
+        Long roomId = Long.valueOf(r.toString());
+        Long erranderUserId = Long.valueOf(u.toString());
 
         // 권한 체크: OWNER만 거절 가능
         String userRole = chatService.getUserRole(roomId, loginUser.getUserId());
@@ -242,15 +279,20 @@ public class ChatController {
             return ResponseEntity.status(403).body(Map.of("error", "권한이 없습니다."));
         }
 
-        chatService.rejectErrand(errandsId, roomId, loginUser.getUserId(), erranderUserId);
+        try {
+            chatService.rejectErrand(errandsId, roomId, loginUser.getUserId(), erranderUserId);
+            return ResponseEntity.ok(Map.of("success", true, "message", "심부름이 거절되었습니다."));
+        } catch (IllegalStateException ex) {
+            return ResponseEntity.status(409).body(Map.of("success", false, "error", ex.getMessage()));
+        }
 
-        return ResponseEntity.ok(Map.of("success", true, "message", "심부름이 거절되었습니다."));
     }
     
     @GetMapping("/enter")
     public String enterChat(
             @RequestParam("errandsId") Long errandsId,
-            HttpSession session
+            HttpSession session,
+            javax.servlet.http.HttpServletRequest request
     ) {
         UserVO loginUser = (UserVO) session.getAttribute("loginSess");
         if (loginUser == null) return "redirect:/auth/login";
@@ -272,7 +314,26 @@ public class ChatController {
                         java.nio.charset.StandardCharsets.UTF_8
                     );
             }
+            
+            String errandStatus = chatService.getErrandStatus(errandsId);
+            if ("WAITING".equals(errandStatus)) {
+            	if (isOwner) {
+                    return "redirect:/errand/detail?errandsId=" + errandsId
+                            + "&message=" + java.net.URLEncoder.encode(
+                                    "아직 부름이가 채팅을 시작하지 않았습니다.",
+                                    java.nio.charset.StandardCharsets.UTF_8
+                            );
+                }
 
+                // 부름이 중에서도 "거절 당한 당사자"만 alert + 목록 이동
+            	boolean isCanceledMe = errandAssignmentService.isCanceledErrander(errandsId, userId);
+                if (isCanceledMe) {
+                    request.setAttribute("message", "거절된 매칭입니다.");
+                    request.setAttribute("redirectUrl", request.getContextPath() + "/errand/list");
+                    return "common/alert_redirect";
+                }
+            }
+            
             // 부름이는 생성 후 입장
             Long roomId = chatService.getOrCreateChatRoom(errandsId, userId);
             return "redirect:/errand/chat/room?roomId=" + roomId;

@@ -53,6 +53,8 @@ public interface ErranderMapper {
 
     // 전체 수행 건수 (COMPLETED + CANCELED) - 성공률 계산용
     int getTotalAssignedCount(@Param("erranderId") Long erranderId);
+    
+    Long selectErranderIdByUserId(Long userId);
 
     // 리뷰 목록 조회
     List<ErranderReviewVO> getErranderReviews(@Param("erranderId") Long erranderId, 

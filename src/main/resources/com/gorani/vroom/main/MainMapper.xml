@@ -79,4 +79,20 @@
         LIMIT 6
     </select>
 
+    <!-- 메인 페이지 우수 부름이 리뷰 조회 (평점 높은 순 6개) -->
+    <select id="selectMainTopReviews" resultType="com.gorani.vroom.main.MainReviewVO">
+        SELECT
+            m.nickname AS reviewerName,
+            r.rating AS rating,
+            c.name AS taskCategory,
+            r.comment AS content
+        FROM REVIEWS r
+        JOIN ERRANDS e ON r.errand_id = e.errands_id
+        JOIN MEMBERS m ON e.user_id = m.user_id
+        JOIN CATEGORIES c ON e.category_id = c.id
+        WHERE r.rating >= 4
+        ORDER BY r.rating DESC, r.created_at DESC
+        LIMIT 6
+    </select>
+
 </mapper>

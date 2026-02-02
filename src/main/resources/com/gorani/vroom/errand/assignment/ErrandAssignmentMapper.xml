@@ -151,5 +151,41 @@
         INSERT INTO ERRAND_STATUS_HISTORY (errands_id, from_status, to_status, changed_by_type, changed_at)
         VALUES (#{item.errandsId}, 'CONFIRMED2', 'COMPLETED', 'SYSTEM', NOW())
     </insert>
+    
+    <select id="existsCanceledAssignment" resultType="int">
+	  SELECT COUNT(*)
+	  FROM ERRAND_ASSIGNMENTS
+	  WHERE errands_id = #{errandsId}
+	    AND errander_user_id = #{userId}
+	    AND status = 'CANCLED'
+	</select>
+	
+	<insert id="insertRejectHistory">
+	  INSERT INTO ERRAND_REJECT (errands_id, errander_id)
+	  VALUES (#{param1}, #{param2})
+	</insert>
+	
+	<select id="existsRejectHistory" resultType="int">
+	  SELECT COUNT(*)
+	  FROM ERRAND_REJECT
+	  WHERE errands_id = #{param1}
+	    AND errander_id = #{param2}
+	</select>
+	
+	<update id="updateAssignmentStatusMatchedToCanceled">
+	  UPDATE ERRAND_ASSIGNMENTS
+	  SET status = 'CANCELED'
+	  WHERE errands_id = #{param1}
+	    AND errander_id = #{param2}
+	    AND status = 'MATCHED'
+	</update>
+	
+	<select id="selectMatchedErranderIdByErrandsId" resultType="long">
+	  SELECT errander_id
+	  FROM ERRAND_ASSIGNMENTS
+	  WHERE errands_id = #{errandsId}
+	    AND status = 'MATCHED'
+	  LIMIT 1
+	</select>
 
 </mapper>

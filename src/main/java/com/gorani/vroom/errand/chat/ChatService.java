@@ -90,4 +90,6 @@ public interface ChatService {
     String getErrandStatus(Long errandsId);
     
     boolean existsChatRoomByErrandsId(Long errandsId);
+    
+    Long getErranderUserIdByRoomId(Long roomId);
 }
