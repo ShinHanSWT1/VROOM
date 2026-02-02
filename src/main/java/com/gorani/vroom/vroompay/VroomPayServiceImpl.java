@@ -164,21 +164,37 @@ public class VroomPayServiceImpl implements VroomPayService {
 
     @Override
     public Map<String, Object> settleErrand(Long errandId, Long userId, Long erranderId, BigDecimal amount) {
-        String url = vroomPayApiSettleUrl;
+
+        // 정산 완료하기 위해 orderId를 가져와야함
+        Long orderId = vroomPayMapper.getPaymentIdForSettlement(errandId, erranderId);
+
+        // 예외 처리: orderId가 없는 경우 처리 필요
+        if (orderId == null) {
+            Map<String, Object> errorResult = new HashMap<>();
+            errorResult.put("success", false);
+            errorResult.put("message", "정산할 대기 상태의 주문(Payment)을 찾을 수 없습니다.");
+            return errorResult;
+        }
+
+        String url = vroomPayApiSettleUrl.replace("{orderId}", orderId.toString());
         HttpHeaders headers = new HttpHeaders();
         headers.set("x-api-key", vroomPayApiKey);
 
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("errandId", errandId);
-        requestBody.put("payerId", userId); // 보내는 사람 (User)
+        requestBody.put("payerId", userId);     // 보내는 사람 (User)
         requestBody.put("payeeId", erranderId); // 받는 사람 (Errander)
         requestBody.put("amount", amount);
 
-        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+//        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+
 
         Map<String, Object> result = new HashMap<>();
         try {
             ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, entity, Map.class);
+
             result.put("success", true);
             result.put("message", "정산이 완료되었습니다.");
 
@@ -192,14 +208,15 @@ public class VroomPayServiceImpl implements VroomPayService {
                 notificationService.send(
                         erranderId,
                         "PAY",
-                        "심부름값을 받았습니다!",
+                        "심부름값을 받았습니다!(" + amount + "원)",
                         "/errander/mypage/pay"
 
                 );
 
-                log.info("정산 정보" + response);
+                log.info("정산 정보" + response.getBody());
             }
         } catch (Exception e) {
+            log.error("정산 API 호출 실패", e);
             result.put("success", false);
             result.put("message", "정산 처리에 실패했습니다: " + e.getMessage());
         }

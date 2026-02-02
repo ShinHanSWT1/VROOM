@@ -25,4 +25,8 @@ public interface VroomPayMapper {
     List<SettlementTargetVO> selectSettlementTargets(@Param("day") int day);
 
     int updateAssignmentStatusToComplete(@Param("assignmentId") Long assignmentId);
+
+    Long getPaymentIdForSettlement(
+            @Param("errandsId") Long errandsId,
+            @Param("erranderId") Long erranderId);
 }

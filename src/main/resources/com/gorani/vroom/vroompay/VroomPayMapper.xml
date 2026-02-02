@@ -102,4 +102,13 @@
         WHERE id = #{assignmentId}
     </update>
 
+    <select id="getPaymentIdForSettlement" parameterType="map" resultType="long">
+        SELECT p.id
+        FROM PAYMENT_ORDERS p JOIN ERRANDS e ON p.errands_id = e.errands_id
+        WHERE p.errands_id = #{errandsId}
+        AND p.errander_id = #{erranderId}
+        AND p.status = 'PENDING'
+        AND e.status IN ('CONFIRMED2', 'HOLD')
+    </select>
+
 </mapper>

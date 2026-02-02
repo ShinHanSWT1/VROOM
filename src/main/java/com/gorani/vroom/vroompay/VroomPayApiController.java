@@ -229,6 +229,10 @@ public class VroomPayApiController {
         return result;
     }
 
+    @ResponseBody
+    @PostMapping("/payment/order")
+
+
     // 외부 API 응답에서 잔액을 추출하여 로컬 DB 업데이트
     private void updateLocalBalance(Long userId, Map<String, Object> apiResult) {
         BigDecimal balance = null;
