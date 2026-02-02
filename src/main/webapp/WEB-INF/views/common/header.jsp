@@ -258,7 +258,7 @@
                     notiType = '시스템/공지';
                     break;
                 default:
-                    notiType = '알림'
+                    notiType = '기타/공지'
             }
             const html = `
                 <div class="noti-item \${bgClass}" onclick="clickNotification(\${noti.notificationId}, '\${noti.url}')">
