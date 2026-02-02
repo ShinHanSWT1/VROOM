@@ -39,7 +39,7 @@
                 <img src="${pageContext.request.contextPath}${profile.profileImage}" alt="프로필" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">
               </c:when>
               <c:otherwise>
-                <img src="${pageContext.request.contextPath}/resources/images/default_profile.png" alt="기본 프로필" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">
+                <img src="${pageContext.request.contextPath}/static/img/logo.png" alt="기본 프로필" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">
               </c:otherwise>
             </c:choose>
           </div>

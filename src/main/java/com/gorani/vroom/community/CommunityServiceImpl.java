@@ -1,5 +1,6 @@
 package com.gorani.vroom.community;
 
+import com.gorani.vroom.notification.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,6 +12,7 @@ import java.util.*;
 public class CommunityServiceImpl implements CommunityService{
 
     private final CommunityMapper communityMapper;
+    private final NotificationService notificationService;
 
     // 카테고리 목록 조회
     @Override
@@ -135,9 +137,33 @@ public class CommunityServiceImpl implements CommunityService{
 
             // 게시글의 전체 댓글 수 업데이트
             communityMapper.updatePostCommentCount(commentVO.getPostId());
+
+            // 알림 전송
+            sendCommentNotification(commentVO);
+
             return true;
         }
         return false;
+    }
+
+    // 댓글 알림 전송
+    private void sendCommentNotification(CommunityCommentVO commentVO) {
+        Long commentWriterId = commentVO.getUserId();
+        String url = "/community/detail/" + commentVO.getPostId();
+
+        if (commentVO.getParentCommentId() != null) {
+            // 대댓글인 경우 → 부모 댓글 작성자에게 알림
+            Long parentCommentUserId = communityMapper.selectCommentUserId(commentVO.getParentCommentId());
+            if (parentCommentUserId != null && !parentCommentUserId.equals(commentWriterId)) {
+                notificationService.send(parentCommentUserId, "REPLY", "회원님의 댓글에 답글이 달렸습니다.", url);
+            }
+        } else {
+            // 일반 댓글인 경우 → 게시글 작성자에게 알림
+            Long postOwnerId = communityMapper.selectPostUserId(commentVO.getPostId());
+            if (postOwnerId != null && !postOwnerId.equals(commentWriterId)) {
+                notificationService.send(postOwnerId, "COMMENT", "회원님의 게시글에 댓글이 달렸습니다.", url);
+            }
+        }
     }
 
     // 댓글 수정
@@ -183,6 +209,14 @@ public class CommunityServiceImpl implements CommunityService{
             // 좋아요 추가
             communityMapper.insertLike(postId, userId);
             communityMapper.incrementLikeCount(postId);
+
+            // 좋아요 알림 전송 (게시글 작성자에게, 본인 제외)
+            Long postOwnerId = communityMapper.selectPostUserId(postId);
+            if (postOwnerId != null && !postOwnerId.equals(userId)) {
+                String url = "/community/detail/" + postId;
+                notificationService.send(postOwnerId, "LIKE", "회원님의 게시글에 좋아요가 눌렸습니다.", url);
+            }
+
             return true;
         }
     }

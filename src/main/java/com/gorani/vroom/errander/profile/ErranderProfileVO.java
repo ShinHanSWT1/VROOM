@@ -16,6 +16,7 @@ public class ErranderProfileVO {
     // MEMBERS 테이블에서 가져올 정보
     private String nickname; // 닉네임
     private String profileImage; // 프로필 이미지
+    private Double mannerTemp; // 매너온도 (manner_score)
 
     // 노란색 바 정보
     private  Double completeRate; // 완료률
@@ -23,7 +24,7 @@ public class ErranderProfileVO {
     // 서브쿼리로 계산할 통계
     private int inProgressCount; // 수행 중
     private int completedCount; // 완료
-    private Long thisMonthEarning; // 이번 달 돈
+    private Long totalEarning; // 전체 수익 (기존 thisMonthEarning 대체)
 
 
     // 라이더 등급
@@ -38,6 +39,11 @@ public class ErranderProfileVO {
     // 평균 평점 구하기
     private Double ratingAvg; // 평균 평점
     private int reviewCount; // 총 리뷰 개수
+
+    // 최근 30일 수행 건수
+    private int last30DaysCompletedCount;
+    // 전체 성공률 (완료 / (완료 + 취소))
+    private Double successRate;
 
 
     private String dongCode1; // 동네1

@@ -1,0 +1,58 @@
+/* 회원가입 페이지 전용 스타일 */
+@import url('login.css');
+
+/* Progress Bar */
+.progress-wrapper {
+    width: 100%;
+    height: 8px;
+    background-color: var(--color-light-gray);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    background-color: var(--color-primary);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+/* 입력 가이드 메시지 */
+.input-guide {
+    display: block;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+    min-height: 1.2rem;
+}
+
+.input-guide.success {
+    color: var(--color-primary);
+}
+
+.input-guide.error {
+    color: #DC3545;
+}
+
+/* 폼 라벨 */
+.form-label {
+    display: block;
+    color: #222;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.form-label .required {
+    color: #222;
+}
+
+.form-label .optional {
+    color: #888;
+    font-weight: 400;
+}
+
+/* 회원가입 타이틀 margin 조정 */
+.auth-title {
+    margin-bottom: 12px;
+}

@@ -1,60 +1,7 @@
 /* ========================================
    Errander Settings Page - 설정
 ======================================== */
-
-.mypage-layout {
-    display: flex;
-    gap: 2rem;
-    max-width: 1200px;
-    margin: 2rem auto;
-    padding: 0 1.5rem;
-}
-
-.mypage-sidebar {
-    width: 200px;
-    flex-shrink: 0;
-}
-
-.mypage-content {
-    flex: 1;
-}
-
-.sidebar-menu {
-    background-color: var(--color-white);
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.sidebar-item {
-    display: block;
-    padding: 1rem 1.5rem;
-    color: var(--color-dark);
-    text-decoration: none;
-    border-bottom: 1px solid var(--color-light-gray);
-    transition: all 0.3s ease;
-}
-
-.sidebar-item:last-child {
-    border-bottom: none;
-}
-
-.sidebar-item:hover {
-    background-color: var(--color-light-gray);
-}
-
-.sidebar-item.active {
-    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
-    color: var(--color-dark);
-    font-weight: 600;
-}
-
-.page-title {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--color-dark);
-    margin-bottom: 2rem;
-}
+/* 공통 레이아웃은 errander-layout.css 참조 */
 
 .settings-section {
     background-color: var(--color-white);
@@ -217,25 +164,6 @@
 }
 
 @media (max-width: 768px) {
-    .mypage-layout {
-        flex-direction: column;
-    }
-    
-    .mypage-sidebar {
-        width: 100%;
-    }
-    
-    .sidebar-menu {
-        display: flex;
-        overflow-x: auto;
-    }
-    
-    .sidebar-item {
-        white-space: nowrap;
-        border-bottom: none;
-        border-right: 1px solid var(--color-light-gray);
-    }
-    
     .location-selector {
         grid-template-columns: 1fr;
     }

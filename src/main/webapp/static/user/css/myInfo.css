@@ -1,66 +1,5 @@
 /* myInfo.css - 사용자 마이페이지 전용 스타일 (본문만!) */
-
-/* Dashboard Layout */
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 1.5rem;
-}
-
-.dashboard-container {
-    display: flex;
-    gap: 2rem;
-    padding: 3rem 0;
-    min-height: 80vh;
-}
-
-/* Sidebar */
-.sidebar {
-    width: 250px;
-    flex-shrink: 0;
-}
-
-.sidebar-menu {
-    list-style: none;
-    background-color: var(--color-white);
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
-}
-
-.sidebar-item {
-    border-bottom: 1px solid var(--color-light-gray);
-}
-
-.sidebar-item:last-child {
-    border-bottom: none;
-}
-
-.sidebar-link {
-    display: block;
-    padding: 1.25rem 1.5rem;
-    text-decoration: none;
-    color: var(--color-dark);
-    font-weight: 500;
-    transition: all 0.2s ease;
-}
-
-.sidebar-link:hover {
-    background-color: #f8f9fa;
-    color: var(--color-primary);
-    padding-left: 1.75rem;
-}
-
-.sidebar-link.active {
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
-    color: var(--color-white);
-    font-weight: 700;
-}
-
-/* Main Content */
-.main-content {
-    flex-grow: 1;
-}
+/* 공통 레이아웃은 user-layout.css 참조 */
 
 /* Profile Section */
 .profile-header {
@@ -221,20 +160,20 @@
 
 .write-btn {
     display: inline-block;
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+    background-color: var(--color-accent);
     color: var(--color-white);
     padding: 0.75rem 2rem;
     font-weight: 700;
     border-radius: 8px;
     cursor: pointer;
     border: none;
-    box-shadow: 0 4px 8px rgba(107, 142, 35, 0.25);
+    box-shadow: 0 4px 8px rgba(242, 160, 7, 0.25);
     transition: all 0.3s ease;
 }
 
 .write-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(107, 142, 35, 0.3);
+    box-shadow: 0 6px 12px rgba(242, 160, 7, 0.3);
 }
 
 /* Activity Grid */
@@ -286,7 +225,7 @@
 
 .task-badge {
     display: inline-block;
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+    background-color: var(--color-accent);
     color: var(--color-white);
     padding: 4px 12px;
     border-radius: 4px;
@@ -423,7 +362,7 @@
 }
 
 .pagination-btn.active {
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+    background-color: var(--color-accent);
     color: var(--color-white);
     border: none;
 }
@@ -825,14 +764,6 @@
 }
 
 @media (max-width: 768px) {
-    .dashboard-container {
-        flex-direction: column;
-    }
-
-    .sidebar {
-        width: 100%;
-    }
-
     .activity-grid {
         grid-template-columns: repeat(2, 1fr);
     }
