@@ -34,7 +34,9 @@
                         <c:when test="${not empty profile.profileImage}">
                             <img src="${pageContext.request.contextPath}${profile.profileImage}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
                         </c:when>
-                        <c:otherwise>V</c:otherwise>
+                        <c:otherwise>
+                            <img src="<c:url value='/static/img/logo3.png'/>" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                        </c:otherwise>
                     </c:choose>
                 </div>
                 <div class="profile-info">
@@ -177,7 +179,9 @@
                             <c:when test="${not empty profile.profileImage}">
                                 <img src="${pageContext.request.contextPath}${profile.profileImage}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">
                             </c:when>
-                            <c:otherwise>V</c:otherwise>
+                            <c:otherwise>
+                                <img src="<c:url value='/static/img/logo3.png'/>" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">
+                            </c:otherwise>
                         </c:choose>
                     </div>
                     <div class="upload-options">

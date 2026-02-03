@@ -27,7 +27,7 @@
 .profile-image-container {
   width: 100px;
   height: 100px;
-  background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
+  background: var(--color-secondary);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -145,7 +145,7 @@
 
 .temp-fill {
   height: 100%;
-  background: linear-gradient(90deg, #FF6B6B 0%, var(--color-warm) 100%);
+  background: #FF6B6B;
   width: 36.5%;
 }
 
@@ -352,7 +352,7 @@
 }
 
 .page-btn.active {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  background: var(--color-primary);
   color: var(--color-white);
   border: none;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -438,7 +438,7 @@
 }
 
 .current-balance {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  background: var(--color-primary);
   color: var(--color-white);
   padding: 1.25rem;
   border-radius: 12px;
@@ -550,7 +550,7 @@
 }
 
 .modal-btn-submit {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  background: var(--color-primary);
   color: var(--color-white);
 }
 

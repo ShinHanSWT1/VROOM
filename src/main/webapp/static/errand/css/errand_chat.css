@@ -20,7 +20,7 @@
     --card-radius: 16px;
     --message-radius: 18px;
     --panel-bg: #fafafa;
-    --header-bg: linear-gradient(135deg, #6B8E23 0%, #F2CB05 100%);
+    --header-bg: #6B8E23;
     --my-message-bg: #6B8E23;
     --my-message-text: #ffffff;
     --other-message-bg: #f0f0f0;
@@ -50,7 +50,7 @@ body {
    헤더 스타일
 ======================================== */
 .header {
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+    background: var(--color-primary);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
     position: sticky;
     top: 0;
@@ -224,7 +224,7 @@ body {
     width: 80px;
     height: 80px;
     border-radius: 12px;
-    background: linear-gradient(135deg, #e0e0e0 0%, #f0f0f0 100%);
+    background: #e0e0e0;
     flex-shrink: 0;
     overflow: hidden;
 }
@@ -659,7 +659,7 @@ body {
 
 .v-btn--primary {
   border: none;
-  background: linear-gradient(135deg, #6d5efc 0%, #ff5aa5 100%);
+  background: #6d5efc;
   color: #fff;
 }
 

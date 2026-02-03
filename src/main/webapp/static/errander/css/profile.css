@@ -64,7 +64,7 @@
 
 .progress-fill {
     height: 100%;
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+    background: var(--color-primary);
     transition: width 0.3s ease;
     display: flex;
     align-items: center;
@@ -162,7 +162,7 @@
 
 /* Unlocked: 밝고 산뜻한 초록 계열 그라데이션 */
 .achievement-item.unlocked {
-    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+    background: #e8f5e9;
     color: #2e7d32;
     border: 1px solid #a5d6a7;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
