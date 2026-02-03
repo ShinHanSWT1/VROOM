@@ -150,4 +150,32 @@
     <select id="getPaymentById" resultType="com.gorani.vroom.vroompay.PaymentOrderVO">
         SELECT * FROM PAYMENT_ORDERS WHERE id = #{orderId}
     </select>
+
+    <update id="completePayment" parameterType="map">
+        UPDATE PAYMENT_ORDERS
+        SET status = 'COMPLETED',
+            paid_at = STR_TO_DATE(#{paidAt}, '%Y-%m-%d %H:%i:%s')
+        WHERE id = #{orderId}
+    </update>
+
+    <update id="updateErrandStatusConfirmed2ToCompleted" parameterType="map">
+        UPDATE ERRANDS
+        SET status = 'COMPLETED', updated_at = NOW(), settlement_amount = #{amount}
+        WHERE errands_id = #{errandsId}
+          AND status = 'CONFIRMED2'
+    </update>
+
+    <update id="updateErrandAssignmentStatusToCompleted" parameterType="map">
+        UPDATE ERRAND_ASSIGNMENTS
+        SET status = 'COMPLETED'
+        WHERE errands_id = #{errandsId}
+          AND errander_id = #{erranderId}
+          AND status = 'MATCHED'
+    </update>
+
+    <insert id="insertErrandHistoryToCompletedByAdmin" parameterType="map">
+        INSERT INTO ERRAND_STATUS_HISTORY (errands_id, from_status, to_status, changed_by_type, changed_at)
+        VALUES (#{errandsId}, 'CONFIRMED2', 'COMPLETED', 'ADMIN', NOW())
+    </insert>
+
 </mapper>

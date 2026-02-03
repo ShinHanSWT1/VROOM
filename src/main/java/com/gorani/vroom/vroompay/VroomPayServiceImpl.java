@@ -177,10 +177,6 @@ public class VroomPayServiceImpl implements VroomPayService {
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Map<String, Object> settleErrand(Long errandId, Long userId, Long erranderId, BigDecimal amount) {
-//                263L,
-//                139L,
-//                48L,
-//                BigDecimal.valueOf(2000)
         // 정산 완료하기 위해 orderId를 가져와야함
         log.info("정산 시도 파라미터 - errandId={}, userId={}, erranderId={}", errandId, userId, erranderId);
         Long orderId = vroomPayMapper.getPaymentIdForSettlement(errandId, erranderId);
@@ -212,6 +208,9 @@ public class VroomPayServiceImpl implements VroomPayService {
             PaymentOrderVO resBody = response.getBody();
             if (resBody != null) {
                 result.put("data", resBody);
+
+                // PAYMENT status 업데이트
+                vroomPayMapper.completePayment(orderId, resBody.getPaidAt());
 
                 // 정산 완료에 따라 TRANSACTION PAYOUT
                 // 정산 API 호출 결과 body
@@ -247,6 +246,47 @@ public class VroomPayServiceImpl implements VroomPayService {
         return result;
     }
 
+    @Transactional
+    @Override
+    public Map<String, Object> settleErrandManual(Long errandId, Long userId, Long erranderId, BigDecimal amount) {
+
+        Map<String, Object> response = settleErrand(errandId, userId, erranderId, amount);
+        PaymentOrderVO paymentOrderVO = response.get("data") != null ? (PaymentOrderVO) response.get("data") : null;
+
+        Map<String, Object> result = new HashMap<>();
+
+        if (paymentOrderVO != null) {
+            result.put("data", paymentOrderVO);
+            int res = 0;
+
+            // TODO: ERRAND status = COMPLETED
+            res += vroomPayMapper.updateErrandStatusConfirmed2ToCompleted(errandId, paymentOrderVO.getAmount());
+
+            // TODO: ERRAND Assignment
+            res += vroomPayMapper.updateErrandAssignmentStatusToCompleted(errandId, erranderId);
+
+            // TODO: ERRAND History
+            res += vroomPayMapper.insertErrandHistoryToCompletedByAdmin(errandId);
+
+            if (res == 3) {
+                result.put("success", true);
+                result.put("message", "정산 처리 완료되었습니다");
+            } else {
+                result.put("success", false);
+                result.put("message", "정산 처리에 실패했습니다");
+            }
+
+        }
+
+//{
+// "data":{"id":4,"merchantUid":"ORDERS_4_2026-02-03T17:15:45.377219","amount":5000.00,"status":"COMPLETED","createdAt":"2026-02-03 17:15:46","paidAt":"2026-02-03 17:22:28","errandsId":4,"userId":3,"erranderId":4},
+// "success":true,
+// "message":"정산이 완료되었습니다."}
+
+
+        return result;
+    }
+
     // 주문서 생성
     @Transactional
     @Override
@@ -270,6 +310,7 @@ public class VroomPayServiceImpl implements VroomPayService {
         try {
             // API 호출
             ResponseEntity<PaymentOrderVO> response = restTemplate.exchange(url, HttpMethod.POST, entity, PaymentOrderVO.class);
+            log.info("주문서 생성 = {}", response);
             result.put("success", true);
             result.put("message", "주문서가 발급되었습니다");
 
@@ -285,6 +326,7 @@ public class VroomPayServiceImpl implements VroomPayService {
             result.put("message", "출금에 실패했습니다: " + e.getMessage());
         }
 
+        log.info("주문서 생성 - orderId={}", result);
         // payment 돈 바로 pending으로 상태 변화
         url = vroomPayApiHoldUrl.replace("{orderId}", result.get("orderId").toString());
         requestBody = new HashMap<>();
