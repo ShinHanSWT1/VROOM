@@ -66,6 +66,12 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
             throw new IllegalStateException("부름이 프로필이 없어 채팅 시작이 불가합니다.");
         }
 
+        // [가드3] 이미 거절된 부름이 재신청 불가
+        int canceled = errandAssignmentMapper.existsCanceledAssignment(errandsId, erranderId);
+        if (canceled > 0) {
+            throw new IllegalStateException("이미 거절된 부름이입니다. 재신청할 수 없습니다.");
+        }
+
         // active_status가 active 인 부름이만 가능하도록
         if (!"ACTIVE".equals(errandAssignmentMapper.getErranderActiveStatus(erranderId))) {
             throw new IllegalStateException("해당 부름이 계정이 정지된 상태입니다.");
@@ -288,7 +294,12 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
     
     @Override
     public boolean isCanceledErrander(Long errandsId, Long userId) {
-        return errandAssignmentMapper.existsCanceledAssignment(errandsId, userId) > 0;
+        if (errandsId == null || userId == null) return false;
+
+        Long erranderId = errandAssignmentMapper.selectErranderIdByUserId(userId);
+        if (erranderId == null) return false;
+
+        return errandAssignmentMapper.existsCanceledAssignment(errandsId, erranderId) > 0;
     }
     
     @Override
@@ -318,5 +329,15 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
 
         // 4) 거절 이력 테이블 기록 (재신청 방지)
         errandAssignmentMapper.insertRejectHistory(errandsId, erranderId);
+    }
+    
+    @Override
+    public Long getMatchedErranderId(Long errandsId) {
+        return errandAssignmentMapper.selectMatchedErranderIdByErrandsId(errandsId);
+    }
+
+    @Override
+    public Long getErranderIdByUserId(Long userId) {
+        return errandAssignmentMapper.selectErranderIdByUserId(userId);
     }
 }

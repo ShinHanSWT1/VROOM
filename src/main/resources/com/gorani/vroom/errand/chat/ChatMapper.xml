@@ -232,4 +232,14 @@
 	    AND room_role = 'ERRANDER'
 	</update>
 	
+	<select id="selectChatRoomByErrandsIdAndErranderId"
+          resultType="com.gorani.vroom.errand.chat.ChatRoomVO">
+	    SELECT room_id, errands_id, errander_id, created_at
+	    FROM CHAT_ROOM
+	    WHERE errands_id = #{errandsId}
+	      AND errander_id = #{erranderId}
+	    ORDER BY room_id DESC
+	    LIMIT 1
+	  </select>
+	
 </mapper>

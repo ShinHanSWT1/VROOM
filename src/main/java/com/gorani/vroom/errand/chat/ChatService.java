@@ -92,4 +92,6 @@ public interface ChatService {
     boolean existsChatRoomByErrandsId(Long errandsId);
     
     Long getErranderUserIdByRoomId(Long roomId);
+    
+    ChatRoomVO getChatRoomByErrandsIdAndErranderId(Long errandsId, Long erranderId);
 }

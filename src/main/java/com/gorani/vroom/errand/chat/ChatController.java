@@ -43,7 +43,6 @@ public class ChatController {
             return "redirect:/auth/login";
         }
         
-        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         Long currentUserId = loginUser.getUserId();
 
         // 1) 참가자 권한 체크 (참가자 아니면 차단)
@@ -305,48 +304,89 @@ public class ChatController {
 
         Long userId = loginUser.getUserId();
 
-        // 1) 방 조회
-        ChatRoomVO room = chatService.getChatRoomByErrandsId(errandsId);
+        // 0) 작성자(owner) 여부 판단
+        Long ownerUserId = chatService.getOwnerUserIdByErrandsId(errandsId);
+        boolean isOwner = ownerUserId != null && ownerUserId.equals(userId);
 
-        // 2) 방이 없으면: 부름이만 생성 가능, 작성자는 안내
-        if (room == null) {
-            Long ownerUserId = chatService.getOwnerUserIdByErrandsId(errandsId);
-            boolean isOwner = ownerUserId != null && ownerUserId.equals(userId);
+        // 1) 작성자(OWNER): 현재 MATCHED된 부름이 방으로만 입장
+        if (isOwner) {
 
-            if (isOwner) {
-                return "redirect:/errand/detail?errandsId=" + errandsId
-                    + "&message=" + java.net.URLEncoder.encode(
-                        "아직 부름이가 채팅을 시작하지 않았습니다.",
-                        java.nio.charset.StandardCharsets.UTF_8
-                    );
-            }
-            
+            // WAITING이면 아직 매칭/방 없음
             String errandStatus = chatService.getErrandStatus(errandsId);
             if ("WAITING".equals(errandStatus)) {
-            	if (isOwner) {
-                    return "redirect:/errand/detail?errandsId=" + errandsId
-                            + "&message=" + java.net.URLEncoder.encode(
-                                    "아직 부름이가 채팅을 시작하지 않았습니다.",
-                                    java.nio.charset.StandardCharsets.UTF_8
-                            );
-                }
-
-                // 부름이 중에서도 "거절 당한 당사자"만 alert + 목록 이동
-            	boolean isCanceledMe = errandAssignmentService.isCanceledErrander(errandsId, userId);
-                if (isCanceledMe) {
-                    request.setAttribute("message", "거절된 매칭입니다.");
-                    request.setAttribute("redirectUrl", request.getContextPath() + "/errand/list");
-                    return "common/alert_redirect";
-                }
+                return "redirect:/errand/detail?errandsId=" + errandsId
+                        + "&message=" + java.net.URLEncoder.encode(
+                        "아직 부름이가 채팅을 시작하지 않았습니다.",
+                        java.nio.charset.StandardCharsets.UTF_8
+                );
             }
-            
-            // 부름이는 생성 후 입장
+
+            // 현재 MATCHED assignment의 errander_id 가져오기 (프로필 PK)
+            Long matchedErranderId = errandAssignmentService.getMatchedErranderId(errandsId);
+            if (matchedErranderId == null) {
+                // status는 MATCHED인데 assignment가 없으면 데이터 불일치 -> 안전 처리
+                return "redirect:/errand/detail?errandsId=" + errandsId
+                        + "&message=" + java.net.URLEncoder.encode(
+                        "현재 매칭된 부름이를 찾을 수 없습니다.",
+                        java.nio.charset.StandardCharsets.UTF_8
+                );
+            }
+
+            // (errandsId, erranderId)로 정확히 방 찾기
+            ChatRoomVO room = chatService.getChatRoomByErrandsIdAndErranderId(errandsId, matchedErranderId);
+            if (room == null) {
+                // 방이 없다면 (예: DB만 있고 room 생성 실패) -> 안전 처리 or 생성 로직 추가 가능
+                return "redirect:/errand/detail?errandsId=" + errandsId
+                        + "&message=" + java.net.URLEncoder.encode(
+                        "채팅방이 아직 생성되지 않았습니다.",
+                        java.nio.charset.StandardCharsets.UTF_8
+                );
+            }
+
+            Long roomId = room.getRoomId();
+
+            // 참가자 확인 (작성자는 OWNER로 참여해야 함)
+            String role = chatService.getUserRole(roomId, userId);
+            if (role == null) {
+                return "errand/errand_already_matched";
+            }
+
+            return "redirect:/errand/chat/room?roomId=" + roomId;
+        }
+
+        // 2) 부름이(ERRANDER): 내 방만 입장 + 거절(CANCELED) 차단
+        // userId -> erranderId 변환 (프로필 PK)
+        Long myErranderId = errandAssignmentService.getErranderIdByUserId(userId);
+        if (myErranderId == null) {
+            // 부름이 프로필이 없으면 채팅 시작 불가
+            request.setAttribute("message", "부름이 프로필이 없어 채팅을 시작할 수 없습니다.");
+            request.setAttribute("redirectUrl", request.getContextPath() + "/errand/detail?errandsId=" + errandsId);
+            return "common/alert_redirect";
+        }
+
+        // 거절된 당사자면 입장 차단
+        if (errandAssignmentService.isCanceledErrander(errandsId, userId)) {
+            request.setAttribute("message", "거절된 매칭입니다.");
+            request.setAttribute("redirectUrl", request.getContextPath() + "/errand/list");
+            return "common/alert_redirect";
+        }
+
+        // 내 방 찾기 (errandsId, myErranderId)
+        ChatRoomVO room = chatService.getChatRoomByErrandsIdAndErranderId(errandsId, myErranderId);
+        if (room == null) {
+            // 방이 없으면: WAITING일 때만 “매칭 시작 + 방 생성” 허용
+            String errandStatus = chatService.getErrandStatus(errandsId);
+            if (!"WAITING".equals(errandStatus)) {
+                return "errand/errand_already_matched";
+            }
+
             Long roomId = chatService.getOrCreateChatRoom(errandsId, userId);
             return "redirect:/errand/chat/room?roomId=" + roomId;
         }
 
-        // 3) 방이 있으면: 참가자면 재입장 허용, 아니면 차단
         Long roomId = room.getRoomId();
+
+        // 참가자면 재입장 허용, 아니면 차단
         String role = chatService.getUserRole(roomId, userId);
         if (role == null) {
             return "errand/errand_already_matched";
