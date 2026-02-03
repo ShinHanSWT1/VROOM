@@ -12,11 +12,8 @@ public interface ErrandAssignmentMapper {
     String selectErrandStatus(@Param("errandsId") Long errandsId);
     Long selectMatchedErranderUserId(@Param("errandsId") Long errandsId);
 
-
-
-    int updateErrandStatusWaitingToMatched(@Param("errandsId") Long errandsId);
     int updateErrandStatusToWaiting(@Param("errandsId") Long errandsId);
-    
+
     int updateErrandStatusMatchedToConfirmed1(@Param("errandsId") Long errandsId);
     int updateErrandStatusConfirmed1ToConfirmed2(@Param("errandsId") Long errandsId);
     int updateErrandStatusMatchedToWaiting(@Param("errandsId") Long errandsId);
@@ -36,16 +33,16 @@ public interface ErrandAssignmentMapper {
                             @Param("toStatus") String toStatus,
                             @Param("changedByType") String changedByType,
                             @Param("changedById") Long changedById);
-    
+
     int validateRunnerAndStatus(@Param("errandsId") Long errandsId,
             @Param("erranderUserId") Long erranderUserId);
-	
+
 	int insertCompletionProof(@Param("errandsId") Long errandsId,
             @Param("erranderId") Long erranderId,
             @Param("fileUrl") String fileUrl);
 
 	Long selectLastInsertedProofId();
-	
+
 	int insertProofMedia(@Param("proofId") Long proofId, @Param("fileUrl") String fileUrl);
 
     String getErranderActiveStatus(@Param("erranderId") Long erranderId);
@@ -53,19 +50,19 @@ public interface ErrandAssignmentMapper {
     Long selectUserIdByErranderId(@Param("erranderId") Long erranderId);
 
     int countMatchedByErrandAndErrander(@Param("errandsId") Long errandsId, @Param("erranderId") Long erranderId);
-    
+
     int existsCanceledAssignment(@Param("errandsId") Long errandsId, @Param("erranderId") Long erranderId);
-    
+
     int updateAssignmentStatusMatchedToCanceled(@Param("errandsId") Long errandsId, @Param("erranderId") Long erranderId);
-    
+
     int insertRejectHistory(@Param("errandsId") Long errandsId, @Param("erranderId") Long erranderId);
 
     int existsRejectHistory(@Param("errandsId") Long errandsId, @Param("erranderId") Long erranderId);
-    
+
     Long selectMatchedErranderIdByErrandsId(@Param("errandsId") Long errandsId);
-    
+
     int updateErrandWaitingToMatchedWithErrander(@Param("errandsId") Long errandsId, @Param("erranderId") Long erranderId);
-    
+
     int updateErrandMatchedToWaitingClearErrander(@Param("errandsId") Long errandsId);
     
     Long selectRevieweeUserIdByErrandId(@Param("errandsId") Long errandsId);

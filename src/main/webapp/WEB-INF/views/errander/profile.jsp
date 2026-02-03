@@ -2,6 +2,7 @@
          pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <c:set var="pageTitle" value="나의 정보 - 부름이 마이 페이지" scope="request"/>
 <c:set var="pageCss" value="profile" scope="request"/>
@@ -29,9 +30,18 @@
             <div style="display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1rem;">
                 <c:choose>
                     <c:when test="${not empty profile.profileImage}">
-                        <img src="<c:url value='${profile.profileImage}'/>"
-                             alt="프로필 이미지"
-                             style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid white;">
+                        <c:choose>
+                            <c:when test="${fn:startsWith(profile.profileImage, 'http')}">
+                                <img src="${profile.profileImage}"
+                                     alt="프로필 이미지"
+                                     style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid white;">
+                            </c:when>
+                            <c:otherwise>
+                                <img src="<c:url value='${profile.profileImage}'/>"
+                                     alt="프로필 이미지"
+                                     style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid white;">
+                            </c:otherwise>
+                        </c:choose>
                     </c:when>
                     <c:otherwise>
                         <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%); display: flex; align-items: center; justify-content: center; font-size: 2rem; color: white; border: 3px solid white;">

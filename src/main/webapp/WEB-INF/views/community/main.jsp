@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <c:set var="pageTitle" value="VROOM - 동네생활" scope="request"/>
 <c:set var="pageId" value="community" scope="request"/>
@@ -137,7 +138,14 @@
                                 </div>
                                 <c:if test="${not empty post.thumbnailUrl}">
                                     <div class="post-thumbnail">
-                                        <img src="${pageContext.request.contextPath}${post.thumbnailUrl}" alt="썸네일">
+                                        <c:choose>
+                                            <c:when test="${fn:startsWith(post.thumbnailUrl, 'http')}">
+                                                <img src="${post.thumbnailUrl}" alt="썸네일">
+                                            </c:when>
+                                            <c:otherwise>
+                                                <img src="${pageContext.request.contextPath}${post.thumbnailUrl}" alt="썸네일">
+                                            </c:otherwise>
+                                        </c:choose>
                                     </div>
                                 </c:if>
                             </div>

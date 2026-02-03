@@ -42,7 +42,14 @@
         SELECT e.errands_id, e.user_id, e.errander_id, e.title, e.description,
                e.desired_at, e.reward_amount, e.expense_amount, e.status,
                e.created_at, e.updated_at, e.category_id, e.dong_code,
-               d.gungu_name, d.dong_name
+               d.gungu_name, d.dong_name,
+               (
+                 SELECT ei.image_url
+                 FROM ERRANDS_IMAGE ei
+                 WHERE ei.errands_id = e.errands_id
+                 ORDER BY ei.sort_order ASC, ei.image_id ASC
+                 LIMIT 1
+               ) AS imageUrl
         FROM ERRANDS e
         LEFT JOIN LEGAL_DONG d ON e.dong_code = d.dong_code
         WHERE e.user_id = #{userId}

@@ -107,17 +107,16 @@
 	      CONCAT(ld.gungu_name, ' ', ld.dong_name) AS errandLocation,
 	      e.reward_amount AS rewardAmount,
 	      e.expense_amount AS expenseAmount,
-	      COALESCE(ei.image_url, '/static/img/errand/noimage.png') AS errandImageUrl,
+	      (
+	        SELECT ei.image_url
+	        FROM ERRANDS_IMAGE ei
+	        WHERE ei.errands_id = e.errands_id
+	        ORDER BY ei.sort_order ASC, ei.image_id ASC
+	        LIMIT 1
+	      ) AS errandImageUrl,
 	      m.nickname AS ownerNickname
 	  FROM ERRANDS e
 	  LEFT JOIN LEGAL_DONG ld ON e.dong_code = ld.dong_code
-	  LEFT JOIN (
-	    SELECT errands_id, image_url
-	    FROM ERRANDS_IMAGE
-	    WHERE errands_id = #{errandsId}
-	    ORDER BY sort_order ASC, image_id ASC
-	    LIMIT 1
-	  ) ei ON e.errands_id = ei.errands_id
 	  LEFT JOIN MEMBERS m ON e.user_id = m.user_id
 	  WHERE e.errands_id = #{errandsId}
 	  LIMIT 1

@@ -4,6 +4,8 @@ import com.gorani.vroom.batch.SettlementTargetVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Mapper
@@ -57,5 +59,21 @@ public interface VroomPayMapper {
 
     Long getErranderIdByUserId(
             @Param("userId") Long userId);
+
+    int completePayment(
+            @Param("orderId") Long orderId,
+            @Param("paidAt") String paidAt);
+
+    int updateErrandStatusConfirmed2ToCompleted(
+            @Param("errandsId") Long errandsId,
+            @Param("amount") BigDecimal amount);
+
+    int updateErrandAssignmentStatusToCompleted(
+            @Param("errandsId") Long errandsId,
+            @Param("erranderId") Long erranderId);
+
+    int insertErrandHistoryToCompletedByAdmin(
+            @Param("errandsId") Long errandsId);
+
 
 }

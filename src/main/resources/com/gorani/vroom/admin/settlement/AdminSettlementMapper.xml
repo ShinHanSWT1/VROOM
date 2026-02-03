@@ -4,49 +4,51 @@
 
     <!-- 정산 대기 건수, 정산 보류 건수, 자동 확정 예정 건 수, 오늘 지급 완료 금액 -->
     <select id="getSummary" resultType="map">
+        <![CDATA[
         SELECT
             COUNT(CASE WHEN e.status = 'CONFIRMED2' AND ea.status = 'MATCHED' THEN 1 END) AS waitingCount,
             COUNT(CASE WHEN e.status = 'HOLD' THEN 1 END) AS holdCount,
             COUNT(CASE WHEN e.status = 'CONFIRMED2' AND ea.status = 'MATCHED'
-                AND e.updated_at &lt; DATE_SUB(NOW(), INTERVAL 3 DAY) THEN 1 END) AS autoConfirmCount,
-            COALESCE(SUM(CASE WHEN e.status = 'COMPLETED' AND DATE(e.updated_at) = CURDATE() THEN e.reward_amount ELSE 0 END), 0) AS todayPaidAmount
+                AND e.updated_at < DATE_SUB(NOW(), INTERVAL 1 DAY) THEN 1 END) AS autoConfirmCount,
+            COALESCE(SUM(CASE WHEN e.status = 'COMPLETED' AND DATE(e.updated_at) = CURDATE() THEN e.settlement_amount ELSE 0 END), 0) AS todayPaidAmount
 
         FROM ERRANDS e JOIN ERRAND_ASSIGNMENTS ea ON e.errands_id = ea.errands_id
+        ]]>
     </select>
 
     <select id="searchSettlements" parameterType="map" resultType="map">
-<!--        SELECT-->
-<!--        s.settlement_id AS id,-->
-<!--        s.errand_id AS errandId,-->
-<!--        u.nickname AS errander,-->
-<!--        s.amount,-->
-<!--        DATE_FORMAT(s.requested_at, '%Y-%m-%d') AS date,-->
-<!--        s.status,-->
-<!--        s.admin_memo AS reason-->
-<!--        FROM SETTLEMENTS s-->
-<!--        JOIN USERS u ON s.user_id = u.user_id-->
-<!--        WHERE 1=1-->
+        SELECT
+        s.settlement_id AS id,
+        s.errand_id AS errandId,
+        u.nickname AS errander,
+        s.amount,
+        DATE_FORMAT(s.requested_at, '%Y-%m-%d') AS date,
+        s.status,
+        s.admin_memo AS reason
+        FROM SETTLEMENTS s
+        JOIN USERS u ON s.user_id = u.user_id
+        WHERE 1=1
 
-<!--        <if test="keyword != null and keyword != ''">-->
-<!--            AND (-->
-<!--            CAST(s.errand_id AS CHAR) LIKE CONCAT('%', #{keyword}, '%')-->
-<!--            OR u.nickname LIKE CONCAT('%', #{keyword}, '%')-->
-<!--            )-->
-<!--        </if>-->
+        <if test="keyword != null and keyword != ''">
+            AND (
+            CAST(s.errand_id AS CHAR) LIKE CONCAT('%', #{keyword}, '%')
+            OR u.nickname LIKE CONCAT('%', #{keyword}, '%')
+            )
+        </if>
 
-<!--        <if test="status != null and status != ''">-->
-<!--            AND s.status = #{status}-->
-<!--        </if>-->
+        <if test="status != null and status != ''">
+            AND s.status = #{status}
+        </if>
 
-<!--        <if test="startDate != null and startDate != ''">-->
-<!--            AND s.requested_at >= #{startDate}-->
-<!--        </if>-->
-<!--        <if test="endDate != null and endDate != ''">-->
-<!--            AND s.requested_at &lt;= DATE_ADD(#{endDate}, INTERVAL 1 DAY)-->
-<!--        </if>-->
+        <if test="startDate != null and startDate != ''">
+            AND s.requested_at >= #{startDate}
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND s.requested_at &lt;= DATE_ADD(#{endDate}, INTERVAL 1 DAY)
+        </if>
 
-<!--        ORDER BY s.requested_at DESC-->
-<!--        LIMIT #{limit} OFFSET #{offset}-->
+        ORDER BY s.requested_at DESC
+        LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <select id="countSettlements" parameterType="map" resultType="int">

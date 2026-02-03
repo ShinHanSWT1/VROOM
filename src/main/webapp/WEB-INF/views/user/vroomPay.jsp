@@ -2,6 +2,7 @@
          pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <c:set var="pageTitle" value="부름 페이" />
 <c:set var="pageCss" value="vroomPay" />
@@ -30,13 +31,24 @@
     <main class="main-content">
 
       <h2 class="page-title">부름 페이</h2>
-
+      <c:if test="${not empty msg}">
+        <div className="alert alert-warning">
+            ${msg}
+        </div>
+      </c:if>
       <div class="pay-info-card">
         <div class="profile-section">
           <div class="profile-image-container">
             <c:choose>
               <c:when test="${not empty profile.profileImage}">
-                <img src="${pageContext.request.contextPath}${profile.profileImage}" alt="프로필" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">
+                <c:choose>
+                  <c:when test="${fn:startsWith(profile.profileImage, 'http')}">
+                    <img src="${profile.profileImage}" alt="프로필" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">
+                  </c:when>
+                  <c:otherwise>
+                    <img src="${pageContext.request.contextPath}${profile.profileImage}" alt="프로필" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">
+                  </c:otherwise>
+                </c:choose>
               </c:when>
               <c:otherwise>
                 <img src="${pageContext.request.contextPath}/static/img/logo.png" alt="기본 프로필" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">

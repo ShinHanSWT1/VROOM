@@ -52,6 +52,7 @@
 		    ) AS imageUrl,
             
             c.name         AS categoryName,
+            c.default_image_url AS categoryDefaultImageUrl,
 		    u.nickname     AS writerNickname,
 		    d.full_name    AS dongFullName
         FROM ERRANDS e
@@ -114,13 +115,28 @@
             e.category_id    AS categoryId,
             e.dong_code      AS dongCode,
             d.full_name      AS dongFullName,
-        	m.nickname		 AS nickname
+        	m.nickname		 AS nickname,
+            (
+              SELECT ei.image_url
+              FROM ERRANDS_IMAGE ei
+              WHERE ei.errands_id = e.errands_id
+              ORDER BY ei.sort_order ASC, ei.image_id ASC
+              LIMIT 1
+            ) AS mainImageUrl
         FROM ERRANDS e
         JOIN MEMBERS m
         	ON m.user_id = e.user_id
         LEFT JOIN LEGAL_DONG d
         	ON d.dong_code = e.dong_code
         WHERE e.errands_id = #{errandsId}
+    </select>
+
+    <!-- 심부름 이미지 리스트 조회 -->
+    <select id="selectErrandImages" parameterType="long" resultType="string">
+        SELECT image_url
+        FROM ERRANDS_IMAGE
+        WHERE errands_id = #{errandsId}
+        ORDER BY sort_order ASC, image_id ASC
     </select>
     
     <select id="selectRelatedErrands" resultType="com.gorani.vroom.errand.post.ErrandListVO">
@@ -133,7 +149,14 @@
 	      d.full_name      AS dongFullName,
 	      e.category_id    AS categoryId,
 	      e.status         AS status,
-	      c.default_image_url AS categoryDefaultImageUrl
+	      c.default_image_url AS categoryDefaultImageUrl,
+          (
+            SELECT ei.image_url
+            FROM ERRANDS_IMAGE ei
+            WHERE ei.errands_id = e.errands_id
+            ORDER BY ei.sort_order ASC, ei.image_id ASC
+            LIMIT 1
+          ) AS imageUrl
 	  FROM ERRANDS e
 	  JOIN CATEGORIES c ON c.id = e.category_id
 	  LEFT JOIN LEGAL_DONG d
@@ -190,4 +213,17 @@
 	    FROM LEGAL_DONG d
 	    ORDER BY d.full_name ASC
 	</select>
+
+	<!-- 심부름 이미지 저장 -->
+	<insert id="insertErrandImage" useGeneratedKeys="true" keyProperty="imageId">
+	    INSERT INTO ERRANDS_IMAGE (
+	        image_url,
+	        sort_order,
+	        errands_id
+	    ) VALUES (
+	        #{imageUrl},
+	        #{sortOrder},
+	        #{errandsId}
+	    )
+	</insert>
 </mapper>

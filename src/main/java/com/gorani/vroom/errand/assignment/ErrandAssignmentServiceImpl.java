@@ -1,18 +1,14 @@
 package com.gorani.vroom.errand.assignment;
 
-import java.io.File;
-import java.util.UUID;
-
+import com.gorani.vroom.common.util.S3UploadService;
+import com.gorani.vroom.errand.chat.ChatService;
+import com.gorani.vroom.notification.NotificationService;
 import com.gorani.vroom.vroompay.VroomPayService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
-import com.gorani.vroom.errand.chat.ChatService;
-import com.gorani.vroom.notification.NotificationService;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
@@ -23,6 +19,7 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
     private final ChatService chatService;
     private final NotificationService notificationService;
     private final VroomPayService vroomPayService;
+    private final S3UploadService s3UploadService;
 
     private String toChangedByType(String role) {
         if (role == null) return "SYSTEM";
@@ -140,27 +137,13 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
             throw new RuntimeException("업로드 권한이 없거나 상태가 올바르지 않습니다.");
         }
 
-        // 2) 파일 저장 (로컬)
-        String uploadDir = "D:/vroom_uploads/proof";
-        new File(uploadDir).mkdirs();
-
-        String original = proofImage.getOriginalFilename();
-        String ext = "";
-        if (original != null && original.contains(".")) {
-            ext = original.substring(original.lastIndexOf("."));
-        }
-
-        String saveName = UUID.randomUUID().toString().replace("-", "") + ext;
-        File dest = new File(uploadDir, saveName);
-
+        // 2) 파일 저장 (S3)
+        String savedPath;
         try {
-            proofImage.transferTo(dest);
+            savedPath = s3UploadService.upload(proofImage, "proof");
         } catch (Exception e) {
-            throw new RuntimeException("파일 저장 실패");
+            throw new RuntimeException("파일 저장 실패: " + e.getMessage());
         }
-
-        // URL 경로도 /uploads/proof 로 통일 (정적 리소스 매핑이 그쪽이면)
-        String savedPath = "/uploads/proof/" + saveName;
 
         // 3) proof 저장 (erranderId로 저장)
         int inserted = errandAssignmentMapper.insertCompletionProof(errandsId, erranderId, savedPath);
@@ -239,7 +222,7 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
         }
 
         // 4. 상태 변경 (WAITING -> MATCHED)
-        int updated = errandAssignmentMapper.updateErrandStatusWaitingToMatched(errandsId);
+        int updated = errandAssignmentMapper.updateErrandWaitingToMatchedWithErrander(errandsId, erranderId);
         if (updated == 0) {
             throw new IllegalStateException("심부름 상태 변경에 실패했습니다. 이미 배정되었을 수 있습니다.");
         }
@@ -248,7 +231,6 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
         errandAssignmentMapper.insertMatchedAssignment(adminId, ownerUserId, errandsId, erranderId, "MANUAL", "MATCHED", reason);
 
         // 6. 상태 변경 이력 저장 (Changed By ADMIN)
-        // 사유(Reason)를 저장할 컬럼이 있다면 Mapper를 수정하여 reason도 전달하세요.
         errandAssignmentMapper.insertStatusHistory(
                 errandsId,
                 "WAITING",
@@ -258,10 +240,12 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
         );
 
         // 7. 채팅방 생성 (Owner <-> Errander)
-        // 채팅방이 있어야 소통이 가능하므로 필수입니다.
         try {
             roomId = chatService.getOrCreateChatRoom(errandsId, erranderUserId);
             if (roomId != null) {
+                // PAYMENT 업데이트
+                vroomPayService.updatePaymentErranderMatched(errandsId, erranderId);
+
                 // + 알림 보내기
                 notificationService.send(
                         ownerUserId,

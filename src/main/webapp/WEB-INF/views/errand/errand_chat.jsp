@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <!DOCTYPE html>
 <html lang="ko">
@@ -44,8 +45,15 @@
                 <div class="errand-card">
                     <div class="errand-thumbnail-section">
                         <div class="errand-thumbnail">
-                            <img src="${pageContext.request.contextPath}${chatRoomInfo.errandImageUrl}"
-                                 alt="심부름 이미지" id="errandThumbnail">
+                            <c:choose>
+                                <c:when test="${fn:startsWith(chatRoomInfo.errandImageUrl, 'http')}">
+                                    <img src="${chatRoomInfo.errandImageUrl}" alt="심부름 이미지" id="errandThumbnail">
+                                </c:when>
+                                <c:otherwise>
+                                    <img src="${pageContext.request.contextPath}${chatRoomInfo.errandImageUrl}"
+                                         alt="심부름 이미지" id="errandThumbnail">
+                                </c:otherwise>
+                            </c:choose>
                         </div>
                         <div class="errand-basic-info">
                             <div class="errand-title" id="errandTitle">${chatRoomInfo.errandTitle}</div>
@@ -190,17 +198,6 @@
             <!-- 우측 패널: 채팅 -->
             <div class="right-panel">
                 <!-- 채팅 헤더 (고정) -->
-<%--                <div class="chat-header">--%>
-<%--                    <div class="chat-user-info">--%>
-<%--                        <h3 id="chatPartnerName">${chatRoomInfo.partnerNickname}</h3>--%>
-<%--                        <div class="chat-user-status">--%>
-<%--                            <c:choose>--%>
-<%--                                <c:when test="${userRole eq 'OWNER'}">부름이</c:when>--%>
-<%--                                <c:when test="${userRole eq 'ERRANDER'}">심부름 작성자</c:when>--%>
-<%--                            </c:choose>--%>
-<%--                        </div>--%>
-<%--                    </div>--%>
-<%--                </div>--%>
 				<div class="chat-header">
 				  <div class="chat-header-row">
 				
@@ -219,8 +216,8 @@
 					
 					      <div class="chat-user-status">
 					        <c:choose>
-					          <c:when test="${userRole eq 'OWNER'}">사용자</c:when>
-					          <c:when test="${userRole eq 'ERRANDER'}">부름이</c:when>
+					          <c:when test="${userRole eq 'OWNER' or userRole eq 'USER'}">부름이</c:when>
+					          <c:when test="${userRole eq 'ERRANDER' or userRole eq 'RUNNER'}">사용자</c:when>
 					        </c:choose>
 					      </div>
 					    </div>
@@ -277,7 +274,7 @@
                 <!-- 입력 영역 (하단 고정) -->
                 <div class="input-area">
                     <c:if test="${userRole eq 'ERRANDER'}">
-                        <button class="proof-btn" id="proofBtn" title="인증 사진 전송">
+                        <button class="proof-btn" id="proofBtnInput" type="button" title="인증 사진 전송">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                                 <circle cx="8.5" cy="8.5" r="1.5"></circle>
@@ -285,14 +282,14 @@
                             </svg>
                         </button>
                     </c:if>
-                    <button class="attach-btn" id="attachBtn" title="파일 첨부">
+                    <button class="attach-btn" id="attachBtn" type="button" title="파일 첨부">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <line x1="12" y1="5" x2="12" y2="19"></line>
                             <line x1="5" y1="12" x2="19" y2="12"></line>
                         </svg>
                     </button>
                     <input type="text" class="message-input" id="messageInput" placeholder="메시지를 입력하세요...">
-                    <button class="send-btn" id="sendBtn">전송</button>
+                    <button class="send-btn" id="sendBtn" type="button">전송</button>
                 </div>
             </div>
         </div>
