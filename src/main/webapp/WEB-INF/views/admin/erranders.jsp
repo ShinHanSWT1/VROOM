@@ -1516,8 +1516,10 @@
             alert('파일 경로가 존재하지 않습니다.');
             return;
         }
-        // 새 창에서 해당 URL 열람
-        url = '${pageContext.request.contextPath}' + '/' + url;
+        // S3 URL(http로 시작)이면 그대로 사용, 아니면 contextPath 붙임
+        if (!url.startsWith('http')) {
+            url = '${pageContext.request.contextPath}/' + url;
+        }
         window.open(url, '_blank');
     }
 

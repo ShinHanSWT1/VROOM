@@ -1,27 +1,21 @@
 package com.gorani.vroom.user.profile;
 
-import com.gorani.vroom.config.MvcConfig;
+import com.gorani.vroom.common.util.S3UploadService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class UserProfileServiceImpl implements UserProfileService {
 
     private final UserMapper userMapper;
-
-    @Autowired
-    public UserProfileServiceImpl(UserMapper userMapper) {
-        this.userMapper = userMapper;
-    }
+    private final S3UploadService s3UploadService;
 
     // 프로필 조회
     @Override
@@ -42,62 +36,16 @@ public class UserProfileServiceImpl implements UserProfileService {
         userMapper.updateProfileImage(userId, imagePath);
     }
 
-    // 프로필 이미지 파일 저장 (중복 방지 적용)
+    // 프로필 이미지 파일 저장 (S3 적용)
     @Override
     public String saveProfileImage(Long userId, MultipartFile file) throws IOException {
+        // S3 업로드
+        String webPath = s3UploadService.upload(file, "profile");
+        
+        // DB 저장용 웹 경로 업데이트
+        userMapper.updateProfileImage(userId, webPath);
 
-        // 저장 디렉토리 확인
-        File uploadDir = new File(MvcConfig.PROFILE_UPLOAD_PATH);
-        if (!uploadDir.exists()) {
-            uploadDir.mkdirs();
-        }
-
-        // 파일 확장자 추출
-        String originalFilename = file.getOriginalFilename();
-        String extension = "";
-        if (originalFilename != null && originalFilename.contains(".")) {
-            extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-        }
-
-        try {
-            // 파일 해시(SHA-256) 계산
-            String fileHash = calculateFileHash(file);
-            String savedFilename = fileHash + extension;
-
-            File destFile = new File(MvcConfig.PROFILE_UPLOAD_PATH + savedFilename);
-
-            // 중복 파일 체크
-            if (destFile.exists()) {
-                log.info("중복 이미지 존재 → 기존 파일 사용: {}", savedFilename);
-            } else {
-                log.info("새 이미지 저장: {}", savedFilename);
-                file.transferTo(destFile);
-            }
-
-            // DB 저장용 웹 경로
-            String webPath = "/uploads/profile/" + savedFilename;
-            userMapper.updateProfileImage(userId, webPath);
-
-            return webPath;
-
-        } catch (NoSuchAlgorithmException e) {
-            throw new IOException("해시 알고리즘 오류", e);
-        }
-    }
-
-    // 파일 SHA-256 해시 계산
-    private String calculateFileHash(MultipartFile file)
-            throws IOException, NoSuchAlgorithmException {
-
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
-        byte[] hashBytes = md.digest(file.getBytes());
-
-        StringBuilder sb = new StringBuilder();
-        for (byte b : hashBytes) {
-            sb.append(String.format("%02x", b));
-        }
-
-        return sb.toString();
+        return webPath;
     }
 
     // 내가 신청한 심부름 목록 조회

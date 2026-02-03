@@ -32,7 +32,14 @@
                 <div class="profile-image" id="profileImage">
                     <c:choose>
                         <c:when test="${not empty profile.profileImage}">
-                            <img src="${pageContext.request.contextPath}${profile.profileImage}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                            <c:choose>
+                                <c:when test="${fn:startsWith(profile.profileImage, 'http')}">
+                                    <img src="${profile.profileImage}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                                </c:when>
+                                <c:otherwise>
+                                    <img src="${pageContext.request.contextPath}${profile.profileImage}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                                </c:otherwise>
+                            </c:choose>
                         </c:when>
                         <c:otherwise>V</c:otherwise>
                     </c:choose>
@@ -175,7 +182,14 @@
                     <div class="preview-image" id="previewImage">
                         <c:choose>
                             <c:when test="${not empty profile.profileImage}">
-                                <img src="${pageContext.request.contextPath}${profile.profileImage}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">
+                                <c:choose>
+                                    <c:when test="${fn:startsWith(profile.profileImage, 'http')}">
+                                        <img src="${profile.profileImage}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">
+                                    </c:when>
+                                    <c:otherwise>
+                                        <img src="${pageContext.request.contextPath}${profile.profileImage}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">
+                                    </c:otherwise>
+                                </c:choose>
                             </c:when>
                             <c:otherwise>V</c:otherwise>
                         </c:choose>
@@ -232,7 +246,8 @@
              data-price="<fmt:formatNumber value="${errand.rewardAmount}" pattern="#,###"/>"
              data-status="${errand.status}"
              data-location="${errand.gunguName} ${errand.dongName}"
-             data-created="${errand.createdAt}">
+             data-created="${errand.createdAt}"
+             data-image="${errand.imageUrl}">
         </div>
     </c:forEach>
 </div>

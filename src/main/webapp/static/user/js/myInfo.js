@@ -13,7 +13,8 @@ document.querySelectorAll('#errandDataContainer .errand-data').forEach(function 
         price: el.dataset.price + '원',
         status: el.dataset.status,
         location: el.dataset.location,
-        createdAt: el.dataset.created
+        createdAt: el.dataset.created,
+        imageUrl: el.dataset.image // 이미지 URL 추가
     });
 });
 
@@ -120,7 +121,19 @@ function renderActivities(filterType, page = 1) {
             shortDescription = shortDescription.substring(0, 20) + '...';
         }
 
-        taskCard.innerHTML = '<div class="task-image">' + task.icon + statusLabel + '</div>' +
+        // 이미지 처리 로직 추가
+        let imageHtml = '';
+        if (task.imageUrl && task.imageUrl !== 'null' && task.imageUrl !== '') {
+            let imgSrc = task.imageUrl;
+            if (!imgSrc.startsWith('http')) {
+                imgSrc = contextPath + imgSrc;
+            }
+            imageHtml = '<img src="' + imgSrc + '" alt="심부름 이미지" style="width:100%; height:100%; object-fit:cover;">';
+        } else {
+            imageHtml = task.icon; // 기본 아이콘
+        }
+
+        taskCard.innerHTML = '<div class="task-image">' + imageHtml + statusLabel + '</div>' +
             '<div class="task-card-content">' +
             '<div class="task-card-header">' +
             '<span class="task-badge">' + task.badge + '</span>' +
@@ -514,7 +527,11 @@ modalSave.addEventListener('click', () => {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        profileImage.innerHTML = '<img src="' + contextPath + '' + data.imagePath + '" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">';
+                        let imgUrl = data.imagePath;
+                        if (!imgUrl.startsWith('http')) {
+                            imgUrl = contextPath + imgUrl;
+                        }
+                        profileImage.innerHTML = '<img src="' + imgUrl + '" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">';
                         alert('프로필 이미지가 변경되었습니다.');
                         closeModal();
                     } else {
@@ -567,4 +584,3 @@ modalSave.addEventListener('click', () => {
             });
     }
 });
-

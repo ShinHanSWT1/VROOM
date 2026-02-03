@@ -1,13 +1,15 @@
 package com.gorani.vroom.errand.post;
 
-import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpSession;
 
+import com.gorani.vroom.common.util.S3UploadService;
 import com.gorani.vroom.vroompay.VroomPayService;
 import com.gorani.vroom.vroompay.VroomPayVO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,9 +22,11 @@ import com.gorani.vroom.errand.chat.ChatService;
 import com.gorani.vroom.user.auth.UserVO;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 
+@Slf4j
 @Controller
 @RequiredArgsConstructor
 public class ErrandController {
@@ -31,6 +35,7 @@ public class ErrandController {
 	private final ErrandAssignmentService errandAssignmentService;
 	private final ChatService chatService;
 	private final VroomPayService vroomPayService;
+	private final S3UploadService s3UploadService;
 
 	// 심부름 게시글 목록
 	@GetMapping("/errand/list")
@@ -160,9 +165,10 @@ public class ErrandController {
 	// 심부름 게시글 작성 등록
 	@PostMapping("/errand/create")
 	public String errandCreateSubmit(@ModelAttribute ErrandCreateVO errandCreateVO,
+									 @RequestParam(value = "imageFiles", required = false) MultipartFile[] imageFiles,
 									 HttpSession session,
 									 RedirectAttributes rttr) {
-		
+
 		// 1. 세션에서 "loginSess" 속성을 UserVO 타입으로 가져옵니다.
 		UserVO loginUser = (UserVO) session.getAttribute("loginSess");
 
@@ -189,10 +195,17 @@ public class ErrandController {
 			rttr.addFlashAttribute("msg", "보유 페이가 부족합니다. 충전 후 다시 시도해주세요.");
 			return "redirect:/pay/charge";
 		}
-		
+
 		Long errandsId = errandService.createErrand(errandCreateVO);
+
+		// 이미지 저장 처리
+		List<String> imageUrls = saveImageFiles(imageFiles);
+		if (!imageUrls.isEmpty()) {
+			errandService.saveImages(errandsId, imageUrls);
+		}
+
 		return "redirect:/errand/detail?errandsId=" + errandsId;
-		
+
 	}
 
 	/**
@@ -203,4 +216,30 @@ public class ErrandController {
     public String redirectMyInfo() {
         return "redirect:/member/myInfo";
     }
+
+	// 이미지 파일 저장 및 URL 목록 반환
+	private List<String> saveImageFiles(MultipartFile[] images) {
+		List<String> imageUrls = new ArrayList<>();
+
+		if (images == null || images.length == 0) {
+			return imageUrls;
+		}
+
+		for (MultipartFile image : images) {
+			if (image.isEmpty()) {
+				continue;
+			}
+
+			try {
+				// S3 업로드
+				String webPath = s3UploadService.upload(image, "errand");
+				imageUrls.add(webPath);
+
+			} catch (Exception e) {
+				log.error("이미지 저장 실패 (파일명: {}): {}", image.getOriginalFilename(), e.getMessage());
+			}
+		}
+
+		return imageUrls;
+	}
 }

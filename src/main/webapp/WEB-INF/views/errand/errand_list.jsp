@@ -91,10 +91,20 @@
                    href="${pageContext.request.contextPath}/errand/detail?errandsId=${e.errandsId}">
 
                     <div class="task-image">
-                        <img
-                            src="${pageContext.request.contextPath}${e.displayImageUrl}"
-                            class="${fn:contains(e.displayImageUrl, '/static/img/category/') ? 'img-contain' : 'img-cover'}"
-                            alt="심부름 이미지">
+                        <c:choose>
+                            <c:when test="${fn:startsWith(e.displayImageUrl, 'http')}">
+                                <img
+                                    src="${e.displayImageUrl}"
+                                    class="${fn:contains(e.displayImageUrl, '/static/img/category/') ? 'img-contain' : 'img-cover'}"
+                                    alt="심부름 이미지">
+                            </c:when>
+                            <c:otherwise>
+                                <img
+                                    src="${pageContext.request.contextPath}${e.displayImageUrl}"
+                                    class="${fn:contains(e.displayImageUrl, '/static/img/category/') ? 'img-contain' : 'img-cover'}"
+                                    alt="심부름 이미지">
+                            </c:otherwise>
+                        </c:choose>
                     </div>
 
                     <div class="task-card-content">

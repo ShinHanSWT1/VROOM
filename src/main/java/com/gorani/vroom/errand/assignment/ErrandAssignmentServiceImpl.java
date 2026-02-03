@@ -1,18 +1,14 @@
 package com.gorani.vroom.errand.assignment;
 
-import java.io.File;
-import java.util.UUID;
-
+import com.gorani.vroom.common.util.S3UploadService;
+import com.gorani.vroom.errand.chat.ChatService;
+import com.gorani.vroom.notification.NotificationService;
 import com.gorani.vroom.vroompay.VroomPayService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
-import com.gorani.vroom.errand.chat.ChatService;
-import com.gorani.vroom.notification.NotificationService;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
@@ -23,6 +19,7 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
     private final ChatService chatService;
     private final NotificationService notificationService;
     private final VroomPayService vroomPayService;
+    private final S3UploadService s3UploadService;
 
     private String toChangedByType(String role) {
         if (role == null) return "SYSTEM";
@@ -134,27 +131,13 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
             throw new RuntimeException("업로드 권한이 없거나 상태가 올바르지 않습니다.");
         }
 
-        // 2) 파일 저장 (로컬)
-        String uploadDir = "D:/vroom_uploads/proof";
-        new File(uploadDir).mkdirs();
-
-        String original = proofImage.getOriginalFilename();
-        String ext = "";
-        if (original != null && original.contains(".")) {
-            ext = original.substring(original.lastIndexOf("."));
-        }
-
-        String saveName = UUID.randomUUID().toString().replace("-", "") + ext;
-        File dest = new File(uploadDir, saveName);
-
+        // 2) 파일 저장 (S3)
+        String savedPath;
         try {
-            proofImage.transferTo(dest);
+            savedPath = s3UploadService.upload(proofImage, "proof");
         } catch (Exception e) {
-            throw new RuntimeException("파일 저장 실패");
+            throw new RuntimeException("파일 저장 실패: " + e.getMessage());
         }
-
-        // URL 경로도 /uploads/proof 로 통일 (정적 리소스 매핑이 그쪽이면)
-        String savedPath = "/uploads/proof/" + saveName;
 
         // 3) proof 저장 (erranderId로 저장)
         int inserted = errandAssignmentMapper.insertCompletionProof(errandsId, erranderId, savedPath);
