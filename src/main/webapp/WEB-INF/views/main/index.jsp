@@ -81,25 +81,14 @@
             <!-- Location Search -->
             <section class="location-search">
                 <div class="container">
-                    <div class="location-selector-wrapper"
-                        style="background-color: var(--color-white); padding: 2rem; border-radius: 12px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); text-align: center;">
-                        <h3 style="margin-bottom: 1.5rem; color: var(--color-dark);">우리 동네 설정하기</h3>
-
-                        <div class="location-selectors" style="display: flex; justify-content: center; gap: 1rem;">
-                            <select id="guSelect" class="location-select"
-                                style="padding: 0.75rem 1.25rem; border: 2px solid var(--color-light-gray); border-radius: 8px; font-size: 1rem;">
-                                <option value="">구 선택</option>
-                                <c:forEach var="gungu" items="${gunguList}">
-                                    <option value="${gungu}" ${gungu==selectedGuName ? 'selected' : '' }>${gungu}
-                                    </option>
-                                </c:forEach>
-                            </select>
-
-                            <select id="dongSelect" class="location-select"
-                                style="padding: 0.75rem 1.25rem; border: 2px solid var(--color-light-gray); border-radius: 8px; font-size: 1rem;">
-                                <option value="">동 선택</option>
-                            </select>
+                    <div class="location-selector-wrapper">
+                        <div class="gu-chips">
+                            <button type="button" class="gu-chip ${empty selectedGuName ? 'active' : ''}" data-gu="">전체</button>
+                            <c:forEach var="gungu" items="${gunguList}">
+                                <button type="button" class="gu-chip ${gungu == selectedGuName ? 'active' : ''}" data-gu="${gungu}">${gungu}</button>
+                            </c:forEach>
                         </div>
+
                     </div>
                 </div>
             </section>
@@ -109,10 +98,10 @@
                 <div class="container">
                     <div class="section-header">
                         <h2 class="section-title">진행 중인 부름</h2>
-                        <a href="<c:url value='/errand/list'><c:if test='${not empty selectedDongCode}'><c:param name='dongCode' value='${selectedDongCode}'/></c:if></c:url>"
+                        <a id="errandMoreLink" href="<c:url value='/errand/list'><c:if test='${not empty selectedGuName}'><c:param name='guName' value='${selectedGuName}'/></c:if></c:url>"
                             class="more-link">더보기 →</a>
                     </div>
-                    <div class="task-grid">
+                    <div class="task-grid" id="taskGrid">
                         <c:forEach var="task" items="${errandListVO}">
                             <a href="<c:url value='/errand/detail'><c:param name='errandsId' value='${task.errandsId}'/></c:url>"
                                 class="task-card" style="text-decoration: none; color: inherit;">
@@ -138,12 +127,12 @@
                 <div class="container">
                     <div class="section-header">
                         <h2 class="section-title">커뮤니티 인기글</h2>
-                        <a href="<c:url value='/community'><c:if test='${not empty selectedDongCode}'><c:param name='dongCode' value='${selectedDongCode}'/></c:if></c:url>"
+                        <a id="communityMoreLink" href="<c:url value='/community'><c:if test='${not empty selectedGuName}'><c:param name='guName' value='${selectedGuName}'/></c:if></c:url>"
                             class="more-link">더보기 →</a>
                     </div>
 
                     <div class="hot-posts">
-                        <ul class="hot-post-list">
+                        <ul class="hot-post-list" id="hotPostList">
                             <c:forEach var="post" items="${popularPostListVO}" varStatus="status">
                                 <a href="<c:url value='/community/detail/${post.postId}'/>" class="hot-post-item"
                                     style="text-decoration: none; color: inherit;">
@@ -235,7 +224,6 @@
             <script>
                 window.mainFilterConfig = {
                     contextPath: '${pageContext.request.contextPath}',
-                    selectedDongCode: '${selectedDongCode}',
                     selectedGuName: '${selectedGuName}'
                 };
 

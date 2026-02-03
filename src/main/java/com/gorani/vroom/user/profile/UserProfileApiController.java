@@ -49,11 +49,14 @@ public class UserProfileApiController {
         Long userId = loginUser.getUserId();
         String nickname = request.get("nickname");
 
-        UserProfileVO vo = new UserProfileVO();
-        vo.setNickname(nickname);
-        userProfileService.updateProfile(userId, vo);
-
-        return ResponseEntity.ok(Map.of("success", true, "nickname", nickname));
+        try {
+            UserProfileVO vo = new UserProfileVO();
+            vo.setNickname(nickname);
+            userProfileService.updateProfile(userId, vo);
+            return ResponseEntity.ok(Map.of("success", true, "nickname", nickname));
+        } catch (org.springframework.dao.DuplicateKeyException e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "이미 사용 중인 닉네임입니다."));
+        }
     }
 
     // 프로필 이미지 수정

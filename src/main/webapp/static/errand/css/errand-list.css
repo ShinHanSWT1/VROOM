@@ -1,7 +1,7 @@
 /* errand-list.css - 심부름 목록 페이지 전용 스타일 (본문만!) */
 
 .page-header {
-    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
+    background-color: var(--color-accent);
     padding: 2.5rem 0;
     text-align: center;
 }
@@ -25,30 +25,30 @@
     padding: 0 1.5rem;
 }
 
-.write-btn-container,
 .write-btn-wrapper {
-    text-align: left;
-    margin-bottom: 1rem;
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1.5rem;
 }
 
 .write-btn {
     display: inline-block;
-    background-color: var(--color-accent);
-    color: var(--color-white);
-    padding: 0.7rem 1.5rem;
-    font-weight: 700;
-    border-radius: 8px;
     cursor: pointer;
     border: none;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background: none;
     transition: all 0.3s ease;
     text-decoration: none;
 }
 
+/*버튼 사이즈 변경*/
+.write-btn img {
+    height: 80px;
+    display: block;
+}
+
 .write-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-    background-color: var(--color-warm);
+    filter: brightness(1.05);
 }
 
 .main-section {
@@ -171,8 +171,8 @@
 
 .task-badge {
     display: inline-block;
-    background-color: var(--color-secondary);
-    color: var(--color-dark);
+    background: var(--color-primary);
+    color: var(--color-white);
     padding: 4px 12px;
     border-radius: 4px;
     font-size: 0.75rem;
