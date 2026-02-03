@@ -10,12 +10,6 @@
 	    SELECT cr.room_id, cr.errands_id, cr.errander_id, cr.created_at
 	    FROM CHAT_ROOM cr
 	    WHERE cr.errands_id = #{errandsId}
-	      AND EXISTS (
-	        SELECT 1
-	        FROM CHAT_PARTICIPANT cp
-	        WHERE cp.room_id = cr.room_id
-	          AND cp.is_active = 1
-	      )
 	    ORDER BY cr.room_id DESC
 	    LIMIT 1
 	</select>
@@ -43,11 +37,11 @@
     
     <!-- 참여자 조회 -->
     <select id="selectParticipant" resultType="com.gorani.vroom.errand.chat.ChatParticipantVO">
-        SELECT participant_id, room_id, user_id, room_role, joined_at, 
-               is_active
+        SELECT participant_id, room_id, user_id, room_role, joined_at, is_active
         FROM CHAT_PARTICIPANT
         WHERE room_id = #{roomId}
           AND user_id = #{userId}
+          AND is_active = 1
         LIMIT 1
     </select>
     
@@ -179,13 +173,6 @@
 	    (#{errandsId}, #{fromStatus}, #{toStatus}, #{changedByType}, #{changedById}, NOW())
 	</insert>
 	
-	<!-- 5) 거절 시, room 비활성화 -->
-	<update id="deactivateParticipantsByRoomId">
-	  UPDATE CHAT_PARTICIPANT
-	  SET is_active = 0
-	  WHERE room_id = #{roomId}
-	</update>
-	
 	<select id="countChatRoomByErrandsId" resultType="int">
 	  SELECT COUNT(*)
 	  FROM CHAT_ROOM
@@ -217,9 +204,32 @@
 	  SELECT cp.user_id
 	  FROM CHAT_PARTICIPANT cp
 	  WHERE cp.room_id = #{roomId}
-	    AND cp.room_role IN ('ERRANDER', 'OWNER')
+	    AND cp.room_role = 'ERRANDER'
 	    AND cp.is_active = 1
+	    ORDER BY cp.participant_id DESC
 	  LIMIT 1
 	</select>
-
+	
+	<insert id="upsertParticipantActive">
+	  INSERT INTO CHAT_PARTICIPANT (room_id, user_id, room_role, joined_at, is_active)
+	  VALUES (#{roomId}, #{userId}, #{role}, CURRENT_TIMESTAMP, 1)
+	  ON DUPLICATE KEY UPDATE
+	    room_role = VALUES(room_role),
+	    is_active = 1
+	</insert>
+	
+	<update id="deactivateParticipant">
+	  UPDATE CHAT_PARTICIPANT
+	  SET is_active = 0
+	  WHERE room_id = #{roomId}
+	    AND user_id = #{userId}
+	</update>
+	
+	<update id="deactivateErrandersByRoomId">
+	  UPDATE CHAT_PARTICIPANT
+	  SET is_active = 0
+	  WHERE room_id = #{roomId}
+	    AND room_role = 'ERRANDER'
+	</update>
+	
 </mapper>

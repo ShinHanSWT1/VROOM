@@ -1249,14 +1249,12 @@
             // 날짜 포맷팅 (Timestamp -> YYYY-MM-DD)
             let lastActive = '-';
             if (item.last_active_at) {
-                const date = new Date(item.last_active_at);
-                lastActive = date.toISOString().split('T')[0];
+                lastActive = formatDateTime(item.last_active_at);
             }
 
             let approvedAt = '-';
             if (item.approved_at) {
-                const date = new Date(item.approved_at);
-                approvedAt = date.toISOString().split('T')[0];
+                approvedAt = formatDate(item.approved_at);
             }
 
             // 배지 텍스트 및 클래스 설정

@@ -185,6 +185,17 @@
             <!-- 우측 패널: 채팅 -->
             <div class="right-panel">
                 <!-- 채팅 헤더 (고정) -->
+<%--                <div class="chat-header">--%>
+<%--                    <div class="chat-user-info">--%>
+<%--                        <h3 id="chatPartnerName">${chatRoomInfo.partnerNickname}</h3>--%>
+<%--                        <div class="chat-user-status">--%>
+<%--                            <c:choose>--%>
+<%--                                <c:when test="${userRole eq 'OWNER'}">부름이</c:when>--%>
+<%--                                <c:when test="${userRole eq 'ERRANDER'}">심부름 작성자</c:when>--%>
+<%--                            </c:choose>--%>
+<%--                        </div>--%>
+<%--                    </div>--%>
+<%--                </div>--%>
 				<div class="chat-header">
 				  <div class="chat-header-row">
 				
@@ -466,7 +477,7 @@
            	        body: JSON.stringify({
            	          errandsId: Number(errandsId),
            	          roomId: Number(roomId),
-           	          erranderUserId
+           	       	  erranderUserId: erranderUserId
            	        })
            	      })
            	      .then(res => res.json().catch(() => ({})).then(data => ({res, data})))

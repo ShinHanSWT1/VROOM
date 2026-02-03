@@ -24,13 +24,14 @@
         LIMIT 1
     </select>
 
-    <update id="updateErrandStatusWaitingToMatched">
-        UPDATE ERRANDS
-        SET status     = 'MATCHED',
-            updated_at = CURRENT_TIMESTAMP
-        WHERE errands_id = #{errandsId}
-          AND status = 'WAITING'
-    </update>
+    <update id="updateErrandWaitingToMatchedWithErrander">
+	  UPDATE ERRANDS
+	  SET status = 'MATCHED',
+	      errander_id = #{erranderId},
+	      updated_at = CURRENT_TIMESTAMP
+	  WHERE errands_id = #{errandsId}
+	    AND status = 'WAITING'
+	</update>
 	
 	<select id="validateRunnerAndStatus" resultType="int">
 	  SELECT COUNT(*)
@@ -38,7 +39,7 @@
 	  JOIN ERRAND_STATUS_HISTORY h
 	    ON h.errands_id = a.errands_id
 	  WHERE a.errands_id = #{errandsId}
-	    AND a.errander_id = #{runnerUserId}
+	    AND a.errander_id = #{erranderId}
 	    AND h.to_status = 'CONFIRMED1'
 	    AND h.changed_at = (
 	        SELECT MAX(changed_at)
@@ -106,9 +107,9 @@
 
     <select id="canChat" resultType="boolean">
         SELECT EXISTS(SELECT 1
-                      FROM ERRANDS
-                      WHERE errands_id = #{errandsId}
-                        AND status NOT IN ('COMPLETED', 'CANCELED'))
+        FROM ERRANDS
+        WHERE errands_id = #{errandsId}
+          AND status NOT IN ('COMPLETED', 'CANCELED'))
     </select>
 
     <!-- 부름이 상태 조회 -->
@@ -157,7 +158,7 @@
 	  FROM ERRAND_ASSIGNMENTS
 	  WHERE errands_id = #{errandsId}
 	    AND errander_user_id = #{userId}
-	    AND status = 'CANCLED'
+	    AND status = 'CANCELED'
 	</select>
 	
 	<insert id="insertRejectHistory">
@@ -179,6 +180,16 @@
 	    AND errander_id = #{param2}
 	    AND status = 'MATCHED'
 	</update>
+	
+	<update id="updateErrandMatchedToWaitingClearErrander">
+	  UPDATE ERRANDS
+	  SET status = 'WAITING',
+	      errander_id = NULL,
+	      updated_at = CURRENT_TIMESTAMP
+	  WHERE errands_id = #{errandsId}
+	    AND status = 'MATCHED'
+	</update>
+	
 	
 	<select id="selectMatchedErranderIdByErrandsId" resultType="long">
 	  SELECT errander_id

@@ -51,10 +51,10 @@ public class ErrandAssignmentController {
             return "redirect:/errand/detail?errandsId=" + errandsId + "&message=" + msg;
         }
 
-        Long runnerUserId = loginUser.getUserId();
+        Long erranderUserId = loginUser.getUserId();
 
         try {
-            Long roomId = errandAssignmentService.requestStartChat(errandsId, runnerUserId, runnerUserId);
+            Long roomId = errandAssignmentService.requestStartChat(errandsId, erranderUserId, erranderUserId);
 
             // roomId가 null이면 상태전환 실패(이미 다른 부름이가 선점 등)로 보고 처리
             if (roomId == null) {

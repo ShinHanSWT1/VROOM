@@ -43,10 +43,19 @@ public class ChatServiceImpl implements ChatService {
     @Override
     @Transactional
     public Long getOrCreateChatRoom(Long errandsId, Long erranderUserId) {
+    	// 심부름 작성자 조회
+        Long ownerUserId = chatMapper.selectErrandOwnerUserId(errandsId);
         // 기존 채팅방 확인
         ChatRoomVO existingRoom = chatMapper.selectChatRoomByErrandsId(errandsId);
         if (existingRoom != null) {
-            return existingRoom.getRoomId();
+        	Long roomId = existingRoom.getRoomId();
+
+            // 방 재활용: 참가자 upsert(없으면 insert, 있으면 active=1)
+        	chatMapper.deactivateErrandersByRoomId(roomId);
+            chatMapper.upsertParticipantActive(roomId, ownerUserId, "OWNER");
+            chatMapper.upsertParticipantActive(roomId, erranderUserId, "ERRANDER");
+            
+            return roomId;
         }
 
         // 부름이 ID 변환 (MEMBERS.user_id -> ERRANDER_PROFILES.errander_id)
@@ -65,12 +74,8 @@ public class ChatServiceImpl implements ChatService {
         // insert 후 useGeneratedKeys로 room_id가 room.roomId에 들어옴
         Long roomId = room.getRoomId();
 
-        // 심부름 작성자 조회
-        Long ownerUserId = chatMapper.selectErrandOwnerUserId(errandsId);
-
         // 참여자 추가 (OWNER - 심부름 올린 사람)
         chatMapper.insertParticipant(roomId, ownerUserId, "OWNER");
-        
         // 참여자 추가 (ERRANDER - 부름이)
         chatMapper.insertParticipant(roomId, erranderUserId, "ERRANDER");
 
@@ -166,11 +171,10 @@ public class ChatServiceImpl implements ChatService {
     public void rejectErrand(Long errandsId, Long roomId, Long userId, Long erranderUserId) {
     	
     	// 0) erranderUserId(user_id) -> erranderId(errander PK) 변환
-    	Long erranderId = assignmentMapper.selectMatchedErranderIdByErrandsId(errandsId);
-    	System.out.println("[REJECT] matched erranderId=" + erranderId + " for errandsId=" + errandsId);
-
+    	Long erranderId = assignmentMapper.selectErranderIdByUserId(erranderUserId);
+    	System.out.println("[REJECT] erranderUserId=" + erranderUserId + " -> erranderId=" + erranderId);
     	if (erranderId == null) {
-    	    throw new IllegalStateException("현재 MATCHED된 부름이가 없습니다. 이미 처리되었을 수 있습니다.");
+    	    throw new IllegalStateException("부름이 프로필이 없습니다.");
     	}
 
         // 1) ERRAND_ASSIGNMENTS: MATCHED -> CANCELED (이 매칭 레코드 종료)
@@ -183,7 +187,7 @@ public class ChatServiceImpl implements ChatService {
         }
     	
     	// 상태 전환: MATCHED -> WAITING (딱 1번만 성공)
-        int updated = assignmentMapper.updateErrandStatusMatchedToWaiting(errandsId);
+        int updated = assignmentMapper.updateErrandMatchedToWaitingClearErrander(errandsId);
         System.out.println("[REJECT] updateErrandStatusMatchedToWaiting rows=" + updated
                 + " (errandsId=" + errandsId + ")");
         if (updated == 0) {
@@ -201,8 +205,13 @@ public class ChatServiceImpl implements ChatService {
         
         assignmentMapper.insertRejectHistory(errandsId, erranderId);
 
-        // 채팅방 종료 처리: room 전체 participant 비활성화(권장)
-        chatMapper.deactivateParticipantsByRoomId(roomId);
+        Long ownerUserId = chatMapper.selectErrandOwnerUserId(errandsId);
+
+	    // OWNER 유지(없으면 추가/있으면 active=1)
+	    chatMapper.upsertParticipantActive(roomId, ownerUserId, "OWNER");
+	
+	    // 거절된 부름이만 비활성화
+	    chatMapper.deactivateParticipant(roomId, erranderUserId);
         
         // SYSTEM 메시지 DB 저장 (선택: 종료 전에 남기고 싶으면)
         ChatMessageVO systemMessage = new ChatMessageVO();
@@ -220,7 +229,7 @@ public class ChatServiceImpl implements ChatService {
                 erranderUserId,
                 "ERRAND",
                 "매칭이 취소되었습니다",
-                "/errand"
+                "/errand/list"
 
         );
     }

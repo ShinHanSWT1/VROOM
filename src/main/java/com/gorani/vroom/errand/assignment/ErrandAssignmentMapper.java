@@ -37,7 +37,7 @@ public interface ErrandAssignmentMapper {
                             @Param("changedById") Long changedById);
     
     int validateRunnerAndStatus(@Param("errandsId") Long errandsId,
-            @Param("runnerUserId") Long runnerUserId);
+            @Param("erranderUserId") Long erranderUserId);
 	
 	int insertCompletionProof(@Param("errandsId") Long errandsId,
             @Param("erranderId") Long erranderId,
@@ -45,10 +45,7 @@ public interface ErrandAssignmentMapper {
 
 	Long selectLastInsertedProofId();
 	
-	int insertProofMedia(@Param("proofId") Long proofId,
-	       @Param("fileUrl") String fileUrl);
-
-
+	int insertProofMedia(@Param("proofId") Long proofId, @Param("fileUrl") String fileUrl);
 
     String getErranderActiveStatus(
             @Param("erranderId") Long erranderId);
@@ -66,4 +63,8 @@ public interface ErrandAssignmentMapper {
     int existsRejectHistory(Long errandsId, Long erranderId);
     
     Long selectMatchedErranderIdByErrandsId(@Param("errandsId") Long errandsId);
+    
+    int updateErrandWaitingToMatchedWithErrander(@Param("errandsId") Long errandsId, @Param("erranderId") Long erranderId);
+    
+    int updateErrandMatchedToWaitingClearErrander(@Param("errandsId") Long errandsId);
 }

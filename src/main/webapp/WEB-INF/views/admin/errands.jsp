@@ -1162,6 +1162,7 @@
                         <th>제목</th>
                         <th>동네</th>
                         <th>등록시간</th>
+                        <th>변경시간</th>
                         <th>상태</th>
                         <th>희망일</th>
                         <th>배정</th>
@@ -1421,7 +1422,7 @@
                 console.log(data);
                 renderTable(data.errandList);
                 renderPagination(data.pageInfo);
-                document.getElementById('totalCount').innerText = data.errandList.length;
+                document.getElementById('totalCount').innerText = data.totalCount;
             })
             .catch(error => {
                 console.error('데이터 로드 실패:', error);
@@ -1448,8 +1449,12 @@
             // 날짜 포맷팅 (Timestamp -> YYYY-MM-DD)
             let registAt = '-';
             if (item.created_at) {
-                const date = new Date(item.created_at);
-                registAt = date.toISOString().split('T')[0];
+                registAt = formatDateTime(item.created_at);
+            }
+
+            let updatedAt = '-'
+            if(item.updated_at){
+                updatedAt = formatDateTime(item.updated_at);
             }
 
             let duedateHtml = '-';
@@ -1497,6 +1502,7 @@
             // <th>제목</th>
             // <th>동네</th>
             // <th>등록시간</th>
+            // <th>변경시간</th>
             // <th>상태</th>
             // <th>희망일</th>
             // <th>배정</th>
@@ -1506,6 +1512,7 @@
                     <td>\${title}</td>
                     <td>\${area}</td>
                     <td>\${registAt}</td>
+                    <td>\${updatedAt}</td>
                     <td><span class="status-badge \${status}">\${statusText}</span></td>
                     <td>\${duedateHtml}</td>
                     <td>\${actionBtnHtml}</td>
