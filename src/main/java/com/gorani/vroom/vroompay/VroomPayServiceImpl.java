@@ -259,13 +259,13 @@ public class VroomPayServiceImpl implements VroomPayService {
             result.put("data", paymentOrderVO);
             int res = 0;
 
-            // TODO: ERRAND status = COMPLETED
+            // ERRAND status = COMPLETED
             res += vroomPayMapper.updateErrandStatusConfirmed2ToCompleted(errandId, paymentOrderVO.getAmount());
 
-            // TODO: ERRAND Assignment
+            // ERRAND Assignment
             res += vroomPayMapper.updateErrandAssignmentStatusToCompleted(errandId, erranderId);
 
-            // TODO: ERRAND History
+            // ERRAND History
             res += vroomPayMapper.insertErrandHistoryToCompletedByAdmin(errandId);
 
             if (res == 3) {
