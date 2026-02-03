@@ -239,7 +239,7 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
         }
 
         // 4. 상태 변경 (WAITING -> MATCHED)
-        int updated = errandAssignmentMapper.updateErrandStatusWaitingToMatched(errandsId);
+        int updated = errandAssignmentMapper.updateErrandWaitingToMatchedWithErrander(errandsId, erranderId);
         if (updated == 0) {
             throw new IllegalStateException("심부름 상태 변경에 실패했습니다. 이미 배정되었을 수 있습니다.");
         }
@@ -248,7 +248,6 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
         errandAssignmentMapper.insertMatchedAssignment(adminId, ownerUserId, errandsId, erranderId, "MANUAL", "MATCHED", reason);
 
         // 6. 상태 변경 이력 저장 (Changed By ADMIN)
-        // 사유(Reason)를 저장할 컬럼이 있다면 Mapper를 수정하여 reason도 전달하세요.
         errandAssignmentMapper.insertStatusHistory(
                 errandsId,
                 "WAITING",
@@ -258,10 +257,12 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
         );
 
         // 7. 채팅방 생성 (Owner <-> Errander)
-        // 채팅방이 있어야 소통이 가능하므로 필수입니다.
         try {
             roomId = chatService.getOrCreateChatRoom(errandsId, erranderUserId);
             if (roomId != null) {
+                // PAYMENT 업데이트
+                vroomPayService.updatePaymentErranderMatched(errandsId, erranderId);
+
                 // + 알림 보내기
                 notificationService.send(
                         ownerUserId,

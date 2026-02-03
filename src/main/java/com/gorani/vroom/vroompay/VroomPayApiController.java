@@ -26,10 +26,10 @@ public class VroomPayApiController {
     @PostMapping("/test/settle")
     public Map<String, Object> testSettle() {
         return vroomPayService.settleErrandManual(
-                12L,
-                3L,
+                16L,
+                6L,
                 2L,
-                BigDecimal.valueOf(5000)
+                BigDecimal.valueOf(100000)
         );
     }
 
