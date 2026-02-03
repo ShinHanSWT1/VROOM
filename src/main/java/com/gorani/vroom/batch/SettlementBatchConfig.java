@@ -18,6 +18,7 @@ import org.springframework.batch.item.support.CompositeItemWriter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -77,19 +78,28 @@ public class SettlementBatchConfig {
 
                 // TODO: 부름페이 보완 후 연결
                 // 외부 API 호출 (VroomPayService)
+                Map<String, Object> result = vroomPayService.settleErrand(
+                        item.getErrandsId(),
+                        item.getUserId(),
+                        item.getErranderUserId(),
+                        item.getAmount()
+                );
+
+                // -- 테스트 코드
 //                Map<String, Object> result = vroomPayService.settleErrand(
-//                        item.getErrandsId(),
-//                        item.getUserId(),
-//                        item.getErranderUserId(),
-//                        item.getAmount()
+//                        243L,
+//                        138L,
+//                        137L,
+//                        BigDecimal.valueOf(10000.00)
 //                );
 
-                Map<String, Object> result = new HashMap<>();
-                result.put("success", true);
-                result.put("message", "정산이 완료되었습니다.");
+//                Map<String, Object> result = new HashMap<>();
+//                result.put("success", true);
+//                result.put("message", "정산이 완료되었습니다.");
 
                 // API 성공 여부 확인
                 if (result != null && Boolean.TRUE.equals(result.get("success"))) {
+                    log.info("정산 결과 - " + result);
                     log.info("정산 API 성공 - ErrandID: {}", item.getErrandsId());
 
                     // Writer로 넘길 Map 생성

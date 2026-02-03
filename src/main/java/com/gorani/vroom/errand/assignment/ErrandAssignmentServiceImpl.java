@@ -3,6 +3,7 @@ package com.gorani.vroom.errand.assignment;
 import java.io.File;
 import java.util.UUID;
 
+import com.gorani.vroom.vroompay.VroomPayService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,6 +22,7 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
     private final ErrandAssignmentMapper errandAssignmentMapper;
     private final ChatService chatService;
     private final NotificationService notificationService;
+    private final VroomPayService vroomPayService;
 
     private String toChangedByType(String role) {
         if (role == null) return "SYSTEM";
@@ -115,6 +117,10 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
                 "심부름이 매칭되었습니다",
                 "/errand/detail?errandsId=" + errandsId
         );
+
+        // PAYMENT erranderId 업데이트
+        vroomPayService.updatePaymentErranderMatched(errandsId, erranderId);
+
 
         return roomId; // 이제 정상
     }

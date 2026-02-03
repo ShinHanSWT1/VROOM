@@ -106,7 +106,7 @@
         SELECT p.id
         FROM PAYMENT_ORDERS p JOIN ERRANDS e ON p.errands_id = e.errands_id
         WHERE p.errands_id = #{errandsId}
-        AND p.errander_id = #{erranderId}
+        AND e.errander_id = #{erranderId}
         AND p.status = 'PENDING'
         AND e.status IN ('CONFIRMED2', 'HOLD')
     </select>
@@ -126,5 +126,22 @@
         SELECT m.user_id
         FROM ERRANDER_PROFILES p JOIN MEMBERS m ON p.user_id = m.user_id
         WHERE p.errander_id = #{erranderId}
+    </select>
+
+    <update id="updatePaymentErranderId">
+        UPDATE PAYMENT_ORDERS
+        SET errander_id = #{erranderId}
+        WHERE id = #{orderId}
+    </update>
+
+    <select id="getOrderIdByErrandsId" resultType="long">
+        SELECT id
+        FROM PAYMENT_ORDERS
+        WHERE errands_id = #{errandsId}
+        AND status = 'PENDING'
+    </select>
+
+    <select id="getPaymentById" resultType="com.gorani.vroom.vroompay.PaymentOrderVO">
+        SELECT * FROM PAYMENT_ORDERS WHERE id = #{orderId}
     </select>
 </mapper>

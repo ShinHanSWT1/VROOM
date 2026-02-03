@@ -27,6 +27,13 @@ public interface VroomPayService {
     @Transactional
     Map<String, Object> createAndHoldPaymentOrder(PaymentOrderVO payment);
 
+    // TODO: payment 취소로 업데이트
+    @Transactional
+    Map<String, Object> cancelPayment(Long errandsId);
+
+    // TODO: payment erranderId 업데이트
+    Map<String, Object> updatePaymentErranderMatched(Long errandsId, Long erranderId);
+
     // 계좌 변경 이력 등록
     void insertWalletTransactions(WalletTransactionVO walletTransactionVO);
 
@@ -45,5 +52,10 @@ public interface VroomPayService {
     // 로컬 지갑 계좌 잔액 업데이트
     int updateWalletAccount(VroomPayVO vroomPayVO);
 
-//    Map<String, Object> processSettlement(Long erranderUserId, BigDecimal amount);
+    @Transactional
+    int syncWalletAccount(Long userId);
+
+    // TODO: payment 취소로 업데이트
+
+    // TODO: payment erranderId 업데이트
 }

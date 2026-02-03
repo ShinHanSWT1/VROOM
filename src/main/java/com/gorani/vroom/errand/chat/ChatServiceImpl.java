@@ -1,7 +1,11 @@
 package com.gorani.vroom.errand.chat;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
+import com.gorani.vroom.notification.NotificationService;
+import com.gorani.vroom.vroompay.PaymentOrderVO;
+import com.gorani.vroom.vroompay.VroomPayService;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +24,8 @@ public class ChatServiceImpl implements ChatService {
     private final ErrandAssignmentMapper assignmentMapper;
     private final SimpMessagingTemplate messagingTemplate;
     private final ErranderMapper erranderMapper;
+    private final NotificationService notificationService;
+    private final VroomPayService vroomPayService;
     
     private String toChangedByType(String role) {
         if (role == null) return "SYSTEM";
@@ -205,6 +211,18 @@ public class ChatServiceImpl implements ChatService {
         systemMessage.setMessageType("SYSTEM");
         systemMessage.setContent("심부름이 거절되었습니다. 다시 부름이를 모집합니다.");
         chatMapper.insertMessage(systemMessage);
+
+        // 주문서 cancel
+        vroomPayService.cancelPayment(errandsId);
+
+        // 부름이에게 알림
+        notificationService.send(
+                erranderUserId,
+                "ERRAND",
+                "매칭이 취소되었습니다",
+                "/errand"
+
+        );
     }
 
     @Override

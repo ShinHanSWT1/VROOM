@@ -247,6 +247,15 @@ public class VroomPayApiController {
         return vroomPayService.createAndHoldPaymentOrder(vo);
     }
 
+    @PostMapping("/test/settle")
+    public Map<String, Object> testSettle() {
+        return vroomPayService.settleErrand(
+                243L,
+                138L,
+                42L,
+                BigDecimal.valueOf(10000)
+        );
+    }
 
     // 외부 API 응답에서 잔액을 추출하여 로컬 DB 업데이트
     private void updateLocalBalance(Long userId, Map<String, Object> apiResult) {
