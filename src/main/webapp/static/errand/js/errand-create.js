@@ -34,12 +34,22 @@ document.addEventListener('DOMContentLoaded', function () {
         imageInput.addEventListener('change', function (e) {
             const files = Array.from(e.target.files);
             const remainingSlots = 10 - uploadedImages.length;
-            
-            if (files.length > remainingSlots) {
+            const MAX_FILE_SIZE = 30 * 1024 * 1024; // 30MB
+
+            // 파일 크기 체크
+            const oversizedFiles = files.filter(file => file.size > MAX_FILE_SIZE);
+            const validFiles = files.filter(file => file.size <= MAX_FILE_SIZE);
+
+            if (oversizedFiles.length > 0) {
+                const fileNames = oversizedFiles.map(f => f.name).join(', ');
+                alert(`30MB를 초과하는 이미지는 업로드할 수 없습니다.\n제외된 파일: ${fileNames}`);
+            }
+
+            if (validFiles.length > remainingSlots) {
                 alert(`이미지는 최대 10개까지 등록 가능합니다. ${remainingSlots}개만 추가됩니다.`);
             }
-            
-            const filesToAdd = files.slice(0, remainingSlots);
+
+            const filesToAdd = validFiles.slice(0, remainingSlots);
 
             uploadedImages = uploadedImages.concat(filesToAdd);
             uploadCounter.textContent = `${uploadedImages.length}/10`;

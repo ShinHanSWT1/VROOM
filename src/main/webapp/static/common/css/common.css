@@ -224,9 +224,19 @@ body {
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
     z-index: 1001;
     border-radius: 8px;
-    overflow: hidden;
+    overflow: visible;
     margin-top: 0.5rem;
     animation: fadeIn 0.2s ease-out;
+}
+
+/* 버튼과 메뉴 사이 간격을 메꿔서 hover가 끊기지 않도록 함 */
+.dropdown-menu::before {
+    content: '';
+    position: absolute;
+    top: -0.5rem;
+    left: 0;
+    right: 0;
+    height: 0.5rem;
 }
 
 /* 알림 아이콘 컨테이너 */
