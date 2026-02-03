@@ -17,9 +17,10 @@
     </div>
 </section>
 
-<!-- Write Button Section -->
-<section class="write-section">
+<!-- Main Section -->
+<section class="main-section">
     <div class="container">
+        <!-- Write Button -->
         <div class="write-btn-wrapper">
             <a href="#" class="write-btn" id="writeBtn"
                data-is-logged-in="${not empty sessionScope.loginSess}"
@@ -29,12 +30,7 @@
                 ✏ 글쓰기
             </a>
         </div>
-    </div>
-</section>
 
-<!-- Main Section -->
-<section class="main-section">
-    <div class="container">
         <!-- Filter Bar -->
         <form id="filterForm"
               class="filter-bar"

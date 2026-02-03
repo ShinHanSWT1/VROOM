@@ -115,8 +115,8 @@
             <div class="info-card">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                     <h3 class="info-card-title" style="margin-bottom: 0;">고객 만족도</h3>
-                    <span style="font-size: 0.9rem; color: #7f8c8d;">
-                        누적 리뷰 <fmt:formatNumber value="${profile.reviewCount}" pattern="#,###"/>건
+                    <span style="font-size: 0.9rem; color: #7f8c8d; cursor: pointer;" id="reviewCountBtn">
+                        누적 리뷰 <fmt:formatNumber value="${profile.reviewCount}" pattern="#,###"/>건 >
                     </span>
                 </div>
 
@@ -184,6 +184,26 @@
         </div>
     </main>
 </div>
+
+<!-- Review Modal -->
+<div class="modal-overlay" id="reviewModal">
+    <div class="modal-content review-modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">받은 리뷰 목록</h3>
+            <button class="modal-close" id="closeReviewModal">&times;</button>
+        </div>
+        <div class="modal-body review-modal-body" id="reviewListContainer">
+            <!-- 리뷰 리스트가 여기에 동적으로 추가됨 -->
+            <div class="loading-spinner" id="reviewLoading">
+                <div class="spinner"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const contextPath = "${pageContext.request.contextPath}";
+</script>
 
 <jsp:include page="../common/footer.jsp"/>
 
