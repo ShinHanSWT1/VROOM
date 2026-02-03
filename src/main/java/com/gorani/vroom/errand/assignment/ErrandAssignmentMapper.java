@@ -47,20 +47,19 @@ public interface ErrandAssignmentMapper {
 	
 	int insertProofMedia(@Param("proofId") Long proofId, @Param("fileUrl") String fileUrl);
 
-    String getErranderActiveStatus(
-            @Param("erranderId") Long erranderId);
+    String getErranderActiveStatus(@Param("erranderId") Long erranderId);
 
     Long selectUserIdByErranderId(@Param("erranderId") Long erranderId);
 
     int countMatchedByErrandAndErrander(@Param("errandsId") Long errandsId, @Param("erranderId") Long erranderId);
     
-    int existsCanceledAssignment(Long errandsId, Long userId);
+    int existsCanceledAssignment(@Param("errandsId") Long errandsId, @Param("erranderId") Long erranderId);
     
-    int updateAssignmentStatusMatchedToCanceled(Long errandsId, Long erranderId);
+    int updateAssignmentStatusMatchedToCanceled(@Param("errandsId") Long errandsId, @Param("erranderId") Long erranderId);
     
-    int insertRejectHistory(Long errandsId, Long erranderId);
+    int insertRejectHistory(@Param("errandsId") Long errandsId, @Param("erranderId") Long erranderId);
 
-    int existsRejectHistory(Long errandsId, Long erranderId);
+    int existsRejectHistory(@Param("errandsId") Long errandsId, @Param("erranderId") Long erranderId);
     
     Long selectMatchedErranderIdByErrandsId(@Param("errandsId") Long errandsId);
     

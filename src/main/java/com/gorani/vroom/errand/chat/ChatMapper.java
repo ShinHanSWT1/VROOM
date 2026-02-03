@@ -10,6 +10,11 @@ public interface ChatMapper {
     // 채팅방 조회
     ChatRoomVO selectChatRoomByErrandsId(@Param("errandsId") Long errandsId);
     
+    ChatRoomVO selectChatRoomByErrandsIdAndErranderId(
+            @Param("errandsId") Long errandsId,
+            @Param("erranderId") Long erranderId
+        );
+    
     ChatRoomVO selectChatRoomById(@Param("roomId") Long roomId);
     
     Long selectErrandsIdByRoomId(@Param("roomId") Long roomId);
