@@ -16,80 +16,197 @@
         ]]>
     </select>
 
-    <select id="searchSettlements" parameterType="map" resultType="map">
+    <select id="selectSettlementList" resultType="com.gorani.vroom.admin.settlement.AdminSettlementVO">
         SELECT
-        s.settlement_id AS id,
-        s.errand_id AS errandId,
-        u.nickname AS errander,
-        s.amount,
-        DATE_FORMAT(s.requested_at, '%Y-%m-%d') AS date,
-        s.status,
-        s.admin_memo AS reason
-        FROM SETTLEMENTS s
-        JOIN USERS u ON s.user_id = u.user_id
-        WHERE 1=1
+        e.errands_id        AS errandId,
+        ea.id               AS assignmentId,
+        po.id               AS paymentId,
+        e.title             AS errandTitle,
+        u_req.nickname      AS requesterNickname,
+        u_res.nickname      AS erranderNickname,
 
+        u_res.user_id       AS erranderUserId,
+        ep.errander_id      AS erranderProfileId,
+
+        IFNULL(po.amount, 0) AS orderAmount,
+        e.settlement_amount     AS settlementAmount,
+
+        e.status            AS status,
+
+        -- 정산 요청일
+        (SELECT h.changed_at
+        FROM ERRAND_STATUS_HISTORY h
+        WHERE h.errands_id = e.errands_id
+        AND h.to_status = 'CONFIRMED2'
+        ORDER BY h.changed_at DESC
+        LIMIT 1)           AS requestDate,
+
+        e.updated_at        AS settledDate
+
+        FROM ERRANDS e
+        -- 부름이 정보 조인
+        JOIN ERRAND_ASSIGNMENTS ea ON e.errands_id = ea.errands_id
+        AND ea.status IN ('MATCHED', 'COMPLETED')
+        JOIN ERRANDER_PROFILES ep ON ea.errander_id = ep.errander_id
+        JOIN MEMBERS u_res ON ep.user_id = u_res.user_id
+
+        -- 요청자 정보 조인
+        JOIN MEMBERS u_req ON e.user_id = u_req.user_id
+
+        -- 결제 정보 조인
+        LEFT JOIN PAYMENT_ORDERS po ON e.errands_id = po.errands_id
+        AND po.status IN ('PENDING', 'COMPLETED')
+
+        WHERE
+        e.status IN ('CONFIRMED2', 'HOLD', 'COMPLETED', 'REJECTED')
+
+        -- 키워드 검색
         <if test="keyword != null and keyword != ''">
             AND (
-            CAST(s.errand_id AS CHAR) LIKE CONCAT('%', #{keyword}, '%')
-            OR u.nickname LIKE CONCAT('%', #{keyword}, '%')
+            e.title LIKE CONCAT('%', #{keyword}, '%')
+            OR u_res.nickname LIKE CONCAT('%', #{keyword}, '%')
             )
         </if>
 
+        -- 상태 필터링
         <if test="status != null and status != ''">
-            AND s.status = #{status}
+            AND e.status = #{status}
         </if>
 
+        -- 정산 요청일(requestDate) 기준 시작일 필터링
         <if test="startDate != null and startDate != ''">
-            AND s.requested_at >= #{startDate}
-        </if>
-        <if test="endDate != null and endDate != ''">
-            AND s.requested_at &lt;= DATE_ADD(#{endDate}, INTERVAL 1 DAY)
+            AND (
+            SELECT h.changed_at
+            FROM ERRAND_STATUS_HISTORY h
+            WHERE h.errands_id = e.errands_id
+            AND h.to_status = 'CONFIRMED2'
+            ORDER BY h.changed_at DESC
+            LIMIT 1
+            ) &gt;= #{startDate}
         </if>
 
-        ORDER BY s.requested_at DESC
+        -- 정산 요청일(requestDate) 기준 종료일 필터링
+        <if test="endDate != null and endDate != ''">
+            AND (
+            SELECT h.changed_at
+            FROM ERRAND_STATUS_HISTORY h
+            WHERE h.errands_id = e.errands_id
+            AND h.to_status = 'CONFIRMED2'
+            ORDER BY h.changed_at DESC
+            LIMIT 1
+            ) &lt;= CONCAT(#{endDate}, ' 23:59:59')
+        </if>
+
+        ORDER BY requestDate DESC, e.errands_id DESC
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <select id="countSettlements" parameterType="map" resultType="int">
-<!--        SELECT COUNT(*)-->
-<!--        FROM SETTLEMENTS s-->
-<!--        JOIN USERS u ON s.user_id = u.user_id-->
-<!--        WHERE 1=1-->
-<!--        <if test="keyword != null and keyword != ''">-->
-<!--            AND (CAST(s.errand_id AS CHAR) LIKE CONCAT('%', #{keyword}, '%') OR u.nickname LIKE CONCAT('%', #{keyword}, '%'))-->
-<!--        </if>-->
-<!--        <if test="status != null and status != ''">-->
-<!--            AND s.status = #{status}-->
-<!--        </if>-->
-<!--        <if test="startDate != null and startDate != ''">-->
-<!--            AND s.requested_at >= #{startDate}-->
-<!--        </if>-->
-<!--        <if test="endDate != null and endDate != ''">-->
-<!--            AND s.requested_at &lt;= DATE_ADD(#{endDate}, INTERVAL 1 DAY)-->
-<!--        </if>-->
+        SELECT COUNT(*)
+        FROM ERRANDS e
+        -- 목록 조회와 동일한 조인 구조 유지
+        JOIN ERRAND_ASSIGNMENTS ea ON e.errands_id = ea.errands_id
+        AND ea.status IN ('MATCHED', 'COMPLETED')
+        JOIN ERRANDER_PROFILES ep ON ea.errander_id = ep.errander_id
+        JOIN MEMBERS u_res ON ep.user_id = u_res.user_id
+        JOIN MEMBERS u_req ON e.user_id = u_req.user_id
+        LEFT JOIN PAYMENT_ORDERS po ON e.errands_id = po.errands_id
+        AND po.status IN ('PENDING', 'COMPLETED')
+
+        WHERE
+        -- 정산 관련 상태 필터
+        e.status IN ('CONFIRMED2', 'HOLD', 'COMPLETED', 'REJECTED')
+
+        -- [검색 조건] 키워드 검색
+        <if test="keyword != null and keyword != ''">
+            AND (
+            e.title LIKE CONCAT('%', #{keyword}, '%')
+            OR u_res.nickname LIKE CONCAT('%', #{keyword}, '%')
+            )
+        </if>
+
+        -- [검색 조건] 상태 필터링
+        <if test="status != null and status != ''">
+            AND e.status = #{status}
+        </if>
+
+        -- [검색 조건] 정산 요청일(requestDate) 기준 시작일 필터링
+        <if test="startDate != null and startDate != ''">
+            AND (
+            SELECT h.changed_at
+            FROM ERRAND_STATUS_HISTORY h
+            WHERE h.errands_id = e.errands_id
+            AND h.to_status = 'CONFIRMED2'
+            ORDER BY h.changed_at DESC
+            LIMIT 1
+            ) &gt;= #{startDate}
+        </if>
+
+        -- [검색 조건] 정산 요청일(requestDate) 기준 종료일 필터링
+        <if test="endDate != null and endDate != ''">
+            AND (
+            SELECT h.changed_at
+            FROM ERRAND_STATUS_HISTORY h
+            WHERE h.errands_id = e.errands_id
+            AND h.to_status = 'CONFIRMED2'
+            ORDER BY h.changed_at DESC
+            LIMIT 1
+            ) &lt;= CONCAT(#{endDate}, ' 23:59:59')
+        </if>
     </select>
 
     <select id="getSettlementDetail" parameterType="long" resultType="map">
-#         SELECT
-#             s.settlement_id AS id,
-#             s.errand_id AS errandId,
-#             e.title AS errandTitle,
-#             u.nickname AS errander,
-#             s.amount,
-#             s.status,
-#             s.admin_memo AS adminMemo,
-#
-#             -- 인증 사진 (ERRANDS 테이블에 있다고 가정)
-#             e.proof_image_url AS proofImg,
-#
-#             -- 마지막 메세지 (예시: 없으면 하드코딩 혹은 서브쿼리)
-#             '완료했습니다! 승인 부탁드려요.' AS erranderMsg
-#
-#         FROM SETTLEMENTS s
-#                  JOIN ERRANDS e ON s.errand_id = e.errand_id
-#                  JOIN USERS u ON s.user_id = u.user_id
-#         WHERE s.settlement_id = #{id}
+        SELECT e.errands_id         AS errandId,
+               e.title              AS errandTitle,
+               e.description        AS errandContent,
+               e.status             AS status,
+
+               -- [요청자 정보]
+               u_req.user_id        AS requesterId,
+               u_req.nickname       AS requesterNickname,
+
+               -- [부름이 정보]
+               u_res.user_id        AS erranderUserId,
+               ep.errander_id       AS erranderProfileId,
+               u_res.nickname       AS erranderNickname,
+
+               -- [금액 정보]
+               IFNULL(po.amount, 0) AS orderAmount,      -- 최초 결제 금액 (예치금)
+               e.reward_amount      AS settlementAmount, -- 실제 지급 예정 금액 (관리자 수정 가능)
+
+               -- [인증 및 이력 정보]
+               -- COMPLETION_PROOFS 테이블에서 이미지와 제출일시를 가져옴
+               cp.file_url          AS proofImageUrl,    -- 수행 완료 인증 사진
+               cp.submitted_at      AS completedAt,      -- 부름이의 실제 사진 제출 일시
+#             e.admin_memo        AS adminMemo,         -- 관리자 메모 (보류/거절 사유)
+
+               -- [정산 요청 시점]
+               (SELECT h.changed_at
+                FROM ERRAND_STATUS_HISTORY h
+                WHERE h.errands_id = e.errands_id
+                  AND h.to_status = 'CONFIRMED2'
+                ORDER BY h.changed_at DESC
+                LIMIT 1)            AS requestDate
+
+        FROM ERRANDS e
+                 -- 1. 부름이 정보 조인
+                 JOIN ERRAND_ASSIGNMENTS ea ON e.errands_id = ea.errands_id
+            AND ea.status IN ('MATCHED', 'COMPLETED')
+                 JOIN ERRANDER_PROFILES ep ON ea.errander_id = ep.errander_id
+                 JOIN MEMBERS u_res ON ep.user_id = u_res.user_id
+
+            -- 2. 인증 사진 정보 조인 (전용 테이블 사용)
+                 LEFT JOIN COMPLETION_PROOFS cp ON e.errands_id = cp.errands_id
+            AND ep.errander_id = cp.errander_id
+
+            -- 3. 요청자 정보 조인
+                 JOIN MEMBERS u_req ON e.user_id = u_req.user_id
+
+            -- 4. 결제 주문 정보 조인
+                 LEFT JOIN PAYMENT_ORDERS po ON e.errands_id = po.errands_id
+            AND po.status IN ('PENDING', 'COMPLETED')
+
+        WHERE e.errands_id = #{errandId}
     </select>
 
     <update id="updateSettlementStatus" parameterType="map">

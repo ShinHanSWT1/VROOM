@@ -418,6 +418,43 @@
             background-color: #F8F9FA;
         }
 
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+        }
+
+        .pagination-button {
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--color-light-gray);
+            background: var(--color-white);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.875rem;
+        }
+
+        .pagination-button:hover {
+            border-color: var(--color-secondary);
+            background-color: #FFF9E6;
+        }
+
+        .pagination-button.active {
+            background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
+            border-color: var(--color-accent);
+            color: var(--color-dark);
+            font-weight: 700;
+        }
+
+        .pagination-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         /* Status Badges (Settlement Specific) */
         .status-badge {
             display: inline-block;
@@ -764,19 +801,21 @@
                     <thead>
                     <tr>
                         <th>심부름 ID</th>
+                        <th>제목</th>
+                        <th>요청자</th>
                         <th>부름이</th>
-                        <th>금액(원)</th>
-                        <th>신청일</th>
+                        <th>정산 예정일</th>
+                        <th>예정 금액</th>
+                        <th>실제 정산금</th>
                         <th>상태</th>
-                        <th>사유</th>
-                        <th>처리</th>
+                        <th>관리</th>
                     </tr>
                     </thead>
                     <tbody id="settlementTableBody">
                     </tbody>
                 </table>
 
-                <div style="display: flex; justify-content: center; margin-top: 1.5rem;" id="pagination"></div>
+                <div class="pagination" id="pagination"></div>
             </section>
         </main>
     </div>
@@ -809,9 +848,23 @@
                         <span class="info-value" id="modalErrander">-</span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">정산 금액</span>
-                        <span class="info-value" id="modalAmount"
-                              style="color: var(--color-primary); font-size: 1.1rem;">-</span>
+                        <span class="info-label">정산 예정 금액</span>
+                        <span class="info-value" id="modalOrderAmount">-</span>
+                    </div>
+
+                    <div class="info-row" style="align-items: center;">
+                        <span class="info-label">실제 지급액</span>
+                        <div style="display: flex; gap: 5px; align-items: center; flex: 1; justify-content: flex-end;">
+                            <input type="number" id="modalSettlementAmount" class="filter-select"
+                                   style="width: 120px; text-align: right; font-weight: bold; color: var(--color-primary);"
+                                   placeholder="0">
+                            <span>원</span>
+                            <button type="button" class="action-button"
+                                    style="padding: 0.4rem 0.6rem; font-size: 0.8rem; background-color: var(--color-secondary); color: #333;"
+                                    onclick="fillMaxAmount()">
+                                전액
+                            </button>
+                        </div>
                     </div>
                     <div class="info-row">
                         <span class="info-label">현재 상태</span>
@@ -852,6 +905,7 @@
 
 <script>
     let currentErrandsId = null; // 승인/반려 모달용 ID 저장
+    let maxOrderAmount = 0; // 최대 가능 금액 저장
 
     $(document).ready(function () {
         const sidebar = document.getElementById('sidebar');
@@ -904,95 +958,101 @@
         });
 
         // 필터 변경 시 자동 검색
-        document.getElementById('filterGu').addEventListener('change', () => loadSettlementList(1));
-        document.getElementById('filterDong').addEventListener('change', () => loadSettlementList(1));
-        document.getElementById('regStartDate').addEventListener('change', () => loadSettlementList(1));
-        document.getElementById('regEndDate').addEventListener('change', () => loadSettlementList(1));
-        document.getElementById('dueStartDate').addEventListener('change', () => loadSettlementList(1));
-        document.getElementById('dueEndDate').addEventListener('change', () => loadSettlementList(1));
+        document.getElementById('filterStatus').addEventListener('change', () => loadSettlementList(1));
+        document.getElementById('startDate').addEventListener('change', () => loadSettlementList(1));
+        document.getElementById('endDate').addEventListener('change', () => loadSettlementList(1));
     });
 
     //  목록 조회
     function loadSettlementList(page) {
         const keyword = document.getElementById('searchInput').value;
         const status = document.getElementById('filterStatus').value;
-        const startDate = document.getElementById('startDate').value;
-        const endDate = document.getElementById('endDate').value;
+        const regStartDate = document.getElementById('startDate').value;
+        const regEndDate = document.getElementById('endDate').value;
 
         // Query String 생성
         const params = new URLSearchParams({
             page: page,
             keyword: keyword,
-            approveStatus: approveStatus,
-            activeStatus: activeStatus,
-            reviewScope: reviewScope
+            status: status,
+            startDate: regStartDate,
+            endDate: regEndDate
         });
 
-        // 실제 API 호출 시 경로 수정 필요
-        /*
-        fetch(`
-        ${pageContext.request.contextPath}/api/admin/settlements?page=` + page + `&keyword=` + keyword + ...)
-        */
-        
-        /*
-        * 
-        *  id: 101,
-                errandId: 3012,
-                errander: 'RUNNER_12',
-                amount: 15000,
-                date: '2026-01-27',
-                status: 'WAITING',
-                reason: '-',
-                proof: '/resources/img/sample_proof.jpg'
-                * */
+        fetch('${pageContext.request.contextPath}/api/admin/settlements?' + params)
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                renderTable(data.settlementList);       // 테이블 그리기
+                renderPagination(data.pageInfo);        // 페이지네이션 그리기
 
-
-        renderTable(dummyData); // 실제로는 fetch response data 사용
-        document.getElementById('totalCount').innerText = dummyData.length;
+                // 총 개수 업데이트
+                document.getElementById('totalCount').innerText = data.totalCount;
+            })
+            .catch(error => {
+                console.error('데이터 로드 실패:', error);
+                alert('데이터를 불러오는 중 오류가 발생했습니다.');
+            });
     }
 
+
+    // 테이블 HTML 렌더링
     function renderTable(list) {
         const tbody = document.getElementById('settlementTableBody');
         tbody.innerHTML = '';
 
         if (!list || list.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:2rem;">데이터가 없습니다.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:2rem;">데이터가 없습니다.</td></tr>';
             return;
         }
 
         list.forEach(item => {
             let statusBadge = '';
             let statusText = '';
+            let actionBtn = '';
 
-            // 상태별 뱃지 처리
+            // 상태별 뱃지 및 버튼 분기 처리
             switch (item.status) {
-                case 'WAITING':
+                case 'WAITING': // CONFIRMED2
                     statusBadge = 'WAITING';
                     statusText = '정산 대기';
+                    // 대기 상태 -> 정산 처리 버튼 (강조색)
+                    actionBtn = `<button class="action-button" style="background-color: var(--color-primary);" onclick="openSettlementModal(\${item.id}, 'PROCESS')">정산</button>`;
                     break;
                 case 'HOLD':
                     statusBadge = 'HOLD';
                     statusText = '보류';
+                    // 보류 상태 -> 정산 처리 버튼 (주의색)
+                    actionBtn = `<button class="action-button" style="background-color: var(--color-warm);" onclick="openSettlementModal(\${item.id}, 'PROCESS')">정산</button>`;
                     break;
                 case 'COMPLETED':
                     statusBadge = 'COMPLETED';
                     statusText = '지급 완료';
+                    // 완료 상태 -> 상세 보기 버튼 (기본색)
+                    actionBtn = `<button class="action-button" onclick="openSettlementModal(\${item.id}, 'VIEW')">상세</button>`;
                     break;
                 case 'REJECTED':
                     statusBadge = 'REJECTED';
                     statusText = '정산 거절';
+                    actionBtn = `<button class="action-button" onclick="openSettlementModal(\${item.id}, 'VIEW')">상세</button>`;
                     break;
             }
+
+            // 금액 포맷팅 (null 체크)
+            const orderAmt = item.orderAmount ? item.orderAmount.toLocaleString() : '0';
+            const settleAmt = item.settlementAmount ? item.settlementAmount.toLocaleString() : '0';
 
             const row = `
                 <tr>
                     <td>\${item.errandId}</td>
+                    <td>\${item.errandTitle}</td>
+                    <td>\${item.requester}</td>
                     <td>\${item.errander}</td>
-                    <td>\${item.amount.toLocaleString()}</td>
                     <td>\${item.date}</td>
+                    <td style="color:#888;">\${orderAmt}원</td>
+                    <td style="font-weight:bold;">\${settleAmt}원</td>
                     <td><span class="status-badge \${statusBadge}">\${statusText}</span></td>
-                    <td>\${item.reason}</td>
-                    <td><button class="action-button" onclick="openSettlementModal(\${item.id})">상세</button></td>
+                    <td>\${actionBtn}</td>
                 </tr>
             `;
             tbody.innerHTML += row;
@@ -1046,23 +1106,94 @@
         pagination.appendChild(nextBtn);
     }
 
-    function openSettlementModal(id) {
+    // 모달 열기
+    function openSettlementModal(id, mode) {
         currentSettlementId = id;
 
-        // TODO: fetch(`${pageContext.request.contextPath}/api/admin/settlements/` + id) 로 상세 데이터 가져오기
+        // 상세 데이터 Fetch
+        fetch(`${pageContext.request.contextPath}/api/admin/settlements/` + id)
+            .then(res => res.json())
+            .then(data => {
+                // 데이터 바인딩
+                document.getElementById('modalErrandId').innerText = data.errandId;
+                document.getElementById('modalErrandTitle').innerText = data.errandTitle;
+                document.getElementById('modalErrander').innerText = data.erranderNickname;
 
-        // [테스트용 데이터 바인딩]
-        document.getElementById('modalErrandId').innerText = '3012';
-        document.getElementById('modalErrandTitle').innerText = '편의점에서 도시락 사다주세요';
-        document.getElementById('modalErrander').innerText = 'RUNNER_12 (김철수)';
-        document.getElementById('modalAmount').innerText = '15,000원';
-        document.getElementById('modalStatus').innerText = '정산 대기 중';
+                // 금액 표시 (예정 금액 -> 실제 금액)
+                const orderAmt = data.orderAmount ? parseInt(data.orderAmount) : 0;
+                const settleAmt = data.settlementAmount ? parseInt(data.settlementAmount) : 0;
 
-        // 이미지 세팅 (실제 경로가 없으면 placeholder)
-        document.getElementById('modalProofImg').src = 'https://via.placeholder.com/400x300?text=Proof+Image';
-        document.getElementById('adminMemo').value = '';
+                // 최대 금액(예정 금액) 저장
+                maxOrderAmount = orderAmt;
 
-        document.getElementById('settlementModal').classList.add('show');
+                // 화면 표시
+                document.getElementById('modalOrderAmount').innerText = orderAmt.toLocaleString() + '원';
+                document.getElementById('modalSettlementAmount').value = settleAmt; // input에 값 세팅
+
+                // let amountHtml = `\${settleAmt}원`;
+                // if (data.orderAmount && data.orderAmount != data.settlementAmount) {
+                //     amountHtml += ` <span style="font-size:0.8em; color:#999; text-decoration:line-through">(\${orderAmt}원)</span>`;
+                // }
+                // document.getElementById('modalAmount').innerHTML = amountHtml;
+
+                // 상태 텍스트
+                let statusText = data.status;
+                if (data.status === 'CONFIRMED2') statusText = '정산 대기';
+                else if (data.status === 'COMPLETED') statusText = '지급 완료';
+                document.getElementById('modalStatus').innerText = statusText;
+
+                // 이미지 처리
+                const imgEl = document.getElementById('modalProofImg');
+                if (data.proofImageUrl) {
+                    imgEl.src = data.proofImageUrl;
+                    imgEl.parentElement.onclick = () => window.open(data.proofImageUrl);
+                } else {
+                    imgEl.src = '${pageContext.request.contextPath}/static/img/no_image.png'; // 기본 이미지 경로 확인 필요
+                    imgEl.parentElement.onclick = null;
+                }
+
+                // 메모
+                const memoEl = document.getElementById('adminMemo');
+                memoEl.value = data.adminMemo || '';
+
+                // 2. 모드에 따른 버튼 제어
+                const footer = document.querySelector('.modal-footer');
+                // 기존 버튼들 미리 찾아두기
+                const btnReject = footer.querySelector('.btn-reject');
+                const btnHold = footer.querySelector('.btn-hold');
+                const btnApprove = footer.querySelector('.btn-approve');
+
+                if (mode === 'VIEW') {
+                    // 상세 모드: 액션 버튼 숨김, 메모 읽기 전용
+                    btnReject.style.display = 'none';
+                    btnHold.style.display = 'none';
+                    btnApprove.style.display = 'none';
+                    memoEl.readOnly = true;
+                } else {
+                    // 처리 모드: 액션 버튼 표시, 메모 수정 가능
+                    btnReject.style.display = 'inline-block';
+                    btnHold.style.display = 'inline-block';
+                    btnApprove.style.display = 'inline-block';
+                    memoEl.readOnly = false;
+                }
+
+                const amtInput = document.getElementById('modalSettlementAmount');
+                if (mode === 'VIEW') {
+                    amtInput.disabled = true;
+                } else {
+                    amtInput.disabled = false;
+                }
+
+                document.getElementById('settlementModal').classList.add('show');
+            })
+            .catch(err => {
+                console.error(err);
+                alert('상세 정보를 불러오지 못했습니다.');
+            });
+    }
+
+    function fillMaxAmount() {
+        document.getElementById('modalSettlementAmount').value = maxOrderAmount;
     }
 
     function closeModal() {
@@ -1073,28 +1204,67 @@
     // 정산 처리 (승인, 보류, 거절)
     function processSettlement(action) {
         const memo = document.getElementById('adminMemo').value;
+        const inputAmount = document.getElementById('modalSettlementAmount').value; // 입력된 금액
         const actionText = (action === 'COMPLETED') ? '확정(지급)' : (action === 'HOLD' ? '보류' : '거절');
 
+        // 메모 필수 체크
         if (action !== 'COMPLETED' && !memo) {
             alert(actionText + " 처리를 위해서는 사유(메모) 입력이 필요합니다.");
             return;
         }
 
-        if (!confirm("정말 " + actionText + " 처리 하시겠습니까?")) return;
+        // 금액 유효성 검사 (확정 시에만)
+        let finalAmount = 0;
+        if (action === 'COMPLETED') {
+            if (!inputAmount || inputAmount < 0) {
+                alert("유효한 정산 금액을 입력해주세요.");
+                return;
+            }
+            finalAmount = parseInt(inputAmount);
 
-        // API 호출 로직
-        /*
-        fetch(`
-        ${pageContext.request.contextPath}/api/admin/settlements/process`, {
+            // 예정 금액 초과 체크
+            if (finalAmount > maxOrderAmount) {
+                alert(`정산 금액은 예정 금액(\${maxOrderAmount.toLocaleString()}원)을 초과할 수 없습니다.`);
+                return;
+            }
+        }
+
+        if (!confirm(`정산 금액: \${finalAmount.toLocaleString()}원\n정말 \${actionText} 처리 하시겠습니까?`)) return;
+
+        console.log(JSON.stringify({
+            id: currentSettlementId,
+            action: action,
+            memo: memo,
+            amount: finalAmount // 금액 추가
+        }));
+        // 3. API 호출 (amount 추가 전송)
+        fetch(`${pageContext.request.contextPath}/api/admin/settlements/process`, {
             method: 'POST',
-            body: JSON.stringify({ id: currentSettlementId, action: action, memo: memo })
-        })...
-        */
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                id: currentSettlementId,
+                action: action,
+                memo: memo,
+                amount: finalAmount // 금액 추가
+            })
+        })
+            .then(res => res.json())
+            .then(data => {
+                console.log(data);
+                if (data.success) {
+                    alert("처리가 완료되었습니다.");
+                    closeModal();
+                    loadSettlementList(1);
+                } else {
+                    alert("처리 실패: " + data.message);
+                }
+            });
 
         console.log(`Processing Settlement ID: \${currentSettlementId}, Action: \${action}, Memo: \${memo}`);
         alert("처리가 완료되었습니다.");
         closeModal();
         loadSettlementList(1); // 목록 갱신
+
     }
 
 
