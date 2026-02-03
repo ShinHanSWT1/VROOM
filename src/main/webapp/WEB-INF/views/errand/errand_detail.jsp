@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <c:set var="pageTitle" value="심부름 상세 - VROOM" scope="request"/>
 <c:set var="pageCss" value="errand-detail" scope="request"/>
@@ -14,16 +15,43 @@
             <!-- Left: Image Section + Money -->
             <div class="left-col">
                 <div class="image-section">
-                    <div class="errand-image">
-                        <c:choose>
-                            <c:when test="${not empty errand.mainImageUrl}">
-                                <img src="${pageContext.request.contextPath}${errand.mainImageUrl}" alt="심부름 이미지">
-                            </c:when>
-                            <c:otherwise>
-                                <img src="${pageContext.request.contextPath}/static/img/errand/noimage.png" alt="기본 이미지">
-                            </c:otherwise>
-                        </c:choose>
-                    </div>
+                    <c:choose>
+                        <c:when test="${not empty errand.images}">
+                            <!-- 이미지가 여러 개일 경우 모두 표시 -->
+                            <c:forEach var="imgUrl" items="${errand.images}">
+                                <div class="errand-image" style="margin-bottom: 10px;">
+                                    <c:choose>
+                                        <c:when test="${fn:startsWith(imgUrl, 'http')}">
+                                            <img src="${imgUrl}" alt="심부름 이미지">
+                                        </c:when>
+                                        <c:otherwise>
+                                            <img src="${pageContext.request.contextPath}${imgUrl}" alt="심부름 이미지">
+                                        </c:otherwise>
+                                    </c:choose>
+                                </div>
+                            </c:forEach>
+                        </c:when>
+                        <c:otherwise>
+                            <!-- 이미지가 없을 경우 메인 이미지(기본 이미지) 표시 -->
+                            <div class="errand-image">
+                                <c:choose>
+                                    <c:when test="${not empty errand.mainImageUrl}">
+                                        <c:choose>
+                                            <c:when test="${fn:startsWith(errand.mainImageUrl, 'http')}">
+                                                <img src="${errand.mainImageUrl}" alt="심부름 이미지">
+                                            </c:when>
+                                            <c:otherwise>
+                                                <img src="${pageContext.request.contextPath}${errand.mainImageUrl}" alt="심부름 이미지">
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <img src="${pageContext.request.contextPath}/static/img/errand/noimage.png" alt="기본 이미지">
+                                    </c:otherwise>
+                                </c:choose>
+                            </div>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
 
                 <!-- 심부름값 + 재료비: 이미지 아래로 이동 -->
@@ -163,8 +191,15 @@
 
                                 <div class="task-image">
                                     <c:choose>
-                                        <c:when test="${not empty e.categoryDefaultImageUrl}">
-                                            <img src="${pageContext.request.contextPath}${e.categoryDefaultImageUrl}" alt="심부름 이미지">
+                                        <c:when test="${not empty e.displayImageUrl}">
+                                            <c:choose>
+                                                <c:when test="${fn:startsWith(e.displayImageUrl, 'http')}">
+                                                    <img src="${e.displayImageUrl}" alt="심부름 이미지">
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <img src="${pageContext.request.contextPath}${e.displayImageUrl}" alt="심부름 이미지">
+                                                </c:otherwise>
+                                            </c:choose>
                                         </c:when>
                                         <c:otherwise>
                                             📦

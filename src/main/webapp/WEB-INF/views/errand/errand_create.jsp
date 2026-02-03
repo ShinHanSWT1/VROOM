@@ -15,7 +15,7 @@
                 <h1 class="form-title">심부름 등록</h1>
             </div>
 
-            <form class="form-content" id="errandForm" method="post" action="${pageContext.request.contextPath}/errand/create">
+            <form class="form-content" id="errandForm" method="post" action="${pageContext.request.contextPath}/errand/create" enctype="multipart/form-data">
                 <!-- 카테고리/이미지 등 화면 선택값을 서버로 보내는 hidden들 -->
                 <input type="hidden" id="categoryId" name="categoryId" value="">
                 <input type="hidden" name="dongFullName" id="dongFullName">
@@ -60,7 +60,7 @@
                             <div class="upload-text">클릭하여 이미지를 업로드하세요</div>
                             <div class="upload-counter">0/10</div>
                         </div>
-                        <input type="file" id="imageInput" name="images" multiple accept="image/*" style="display: none;">
+                        <input type="file" id="imageInput" name="imageFiles" multiple accept="image/*" style="display: none;">
                     </div>
                 </div>
 

@@ -23,4 +23,5 @@ public class ErrandsVO {
     private String dongCode;        // 동 코드
     private String gunguName;       // 구군명
     private String dongName;        // 동명
+    private String imageUrl;        // 대표 이미지 URL
 }
