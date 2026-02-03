@@ -158,30 +158,16 @@
                                 <div class="review-card">
                                     <div class="review-header">
                                         <div class="reviewer-info">
-                                            <div class="reviewer-avatar">👤</div>
-                                            <div class="reviewer-details">
-                                                <span class="reviewer-name">${review.reviewerName}</span>
+                                            <div class="reviewer-avatar">
+                                                <c:choose>
+                                                    <c:when test="${not empty review.profileImage}">
+                                                        <img src="<c:url value='${review.profileImage}'/>" alt="프로필">
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <img src="<c:url value='/static/img/logo3.png'/>" alt="프로필">
+                                                    </c:otherwise>
+                                                </c:choose>
                                             </div>
-                                        </div>
-                                        <div class="review-rating">
-                                            <span class="rating-score">${review.rating}</span>
-                                            <span class="rating-star">★</span>
-                                        </div>
-                                    </div>
-                                    <div class="review-task">
-                                        <span class="task-label">${review.taskCategory} 님이 추천해요!</span>
-                                    </div>
-                                    <div class="review-content">
-                                        <p>${review.content}</p>
-                                    </div>
-                                </div>
-                            </c:forEach>
-                            <%-- 무한 루프를 위한 복제 --%>
-                            <c:forEach var="review" items="${reviewList}">
-                                <div class="review-card">
-                                    <div class="review-header">
-                                        <div class="reviewer-info">
-                                            <div class="reviewer-avatar">👤</div>
                                             <div class="reviewer-details">
                                                 <span class="reviewer-name">${review.reviewerName}</span>
                                             </div>
@@ -271,6 +257,47 @@
                 });
             </script>
             <script src="<c:url value='/static/main/js/mainFilter.js'/>"></script>
+
+            <script>
+            (function() {
+                var container = document.getElementById('reviewsContainer');
+                if (!container || container.children.length === 0) return;
+
+                // 원본 카드 복제
+                var cards = Array.from(container.children);
+                cards.forEach(function(card) {
+                    container.appendChild(card.cloneNode(true));
+                });
+
+                var speed = 0.5; // px per frame
+                var pos = 0;
+                var halfWidth = 0;
+                var paused = false;
+
+                function getHalfWidth() {
+                    var gap = parseFloat(getComputedStyle(container).gap) || 24;
+                    halfWidth = cards.length * (cards[0].offsetWidth + gap);
+                }
+
+                getHalfWidth();
+                window.addEventListener('resize', getHalfWidth);
+
+                container.parentElement.addEventListener('mouseenter', function() { paused = true; });
+                container.parentElement.addEventListener('mouseleave', function() { paused = false; });
+
+                function scroll() {
+                    if (!paused) {
+                        pos -= speed;
+                        if (Math.abs(pos) >= halfWidth) {
+                            pos = 0;
+                        }
+                        container.style.transform = 'translateX(' + pos + 'px)';
+                    }
+                    requestAnimationFrame(scroll);
+                }
+                requestAnimationFrame(scroll);
+            })();
+            </script>
 
             <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
             <c:choose>

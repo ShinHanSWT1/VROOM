@@ -486,7 +486,7 @@ imageUpload.addEventListener('change', (e) => {
 // Remove image (reset to default)
 removeImage.addEventListener('click', () => {
     currentImage = null;
-    previewImage.innerHTML = 'V';
+    previewImage.innerHTML = '<img src="' + contextPath + '/static/img/logo3.png" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">';
     imageUpload.value = '';
 });
 
@@ -527,7 +527,7 @@ modalSave.addEventListener('click', () => {
                 });
         } else if (currentImage === null) {
             // 기본 이미지로 변경
-            profileImage.innerHTML = 'V';
+            profileImage.innerHTML = '<img src="' + contextPath + '/static/img/logo3.png" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">';
             closeModal();
         } else {
             closeModal();
