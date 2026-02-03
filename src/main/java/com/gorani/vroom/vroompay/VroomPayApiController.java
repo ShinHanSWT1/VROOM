@@ -20,6 +20,20 @@ public class VroomPayApiController {
 
     private final VroomPayService vroomPayService;
 
+    /// ////////////////////////////
+    /// 정산 테스트용 *
+    /// ////////////////////////////
+    @PostMapping("/test/settle")
+    public Map<String, Object> testSettle() {
+        return vroomPayService.settleErrand(
+                222L,
+                126L,
+                26L,
+                BigDecimal.valueOf(1000)
+        );
+    }
+
+
     @GetMapping("/status")
     public Map<String, Object> getAccountStatus(HttpSession session) {
         Map<String, Object> result = new HashMap<>();
@@ -245,16 +259,6 @@ public class VroomPayApiController {
         vo.setUserId(Long.parseLong(String.valueOf(request.get("userId"))));
 
         return vroomPayService.createAndHoldPaymentOrder(vo);
-    }
-
-    @PostMapping("/test/settle")
-    public Map<String, Object> testSettle() {
-        return vroomPayService.settleErrand(
-                243L,
-                138L,
-                42L,
-                BigDecimal.valueOf(10000)
-        );
     }
 
     // 외부 API 응답에서 잔액을 추출하여 로컬 DB 업데이트

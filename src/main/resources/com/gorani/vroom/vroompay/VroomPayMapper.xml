@@ -83,7 +83,7 @@
         SELECT ea.id           AS assignmentId,
                ea.errands_id   AS errandsId,
                e.user_id       AS userId,
-               ep.user_id      AS erranderUserId,
+               ep.errander_id  AS erranderId,
                e.reward_amount AS amount
         FROM ERRANDS e
                  JOIN ERRAND_ASSIGNMENTS ea ON e.errands_id = ea.errands_id
@@ -126,6 +126,12 @@
         SELECT m.user_id
         FROM ERRANDER_PROFILES p JOIN MEMBERS m ON p.user_id = m.user_id
         WHERE p.errander_id = #{erranderId}
+    </select>
+
+    <select id="getErranderIdByUserId" resultType="long">
+        SELECT p.errander_id
+        FROM ERRANDER_PROFILES p JOIN MEMBERS m ON p.user_id = m.user_id
+        WHERE p.user_id = #{userId}
     </select>
 
     <update id="updatePaymentErranderId">

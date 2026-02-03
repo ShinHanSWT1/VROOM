@@ -10,21 +10,26 @@ import java.util.List;
 public interface VroomPayMapper {
     int insertWalletTransactions(WalletTransactionVO walletTransactionVO);
 
-    List<WalletTransactionVO> selectWalletTransactions(@Param("userId") Long userId,
-                                                       @Param("offset") int offset,
-                                                       @Param("limit") int limit);
+    List<WalletTransactionVO> selectWalletTransactions(
+            @Param("userId") Long userId,
+            @Param("offset") int offset,
+            @Param("limit") int limit);
 
-    int countWalletTransactions(@Param("userId") Long userId);
+    int countWalletTransactions(
+            @Param("userId") Long userId);
 
     int insertWalletAccount(VroomPayVO vroomPayVO);
 
-    VroomPayVO selectWalletAccount(@Param("userId") Long userId);
+    VroomPayVO selectWalletAccount(
+            @Param("userId") Long userId);
 
     int updateWalletAccount(VroomPayVO vroomPayVO);
 
-    List<SettlementTargetVO> selectSettlementTargets(@Param("day") int day);
+    List<SettlementTargetVO> selectSettlementTargets(
+            @Param("day") int day);
 
-    int updateAssignmentStatusToComplete(@Param("assignmentId") Long assignmentId);
+    int updateAssignmentStatusToComplete(
+            @Param("assignmentId") Long assignmentId);
 
     Long getPaymentIdForSettlement(
             @Param("errandsId") Long errandsId,
@@ -40,10 +45,17 @@ public interface VroomPayMapper {
     Long getErranderUserIdByErranderId(
             @Param("erranderId") Long erranderId);
 
-    int updatePaymentErranderId(@Param("orderId") Long orderId,
-                                @Param("erranderId") Long erranderId);
+    int updatePaymentErranderId(
+            @Param("orderId") Long orderId,
+            @Param("erranderId") Long erranderId);
 
-    Long getOrderIdByErrandsId(@Param("errandsId") Long errandsId);
+    Long getOrderIdByErrandsId(
+            @Param("errandsId") Long errandsId);
 
-    PaymentOrderVO getPaymentById(@Param("orderId") Long orderId);
+    PaymentOrderVO getPaymentById(
+            @Param("orderId") Long orderId);
+
+    Long getErranderIdByUserId(
+            @Param("userId") Long userId);
+
 }

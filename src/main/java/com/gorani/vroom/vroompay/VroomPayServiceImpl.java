@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -174,12 +175,16 @@ public class VroomPayServiceImpl implements VroomPayService {
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Map<String, Object> settleErrand(Long errandId, Long userId, Long erranderId, BigDecimal amount) {
-
+//                263L,
+//                139L,
+//                48L,
+//                BigDecimal.valueOf(2000)
         // 정산 완료하기 위해 orderId를 가져와야함
+        log.info("정산 시도 파라미터 - errandId={}, userId={}, erranderId={}", errandId, userId, erranderId);
         Long orderId = vroomPayMapper.getPaymentIdForSettlement(errandId, erranderId);
-        log.info("정산 처리 paymentID: " + orderId);
+        log.info("정산 처리 paymentID={}", orderId);
 
         // 예외 처리: orderId가 없는 경우 처리 필요
         if (orderId == null) {
@@ -196,49 +201,43 @@ public class VroomPayServiceImpl implements VroomPayService {
 
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
-//        Map<String, Object> requestBody = new HashMap<>();
-//        requestBody.put("errandId", errandId);
-//        requestBody.put("payerId", userId);     // 보내는 사람 (User)
-//        requestBody.put("payeeId", erranderId); // 받는 사람 (Errander)
-//        requestBody.put("amount", amount);
-
         Map<String, Object> result = new HashMap<>();
         try {
             ResponseEntity<PaymentOrderVO> response = restTemplate.exchange(url, HttpMethod.POST, entity, PaymentOrderVO.class);
 
-            log.info("정산 로직 - " + response);
+            log.info("정산 API 호출 결과 - {} ", response);
             result.put("success", true);
             result.put("message", "정산이 완료되었습니다.");
 
             PaymentOrderVO resBody = response.getBody();
-//            log.info("정산 로직 - " + resBody);
             if (resBody != null) {
                 result.put("data", resBody);
 
                 // 정산 완료에 따라 TRANSACTION PAYOUT
+                // 정산 API 호출 결과 body
+                // PaymentOrderVO(id=24, merchantUid=ORDERS_263_2026-02-03T14:38:16.080520900, amount=2000.00, status=COMPLETED, createdAt=2026-02-03 14:38:16, paidAt=2026-02-03 14:57:23, errandsId=263, userId=139, erranderId=140),
                 WalletTransactionVO transactionVO = new WalletTransactionVO();
                 transactionVO.setPaymentId(resBody.getId());
                 transactionVO.setAmount(resBody.getAmount());
                 transactionVO.setTxnType("PAYOUT");
                 transactionVO.setErrandId(resBody.getErrandsId());
-                transactionVO.setErranderId(resBody.getErranderId());
+                transactionVO.setErranderId(erranderId);
 
                 insertWalletTransactions(transactionVO);
 
                 // WALLET_ACCOUNT
-                Long erranderUserId = vroomPayMapper.getErranderUserIdByErranderId(resBody.getErranderId());
+                Long erranderUserId = resBody.getErranderId();
                 syncWalletAccount(erranderUserId);
+                syncWalletAccount(userId);
 
                 // 알림
                 notificationService.send(
-                        erranderId,
+                        erranderUserId,
                         "PAY",
                         "심부름값을 받았습니다!(" + amount + "원)",
                         "/errander/mypage/pay"
 
                 );
-
-                log.info("정산 정보" + response.getBody());
             }
         } catch (Exception e) {
             log.error("정산 API 호출 실패", e);
