@@ -1,10 +1,10 @@
 package com.gorani.vroom.errand.post;
 
-import java.util.List;
-import java.util.Map;
-
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface ErrandMapper {
@@ -33,4 +33,8 @@ public interface ErrandMapper {
     List<CategoryVO> selectCategories();
     List<Map<String, Object>> selectDongs();
     String selectMainImageUrl(@Param("errandsId") Long errandsId);
+    List<String> selectErrandImages(@Param("errandsId") Long errandsId);
+
+    // 이미지 저장
+    int insertErrandImage(ErrandImageVO imageVO);
 }

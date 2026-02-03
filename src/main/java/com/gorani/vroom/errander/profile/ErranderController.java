@@ -1,6 +1,6 @@
 package com.gorani.vroom.errander.profile;
 
-import com.gorani.vroom.config.MvcConfig;
+import com.gorani.vroom.common.util.S3UploadService;
 import com.gorani.vroom.user.auth.UserVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,9 +12,11 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpSession;
-import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Controller
@@ -23,6 +25,7 @@ import java.util.*;
 public class ErranderController {
 
     private final ErranderService erranderService;
+    private final S3UploadService s3UploadService;
 
     //  나의 정보
     @GetMapping("/mypage/profile")
@@ -201,7 +204,7 @@ public class ErranderController {
 
             // 신분증 처리
             if (!idFile.isEmpty()) {
-                String savedPath = saveFile(idFile);
+                String savedPath = s3UploadService.upload(idFile, "documents");
                 if (savedPath == null) {
                     throw new IOException("신분증 파일 저장 실패");
                 }
@@ -215,7 +218,7 @@ public class ErranderController {
 
             // 통장 사본 처리
             if (!bankFile.isEmpty()) {
-                String savedPath = saveFile(bankFile);
+                String savedPath = s3UploadService.upload(bankFile, "documents");
                 if (savedPath == null) {
                     throw new IOException("통장 사본 파일 저장 실패");
                 }
@@ -299,34 +302,5 @@ public class ErranderController {
         }
 
         return "redirect:/";
-    }
-
-    private String saveFile(MultipartFile file) throws IOException {
-        if (file.isEmpty()) {
-            return null;
-        }
-
-        // 저장 디렉토리 확인 및 생성
-        File uploadDir = new File(MvcConfig.ERRANDER_DOC_UPLOAD_PATH);
-        if (!uploadDir.exists()) {
-            uploadDir.mkdirs();
-        }
-
-        // 원본 파일명에서 확장자 추출
-        String originalFilename = file.getOriginalFilename();
-        String extension = "";
-        if (originalFilename != null && originalFilename.contains(".")) {
-            extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-        }
-
-        // 저장할 파일명 생성 (UUID + 확장자)
-        String savedFilename = UUID.randomUUID() + extension;
-
-        // 파일 저장
-        File destFile = new File(MvcConfig.ERRANDER_DOC_UPLOAD_PATH + savedFilename);
-        file.transferTo(destFile);
-
-        // 웹 접근 경로 반환
-        return "/uploads/erranderDocs/" + savedFilename;
     }
 }

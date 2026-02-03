@@ -229,6 +229,13 @@
             <artifactId>spring-batch-infrastructure</artifactId>
             <version>4.3.10</version>
         </dependency>
+
+        <!-- AWS S3 SDK -->
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-s3</artifactId>
+            <version>1.12.529</version>
+        </dependency>
     </dependencies>
 
     <build>

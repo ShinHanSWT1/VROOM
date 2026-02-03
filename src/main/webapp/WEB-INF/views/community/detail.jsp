@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <c:set var="pageCss" value="community-detail" scope="request"/>
 <c:set var="pageJs" value="communityComment"/>
@@ -147,7 +148,14 @@
                 <div class="post-images">
                     <c:forEach var="image" items="${postDetail.images}">
                         <div class="post-image-item">
-                            <img src="${pageContext.request.contextPath}${image.imageUrl}" alt="게시글 이미지">
+                            <c:choose>
+                                <c:when test="${fn:startsWith(image.imageUrl, 'http')}">
+                                    <img src="${image.imageUrl}" alt="게시글 이미지">
+                                </c:when>
+                                <c:otherwise>
+                                    <img src="${pageContext.request.contextPath}${image.imageUrl}" alt="게시글 이미지">
+                                </c:otherwise>
+                            </c:choose>
                         </div>
                     </c:forEach>
                 </div>

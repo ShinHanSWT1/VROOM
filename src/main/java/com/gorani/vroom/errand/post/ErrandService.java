@@ -34,4 +34,6 @@ public interface ErrandService {
     List<CategoryVO> getCategories();
     List<Map<String, Object>> getDongs();
 
+    // 심부름 이미지 저장
+    void saveImages(Long errandsId, List<String> imageUrls);
 }

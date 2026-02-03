@@ -1,6 +1,6 @@
 package com.gorani.vroom.community;
 
-import com.gorani.vroom.config.MvcConfig;
+import com.gorani.vroom.common.util.S3UploadService;
 import com.gorani.vroom.location.LocationService;
 import com.gorani.vroom.user.auth.UserVO;
 import lombok.RequiredArgsConstructor;
@@ -13,11 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpSession;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Slf4j
 @Controller
@@ -29,6 +26,7 @@ public class CommunityPostController {
 
     private final LocationService locationService;
     private final CommunityService communityService;
+    private final S3UploadService s3UploadService;
     
     @ModelAttribute
     private void addCommonModel(@RequestParam(required = false)  String dongCode,
@@ -377,38 +375,20 @@ public class CommunityPostController {
             return imageUrls;
         }
 
-        // 저장 디렉토리 확인
-        File uploadDir = new File(MvcConfig.COMMUNITY_UPLOAD_PATH);
-        if (!uploadDir.exists()) {
-            uploadDir.mkdirs();
-        }
-
         for (MultipartFile image : images) {
             if (image.isEmpty()) {
                 continue;
             }
 
             try {
-                // 파일 확장자 추출
-                String originalFilename = image.getOriginalFilename();
-                String extension = "";
-                if (originalFilename != null && originalFilename.contains(".")) {
-                    extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-                }
-
-                // UUID로 고유 파일명 생성
-                String savedFilename = UUID.randomUUID().toString() + extension;
-                File destFile = new File(MvcConfig.COMMUNITY_UPLOAD_PATH + savedFilename);
-
-                // 파일 저장
-                image.transferTo(destFile);
-
-                // 웹 경로 생성
-                String webPath = "/uploads/community/" + savedFilename;
+                // S3 업로드
+                String webPath = s3UploadService.upload(image, "community");
                 imageUrls.add(webPath);
 
-            } catch (IOException e) {
-                log.error("이미지 저장 실패: {}", e.getMessage());
+            } catch (Exception e) {
+                // IOException 뿐만 아니라 AWS SDK 예외도 잡기 위해 Exception으로 변경
+                log.error("이미지 저장 실패 (파일명: {}): {}", image.getOriginalFilename(), e.getMessage());
+                e.printStackTrace(); // 상세 스택 트레이스 출력
             }
         }
 

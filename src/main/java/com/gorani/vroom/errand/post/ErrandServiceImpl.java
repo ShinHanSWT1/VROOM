@@ -1,21 +1,18 @@
 package com.gorani.vroom.errand.post;
 
+import com.gorani.vroom.common.util.CategoryImageUtil;
+import com.gorani.vroom.vroompay.PaymentOrderVO;
+import com.gorani.vroom.vroompay.VroomPayService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.gorani.vroom.vroompay.PaymentOrderVO;
-import com.gorani.vroom.vroompay.VroomPayService;
-import org.springframework.objenesis.instantiator.gcj.GCJInstantiator;
-import org.springframework.stereotype.Service;
-
-import com.gorani.vroom.common.util.CategoryImageUtil;
-
-import lombok.RequiredArgsConstructor;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -67,12 +64,27 @@ public class ErrandServiceImpl implements ErrandService {
         if (errand == null) return List.of();
         if (errand.getDongCode() == null || errand.getCategoryId() == null) return List.of();
 
-        return errandMapper.selectRelatedErrands(
+        List<ErrandListVO> list = errandMapper.selectRelatedErrands(
             errand.getErrandsId(),
             errand.getDongCode(),
             errand.getCategoryId(),
             6
         );
+
+        // displayImageUrl 설정
+        if (list != null) {
+            for (ErrandListVO e : list) {
+                String url = e.getImageUrl();
+
+                if (url == null || url.isBlank()) {
+                    url = CategoryImageUtil.getDefaultImage(e.getCategoryId());
+                }
+
+                e.setDisplayImageUrl(url);
+            }
+        }
+
+        return list;
     }
 
     @Override
@@ -95,14 +107,18 @@ public class ErrandServiceImpl implements ErrandService {
             calculateTimeAgo(errand.getCreatedAt().toLocalDateTime())
         );
         
-        String mainImageUrl = errandMapper.selectMainImageUrl(errandsId);
+        // 메인 이미지 (Mapper에서 이미 조회됨)
+        String mainImageUrl = errand.getMainImageUrl();
 
         if (mainImageUrl == null || mainImageUrl.isBlank()) {
             // 이미지 없으면 카테고리 기본 이미지
             mainImageUrl = CategoryImageUtil.getDefaultImage(errand.getCategoryId());
         }
-
         errand.setMainImageUrl(mainImageUrl);
+
+        // 모든 이미지 리스트 조회
+        List<String> images = errandMapper.selectErrandImages(errandsId);
+        errand.setImages(images);
 
         return errand;
     }
@@ -114,7 +130,22 @@ public class ErrandServiceImpl implements ErrandService {
 
         int safeLimit = (limit <= 0) ? 6 : limit;
 
-        return errandMapper.selectRelatedErrands(currentErrandsId, dongCode, categoryId, safeLimit);
+        List<ErrandListVO> list = errandMapper.selectRelatedErrands(currentErrandsId, dongCode, categoryId, safeLimit);
+
+        // displayImageUrl 설정 (getErrandList와 동일한 로직)
+        if (list != null) {
+            for (ErrandListVO e : list) {
+                String url = e.getImageUrl();
+
+                if (url == null || url.isBlank()) {
+                    url = CategoryImageUtil.getDefaultImage(e.getCategoryId());
+                }
+
+                e.setDisplayImageUrl(url);
+            }
+        }
+
+        return list;
     }
     
     @Override
@@ -189,4 +220,17 @@ public class ErrandServiceImpl implements ErrandService {
         return days + "일 전";
     }
 
+    @Override
+    public void saveImages(Long errandsId, List<String> imageUrls) {
+        if (imageUrls == null || imageUrls.isEmpty()) {
+            return;
+        }
+        for (int i = 0; i < imageUrls.size(); i++) {
+            ErrandImageVO imageVO = new ErrandImageVO();
+            imageVO.setErrandsId(errandsId);
+            imageVO.setImageUrl(imageUrls.get(i));
+            imageVO.setSortOrder(i + 1);
+            errandMapper.insertErrandImage(imageVO);
+        }
+    }
 }
