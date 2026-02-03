@@ -262,6 +262,7 @@ public class AuthServiceImpl implements AuthService {
 
         if (exist != null) {
             authUserMapper.updateLastLoginAt(exist.getUserId());
+            exist.setRole("USER");
             session.setAttribute("loginSess", exist);
             return KakaoLoginResult.LOGIN_SUCCESS;
         }
