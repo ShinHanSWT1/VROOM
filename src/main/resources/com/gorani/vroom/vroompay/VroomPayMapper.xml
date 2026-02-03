@@ -91,7 +91,7 @@
         WHERE e.status = 'CONFIRMED2'
           AND ea.status = 'MATCHED'
           <![CDATA[
-          AND e.updated_at < DATE_SUB(NOW(), INTERVAL #{days} DAY)
+          AND e.updated_at < DATE_SUB(NOW(), INTERVAL #{days} HOUR)
           ]]>
         ORDER BY ea.id ASC
     </select>
