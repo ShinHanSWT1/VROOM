@@ -57,9 +57,13 @@ public class MainController {
         List<ErrandListVO> errandListVO = mainService.getMainErrandList(targetDongCode);
         model.addAttribute("errandListVO", errandListVO);
         
-        // 커뮤니티 인기글 조회 
+        // 커뮤니티 인기글 조회
         List<CommunityPostVO> popularPostListVO = mainService.getMainPopularPostList(targetDongCode);
         model.addAttribute("popularPostListVO", popularPostListVO);
+
+        // 우수 부름이 리뷰 조회
+        List<MainReviewVO> reviewList = mainService.getMainTopReviews();
+        model.addAttribute("reviewList", reviewList);
 
         return "main/index";
     }

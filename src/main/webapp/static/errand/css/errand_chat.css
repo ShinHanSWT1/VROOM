@@ -24,7 +24,7 @@
     --my-message-bg: #6B8E23;
     --my-message-text: #ffffff;
     --other-message-bg: #f0f0f0;
-    --other-message-text: #2C3E50;
+    --other-message-text: #000000;
     --input-bg: #ffffff;
     --input-border: #e0e0e0;
     --button-primary: #6B8E23;
@@ -111,6 +111,86 @@ body {
     border-radius: var(--card-radius);
     overflow: hidden;
     box-shadow: var(--chat-shadow);
+}
+
+.chat-user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.chat-header-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+
+/* 왼쪽 텍스트 */
+.chat-user-text{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  min-width:0;
+}
+
+.chat-user-text,
+.chat-user-text * {
+  color: #ffffff;
+}
+
+.chat-user-name-row{
+  display:flex;
+  align-items:baseline;
+  gap:6px;
+  flex-wrap:nowrap;
+}
+
+#chatPartnerName{
+  margin:0;
+  font-size:1.05rem;
+  line-height:1.2;
+  white-space:nowrap;
+}
+
+.manner-inline{
+  font-size:0.9rem;
+  opacity:0.8;
+  white-space:nowrap;
+}
+
+.chat-user-status{
+  font-size:0.85rem;
+  opacity:0.75;
+}
+
+/* (2) 헤더 안의 '아바타'만 36px 고정 */
+.chat-header .chat-user-avatar-right{
+  width: 60px !important;
+  height: 60px !important;
+  flex: 0 0 60px !important;
+  overflow: hidden !important;
+}
+
+.chat-header .chat-user-avatar-right img{
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+  display: white !important;
+}
+
+/* (4) 헤더 레이아웃 좌/우 정렬 강제 */
+.chat-header .chat-header-row{
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+.chat-header{
+  background: var(--panel-bg);
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  padding: 12px 16px;
 }
 
 /* ========================================

@@ -1,5 +1,7 @@
 package com.gorani.vroom.vroompay;
 
+import org.springframework.transaction.annotation.Transactional;
+
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +23,10 @@ public interface VroomPayService {
     // 심부름 정산
     Map<String, Object> settleErrand(Long errandId, Long payerId, Long payeeId, BigDecimal amount);
 
+    // 주문서 생성
+    @Transactional
+    Map<String, Object> createAndHoldPaymentOrder(PaymentOrderVO payment);
+
     // 계좌 변경 이력 등록
     void insertWalletTransactions(WalletTransactionVO walletTransactionVO);
 
@@ -39,4 +45,5 @@ public interface VroomPayService {
     // 로컬 지갑 계좌 잔액 업데이트
     void updateWalletAccount(VroomPayVO vroomPayVO);
 
+//    Map<String, Object> processSettlement(Long erranderUserId, BigDecimal amount);
 }

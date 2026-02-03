@@ -277,5 +277,51 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
 
         return roomId;
     }
+    
+    @Override
+    public boolean isMatchedErrander(Long errandsId, Long userId) {
+        if (errandsId == null || userId == null) return false;
 
+        // userId → erranderId 변환
+        Long erranderId = errandAssignmentMapper.selectErranderIdByUserId(userId);
+        if (erranderId == null) return false;
+
+        // errander_id 기준으로 매칭 여부 확인
+        return errandAssignmentMapper
+                .countMatchedByErrandAndErrander(errandsId, erranderId) > 0;
+    }
+    
+    @Override
+    public boolean isCanceledErrander(Long errandsId, Long userId) {
+        return errandAssignmentMapper.existsCanceledAssignment(errandsId, userId) > 0;
+    }
+    
+    @Override
+    @Transactional
+    public void rejectErrander(Long errandsId, Long erranderId, Long changedByUserId) {
+
+        // 1) assignments 상태: MATCHED -> CANCELED (매칭 레코드 종료)
+        int updatedAssign = errandAssignmentMapper.updateAssignmentStatusMatchedToCanceled(errandsId, erranderId);
+        if (updatedAssign == 0) {
+            throw new IllegalStateException("이미 처리된 요청입니다.");
+        }
+
+        // 2) errand_status_history 기록: MATCHED -> WAITING
+        errandAssignmentMapper.insertStatusHistory(
+            errandsId,
+            "MATCHED",
+            "WAITING",
+            "USER",
+            changedByUserId
+        );
+
+        // 3) errands(게시글) 상태: MATCHED -> WAITING
+        int updatedErrand = errandAssignmentMapper.updateErrandStatusMatchedToWaiting(errandsId);
+        if (updatedErrand == 0) {
+            throw new IllegalStateException("게시글 상태 갱신 실패: errandsId=" + errandsId);
+        }
+
+        // 4) 거절 이력 테이블 기록 (재신청 방지)
+        errandAssignmentMapper.insertRejectHistory(errandsId, erranderId);
+    }
 }

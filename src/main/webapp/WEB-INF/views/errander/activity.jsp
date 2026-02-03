@@ -33,10 +33,6 @@
             <!-- Calendar Section (FullCalendar) -->
             <div class="calendar-section">
                 <div id="calendar"></div>
-
-                <button class="view-all-btn" onclick="viewAllTransactions()">
-                    전체 거래 내역 조회
-                </button>
             </div>
 
             <!-- Transaction List -->

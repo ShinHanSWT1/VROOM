@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.gorani.vroom.errand.assignment.ErrandAssignmentMapper;
 import com.gorani.vroom.errand.chat.ws.ChatMessagePayload;
+import com.gorani.vroom.errander.profile.ErranderMapper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,6 +19,7 @@ public class ChatServiceImpl implements ChatService {
     private final ChatMapper chatMapper;
     private final ErrandAssignmentMapper assignmentMapper;
     private final SimpMessagingTemplate messagingTemplate;
+    private final ErranderMapper erranderMapper;
     
     private String toChangedByType(String role) {
         if (role == null) return "SYSTEM";
@@ -157,8 +159,27 @@ public class ChatServiceImpl implements ChatService {
     @Transactional
     public void rejectErrand(Long errandsId, Long roomId, Long userId, Long erranderUserId) {
     	
+    	// 0) erranderUserId(user_id) -> erranderId(errander PK) 변환
+    	Long erranderId = assignmentMapper.selectMatchedErranderIdByErrandsId(errandsId);
+    	System.out.println("[REJECT] matched erranderId=" + erranderId + " for errandsId=" + errandsId);
+
+    	if (erranderId == null) {
+    	    throw new IllegalStateException("현재 MATCHED된 부름이가 없습니다. 이미 처리되었을 수 있습니다.");
+    	}
+
+        // 1) ERRAND_ASSIGNMENTS: MATCHED -> CANCELED (이 매칭 레코드 종료)
+        int canceled = assignmentMapper.updateAssignmentStatusMatchedToCanceled(errandsId, erranderId);
+        System.out.println("[REJECT] updateAssignmentStatusMatchedToCanceled rows=" + canceled
+                + " (errandsId=" + errandsId + ", erranderId=" + erranderId + ")");
+        if (canceled == 0) {
+            // 이미 취소됐거나, 이미 다른 부름이로 바뀌었거나, 매칭 상태가 아닌 경우
+            throw new IllegalStateException("이미 처리된 요청입니다.");
+        }
+    	
     	// 상태 전환: MATCHED -> WAITING (딱 1번만 성공)
         int updated = assignmentMapper.updateErrandStatusMatchedToWaiting(errandsId);
+        System.out.println("[REJECT] updateErrandStatusMatchedToWaiting rows=" + updated
+                + " (errandsId=" + errandsId + ")");
         if (updated == 0) {
             throw new IllegalStateException("이미 처리된 요청입니다.");
         }
@@ -171,6 +192,8 @@ public class ChatServiceImpl implements ChatService {
             "USER",
             userId
         );
+        
+        assignmentMapper.insertRejectHistory(errandsId, erranderId);
 
         // 채팅방 종료 처리: room 전체 participant 비활성화(권장)
         chatMapper.deactivateParticipantsByRoomId(roomId);
@@ -192,7 +215,15 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public ChatRoomVO getErrandInfoForChat(Long errandsId, Long currentUserId) {
-        return chatMapper.selectErrandInfoForChat(errandsId, currentUserId);
+        ChatRoomVO info = chatMapper.selectErrandInfoForChat(errandsId); // 기존 심부름 정보
+        ChatRoomVO partner = chatMapper.selectPartnerInfoForChat(errandsId, currentUserId);
+
+        if (info != null && partner != null) {
+            info.setPartnerNickname(partner.getPartnerNickname());
+            info.setPartnerProfileImage(partner.getPartnerProfileImage());
+            info.setPartnerMannerScore(partner.getPartnerMannerScore());
+        }
+        return info;
     }
 
     @Override
@@ -271,5 +302,17 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public String getErrandStatus(Long errandsId) {
         return chatMapper.selectErrandStatusByErrandsId(errandsId);
+    }
+    
+    @Override
+    public boolean existsChatRoomByErrandsId(Long errandsId) {
+        if (errandsId == null) return false;
+        return chatMapper.countChatRoomByErrandsId(errandsId) > 0;
+    }
+    
+    @Override
+    public Long getErranderUserIdByRoomId(Long roomId) {
+        // 채팅 참여자 중 ERRANDER 역할인 user_id를 1명 가져오기
+        return chatMapper.selectErranderUserIdByRoomId(roomId);
     }
 }

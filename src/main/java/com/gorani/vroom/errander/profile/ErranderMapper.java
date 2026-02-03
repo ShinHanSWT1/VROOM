@@ -3,8 +3,6 @@ package com.gorani.vroom.errander.profile;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import java.util.Map;
-
 @Mapper
 public interface ErranderMapper {
 
@@ -15,7 +13,11 @@ public interface ErranderMapper {
     int getInProgressCount(@Param("erranderId") Long erranderId);
     // 완료 건수
     int getCompletedCount(@Param("erranderId") Long erranderId);
-    // 달 수익
+    
+    // 전체 수익
+    int getTotalEarning(@Param("erranderId") Long erranderId);
+    
+    // 달 수익 (필요 시 유지, 현재는 전체 수익으로 변경됨)
     int getMonthEarning(@Param("erranderId") Long erranderId,
                         @Param("year") int year,
                         @Param("month")int month);
@@ -38,5 +40,19 @@ public interface ErranderMapper {
 
     // 사용자 역할 변경
     int updateUserRole(@Param("userId") Long userId, @Param("role") String role);
+
+    // 정산 대기 금액 (CONFIRMED1 상태)
+    int getSettlementWaitingAmount(@Param("erranderId") Long erranderId);
+
+    // 수령 예정 금액 (CONFIRMED2 상태)
+    int getExpectedAmount(@Param("erranderId") Long erranderId);
+
+    // 최근 30일 수행 건수 (COMPLETED)
+    int getLast30DaysCompletedCount(@Param("erranderId") Long erranderId);
+
+    // 전체 수행 건수 (COMPLETED + CANCELED) - 성공률 계산용
+    int getTotalAssignedCount(@Param("erranderId") Long erranderId);
+    
+    Long selectErranderIdByUserId(Long userId);
 
 }

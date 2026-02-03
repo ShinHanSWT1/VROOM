@@ -2,10 +2,13 @@ package com.gorani.vroom.vroompay;
 
 import com.gorani.vroom.user.auth.UserVO;
 import lombok.RequiredArgsConstructor;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -228,6 +231,22 @@ public class VroomPayApiController {
 
         return result;
     }
+
+    // 심부름 올리면 주문서 하나 생성
+    @PostMapping("/payment/order")
+    private Map<String, Object> createPayment(
+            @RequestBody Map<String, Object> request
+    ){
+        // request:{amount, errands_id, user_id}
+        PaymentOrderVO vo = new PaymentOrderVO();
+        vo.setMerchantUid("ORDERS_" + request.get("errandsId").toString() + "_" + LocalDateTime.now());
+        vo.setAmount(new BigDecimal(String.valueOf(request.get("amount"))));
+        vo.setErrandsId(Long.parseLong(String.valueOf(request.get("errandsId"))));
+        vo.setUserId(Long.parseLong(String.valueOf(request.get("userId"))));
+
+        return vroomPayService.createAndHoldPaymentOrder(vo);
+    }
+
 
     // 외부 API 응답에서 잔액을 추출하여 로컬 DB 업데이트
     private void updateLocalBalance(Long userId, Map<String, Object> apiResult) {

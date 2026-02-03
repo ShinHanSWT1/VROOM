@@ -88,4 +88,8 @@ public interface ChatService {
     void completeConfirm(Long errandsId, Long ownerUserId);
     
     String getErrandStatus(Long errandsId);
+    
+    boolean existsChatRoomByErrandsId(Long errandsId);
+    
+    Long getErranderUserIdByRoomId(Long roomId);
 }

@@ -78,4 +78,53 @@
         WHERE user_id = #{userId}
     </update>
 
+    <select id="selectSettlementTargets"
+            parameterType="map" resultType="com.gorani.vroom.batch.SettlementTargetVO">
+        SELECT ea.id           AS assignmentId,
+               ea.errands_id   AS errandsId,
+               e.user_id       AS userId,
+               ep.user_id      AS erranderUserId,
+               e.reward_amount AS amount
+        FROM ERRANDS e
+                 JOIN ERRAND_ASSIGNMENTS ea ON e.errands_id = ea.errands_id
+                 JOIN ERRANDER_PROFILES ep ON ea.errander_id = ep.errander_id
+        WHERE e.status = 'CONFIRMED2'
+          AND ea.status = 'MATCHED'
+          <![CDATA[
+          AND e.updated_at < DATE_SUB(NOW(), INTERVAL #{days} DAY)
+          ]]>
+        ORDER BY ea.id ASC
+    </select>
+
+    <update id="updateAssignmentStatusToComplete" parameterType="long">
+        UPDATE ERRAND_ASSIGNMENTS
+        SET status = 'COMPLETED'
+        WHERE id = #{assignmentId}
+    </update>
+
+    <select id="getPaymentIdForSettlement" parameterType="map" resultType="long">
+        SELECT p.id
+        FROM PAYMENT_ORDERS p JOIN ERRANDS e ON p.errands_id = e.errands_id
+        WHERE p.errands_id = #{errandsId}
+        AND p.errander_id = #{erranderId}
+        AND p.status = 'PENDING'
+        AND e.status IN ('CONFIRMED2', 'HOLD')
+    </select>
+
+    <insert id="insertPaymentOrder">
+        INSERT INTO PAYMENT_ORDERS (id, amount, errands_id, user_id, status, created_at)
+        VALUES (#{id}, #{amount}, #{errandsId}, #{userId}, #{status}, #{createdAt})
+    </insert>
+
+    <update id="updatePaymentStatus">
+        UPDATE PAYMENT_ORDERS
+        SET status = #{status}
+        WHERE id = #{orderId}
+    </update>
+
+    <select id="getErranderUserIdByErranderId" resultType="long">
+        SELECT m.user_id
+        FROM ERRANDER_PROFILES p JOIN MEMBERS m ON p.user_id = m.user_id
+        WHERE p.errander_id = #{erranderId}
+    </select>
 </mapper>

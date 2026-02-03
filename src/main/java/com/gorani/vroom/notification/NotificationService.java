@@ -12,14 +12,14 @@ public class NotificationService {
 
     /**
      * 알림 전송 (이 메서드를 다른 서비스에서 호출하세요)
-     * @param targetUserId 받는 사람 ID
+     * @param userId 받는 사람 ID
      * @param type 알림 유형 (SETTLEMENT, CHAT 등)
      * @param message 알림 메시지
      * @param url 클릭 시 이동할 페이지 (없으면 null)
      */
-    public void send(Long targetUserId, String type, String message, String url) {
+    public void send(Long userId, String type, String message, String url) {
         NotificationVO vo = new NotificationVO();
-        vo.setUserId(targetUserId);
+        vo.setUserId(userId);
         vo.setType(type);
         vo.setMessage(message);
         vo.setUrl(url);

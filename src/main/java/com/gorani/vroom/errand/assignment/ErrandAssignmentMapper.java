@@ -53,6 +53,17 @@ public interface ErrandAssignmentMapper {
     String getErranderActiveStatus(
             @Param("erranderId") Long erranderId);
 
-    Long selectUserIdByErranderId(
-            @Param("erranderId") Long erranderId);
+    Long selectUserIdByErranderId(@Param("erranderId") Long erranderId);
+
+    int countMatchedByErrandAndErrander(@Param("errandsId") Long errandsId, @Param("erranderId") Long erranderId);
+    
+    int existsCanceledAssignment(Long errandsId, Long userId);
+    
+    int updateAssignmentStatusMatchedToCanceled(Long errandsId, Long erranderId);
+    
+    int insertRejectHistory(Long errandsId, Long erranderId);
+
+    int existsRejectHistory(Long errandsId, Long erranderId);
+    
+    Long selectMatchedErranderIdByErrandsId(@Param("errandsId") Long errandsId);
 }

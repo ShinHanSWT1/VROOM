@@ -18,5 +18,8 @@ public class ChatRoomVO {
     private String errandDescription;
     private String errandLocation;
     private String errandImageUrl;
+    private Long partnerUserId;
     private String partnerNickname;  // 상대방 닉네임
+    private String partnerProfileImage;
+    private java.math.BigDecimal partnerMannerScore;
 }

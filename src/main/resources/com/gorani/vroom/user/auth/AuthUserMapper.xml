@@ -28,7 +28,6 @@
         FROM MEMBERS
         WHERE email = #{email}
           AND pwd = MD5(#{pwd})
-          AND status = 'ACTIVE'
           AND deleted_at IS NULL
 
     </select>
