@@ -39,7 +39,7 @@
 	  JOIN ERRAND_STATUS_HISTORY h
 	    ON h.errands_id = a.errands_id
 	  WHERE a.errands_id = #{errandsId}
-	    AND a.errander_id = #{erranderId}
+	    AND a.errander_id = #{erranderUserId}
 	    AND h.to_status = 'CONFIRMED1'
 	    AND h.changed_at = (
 	        SELECT MAX(changed_at)
@@ -157,7 +157,7 @@
 	  SELECT COUNT(*)
 	  FROM ERRAND_ASSIGNMENTS
 	  WHERE errands_id = #{errandsId}
-	    AND errander_user_id = #{userId}
+	    AND errander_id = #{userId}
 	    AND status = 'CANCELED'
 	</select>
 	

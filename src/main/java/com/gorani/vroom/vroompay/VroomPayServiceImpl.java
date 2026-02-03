@@ -410,13 +410,15 @@ public class VroomPayServiceImpl implements VroomPayService {
         requestBody.put("erranderUserId", erranderUserId);
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
-
+        log.info("심부름 매칭 entity - {}", entity);
         Map<String, Object> result = new HashMap<>();
         try {
             // API 호출
             ResponseEntity<PaymentOrderVO> response = restTemplate.exchange(url, HttpMethod.POST, entity, PaymentOrderVO.class);
             result.put("success", true);
             result.put("message", "정상 업데이트 되었습니다");
+
+            log.info("매칭 후 PAYMENT 업데이트 - {}", response);
 
             if (response.getBody() != null) {
                 result.put("data", response.getBody());
@@ -431,6 +433,7 @@ public class VroomPayServiceImpl implements VroomPayService {
             result.put("message", "업데이트 실패했습니다: " + e.getMessage());
         }
 
+        log.info("심부름 매칭 PAYMENT 결과 - {}", result);
         return result;
     }
 

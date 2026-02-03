@@ -1,6 +1,7 @@
 package com.gorani.vroom.admin.erranders;
 
 import com.gorani.vroom.errander.profile.ErranderService;
+import com.gorani.vroom.notification.NotificationService;
 import com.gorani.vroom.user.profile.UserProfileService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,8 @@ public class AdminErrandersServiceImpl implements AdminErrandersService {
     private AdminErrandersMapper mapper;
     @Autowired
     private UserProfileService userProfileService;
+    @Autowired
+    private NotificationService notificationService;
 
     @Override
     public Map<String, Object> getSummary() {
@@ -91,16 +94,36 @@ public class AdminErrandersServiceImpl implements AdminErrandersService {
         } else {
             dataMap.put("result", "success");
             String activeStatus = "";
+
+            long userId = mapper.getUserIdByErranderId(erranderId);
+
             if (status.equals("APPROVED")) {
                 activeStatus = "ACTIVE";
+
+                // MEMBERS의 role을 ERRANDER로 업데이트
+                userProfileService.changeRole(userId, "ERRANDER");
+
+                // 알림
+                notificationService.send(
+                      userId,
+                      "SYSTEM",
+                      "부름이 승인 완료되었습니다",
+                      ""
+                );
+
             } else if (status.equals("REJECTED")) {
                 activeStatus = "INACTIVE";
+                // 알림
+                notificationService.send(
+                        userId,
+                        "SYSTEM",
+                        "부름이가 반려되었습니다",
+                        "/errander/register"
+                );
             }
             mapper.updateErranderActiveStatus(erranderId, activeStatus);
 
-            // MEMBERS의 role을 ERRANDER로 업데이트
-            long userId = mapper.getUserIdByErranderId(erranderId);
-            userProfileService.changeRole(userId, "ERRANDER");
+
         }
 
         return dataMap;
