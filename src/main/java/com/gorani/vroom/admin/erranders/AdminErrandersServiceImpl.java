@@ -113,6 +113,10 @@ public class AdminErrandersServiceImpl implements AdminErrandersService {
 
             } else if (status.equals("REJECTED")) {
                 activeStatus = "INACTIVE";
+
+                // 서류 상태도 REJECTED로 변경
+                mapper.updateDocumentStatus(erranderId, "REJECTED");
+
                 // 알림
                 notificationService.send(
                         userId,

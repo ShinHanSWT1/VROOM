@@ -140,6 +140,40 @@ public class ErranderServiceImpl implements ErranderService {
     }
 
     @Override
+    @Transactional
+    public boolean reRegisterErrander(Long erranderId, ErranderProfileVO profileVO, List<ErranderDocumentVO> documents) {
+        try {
+            // 1. 기존 서류 삭제
+            erranderMapper.deleteErranderDocuments(erranderId);
+
+            // 2. 프로필 상태 업데이트 (PENDING으로, 동네 정보 업데이트)
+            int result = erranderMapper.updateErranderProfileForReRegister(
+                    erranderId,
+                    profileVO.getDongCode1(),
+                    profileVO.getDongCode2()
+            );
+            if (result == 0) return false;
+
+            // 3. 새 서류 등록
+            if (documents != null && !documents.isEmpty()) {
+                for (ErranderDocumentVO doc : documents) {
+                    erranderMapper.insertErranderDocument(
+                            erranderId,
+                            doc.getFilePath(),
+                            doc.getDocumentType(),
+                            doc.getOriginalName(),
+                            "SUBMITTED"
+                    );
+                }
+            }
+            return true;
+        } catch (Exception e) {
+            log.error("부름이 재신청 중 오류 발생", e);
+            return false;
+        }
+    }
+
+    @Override
     public int getSettlementWaitingAmount(Long erranderId) {
         return erranderMapper.getSettlementWaitingAmount(erranderId);
     }

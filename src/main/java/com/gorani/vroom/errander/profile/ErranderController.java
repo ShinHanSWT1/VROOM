@@ -163,10 +163,11 @@ public class ErranderController {
 
         // 이미 등록된 부름이인지 확인
         ErranderProfileVO profile = erranderService.getErranderProfile(loginUser.getUserId());
-        if (profile != null) {
-            // 이미 등록되어 있다면 상태에 따라 분기 처리 가능
+        if (profile != null && !"REJECTED".equals(profile.getApprovalStatus())) {
+            // REJECTED가 아니면 (PENDING, APPROVED) 마이페이지로
             return "redirect:/member/myInfo";
         }
+        // profile이 null이거나 REJECTED면 등록 페이지로
 
         return "errander/register";
     }
@@ -226,7 +227,17 @@ public class ErranderController {
                 ));
             }
 
-            boolean success = erranderService.registerErrander(profileVO, documents);
+            // 기존 REJECTED 프로필이 있는지 확인 (재신청 여부)
+            ErranderProfileVO existingProfile = erranderService.getErranderProfile(loginUser.getUserId());
+            boolean success;
+
+            if (existingProfile != null && "REJECTED".equals(existingProfile.getApprovalStatus())) {
+                // 재신청: 기존 프로필 업데이트 + 기존 서류 삭제 + 새 서류 등록
+                success = erranderService.reRegisterErrander(existingProfile.getErranderId(), profileVO, documents);
+            } else {
+                // 신규 등록
+                success = erranderService.registerErrander(profileVO, documents);
+            }
 
             if (success) {
                 // 등록 성공 시 사용자 메인 페이지로 이동하며 메시지 전달

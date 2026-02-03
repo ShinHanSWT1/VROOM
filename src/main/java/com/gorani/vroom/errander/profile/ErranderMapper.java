@@ -57,7 +57,15 @@ public interface ErranderMapper {
     Long selectErranderIdByUserId(Long userId);
 
     // 리뷰 목록 조회
-    List<ErranderReviewVO> getErranderReviews(@Param("erranderId") Long erranderId, 
-                                              @Param("offset") int offset, 
+    List<ErranderReviewVO> getErranderReviews(@Param("erranderId") Long erranderId,
+                                              @Param("offset") int offset,
                                               @Param("limit") int limit);
+
+    // 재신청용: 기존 서류 삭제
+    int deleteErranderDocuments(@Param("erranderId") Long erranderId);
+
+    // 재신청용: 프로필 상태 업데이트 (PENDING으로)
+    int updateErranderProfileForReRegister(@Param("erranderId") Long erranderId,
+                                           @Param("dongCode1") String dongCode1,
+                                           @Param("dongCode2") String dongCode2);
 }

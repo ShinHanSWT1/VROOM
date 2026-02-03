@@ -10,6 +10,9 @@ public interface ErranderService {
     // 부름이 등록
     boolean registerErrander(ErranderProfileVO profileVO, List<ErranderDocumentVO> fileUrls);
 
+    // 부름이 재신청 (REJECTED 상태에서)
+    boolean reRegisterErrander(Long erranderId, ErranderProfileVO profileVO, List<ErranderDocumentVO> documents);
+
     // 정산 대기 금액 (CONFIRMED1 상태)
     int getSettlementWaitingAmount(Long erranderId);
 
