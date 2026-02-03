@@ -41,7 +41,9 @@
                                 </c:otherwise>
                             </c:choose>
                         </c:when>
-                        <c:otherwise>V</c:otherwise>
+                        <c:otherwise>
+                            <img src="<c:url value='/static/img/logo3.png'/>" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                        </c:otherwise>
                     </c:choose>
                 </div>
                 <div class="profile-info">
@@ -191,7 +193,9 @@
                                     </c:otherwise>
                                 </c:choose>
                             </c:when>
-                            <c:otherwise>V</c:otherwise>
+                            <c:otherwise>
+                                <img src="<c:url value='/static/img/logo3.png'/>" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">
+                            </c:otherwise>
                         </c:choose>
                     </div>
                     <div class="upload-options">

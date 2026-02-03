@@ -76,12 +76,11 @@ public class SettlementBatchConfig {
             try {
                 log.info("정산 처리 시작 - AssignmentID: {}", item);
 
-                // TODO: 부름페이 보완 후 연결
-                // 외부 API 호출 (VroomPayService)
+                // VroomPay 정산
                 Map<String, Object> result = vroomPayService.settleErrand(
                         item.getErrandsId(),
                         item.getUserId(),
-                        item.getErranderUserId(),
+                        item.getErranderId(),
                         item.getAmount()
                 );
 

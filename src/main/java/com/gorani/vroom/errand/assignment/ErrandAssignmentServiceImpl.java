@@ -63,6 +63,12 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
             throw new IllegalStateException("부름이 프로필이 없어 채팅 시작이 불가합니다.");
         }
 
+        // [가드3] 이미 거절된 부름이 재신청 불가
+        int canceled = errandAssignmentMapper.existsCanceledAssignment(errandsId, erranderId);
+        if (canceled > 0) {
+            throw new IllegalStateException("이미 거절된 부름이입니다. 재신청할 수 없습니다.");
+        }
+
         // active_status가 active 인 부름이만 가능하도록
         if (!"ACTIVE".equals(errandAssignmentMapper.getErranderActiveStatus(erranderId))) {
             throw new IllegalStateException("해당 부름이 계정이 정지된 상태입니다.");
@@ -216,7 +222,7 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
         }
 
         // 4. 상태 변경 (WAITING -> MATCHED)
-        int updated = errandAssignmentMapper.updateErrandStatusWaitingToMatched(errandsId);
+        int updated = errandAssignmentMapper.updateErrandWaitingToMatchedWithErrander(errandsId, erranderId);
         if (updated == 0) {
             throw new IllegalStateException("심부름 상태 변경에 실패했습니다. 이미 배정되었을 수 있습니다.");
         }
@@ -225,7 +231,6 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
         errandAssignmentMapper.insertMatchedAssignment(adminId, ownerUserId, errandsId, erranderId, "MANUAL", "MATCHED", reason);
 
         // 6. 상태 변경 이력 저장 (Changed By ADMIN)
-        // 사유(Reason)를 저장할 컬럼이 있다면 Mapper를 수정하여 reason도 전달하세요.
         errandAssignmentMapper.insertStatusHistory(
                 errandsId,
                 "WAITING",
@@ -235,10 +240,12 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
         );
 
         // 7. 채팅방 생성 (Owner <-> Errander)
-        // 채팅방이 있어야 소통이 가능하므로 필수입니다.
         try {
             roomId = chatService.getOrCreateChatRoom(errandsId, erranderUserId);
             if (roomId != null) {
+                // PAYMENT 업데이트
+                vroomPayService.updatePaymentErranderMatched(errandsId, erranderId);
+
                 // + 알림 보내기
                 notificationService.send(
                         ownerUserId,
@@ -271,7 +278,12 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
     
     @Override
     public boolean isCanceledErrander(Long errandsId, Long userId) {
-        return errandAssignmentMapper.existsCanceledAssignment(errandsId, userId) > 0;
+        if (errandsId == null || userId == null) return false;
+
+        Long erranderId = errandAssignmentMapper.selectErranderIdByUserId(userId);
+        if (erranderId == null) return false;
+
+        return errandAssignmentMapper.existsCanceledAssignment(errandsId, erranderId) > 0;
     }
     
     @Override
@@ -301,5 +313,15 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
 
         // 4) 거절 이력 테이블 기록 (재신청 방지)
         errandAssignmentMapper.insertRejectHistory(errandsId, erranderId);
+    }
+    
+    @Override
+    public Long getMatchedErranderId(Long errandsId) {
+        return errandAssignmentMapper.selectMatchedErranderIdByErrandsId(errandsId);
+    }
+
+    @Override
+    public Long getErranderIdByUserId(Long userId) {
+        return errandAssignmentMapper.selectErranderIdByUserId(userId);
     }
 }

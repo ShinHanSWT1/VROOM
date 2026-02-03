@@ -23,6 +23,9 @@ public interface VroomPayService {
     // 심부름 정산
     Map<String, Object> settleErrand(Long errandId, Long payerId, Long payeeId, BigDecimal amount);
 
+    @Transactional
+    Map<String, Object> settleErrandManual(Long errandId, Long userId, Long erranderId, BigDecimal amount);
+
     // 주문서 생성
     @Transactional
     Map<String, Object> createAndHoldPaymentOrder(PaymentOrderVO payment);

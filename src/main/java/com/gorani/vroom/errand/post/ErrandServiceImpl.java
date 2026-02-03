@@ -182,9 +182,9 @@ public class ErrandServiceImpl implements ErrandService {
             throw new IllegalStateException("errandsId was not generated/assigned to VO");
         }
 
-        // TODO: 부름페이에서 주문서 생성 및 돈 홀드
+        // PAYMENT 생성
         PaymentOrderVO vo = new PaymentOrderVO();
-        vo.setAmount(new BigDecimal(errandCreateVO.getRewardAmount() + errandCreateVO.getExpenseAmount()));
+        vo.setAmount(new BigDecimal(errandCreateVO.getRewardAmount()));
         vo.setErrandsId(errandCreateVO.getErrandsId());
         vo.setUserId(errandCreateVO.getUserId());
         vo.setMerchantUid("ORDERS_" + errandCreateVO.getErrandsId() + "_" + LocalDateTime.now());

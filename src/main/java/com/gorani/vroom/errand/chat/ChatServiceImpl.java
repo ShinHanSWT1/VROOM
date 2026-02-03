@@ -45,41 +45,41 @@ public class ChatServiceImpl implements ChatService {
     public Long getOrCreateChatRoom(Long errandsId, Long erranderUserId) {
     	// 심부름 작성자 조회
         Long ownerUserId = chatMapper.selectErrandOwnerUserId(errandsId);
-        // 기존 채팅방 확인
-        ChatRoomVO existingRoom = chatMapper.selectChatRoomByErrandsId(errandsId);
-        if (existingRoom != null) {
-        	Long roomId = existingRoom.getRoomId();
-
-            // 방 재활용: 참가자 upsert(없으면 insert, 있으면 active=1)
-        	chatMapper.deactivateErrandersByRoomId(roomId);
-            chatMapper.upsertParticipantActive(roomId, ownerUserId, "OWNER");
-            chatMapper.upsertParticipantActive(roomId, erranderUserId, "ERRANDER");
-            
-            return roomId;
-        }
-
-        // 부름이 ID 변환 (MEMBERS.user_id -> ERRANDER_PROFILES.errander_id)
+        
+        // 1) userId -> erranderId 변환 (ERRANDER_PROFILES PK)
         Long erranderId = assignmentMapper.selectErranderIdByUserId(erranderUserId);
         if (erranderId == null) {
             throw new IllegalStateException("부름이 프로필이 없습니다.");
         }
 
-        // 새 채팅방 생성 (VO로 넣고 생성키(room_id) 받기)
+        // 2) (errandsId, erranderId)로 기존 방 찾기
+        ChatRoomVO existingRoom = chatMapper.selectChatRoomByErrandsIdAndErranderId(errandsId, erranderId);
+        if (existingRoom != null) {
+            Long roomId = existingRoom.getRoomId();
+
+            // 방 재활용: 참가자 활성화 보장
+            // (※ deactivateErrandersByRoomId는 이 방 안에서만 비활성화하므로 유지 가능)
+            chatMapper.deactivateErrandersByRoomId(roomId);
+
+            chatMapper.upsertParticipantActive(roomId, ownerUserId, "OWNER");
+            chatMapper.upsertParticipantActive(roomId, erranderUserId, "ERRANDER"); // 참가자는 user_id 저장
+
+            return roomId;
+        }
+
+        /// 3) 새 채팅방 생성 (CHAT_ROOM에는 errander_id(프로필 PK) 저장)
         ChatRoomVO room = new ChatRoomVO();
         room.setErrandsId(errandsId);
         room.setErranderId(erranderId);
-
         chatMapper.insertChatRoom(room);
 
-        // insert 후 useGeneratedKeys로 room_id가 room.roomId에 들어옴
         Long roomId = room.getRoomId();
 
-        // 참여자 추가 (OWNER - 심부름 올린 사람)
+        // 4) 참여자 추가 (CHAT_PARTICIPANT에는 user_id 저장)
         chatMapper.insertParticipant(roomId, ownerUserId, "OWNER");
-        // 참여자 추가 (ERRANDER - 부름이)
         chatMapper.insertParticipant(roomId, erranderUserId, "ERRANDER");
 
-        // 시스템 메시지 추가
+        // 5) 시스템 메시지 추가
         ChatMessageVO systemMessage = new ChatMessageVO();
         systemMessage.setRoomId(roomId);
         systemMessage.setSenderUserId(ownerUserId);
@@ -341,5 +341,10 @@ public class ChatServiceImpl implements ChatService {
     public Long getErranderUserIdByRoomId(Long roomId) {
         // 채팅 참여자 중 ERRANDER 역할인 user_id를 1명 가져오기
         return chatMapper.selectErranderUserIdByRoomId(roomId);
+    }
+    
+    @Override
+    public ChatRoomVO getChatRoomByErrandsIdAndErranderId(Long errandsId, Long erranderId) {
+        return chatMapper.selectChatRoomByErrandsIdAndErranderId(errandsId, erranderId);
     }
 }

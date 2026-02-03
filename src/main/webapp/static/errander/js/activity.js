@@ -7,6 +7,16 @@ function formatCurrency(amount) {
     return '₩' + amount.toLocaleString('ko-KR');
 }
 
+function getStatusLabel(status) {
+    switch (status) {
+        case 'COMPLETED':  return { text: '완료', cls: 'status-completed' };
+        case 'MATCHED':    return { text: '채팅중', cls: 'status-chatting' };
+        case 'CONFIRMED1': return { text: '확인중', cls: 'status-confirming' };
+        case 'CONFIRMED2': return { text: '확인중', cls: 'status-confirming' };
+        default:           return { text: status, cls: '' };
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const calendarEl = document.getElementById('calendar');
 
@@ -32,16 +42,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 type: 'GET',
                 data: { year: year, month: month },
                 success: function(data) {
-                    const events = data.map(function(item) {
-                        return {
-                            title: formatCurrency(item.dailyEarning),
-                            start: item.earnDate,
-                            allDay: true,
-                            // 추가 정보가 필요하면 extendedProps에 담을 수 있음
-                            extendedProps: {
-                                dailyEarning: item.dailyEarning
-                            }
-                        };
+                    var events = [];
+                    data.forEach(function(item) {
+                        if (item.dailyEarning > 0) {
+                            events.push({
+                                title: formatCurrency(item.dailyEarning),
+                                start: item.earnDate,
+                                allDay: true,
+                                backgroundColor: '#6B8E23',
+                                borderColor: '#6B8E23',
+                                extendedProps: { dailyEarning: item.dailyEarning }
+                            });
+                        }
+                        if (item.inProgressCount > 0) {
+                            events.push({
+                                title: '진행중 ' + item.inProgressCount + '건',
+                                start: item.earnDate,
+                                allDay: true,
+                                backgroundColor: '#1565c0',
+                                borderColor: '#1565c0',
+                                extendedProps: { inProgressCount: item.inProgressCount }
+                            });
+                        }
                     });
                     successCallback(events);
                 },
@@ -112,11 +134,15 @@ function renderTransactionList(activities, dateStr) {
         item.className = 'transaction-item';
         item.onclick = function() { location.href = '/vroom/errand/detail?errandsId=' + activity.errandsId; };
 
+        var statusInfo = getStatusLabel(activity.status);
+
         item.innerHTML =
             '<div class="transaction-info">' +
                 '<div class="transaction-icon">🐝</div>' +
                 '<div class="transaction-details">' +
-                    '<div class="transaction-name">' + activity.title + '</div>' +
+                    '<div class="transaction-name">' + activity.title +
+                        ' <span class="status-badge ' + statusInfo.cls + '">' + statusInfo.text + '</span>' +
+                    '</div>' +
                     '<div class="transaction-date">' + (activity.dongFullName || '') + '</div>' +
                 '</div>' +
             '</div>' +

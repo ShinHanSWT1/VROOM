@@ -61,7 +61,7 @@
 .profile-image-container {
     width: 80px;
     height: 80px;
-    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
+    background: var(--color-secondary);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -176,7 +176,7 @@
 
 .temp-fill {
     height: 100%;
-    background: linear-gradient(90deg, #FF6B6B 0%, var(--color-warm, #D97218) 100%);
+    background: #FF6B6B;
 }
 
 .temp-value {
@@ -487,7 +487,7 @@
 }
 
 .modal-btn-submit {
-    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
+    background: var(--color-secondary);
     color: var(--color-dark);
 }
 
@@ -527,7 +527,7 @@
 .withdraw-btn {
     width: 100%;
     padding: 1rem;
-    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
+    background: var(--color-secondary);
     color: var(--color-dark);
     border: none;
     border-radius: 8px;
@@ -584,7 +584,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
+    background: var(--color-secondary);
     border-radius: 8px;
     font-size: 1.5rem;
 }
@@ -633,7 +633,7 @@
 }
 
 .page-btn.active {
-    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
+    background: var(--color-secondary);
     color: var(--color-dark);
     font-weight: 600;
     border-color: transparent;

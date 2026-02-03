@@ -83,6 +83,7 @@
     <select id="selectMainTopReviews" resultType="com.gorani.vroom.main.MainReviewVO">
         SELECT
             m.nickname AS reviewerName,
+            m.profile_image AS profileImage,
             r.rating AS rating,
             c.name AS taskCategory,
             r.comment AS content

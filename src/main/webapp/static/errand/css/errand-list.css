@@ -6,6 +6,16 @@
     text-align: center;
 }
 
+/* 부름이 */
+.page-header.header-errander {
+    background-color: var(--color-primary);
+}
+
+/* 사용자 */
+.page-header.header-user {
+    background-color: var(--color-accent);
+}
+
 .page-title {
     font-size: 2rem;
     color: var(--color-white);
@@ -209,7 +219,7 @@
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
+    background: var(--color-secondary);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -271,7 +281,7 @@
 
 .pagination-btn:hover:not(:disabled) {
     border-color: var(--color-secondary);
-    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
+    background: var(--color-secondary);
     color: var(--color-white);
 }
 
@@ -302,7 +312,7 @@
 }
 
 .pagination-number.active {
-    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
+    background: var(--color-secondary);
     color: var(--color-white);
     border-color: var(--color-accent);
 }
