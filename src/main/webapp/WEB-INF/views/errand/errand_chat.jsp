@@ -150,16 +150,15 @@
 						    </c:when>
 				
 				            <c:when test="${errandStatus eq 'CONFIRMED2' or errandStatus eq 'COMPLETED'}">
-  <div class="status-done">거래 완료</div>
-  <c:choose>
-    <c:when test="${reviewed}">
-      <button type="button" id="openReviewBtn" class="review-btn" data-reviewed="1" disabled>리뷰 완료</button>
-    </c:when>
-    <c:otherwise>
-      <button type="button" id="openReviewBtn" class="review-btn" data-reviewed="0">리뷰작성</button>
-    </c:otherwise>
-  </c:choose>
-</c:when>
+							  <c:choose>
+							    <c:when test="${reviewed}">
+							      <button type="button" id="openReviewBtn" class="review-btn" data-reviewed="1" disabled>리뷰 완료</button>
+							    </c:when>
+							    <c:otherwise>
+							      <button type="button" id="openReviewBtn" class="review-btn" data-reviewed="0">리뷰작성</button>
+							    </c:otherwise>
+							  </c:choose>
+							</c:when>
 				          </c:choose>
 				        </c:when>
 				
