@@ -45,16 +45,33 @@
                 <div class="errand-card">
                     <div class="errand-thumbnail-section">
                         <div class="errand-thumbnail">
-                            <c:choose>
-                                <c:when test="${fn:startsWith(chatRoomInfo.errandImageUrl, 'http')}">
-                                    <img src="${chatRoomInfo.errandImageUrl}" alt="심부름 이미지" id="errandThumbnail">
-                                </c:when>
-                                <c:otherwise>
-                                    <img src="${pageContext.request.contextPath}${chatRoomInfo.errandImageUrl}"
-                                         alt="심부름 이미지" id="errandThumbnail">
-                                </c:otherwise>
-                            </c:choose>
-                        </div>
+						  <c:set var="summaryImgUrl" value="" />
+						
+						  <c:choose>
+						    <c:when test="${not empty chatRoomInfo.errandImageUrl}">
+						      <c:set var="summaryImgUrl" value="${chatRoomInfo.errandImageUrl}" />
+						    </c:when>
+						
+						    <c:when test="${not empty chatRoomInfo.categoryDefaultImageUrl}">
+						      <c:set var="summaryImgUrl" value="${chatRoomInfo.categoryDefaultImageUrl}" />
+						    </c:when>
+						
+						    <c:otherwise>
+						      <c:set var="summaryImgUrl" value="/static/img/errand/noimage.png" />
+						    </c:otherwise>
+						  </c:choose>
+						
+						  <c:choose>
+						    <c:when test="${fn:startsWith(summaryImgUrl, 'http')}">
+						      <img src="${summaryImgUrl}" alt="심부름 이미지" id="errandThumbnail"
+						           onerror="this.onerror=null; this.src='${pageContext.request.contextPath}/static/img/errand/noimage.png';" />
+						    </c:when>
+						    <c:otherwise>
+						      <img src="${pageContext.request.contextPath}${summaryImgUrl}" alt="심부름 이미지" id="errandThumbnail"
+						           onerror="this.onerror=null; this.src='${pageContext.request.contextPath}/static/img/errand/noimage.png';" />
+						    </c:otherwise>
+						  </c:choose>
+						</div>
                         <div class="errand-basic-info">
                             <div class="errand-title" id="errandTitle">${chatRoomInfo.errandTitle}</div>
                             <div class="errand-location" id="errandLocation">📍 ${chatRoomInfo.errandLocation}</div>
