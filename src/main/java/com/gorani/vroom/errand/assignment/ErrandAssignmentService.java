@@ -13,6 +13,7 @@ public interface ErrandAssignmentService {
     boolean isCanceledErrander(Long errandsId, Long userId);
     
     void rejectErrander(Long errandsId, Long erranderId, Long changedByUserId);
+    
+    Long getMatchedErranderId(Long errandsId);
+    Long getErranderIdByUserId(Long userId);
 }
-
-
