@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.gorani.vroom.errand.assignment.ErrandAssignmentService;
+import com.gorani.vroom.errand.review.ReviewService;
 import com.gorani.vroom.user.auth.UserVO;
 
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,7 @@ import lombok.RequiredArgsConstructor;
 public class ChatController {
 
     private final ChatService chatService;
+    private final ReviewService reviewService;
     private final SimpMessagingTemplate messagingTemplate;
     private final ErrandAssignmentService errandAssignmentService;
     
@@ -304,15 +306,26 @@ public class ChatController {
 
         Long userId = loginUser.getUserId();
 
-        // 0) 작성자(owner) 여부 판단
+        // 0) ERRANDS.status (WAITING/MATCHED/CONFIRMED1/CONFIRMED2/COMPLETED) 1번만 조회
+        String errandStatus = chatService.getErrandStatus(errandsId);
+
         Long ownerUserId = chatService.getOwnerUserIdByErrandsId(errandsId);
         boolean isOwner = ownerUserId != null && ownerUserId.equals(userId);
 
-        // 1) 작성자(OWNER): 현재 MATCHED된 부름이 방으로만 입장
+        // 2) 리뷰 가능 조건: 작성자 + (CONFIRMED2 or COMPLETED)
+        boolean isReviewable = isOwner && ("CONFIRMED2".equals(errandStatus) || "COMPLETED".equals(errandStatus));
+
+        // 3) 이미 리뷰 썼는지 (작성자만 의미 있음)
+        boolean reviewExists = false;
+        if (isOwner) {
+            //아래 reviewService/mapper는 주입 필요 (하단 참고)
+            reviewExists = reviewService.existsReview(errandsId, userId);
+        }
+
+        // ====== OWNER(작성자) ======
         if (isOwner) {
 
             // WAITING이면 아직 매칭/방 없음
-            String errandStatus = chatService.getErrandStatus(errandsId);
             if ("WAITING".equals(errandStatus)) {
                 return "redirect:/errand/detail?errandsId=" + errandsId
                         + "&message=" + java.net.URLEncoder.encode(
@@ -324,7 +337,6 @@ public class ChatController {
             // 현재 MATCHED assignment의 errander_id 가져오기 (프로필 PK)
             Long matchedErranderId = errandAssignmentService.getMatchedErranderId(errandsId);
             if (matchedErranderId == null) {
-                // status는 MATCHED인데 assignment가 없으면 데이터 불일치 -> 안전 처리
                 return "redirect:/errand/detail?errandsId=" + errandsId
                         + "&message=" + java.net.URLEncoder.encode(
                         "현재 매칭된 부름이를 찾을 수 없습니다.",
@@ -335,7 +347,6 @@ public class ChatController {
             // (errandsId, erranderId)로 정확히 방 찾기
             ChatRoomVO room = chatService.getChatRoomByErrandsIdAndErranderId(errandsId, matchedErranderId);
             if (room == null) {
-                // 방이 없다면 (예: DB만 있고 room 생성 실패) -> 안전 처리 or 생성 로직 추가 가능
                 return "redirect:/errand/detail?errandsId=" + errandsId
                         + "&message=" + java.net.URLEncoder.encode(
                         "채팅방이 아직 생성되지 않았습니다.",
@@ -351,14 +362,18 @@ public class ChatController {
                 return "errand/errand_already_matched";
             }
 
-            return "redirect:/errand/chat/room?roomId=" + roomId;
+            // redirect에 리뷰 관련 플래그를 같이 넘김
+            return "redirect:/errand/chat/room?roomId=" + roomId
+                    + "&errandsId=" + errandsId
+                    + "&reviewable=" + (isReviewable ? "1" : "0")
+                    + "&reviewExists=" + (reviewExists ? "1" : "0");
         }
 
-        // 2) 부름이(ERRANDER): 내 방만 입장 + 거절(CANCELED) 차단
+        // ====== ERRANDER(부름이) ======
+
         // userId -> erranderId 변환 (프로필 PK)
         Long myErranderId = errandAssignmentService.getErranderIdByUserId(userId);
         if (myErranderId == null) {
-            // 부름이 프로필이 없으면 채팅 시작 불가
             request.setAttribute("message", "부름이 프로필이 없어 채팅을 시작할 수 없습니다.");
             request.setAttribute("redirectUrl", request.getContextPath() + "/errand/detail?errandsId=" + errandsId);
             return "common/alert_redirect";
@@ -375,13 +390,16 @@ public class ChatController {
         ChatRoomVO room = chatService.getChatRoomByErrandsIdAndErranderId(errandsId, myErranderId);
         if (room == null) {
             // 방이 없으면: WAITING일 때만 “매칭 시작 + 방 생성” 허용
-            String errandStatus = chatService.getErrandStatus(errandsId);
             if (!"WAITING".equals(errandStatus)) {
                 return "errand/errand_already_matched";
             }
 
             Long roomId = chatService.getOrCreateChatRoom(errandsId, userId);
-            return "redirect:/errand/chat/room?roomId=" + roomId;
+
+            // 부름이는 리뷰 주체가 아니니까 reviewable=0 고정
+            return "redirect:/errand/chat/room?roomId=" + roomId
+                    + "&errandsId=" + errandsId
+                    + "&reviewable=0&reviewExists=0";
         }
 
         Long roomId = room.getRoomId();
@@ -392,8 +410,11 @@ public class ChatController {
             return "errand/errand_already_matched";
         }
 
-        return "redirect:/errand/chat/room?roomId=" + roomId;
+        return "redirect:/errand/chat/room?roomId=" + roomId
+                + "&errandsId=" + errandsId
+                + "&reviewable=0&reviewExists=0";
     }
+
 
     /**
      * 메시지 목록 조회 (AJAX)
@@ -448,4 +469,26 @@ public class ChatController {
 
         return Map.of("success", true, "status", "CONFIRMED2");
     }
+    
+    @PostMapping("/review")
+    @ResponseBody
+    public java.util.Map<String, Object> writeReview(
+            @RequestParam("errandsId") Long errandsId,
+            @RequestParam("rating") int rating,
+            @RequestParam(value = "comment", required = false) String comment,
+            javax.servlet.http.HttpSession session
+    ) {
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
+        if (loginUser == null) {
+            return java.util.Map.of("success", false, "error", "로그인이 필요합니다.");
+        }
+
+        try {
+            reviewService.writeReview(errandsId, loginUser.getUserId(), rating, comment);
+            return java.util.Map.of("success", true);
+        } catch (Exception e) {
+            return java.util.Map.of("success", false, "error", e.getMessage());
+        }
+    }
+
 }

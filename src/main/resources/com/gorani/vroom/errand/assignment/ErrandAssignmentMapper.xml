@@ -198,5 +198,14 @@
 	    AND status = 'MATCHED'
 	  LIMIT 1
 	</select>
+	
+	<select id="selectRevieweeUserIdByErrandId" parameterType="long" resultType="long">
+	  SELECT ea.errander_id
+	  FROM ERRAND_ASSIGNMENTS ea
+	  WHERE ea.errands_id = #{errandsId}
+	    AND ea.status IN ('MATCHED','COMPLETED')
+	  ORDER BY ea.assigned_at DESC
+	  LIMIT 1
+	</select>
 
 </mapper>

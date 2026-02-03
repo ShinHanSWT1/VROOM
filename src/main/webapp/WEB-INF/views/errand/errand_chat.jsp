@@ -130,6 +130,7 @@
                 
                 
                 <!-- 역할별 액션 버튼 카드 -->
+				<c:set var="reviewed" value="${(not empty reviewExists and reviewExists) or (param.reviewExists eq '1')}" />
 				<div class="errand-card">
 				  <div class="errand-card-header">
 				    <div class="section-label">💼 심부름 관리</div>				    
@@ -148,9 +149,17 @@
 						      <div class="status-wait">⏳ 심부름 중</div>
 						    </c:when>
 				
-				            <c:when test="${errandStatus eq 'CONFIRMED2'}">
-				              <div class="status-done">거래 완료</div>
-				            </c:when>
+				            <c:when test="${errandStatus eq 'CONFIRMED2' or errandStatus eq 'COMPLETED'}">
+  <div class="status-done">거래 완료</div>
+  <c:choose>
+    <c:when test="${reviewed}">
+      <button type="button" id="openReviewBtn" class="review-btn" data-reviewed="1" disabled>리뷰 완료</button>
+    </c:when>
+    <c:otherwise>
+      <button type="button" id="openReviewBtn" class="review-btn" data-reviewed="0">리뷰작성</button>
+    </c:otherwise>
+  </c:choose>
+</c:when>
 				          </c:choose>
 				        </c:when>
 				
@@ -164,22 +173,19 @@
 						      <button class="complete-btn" id="proofBtn" type="button">✔ 거래완료</button>
 						    </c:when>
 						
-						    <c:when test="${errandStatus eq 'CONFIRMED2'}">
-						      <div class="status-done">거래 완료</div>
-						    </c:when>
+						    <c:when test="${errandStatus eq 'CONFIRMED2' or errandStatus eq 'COMPLETED'}">
+  <div class="status-done">거래 완료</div>
+</c:when>
 						  </c:choose>
 						</c:when>
 				
 				        <c:otherwise>
 				          <div class="status-wait">심부름 진행중</div>
 				        </c:otherwise>
-				
 				      </c:choose>
 				    </div>
 				  </div>
 				</div>
-
-
             </div>
 
             <!-- 우측 패널: 채팅 -->
@@ -305,7 +311,9 @@
         const assignmentStatus = '${assignmentStatus}'; 
 
 
-        document.addEventListener('DOMContentLoaded', function() {
+                const errandStatus = '${errandStatus}';
+        const reviewExists = ('${reviewExists}' === 'true') || ('${param.reviewExists}' === '1');
+document.addEventListener('DOMContentLoaded', function() {
             const messageInput = document.getElementById('messageInput');
             const sendBtn = document.getElementById('sendBtn');
             const messagesArea = document.getElementById('messagesArea');
@@ -386,10 +394,19 @@
            	    return;
            	  }
 
-           	  if (status === 'CONFIRMED2') {
-           	    actionArea.innerHTML = `<div class="status-done">거래 완료</div>`;
-           	    return;
-           	  }
+	          if (status === 'CONFIRMED2') {
+	           	if (isUser) {
+	           	  // 작성자 화면: 거래완료 자리 → 리뷰작성 버튼 등장
+	           	  actionArea.innerHTML = `
+	           	    <button class="review-btn" id="openReviewBtn" type="button" data-reviewed="0">리뷰작성</button>
+	           	  `;
+	           	  bindReviewBtn(); // 이벤트 바인딩
+	           	} else {
+	           	  // 부름이 화면은 그냥 완료 표시
+	           	  actionArea.innerHTML = `<div class="status-done">거래 완료</div>`;
+	           	}
+	           	return;
+	          }
 
            	  if (status === 'MATCHED') {
            	    // MATCHED는 "채팅 시작됨" 상태라, 사용자 화면에 수락/거절 버튼이 떠야 함
@@ -886,8 +903,116 @@
             bindAcceptReject();
             bindCompleteConfirm();
             bindProofUpload();
-        });
+            // 리뷰 버튼(페이지 로드시 이미 CONFIRMED2/COMPLETED인 경우 포함)
+            if ((userRole === 'USER' || userRole === 'OWNER') && (errandStatus === 'CONFIRMED2' || errandStatus === 'COMPLETED')) {
+              const area = document.getElementById('actionArea');
+              if (area && !document.getElementById('openReviewBtn')) {
+                area.insertAdjacentHTML('beforeend', `
+<button class="review-btn" id="openReviewBtn" type="button" data-reviewed="${reviewExists ? '1' : '0'}">${reviewExists ? '리뷰 완료' : '리뷰작성'}</button>`);
+              }
+            }
+            bindReviewBtn();
+});
+        
+        function bindReviewBtn() {
+       	  const openBtn = document.getElementById('openReviewBtn');
+       	  const modal = document.getElementById('reviewModal');
+       	  if (!openBtn || !modal) return;
+
+       	  // 중복 바인딩 방지
+       	  if (openBtn.dataset.bound === '1') return;
+       	  openBtn.dataset.bound = '1';
+
+       	  // 이미 리뷰 쓴 경우 잠금
+       	  const reviewed = openBtn.dataset.reviewed === '1';
+       	  if (reviewed) {
+       	    openBtn.textContent = '리뷰 완료';
+       	    openBtn.disabled = true;
+       	    return;
+       	  }
+
+       	  const ratingRow = document.getElementById('ratingRow');
+       	  const ratingText = document.getElementById('ratingText');
+       	  const commentEl = document.getElementById('reviewComment');
+       	  const cancelBtn = document.getElementById('reviewCancelBtn');
+       	  const submitBtn = document.getElementById('reviewSubmitBtn');
+
+       	  function setRating(v){
+       	    ratingRow.dataset.rating = String(v);
+       	    document.querySelectorAll('#ratingRow .star').forEach(s => {
+       	      const sv = Number(s.dataset.v);
+       	      s.style.opacity = (sv <= v) ? '1' : '0.35';
+       	    });
+       	    ratingText.textContent = v ? (v + '점') : '별점을 선택하세요';
+       	  }
+
+       	  openBtn.addEventListener('click', () => {
+       	    modal.style.display = 'flex';
+       	    setRating(0);
+       	    commentEl.value = '';
+       	  });
+
+       	  cancelBtn.addEventListener('click', () => {
+       	    modal.style.display = 'none';
+       	  });
+
+       	  ratingRow.addEventListener('click', (e) => {
+       	    const star = e.target.closest('.star');
+       	    if (!star) return;
+       	    setRating(Number(star.dataset.v));
+       	  });
+
+       	  submitBtn.addEventListener('click', async () => {
+       	    const rating = Number(ratingRow.dataset.rating || 0);
+       	    const comment = (commentEl.value || '').trim();
+
+       	    if (!rating) {
+       	      alert('별점을 선택해주세요.');
+       	      return;
+       	    }
+
+       	    const body = new URLSearchParams();
+       	    body.append('errandsId', String(errandsId));
+       	    body.append('rating', String(rating));
+       	    body.append('comment', comment);
+
+	       	 const res = await fetch(contextPath + '/errand/chat/review', {
+	       	  method: 'POST',
+	       	  headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+	       	  credentials: 'same-origin',
+	       	  body: body.toString()
+	       	});
+	
+	       	const raw = await res.text();
+	       	console.log('[REVIEW] status=', res.status, 'raw=', raw);
+	
+	       	if (!res.ok) {
+	       	  alert(`리뷰 등록 실패 (HTTP ${res.status})`);
+	       	  return;
+	       	}
+	
+	       	let data;
+	       	try { data = JSON.parse(raw); }
+	       	catch (e) {
+	       	  alert('서버 응답이 JSON이 아닙니다. 콘솔 로그 확인!');
+	       	  return;
+	       	}
+	
+	       	if (!data.success) {
+	       	  alert(data.error || '리뷰 등록 실패');
+	       	  return;
+	       	}
+	
+	       	alert('리뷰가 등록되었습니다.');
+       	    modal.style.display = 'none';
+
+       	    openBtn.dataset.reviewed = '1';
+       	    openBtn.textContent = '리뷰 완료';
+       	    openBtn.disabled = true;
+       	  });
+       	}
     </script>
+    
     <!-- ===== 인증사진 업로드 모달 (ERRANDER 전용) ===== -->
 	<div id="proofModal" class="v-modal" aria-hidden="true">
 	  <!-- 화면 전체 오버레이 (클릭 시 닫기) -->
@@ -945,7 +1070,29 @@
 	    </div>
 	  </div>
 	</div>
-    
+	<div id="reviewModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:9999; align-items:center; justify-content:center;">
+	  <div style="width:420px; background:#fff; border-radius:16px; padding:18px;">
+	    <div style="font-weight:800; font-size:18px;">리뷰 작성</div>
+	
+	    <div id="ratingRow" data-rating="0" style="margin-top:12px; display:flex; align-items:center; gap:6px;">
+	      <span class="star" data-v="1" style="font-size:22px; cursor:pointer; opacity:0.35;">★</span>
+	      <span class="star" data-v="2" style="font-size:22px; cursor:pointer; opacity:0.35;">★</span>
+	      <span class="star" data-v="3" style="font-size:22px; cursor:pointer; opacity:0.35;">★</span>
+	      <span class="star" data-v="4" style="font-size:22px; cursor:pointer; opacity:0.35;">★</span>
+	      <span class="star" data-v="5" style="font-size:22px; cursor:pointer; opacity:0.35;">★</span>
+	      <span id="ratingText" style="margin-left:10px; font-size:14px; opacity:0.75;">별점을 선택하세요</span>
+	    </div>
+	
+	    <textarea id="reviewComment" maxlength="1000"
+	              placeholder="리뷰 내용을 입력하세요 (선택)"
+	              style="margin-top:12px; width:100%; min-height:110px; border-radius:12px; border:1px solid #eee; padding:12px; resize:none;"></textarea>
+	
+	    <div style="margin-top:14px; display:flex; justify-content:flex-end; gap:10px;">
+	      <button type="button" id="reviewCancelBtn">취소</button>
+	      <button type="button" id="reviewSubmitBtn">등록</button>
+	    </div>
+	  </div>
+	</div>
 </body>
 
 </html>

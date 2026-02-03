@@ -9,7 +9,8 @@ public interface ErrandAssignmentMapper {
     Long selectOwnerUserId(@Param("errandsId") Long errandsId);
     Long selectErranderIdByUserId(@Param("userId") Long userId);
     boolean canChat(@Param("errandsId") Long errandsId);
-    String selectErrandStatus(@org.apache.ibatis.annotations.Param("errandsId") Long errandsId);
+    String selectErrandStatus(@Param("errandsId") Long errandsId);
+    Long selectMatchedErranderUserId(@Param("errandsId") Long errandsId);
 
 
 
@@ -66,4 +67,6 @@ public interface ErrandAssignmentMapper {
     int updateErrandWaitingToMatchedWithErrander(@Param("errandsId") Long errandsId, @Param("erranderId") Long erranderId);
     
     int updateErrandMatchedToWaitingClearErrander(@Param("errandsId") Long errandsId);
+    
+    Long selectRevieweeUserIdByErrandId(@Param("errandsId") Long errandsId);
 }
