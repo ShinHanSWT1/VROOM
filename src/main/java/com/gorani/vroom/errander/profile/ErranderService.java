@@ -18,4 +18,7 @@ public interface ErranderService {
 
     // 이번 달 정산 수익 (COMPLETED 상태)
     int getThisMonthSettledAmount(Long erranderId);
+
+    // 리뷰 목록 조회
+    List<ErranderReviewVO> getErranderReviews(Long erranderId, int page, int size);
 }

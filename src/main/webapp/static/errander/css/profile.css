@@ -110,6 +110,41 @@
     border-bottom: none;
 }
 
+/* Rating Display Style (New) */
+.rating-display {
+    text-align: center;
+    padding: 1rem 0;
+}
+
+.rating-score {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.rating-star {
+    font-size: 2.5rem;
+    color: #f1c40f; /* Gold color */
+    line-height: 1;
+}
+
+.rating-number {
+    font-size: 4rem;
+    font-weight: 800;
+    color: var(--color-dark);
+    line-height: 1;
+    letter-spacing: -2px;
+}
+
+.rating-desc {
+    color: #7f8c8d;
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+/* Achievement Styles */
 .achievement-list {
     display: flex;
     flex-direction: column;
@@ -150,8 +185,201 @@
     font-size: 1.25rem;
 }
 
+/* Review Modal Styles */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+.review-modal-content {
+    background-color: var(--color-white);
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 600px;
+    height: 80vh; /* 고정 높이 */
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.3s ease-out;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--color-light-gray);
+    flex-shrink: 0;
+}
+
+.modal-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-dark);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--color-gray);
+    transition: color 0.2s;
+}
+
+.modal-close:hover {
+    color: var(--color-dark);
+}
+
+.review-modal-body {
+    padding: 1rem; /* 패딩 추가 */
+    overflow-y: auto; /* 내부 스크롤 */
+    flex-grow: 1;
+    background-color: #f8f9fa; /* 배경색 변경 */
+}
+
+/* Review Item Style (Modified) */
+.review-item {
+    background-color: var(--color-white);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--color-light-gray);
+    transition: transform 0.2s ease;
+}
+
+.review-item:last-child {
+    margin-bottom: 0;
+}
+
+.review-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.reviewer-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.reviewer-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    background-color: #eee;
+    border: 1px solid #f0f0f0;
+}
+
+.reviewer-name {
+    font-weight: 600;
+    color: var(--color-dark);
+    font-size: 0.95rem;
+}
+
+.review-date {
+    font-size: 0.8rem;
+    color: var(--color-gray);
+}
+
+.review-rating {
+    color: #f1c40f; /* 별점 색상 */
+    font-size: 1rem;
+    letter-spacing: 2px;
+}
+
+.review-errand-title {
+    font-size: 0.85rem;
+    color: var(--color-gray);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.review-errand-title::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background-color: var(--color-primary);
+    border-radius: 50%;
+}
+
+.review-comment {
+    color: var(--color-dark);
+    line-height: 1.6;
+    font-size: 0.95rem;
+    margin-top: 0.5rem;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    display: flex;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.spinner {
+    width: 30px;
+    height: 30px;
+    border: 3px solid rgba(107, 142, 35, 0.3);
+    border-radius: 50%;
+    border-top-color: var(--color-primary);
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.empty-reviews {
+    padding: 3rem;
+    text-align: center;
+    color: var(--color-gray);
+}
+
 @media (max-width: 768px) {
     .content-grid {
         grid-template-columns: 1fr;
+    }
+
+    .review-modal-content {
+        width: 95%;
+        height: 90vh;
     }
 }

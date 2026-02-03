@@ -105,6 +105,40 @@ public class ErranderController {
         return ResponseEntity.ok(response);
     }
 
+    // 리뷰 목록 조회 API
+    @ResponseBody
+    @GetMapping("/api/reviews")
+    public ResponseEntity<Map<String, Object>> getReviews(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            HttpSession session) {
+        
+        Map<String, Object> response = new HashMap<>();
+        UserVO loginUser = (UserVO) session.getAttribute("loginSess");
+        
+        if (loginUser == null) {
+            response.put("success", false);
+            response.put("message", "로그인이 필요합니다.");
+            return ResponseEntity.ok(response);
+        }
+
+        ErranderProfileVO profile = erranderService.getErranderProfile(loginUser.getUserId());
+        if (profile == null) {
+            response.put("success", false);
+            response.put("message", "부름이 정보가 없습니다.");
+            return ResponseEntity.ok(response);
+        }
+
+        List<ErranderReviewVO> reviews = erranderService.getErranderReviews(profile.getErranderId(), page, size);
+        
+        response.put("success", true);
+        response.put("reviews", reviews);
+        response.put("page", page);
+        response.put("hasMore", reviews.size() == size); // 다음 페이지 존재 가능성
+
+        return ResponseEntity.ok(response);
+    }
+
     // 설정
     @GetMapping("/mypage/settings")
     public String settings() {

@@ -32,13 +32,13 @@
 
 .activity-tab-btn:hover {
     background-color: #f8f9fa;
-    color: var(--color-primary);
+    color: var(--color-accent);
 }
 
 .activity-tab-btn.active {
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
-    color: var(--color-white);
-    box-shadow: 0 4px 6px rgba(107, 142, 35, 0.2);
+    background-color: var(--color-accent);
+    color: var(--color-dark);
+    box-shadow: 0 2px 4px rgba(242, 203, 5, 0.3);
 }
 
 /* 탭 내용 숨김/표시 */
