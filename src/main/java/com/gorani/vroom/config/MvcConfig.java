@@ -87,8 +87,8 @@ public class MvcConfig implements WebMvcConfigurer {
     @Bean(name = "multipartResolver")
     public CommonsMultipartResolver multipartResolver() {
         CommonsMultipartResolver resolver = new CommonsMultipartResolver();
-        resolver.setMaxUploadSize(30 * 1024 * 1024); // 30MB
-        resolver.setMaxUploadSizePerFile(10 * 1024 * 1024); // 10MB per file
+        resolver.setMaxUploadSize(300 * 1024 * 1024); // 300MB (전체)
+        resolver.setMaxUploadSizePerFile(30 * 1024 * 1024); // 30MB per file
         resolver.setDefaultEncoding("utf-8");
         return resolver;
     }

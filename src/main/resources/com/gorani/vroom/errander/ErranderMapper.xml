@@ -181,4 +181,23 @@
             LIMIT #{limit} OFFSET #{offset}
     </select>
 
+    <!-- 재신청용: 기존 서류 삭제 -->
+    <delete id="deleteErranderDocuments">
+        DELETE FROM ERRANDER_DOCUMENTS
+        WHERE errander_id = #{erranderId}
+    </delete>
+
+    <!-- 재신청용: 프로필 상태 업데이트 (PENDING으로) -->
+    <update id="updateErranderProfileForReRegister">
+        UPDATE ERRANDER_PROFILES
+        SET approval_status = 'PENDING',
+            active_status = 'INACTIVE',
+            dong_code1 = #{dongCode1},
+            dong_code2 = <choose>
+                <when test="dongCode2 != null and dongCode2 != ''">#{dongCode2}</when>
+                <otherwise>NULL</otherwise>
+            </choose>
+        WHERE errander_id = #{erranderId}
+    </update>
+
 </mapper>

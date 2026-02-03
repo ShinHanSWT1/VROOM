@@ -145,6 +145,12 @@
             WHERE errander_id = #{erranderId}
     </update>
 
+    <!-- 부름이 서류 상태 변경 -->
+    <update id="updateDocumentStatus">
+            UPDATE ERRANDER_DOCUMENTS SET status = #{status}
+            WHERE errander_id = #{erranderId}
+    </update>
+
     <!-- 부름이 상세 정보 조회 (기본정보) -->
     <!-- 사용자ID, 부름이 ID, 닉네임, 이메일, 휴대폰, 승인상태, 활동상태, 승인날짜, 최근 활동일, 동네12, -->
     <select id="getErranderDetail" parameterType="long" resultType="map">

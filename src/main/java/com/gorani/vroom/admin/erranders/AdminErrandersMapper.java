@@ -75,4 +75,9 @@ public interface AdminErrandersMapper {
     long getUserIdByErranderId(
             @Param("erranderId") Long erranderId
     );
+
+    int updateDocumentStatus(
+            @Param("erranderId") Long erranderId,
+            @Param("status") String status
+    );
 }
