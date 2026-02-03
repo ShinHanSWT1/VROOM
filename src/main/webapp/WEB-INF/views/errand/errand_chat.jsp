@@ -477,7 +477,7 @@
            	        body: JSON.stringify({
            	          errandsId: Number(errandsId),
            	          roomId: Number(roomId),
-           	          erranderUserId
+           	       	  erranderUserId: erranderUserId
            	        })
            	      })
            	      .then(res => res.json().catch(() => ({})).then(data => ({res, data})))

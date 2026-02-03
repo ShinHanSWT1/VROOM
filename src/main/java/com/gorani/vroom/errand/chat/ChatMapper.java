@@ -57,8 +57,6 @@ public interface ChatMapper {
                                    @Param("changedByType") String changedByType,
                                    @Param("changedById") Long changedById);
     
-    int deactivateParticipantsByRoomId(@Param("roomId") Long roomId);
-    
     int updateErrandStatusWaitingToMatched(@Param("errandsId") Long errandsId);
     
     int countChatRoomByErrandsId(@Param("errandsId") Long errandsId);
@@ -70,4 +68,10 @@ public interface ChatMapper {
     ChatRoomVO selectErrandInfoForChat(@Param("errandsId") Long errandsId);
     
     Long selectErranderUserIdByRoomId(Long roomId);
+    
+    int upsertParticipantActive(@Param("roomId") Long roomId, @Param("userId") Long userId, @Param("role") String role);
+    
+    int deactivateParticipant(@Param("roomId") Long roomId, @Param("userId") Long userId);
+    
+    int deactivateErrandersByRoomId(@Param("roomId") Long roomId);
 }

@@ -45,16 +45,13 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
     @Transactional
     public Long requestStartChat(Long errandsId, Long erranderUserId, Long changedByUserId) {
 
-        // 0) owner 조회 (먼저!)
+        // 0) owner 조회
         Long ownerUserId = errandAssignmentMapper.selectOwnerUserId(errandsId);
 
         // [가드1] 작성자가 호출하면 즉시 막기 (매칭/assignment 생성 금지)
         if (ownerUserId != null && ownerUserId.equals(erranderUserId)) {
-            System.out.println("[ASSIGN][BLOCK] OWNER cannot start chat. errandsId=" + errandsId + ", userId=" + erranderUserId);
             // 작성자는 여기서 room을 만들면 안 됨. (부름이가 시작해야 함)
-            // 컨트롤러에서 "방 있으면 입장 / 없으면 안내"로 보내는 게 맞음
             throw new IllegalStateException("작성자는 채팅 시작(매칭)을 할 수 없습니다. 부름이가 채팅을 시작해야 합니다.");
-            // 또는 return null; (근데 null 반환하면 또 다른 곳에서 NPE 날 수 있음)
         }
 
         // 1) errander profile 조회 (부름이만 존재해야 함)
@@ -64,34 +61,26 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
 
         // [가드2] 부름이 프로필 없으면 매칭 시작 불가
         if (erranderId == null) {
-            System.out.println("[ASSIGN][BLOCK] errander profile not found. userId=" + erranderUserId);
             throw new IllegalStateException("부름이 프로필이 없어 채팅 시작이 불가합니다.");
         }
 
         // active_status가 active 인 부름이만 가능하도록
         if (!"ACTIVE".equals(errandAssignmentMapper.getErranderActiveStatus(erranderId))) {
-            System.out.println("[ASSIGN][BLOCK] errander status is not valid. userId=" + erranderUserId);
             throw new IllegalStateException("해당 부름이 계정이 정지된 상태입니다.");
         }
 
         // DB에서 status 재조회
-        String status = errandAssignmentMapper.selectErrandStatus(errandsId);
-        System.out.println("[ASSIGN] db status before=" + status);
+        String before = errandAssignmentMapper.selectErrandStatus(errandsId);
+        System.out.println("[ASSIGN] db status before=" + before);
 
         // WAITING->MATCHED 시도
-        int updated = errandAssignmentMapper.updateErrandStatusWaitingToMatched(errandsId);
+        int updated = errandAssignmentMapper.updateErrandWaitingToMatchedWithErrander(errandsId, erranderId);
         System.out.println("[ASSIGN] update rows=" + updated);
-
-        // 업데이트 후 status 재조회
-        String after = errandAssignmentMapper.selectErrandStatus(errandsId);
-        System.out.println("[ASSIGN] db status after=" + after);
 
         // 1) WAITING -> MATCHED
         if (updated == 0) {
             throw new IllegalStateException("이미 누군가 선점했거나 요청 불가 상태입니다.");
         }
-
-        System.out.println("[ASSIGN] erranderUserId=" + erranderUserId);
 
         // 4) assignment insert
         errandAssignmentMapper.insertMatchedAssignment(null, ownerUserId, errandsId, erranderId, "AUTO", "MATCHED", null);
@@ -99,7 +88,7 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
         // 5) status history
         errandAssignmentMapper.insertStatusHistory(
                 errandsId,
-                "WAITING",
+                before,
                 "MATCHED",
                 "ERRANDER",
                 changedByUserId
@@ -116,19 +105,19 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
                 "/errand/detail?errandsId=" + errandsId
         );
 
-        return roomId; // 이제 정상
+        return roomId;
     }
     
     @Override
     @Transactional
-    public void uploadCompleteProof(Long errandsId, Long roomId, Long runnerUserId, MultipartFile proofImage) {
+    public void uploadCompleteProof(Long errandsId, Long roomId, Long erranderUserId, MultipartFile proofImage) {
 
         if (proofImage == null || proofImage.isEmpty()) {
             throw new RuntimeException("업로드 파일이 없습니다.");
         }
 
-        // 핵심: userId -> erranderId(부름이 프로필 PK)로 변환
-        Long erranderId = errandAssignmentMapper.selectErranderIdByUserId(runnerUserId);
+        // userId -> erranderId(부름이 프로필 PK)로 변환
+        Long erranderId = errandAssignmentMapper.selectErranderIdByUserId(erranderUserId);
         if (erranderId == null) {
             throw new RuntimeException("부름이 프로필이 없어 업로드가 불가합니다.");
         }
@@ -140,7 +129,7 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
         }
 
         // 2) 파일 저장 (로컬)
-        String uploadDir = "D:/vroom_uploads/proof"; // 주인님 환경에 맞게 통일 추천
+        String uploadDir = "D:/vroom_uploads/proof";
         new File(uploadDir).mkdirs();
 
         String original = proofImage.getOriginalFilename();

@@ -112,28 +112,34 @@ public class ChatController {
         boolean isOwner = ownerUserId != null && ownerUserId.equals(currentUserId);
         
         if ("WAITING".equals(errandStatus)) {
-            model.addAttribute("message", "거절된 매칭입니다.");
-            model.addAttribute("redirectUrl", request.getContextPath() + "/errand/list");
-            return "common/alert_redirect";
-        }
-
-        // 1) 방 조회
-        ChatRoomVO room = chatService.getChatRoomByErrandsId(errandsId);
-
-        // 2) 방이 없으면
-        if (room == null) {
+        	
             if (isOwner) {
-                // 작성자: 부름이가 아직 채팅 시작 안함
+                // 작성자는 부름이가 시작 전이면 입장 불가
                 return "redirect:/errand/detail?errandsId=" + errandsId
                         + "&message=" + java.net.URLEncoder.encode(
                             "아직 부름이가 채팅을 시작하지 않았습니다.",
                             java.nio.charset.StandardCharsets.UTF_8
                         );
-            } else {
-                // 부름이: 방 생성 후 roomId로 입장
-                Long createdRoomId = chatService.getOrCreateChatRoom(errandsId, currentUserId);
-                return "redirect:/errand/chat/room?roomId=" + createdRoomId;
             }
+
+            // 부름이: 거절당한 당사자만 막기 (erranderUserId = currentUserId)
+            boolean isCanceledMe = errandAssignmentService.isCanceledErrander(errandsId, currentUserId);
+            if (isCanceledMe) {
+                model.addAttribute("message", "거절된 매칭입니다.");
+                model.addAttribute("redirectUrl", request.getContextPath() + "/errand/list");
+                return "common/alert_redirect";
+            }
+
+            // 다른 부름이는 여기서 재매칭 시작 (WAITING->MATCHED + ERRAND_ASSIGNMENTS INSERT + roomId 반환)
+            Long newRoomId = errandAssignmentService.requestStartChat(errandsId, currentUserId, currentUserId);
+            return "redirect:/errand/chat/room?roomId=" + newRoomId;
+        }
+        
+        ChatRoomVO room = chatService.getChatRoomByErrandsId(errandsId);
+        
+        // 방이 없으면 (MATCHED인데 방이 없다? 같은 이상 케이스 처리)
+        if (room == null) {
+            return "redirect:/errand/detail?errandsId=" + errandsId;
         }
 
         // 3) 방이 있으면: 참가자 권한 체크 (재입장 포함)
