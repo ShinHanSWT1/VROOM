@@ -68,7 +68,7 @@
 .search-btn {
     padding: 0.5rem 1.25rem;
     background-color: var(--color-accent); /* 노란색 계열 */
-    color: var(--color-dark);
+    color: var(--color-white);
     border: none;
     border-radius: 8px;
     font-weight: 600;
@@ -166,7 +166,7 @@
 .write-btn {
     padding: 0.5rem 1.25rem;
     background-color: var(--color-accent); /* 노란색 계열 */
-    color: var(--color-dark);
+    color: var(--color-white);
     border: none;
     border-radius: 8px;
     font-weight: 600;
@@ -281,9 +281,9 @@
 
 /* 왼쪽 영역: 카테고리 활성화 시 초록색 계열 (Primary) */
 .category-item.active a {
-    background-color: var(--color-primary);
-    color: var(--color-white); /* 배경이 초록이면 흰 글씨가 가독성 좋음 */
-    font-weight: 700;
+    background-color: transparent;
+    color: var(--color-primary);
+    font-weight: 900;
 }
 
 /* ========================================

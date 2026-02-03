@@ -33,21 +33,22 @@
 
 .write-btn {
     display: inline-block;
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+    background-color: var(--color-accent);
     color: var(--color-white);
     padding: 0.7rem 1.5rem;
     font-weight: 700;
     border-radius: 8px;
     cursor: pointer;
     border: none;
-    box-shadow: 0 4px 8px rgba(107, 142, 35, 0.25);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
     text-decoration: none;
 }
 
 .write-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(107, 142, 35, 0.3);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    background-color: var(--color-warm);
 }
 
 .main-section {
@@ -170,8 +171,8 @@
 
 .task-badge {
     display: inline-block;
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
-    color: var(--color-white);
+    background-color: var(--color-secondary);
+    color: var(--color-dark);
     padding: 4px 12px;
     border-radius: 4px;
     font-size: 0.75rem;
