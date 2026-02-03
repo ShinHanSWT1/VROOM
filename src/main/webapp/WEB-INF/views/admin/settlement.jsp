@@ -898,18 +898,18 @@
 
         // 이벤트 리스너
         // 검색 (엔터키 & 버튼)
-        document.querySelector('.search-button').addEventListener('click', () => loadErrandsList(1));
+        document.querySelector('.search-button').addEventListener('click', () => loadSettlementList(1));
         document.getElementById('searchInput').addEventListener('keyup', function (e) {
-            if (e.key === 'Enter') loadErrandsList(1);
+            if (e.key === 'Enter') loadSettlementList(1);
         });
 
         // 필터 변경 시 자동 검색
-        document.getElementById('filterGu').addEventListener('change', () => loadErrandsList(1));
-        document.getElementById('filterDong').addEventListener('change', () => loadErrandsList(1));
-        document.getElementById('regStartDate').addEventListener('change', () => loadErrandsList(1));
-        document.getElementById('regEndDate').addEventListener('change', () => loadErrandsList(1));
-        document.getElementById('dueStartDate').addEventListener('change', () => loadErrandsList(1));
-        document.getElementById('dueEndDate').addEventListener('change', () => loadErrandsList(1));
+        document.getElementById('filterGu').addEventListener('change', () => loadSettlementList(1));
+        document.getElementById('filterDong').addEventListener('change', () => loadSettlementList(1));
+        document.getElementById('regStartDate').addEventListener('change', () => loadSettlementList(1));
+        document.getElementById('regEndDate').addEventListener('change', () => loadSettlementList(1));
+        document.getElementById('dueStartDate').addEventListener('change', () => loadSettlementList(1));
+        document.getElementById('dueEndDate').addEventListener('change', () => loadSettlementList(1));
     });
 
     //  목록 조회
@@ -919,16 +919,24 @@
         const startDate = document.getElementById('startDate').value;
         const endDate = document.getElementById('endDate').value;
 
+        // Query String 생성
+        const params = new URLSearchParams({
+            page: page,
+            keyword: keyword,
+            approveStatus: approveStatus,
+            activeStatus: activeStatus,
+            reviewScope: reviewScope
+        });
+
         // 실제 API 호출 시 경로 수정 필요
         /*
         fetch(`
         ${pageContext.request.contextPath}/api/admin/settlements?page=` + page + `&keyword=` + keyword + ...)
         */
-
-        // [테스트용 더미 데이터]
-        const dummyData = [
-            {
-                id: 101,
+        
+        /*
+        * 
+        *  id: 101,
                 errandId: 3012,
                 errander: 'RUNNER_12',
                 amount: 15000,
@@ -936,38 +944,8 @@
                 status: 'WAITING',
                 reason: '-',
                 proof: '/resources/img/sample_proof.jpg'
-            },
-            {
-                id: 102,
-                errandId: 3011,
-                errander: 'SPEEDY_JO',
-                amount: 8500,
-                date: '2026-01-26',
-                status: 'HOLD',
-                reason: '인증 불충분',
-                proof: ''
-            },
-            {
-                id: 103,
-                errandId: 3009,
-                errander: 'GORANI',
-                amount: 20000,
-                date: '2026-01-25',
-                status: 'COMPLETED',
-                reason: '-',
-                proof: ''
-            },
-            {
-                id: 104,
-                errandId: 3005,
-                errander: 'RUNNER_12',
-                amount: 5000,
-                date: '2026-01-24',
-                status: 'REJECTED',
-                reason: '미수행',
-                proof: ''
-            }
-        ];
+                * */
+
 
         renderTable(dummyData); // 실제로는 fetch response data 사용
         document.getElementById('totalCount').innerText = dummyData.length;
@@ -1035,7 +1013,7 @@
         prevBtn.className = 'pagination-button';
         prevBtn.innerText = '이전';
         if (currentPage > 1) {
-            prevBtn.onclick = () => loadErrandsList(currentPage - 1);
+            prevBtn.onclick = () => loadSettlementList(currentPage - 1);
         } else {
             prevBtn.disabled = true;
             prevBtn.classList.add('disabled');
@@ -1050,7 +1028,7 @@
             if (i === currentPage) {
                 btn.classList.add('active');
             } else {
-                btn.onclick = () => loadErrandsList(i);
+                btn.onclick = () => loadSettlementList(i);
             }
             pagination.appendChild(btn);
         }
@@ -1060,7 +1038,7 @@
         nextBtn.className = 'pagination-button';
         nextBtn.innerText = '다음';
         if (currentPage < totalPage) {
-            nextBtn.onclick = () => loadErrandsList(currentPage + 1);
+            nextBtn.onclick = () => loadSettlementList(currentPage + 1);
         } else {
             nextBtn.disabled = true;
             nextBtn.classList.add('disabled');
