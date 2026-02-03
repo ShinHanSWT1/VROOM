@@ -22,14 +22,14 @@ public class MainServiceImpl implements MainService {
 
     // 최근 심부름 게시글 조회
     @Override
-    public List<ErrandListVO> getMainErrandList(String dongCode) {
-        return mainMapper.selectMainErrandList(dongCode);
+    public List<ErrandListVO> getMainErrandList(String guName) {
+        return mainMapper.selectMainErrandList(guName);
     }
 
     // 커뮤니티 인기 게시글 조회
     @Override
-    public List<CommunityPostVO> getMainPopularPostList(String dongCode) {
-        return mainMapper.selectMainPopularPostList(dongCode);
+    public List<CommunityPostVO> getMainPopularPostList(String guName) {
+        return mainMapper.selectMainPopularPostList(guName);
     }
 
     // 우수 부름이 리뷰 조회

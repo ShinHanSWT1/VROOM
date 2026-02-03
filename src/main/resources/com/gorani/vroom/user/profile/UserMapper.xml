@@ -23,8 +23,10 @@
     <!-- 프로필 수정 (닉네임, 프로필 이미지) -->
     <update id="update" parameterType="com.gorani.vroom.user.profile.UserProfileVO">
         UPDATE MEMBERS
-        SET nickname = #{nickname},
-            profile_image = #{profileImage}
+        <set>
+            <if test="nickname != null">nickname = #{nickname},</if>
+            <if test="profileImage != null">profile_image = #{profileImage},</if>
+        </set>
         WHERE user_id = #{userId}
     </update>
 

@@ -558,7 +558,7 @@ modalSave.addEventListener('click', () => {
                     profileNickname.textContent = newNickname;
                     closeModal();
                 } else {
-                    alert('닉네임 변경에 실패했습니다.');
+                    alert(data.message || '닉네임 변경에 실패했습니다.');
                 }
             })
             .catch(error => {

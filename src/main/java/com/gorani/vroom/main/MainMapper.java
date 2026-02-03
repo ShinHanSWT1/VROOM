@@ -15,10 +15,10 @@ public interface MainMapper {
     List<CategoryVO> selectErrandsCategoryList();
 
     // 최근 심부름 게시글 조회
-    List<ErrandListVO> selectMainErrandList(@Param("dongCode") String dongCode);
+    List<ErrandListVO> selectMainErrandList(@Param("guName") String guName);
 
     // 최근 커뮤니티 인기 게시글 조회
-    List<CommunityPostVO> selectMainPopularPostList(@Param("dongCode") String dongCode);
+    List<CommunityPostVO> selectMainPopularPostList(@Param("guName") String guName);
 
     // 우수 부름이 리뷰 조회
     List<MainReviewVO> selectMainTopReviews();

@@ -17,21 +17,6 @@
     </div>
 </section>
 
-<!-- Write Button Section -->
-<section class="write-section">
-    <div class="container">
-        <div class="write-btn-wrapper">
-            <a href="#" class="write-btn" id="writeBtn"
-               data-is-logged-in="${not empty sessionScope.loginSess}"
-               data-user-role="${sessionScope.loginSess.role}"
-               data-login-url="${pageContext.request.contextPath}/auth/login"
-               data-create-url="${pageContext.request.contextPath}/errand/create">
-                ✏ 글쓰기
-            </a>
-        </div>
-    </div>
-</section>
-
 <!-- Main Section -->
 <section class="main-section">
     <div class="container">
@@ -87,6 +72,17 @@
                 총 <span class="results-count">${totalCount}</span>개의 심부름
             </div>
         </form>
+
+        <!-- Write Button -->
+        <div class="write-btn-wrapper">
+            <a href="#" class="write-btn" id="writeBtn"
+               data-is-logged-in="${not empty sessionScope.loginSess}"
+               data-user-role="${sessionScope.loginSess.role}"
+               data-login-url="${pageContext.request.contextPath}/auth/login"
+               data-create-url="${pageContext.request.contextPath}/errand/create">
+                <img src="${pageContext.request.contextPath}/static/img/common/write-btn.png" alt="글쓰기">
+            </a>
+        </div>
 
         <!-- Tasks Grid -->
         <div class="tasks-grid">

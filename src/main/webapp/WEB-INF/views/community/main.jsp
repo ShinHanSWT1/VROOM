@@ -54,7 +54,7 @@
             서울특별시 ${not empty selectedGuName ? selectedGuName : ''} 동네생활
         </h2>
         <a href="<c:url value='/community/write'/>" class="write-btn">
-            <span>글쓰기</span>
+            <img src="${pageContext.request.contextPath}/static/img/common/write-btn.png" alt="글쓰기">
         </a>
     </div>
 

@@ -22,6 +22,7 @@
 
 a, button, select, label[for], input[type="submit"], input[type="button"],
 [onclick], .btn, .sidebar-link, .menu-item, .menu-item *, .task-card, .task-card *, .tab-btn, .page-btn,
+.logo a, .logo h1,
 [style*="cursor: pointer"], [style*="cursor:pointer"] {
     cursor: url('/vroom/static/common/images/cursor-pointer.png') 16 0, pointer !important;
 }

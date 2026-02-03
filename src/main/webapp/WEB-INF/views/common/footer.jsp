@@ -16,7 +16,8 @@
                     <a href="<c:url value='/contact'/>">문의하기</a>
                 </div>
                 <div class="footer-copyright">
-                    <p>&copy; 2024 우리동네 심부름. All rights reserved.</p>
+                    <p>&copy; 2026 우리동네 심부름. All rights reserved.</p>
+                    <p>&copy; 서성준, 이예진, 허남훈, 김재민, 정훈주 </p>
                 </div>
             </div>
         </div>

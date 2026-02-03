@@ -39,8 +39,8 @@
         LEFT JOIN LEGAL_DONG d ON d.dong_code = e.dong_code
         <where>
             e.status = 'WAITING' -- 진행 중인 심부름만
-            <if test="dongCode != null and dongCode != ''">
-                AND e.dong_code = #{dongCode}
+            <if test="guName != null and guName != ''">
+                AND d.gungu_name = #{guName}
             </if>
         </where>
         ORDER BY e.created_at DESC
@@ -71,8 +71,8 @@
         <where>
             c.deleted_at IS NULL
             AND c.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) -- 최근 7일 이내
-            <if test="dongCode != null and dongCode != ''">
-                AND c.dong_code = #{dongCode}
+            <if test="guName != null and guName != ''">
+                AND d.gungu_name = #{guName}
             </if>
         </where>
         ORDER BY popularity_score DESC, c.created_at DESC

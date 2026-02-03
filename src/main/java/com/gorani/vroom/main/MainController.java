@@ -28,37 +28,29 @@ public class MainController {
     @GetMapping("/")
     public String Main(Model model,
                        HttpSession session,
-                       @RequestParam(required = false) String dongCode,
                        @RequestParam(required = false) String guName){
-        
+
         // 1. 로그인 정보 확인
         UserVO loginUser = (UserVO)session.getAttribute("loginSess");
         model.addAttribute("loginUser", loginUser);
 
-        // 조회할 동네
-        String targetDongCode = null;
-        if (dongCode != null && !dongCode.isEmpty()) {
-            targetDongCode = dongCode;
-        }
-        
         // 구 카테고리 필터
         List<String> gunguList = locationService.getGuList();
         model.addAttribute("gunguList", gunguList);
-        
-        // 현재 선택된 동네 정보를 뷰에 전달 (필터 UI 표시용)
-        model.addAttribute("selectedDongCode", targetDongCode);
+
+        // 현재 선택된 구 정보를 뷰에 전달 (필터 UI 표시용)
         model.addAttribute("selectedGuName", guName);
 
         // 카테고리 리스트 조회
         List<CategoryVO> errandsCategoryList = mainService.getErrandsCategoryList();
         model.addAttribute("errandsCategoryList", errandsCategoryList);
-        
-        // 최근 심부름 게시글 조회
-        List<ErrandListVO> errandListVO = mainService.getMainErrandList(targetDongCode);
+
+        // 최근 심부름 게시글 조회 (구 이름으로 필터링)
+        List<ErrandListVO> errandListVO = mainService.getMainErrandList(guName);
         model.addAttribute("errandListVO", errandListVO);
-        
-        // 커뮤니티 인기글 조회
-        List<CommunityPostVO> popularPostListVO = mainService.getMainPopularPostList(targetDongCode);
+
+        // 커뮤니티 인기글 조회 (구 이름으로 필터링)
+        List<CommunityPostVO> popularPostListVO = mainService.getMainPopularPostList(guName);
         model.addAttribute("popularPostListVO", popularPostListVO);
 
         // 우수 부름이 리뷰 조회
