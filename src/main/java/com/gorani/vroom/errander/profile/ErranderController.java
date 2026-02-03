@@ -2,6 +2,7 @@ package com.gorani.vroom.errander.profile;
 
 import com.gorani.vroom.config.MvcConfig;
 import com.gorani.vroom.user.auth.UserVO;
+import com.gorani.vroom.vroompay.VroomPayService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,7 @@ import java.util.*;
 public class ErranderController {
 
     private final ErranderService erranderService;
+    private final VroomPayService vroomPayService;
 
     //  나의 정보
     @GetMapping("/mypage/profile")
@@ -279,6 +281,10 @@ public class ErranderController {
         } else {
             response.put("isRegistered", true);
             response.put("approvalStatus", profile.getApprovalStatus());
+
+            // 계좌 연결 여부 확인
+            boolean hasAccount = vroomPayService.getWalletAccount(loginUser.getUserId()) != null;
+            response.put("hasAccount", hasAccount);
         }
 
         return ResponseEntity.ok(response);
@@ -286,7 +292,8 @@ public class ErranderController {
 
     // 심부름꾼으로 전환
     @GetMapping("/switch")
-    public String switchToErrander(HttpSession session) {
+    public String switchToErrander(@RequestParam(value = "returnUrl", required = false) String returnUrl,
+                                   HttpSession session) {
         UserVO loginUser = (UserVO) session.getAttribute("loginSess");
 
         if (loginUser != null) {
@@ -298,6 +305,9 @@ public class ErranderController {
             }
         }
 
+        if (returnUrl != null && !returnUrl.isEmpty()) {
+            return "redirect:" + returnUrl;
+        }
         return "redirect:/";
     }
 
