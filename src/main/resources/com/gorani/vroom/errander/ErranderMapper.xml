@@ -89,7 +89,10 @@
         ) VALUES (
             #{userId},
             #{dongCode1},
-            #{dongCode2},
+            <choose>
+                <when test="dongCode2 != null and dongCode2 != ''">#{dongCode2}</when>
+                <otherwise>NULL</otherwise>
+            </choose>,
             'PENDING',
             'INACTIVE',
             'STANDARD'
