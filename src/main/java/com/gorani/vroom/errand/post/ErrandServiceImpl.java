@@ -153,7 +153,7 @@ public class ErrandServiceImpl implements ErrandService {
 
         // PAYMENT 생성
         PaymentOrderVO vo = new PaymentOrderVO();
-        vo.setAmount(new BigDecimal(errandCreateVO.getRewardAmount());
+        vo.setAmount(new BigDecimal(errandCreateVO.getRewardAmount()));
         vo.setErrandsId(errandCreateVO.getErrandsId());
         vo.setUserId(errandCreateVO.getUserId());
         vo.setMerchantUid("ORDERS_" + errandCreateVO.getErrandsId() + "_" + LocalDateTime.now());
