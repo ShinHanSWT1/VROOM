@@ -37,4 +37,14 @@ public interface UserMapper {
             @Param("userId") Long userId,
             @Param("role") String role
     );
+
+    // 심부름 상태 변경
+    void updateErrandStatus(@Param("errandsId") Long errandsId, @Param("status") String status);
+
+    // 심부름 상태 이력 추가
+    void insertErrandStatusHistory(@Param("errandsId") Long errandsId,
+                                   @Param("fromStatus") String fromStatus,
+                                   @Param("toStatus") String toStatus,
+                                   @Param("changedByType") String changedByType,
+                                   @Param("changedById") Long changedById);
 }

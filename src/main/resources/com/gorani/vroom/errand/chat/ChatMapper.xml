@@ -107,6 +107,7 @@
 	      CONCAT(ld.gungu_name, ' ', ld.dong_name) AS errandLocation,
 	      e.reward_amount AS rewardAmount,
 	      e.expense_amount AS expenseAmount,
+	
 	      (
 	        SELECT ei.image_url
 	        FROM ERRANDS_IMAGE ei
@@ -114,10 +115,15 @@
 	        ORDER BY ei.sort_order ASC, ei.image_id ASC
 	        LIMIT 1
 	      ) AS errandImageUrl,
+
+	      c.default_image_url AS categoryDefaultImageUrl,
+	
 	      m.nickname AS ownerNickname
 	  FROM ERRANDS e
 	  LEFT JOIN LEGAL_DONG ld ON e.dong_code = ld.dong_code
 	  LEFT JOIN MEMBERS m ON e.user_id = m.user_id
+	  
+	  LEFT JOIN CATEGORIES c ON c.id = e.category_id
 	  WHERE e.errands_id = #{errandsId}
 	  LIMIT 1
 	  ]]>
@@ -240,5 +246,22 @@
 	    ORDER BY room_id DESC
 	    LIMIT 1
 	  </select>
+	  
+	  <select id="existsReview" resultType="int">
+	    SELECT COUNT(*)
+	    FROM REVIEWS
+	    WHERE errand_id = #{errandId}
+	      AND reviewer_user_id = #{reviewerUserId}
+	  </select>
+	
+	  <insert id="insertReview">
+	    INSERT INTO REVIEWS (
+	      errand_id, rating, comment, created_at,
+	      reviewer_user_id, reviewee_user_id
+	    ) VALUES (
+	      #{errandId}, #{rating}, #{comment}, NOW(),
+	      #{reviewerUserId}, #{revieweeUserId}
+	    )
+	  </insert>
 	
 </mapper>

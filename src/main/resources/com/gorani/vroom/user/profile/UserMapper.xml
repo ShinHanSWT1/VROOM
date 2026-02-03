@@ -92,4 +92,18 @@
         WHERE user_id = #{userId}
     </update>
 
+    <!-- 심부름 상태 변경 -->
+    <update id="updateErrandStatus">
+        UPDATE ERRANDS
+        SET status = #{status},
+            updated_at = NOW()
+        WHERE errands_id = #{errandsId}
+    </update>
+
+    <!-- 심부름 상태 이력 추가 -->
+    <insert id="insertErrandStatusHistory">
+        INSERT INTO ERRAND_STATUS_HISTORY (errands_id, from_status, to_status, changed_by_type, changed_by_id, changed_at)
+        VALUES (#{errandsId}, #{fromStatus}, #{toStatus}, #{changedByType}, #{changedById}, NOW())
+    </insert>
+
 </mapper>

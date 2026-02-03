@@ -67,6 +67,14 @@ public class UserProfileServiceImpl implements UserProfileService {
 
         userMapper.insertIssueTicket(ticket);
 
+        // 심부름 상태 변경 (CONFIRMED2 → HOLD) + 이력 추가
+        if (ticket.getErrandId() != null) {
+            userMapper.updateErrandStatus(ticket.getErrandId(), "HOLD");
+            userMapper.insertErrandStatusHistory(
+                    ticket.getErrandId(), "CONFIRMED2", "HOLD", "USER", ticket.getUserId()
+            );
+        }
+
         log.info(
                 "신고 등록 완료: errandId={}, userId={}, targetUserId={}",
                 ticket.getErrandId(),

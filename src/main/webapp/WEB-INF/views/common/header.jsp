@@ -176,7 +176,12 @@
                 if (response.isRegistered) {
                     // 등록된 경우 승인 상태 확인
                     if (response.approvalStatus === 'APPROVED') {
-                        location.href = '${pageContext.request.contextPath}/errander/switch';
+                        if (!response.hasAccount) {
+                            alert('계좌를 연결해주세요. 부름 페이 페이지로 이동합니다.');
+                            location.href = '${pageContext.request.contextPath}/errander/switch?returnUrl=/errander/mypage/pay';
+                        } else {
+                            location.href = '${pageContext.request.contextPath}/errander/switch';
+                        }
                     } else if (response.approvalStatus === 'PENDING') {
                         alert('현재 관리자 승인 대기 중입니다.');
                     } else if (response.approvalStatus === 'REJECTED') {

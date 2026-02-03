@@ -95,6 +95,7 @@ function loadTransactions(page) {
   fetch(contextPath + '/api/vroompay/transactions?page=' + page + '&size=' + itemsPerPage)
     .then(res => res.json())
     .then(data => {
+      console.log(data);
       if (data.success) {
         renderTransactions(data.transactions);
         renderPagination(data.totalPages, data.currentPage);

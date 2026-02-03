@@ -148,6 +148,7 @@ public class AuthController {
             model.addAttribute("url", "auth/login");
         } else { // 로그인 성공
             log.info("로그인 성공 - userId: {}, email: {}", userVo.getUserId(), userVo.getEmail());
+            userVo.setRole("USER");
             sess.setAttribute("loginSess", userVo);
             sess.setAttribute("viewMode", "USER");
 

@@ -104,8 +104,8 @@ function renderActivities(filterType, page = 1) {
             statusLabel = '<span style="position:absolute; top:10px; right:10px; background:#e74c3c; color:#fff; padding:2px 8px; border-radius:4px; font-size:0.7rem; z-index:2;">보류</span>';
         }
 
-        // 신고하기 버튼 (보류 상태일 때만)
-        const reportButton = task.status === 'HOLD'
+        // 신고하기 버튼 (CONFIRMED2 상태일 때만)
+        const reportButton = task.status === 'CONFIRMED2'
             ? '<button class="report-btn" data-task-index="' + (startIndex + index) + '" style="margin-left:8px; padding:2px 8px; font-size:0.7rem; vertical-align:middle;">신고하기</button>'
             : '';
 
@@ -320,6 +320,7 @@ reportSubmit.addEventListener('click', () => {
             if (data.success) {
                 alert('신고가 접수되었습니다.\n관리자가 검토 후 조치하겠습니다.');
                 closeReportModal();
+                location.reload();
             } else {
                 alert('신고 접수에 실패했습니다: ' + data.message);
             }

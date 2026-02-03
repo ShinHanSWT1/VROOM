@@ -20,7 +20,7 @@ public class SettlementBatchScheduler {
     private final Job settlementJob; // 위에서 만든 Job Bean
 
     // 매일 새벽 3시에 실행 (초 분 시 일 월 요일)
-    @Scheduled(cron = "0 0 3 * * *")
+    @Scheduled(cron = "0 45 2 * * *")
     public void runSettlementJob() {
         try {
             log.info("정산 배치 스케줄러 시작");

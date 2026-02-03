@@ -30,7 +30,7 @@ import java.util.Map;
 public class SettlementBatchConfig {
 
     private static final int CHUNK_SIZE = 10;
-    private static final int DELAY_DAYS = 1;
+    private static final int DELAY_DAYS = 8;
 
     private final JobBuilderFactory jobBuilderFactory;
     private final StepBuilderFactory stepBuilderFactory;
