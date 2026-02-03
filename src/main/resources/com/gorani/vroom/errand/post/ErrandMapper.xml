@@ -8,8 +8,8 @@
     <!-- 공통 WHERE: 검색/필터 조건 -->
     <sql id="ErrandListWhere">
         <where>
-            <!-- 처음엔 status 조건은 빼고, 데이터 뜨는지부터 확인 -->
-            <!-- AND e.status = #{status} -->
+            <!-- 매칭 완료 글 숨김: 목록에는 WAITING/MATCHED만 노출 -->
+            AND e.status IN ('WAITING', 'MATCHED')
 
             <if test="q != null and q != ''">
                 AND (
