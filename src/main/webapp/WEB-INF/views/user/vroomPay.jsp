@@ -30,7 +30,11 @@
     <main class="main-content">
 
       <h2 class="page-title">부름 페이</h2>
-
+      <c:if test="${not empty msg}">
+        <div className="alert alert-warning">
+            ${msg}
+        </div>
+      </c:if>
       <div class="pay-info-card">
         <div class="profile-section">
           <div class="profile-image-container">

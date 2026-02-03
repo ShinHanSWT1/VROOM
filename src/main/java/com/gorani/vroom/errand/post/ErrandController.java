@@ -187,7 +187,7 @@ public class ErrandController {
 			// 잔액이 부족한 경우 처리
 			// 충전 페이지로 리다이렉트 하면서 메시지 전달
 			rttr.addFlashAttribute("msg", "보유 페이가 부족합니다. 충전 후 다시 시도해주세요.");
-			return "redirect:/pay/charge";
+			return "redirect:/member/vroomPay";
 		}
 		
 		Long errandsId = errandService.createErrand(errandCreateVO);
