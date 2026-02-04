@@ -168,7 +168,8 @@ public class AdminSettlementService {
             }
 
         } else if ("HOLD".equals(action)) {
-            // [보류]
+            // TODO: 부분 정산
+//            vroomPayService.partialSettle(errandId, amount);
             dbStatus = "HOLD";
 
         } else if ("REJECTED".equals(action)) {

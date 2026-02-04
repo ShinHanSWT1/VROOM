@@ -897,8 +897,8 @@
         <div class="modal-footer">
             <button class="modal-btn btn-cancel" onclick="closeModal()">닫기</button>
             <button class="modal-btn btn-reject" onclick="processSettlement('REJECTED')">정산 거절</button>
-            <button class="modal-btn btn-hold" onclick="processSettlement('HOLD')">보류</button>
-            <button class="modal-btn btn-approve" onclick="processSettlement('COMPLETED')">정산 확정 (지급)</button>
+            <button class="modal-btn btn-hold" onclick="processSettlement('HOLD')">부분 정산</button>
+            <button class="modal-btn btn-approve" onclick="processSettlement('COMPLETED')">정산 확정(지급)</button>
         </div>
     </div>
 </div>
@@ -1205,7 +1205,7 @@
     function processSettlement(action) {
         const memo = document.getElementById('adminMemo').value;
         const inputAmount = document.getElementById('modalSettlementAmount').value; // 입력된 금액
-        const actionText = (action === 'COMPLETED') ? '확정(지급)' : (action === 'HOLD' ? '부분정산' : '거절');
+        const actionText = (action === 'COMPLETED') ? '확정(지급)' : (action === 'HOLD' ? '부분정산' : '환불');
 
         // 메모 필수 체크
         if (action !== 'COMPLETED' && !memo) {
@@ -1216,7 +1216,6 @@
         // 금액 유효성 검사 (확정 시에만)
         let finalAmount = 0;
         if (action === 'COMPLETED') {
-
             finalAmount = parseInt(inputAmount);
 
         } else if (action === 'HOLD') {
@@ -1241,7 +1240,8 @@
             memo: memo,
             amount: finalAmount // 금액 추가
         }));
-        // 3. API 호출 (amount 추가 전송)
+
+        // API 호출 (amount 추가 전송)
         fetch(`${pageContext.request.contextPath}/api/admin/settlements/process`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},

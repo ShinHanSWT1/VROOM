@@ -62,7 +62,4 @@ public interface VroomPayService {
     @Transactional
     int syncWalletAccount(Long userId);
 
-    // TODO: payment 취소로 업데이트
-
-    // TODO: payment erranderId 업데이트
 }

@@ -84,18 +84,6 @@ public class SettlementBatchConfig {
                         item.getAmount()
                 );
 
-                // -- 테스트 코드
-//                Map<String, Object> result = vroomPayService.settleErrand(
-//                        243L,
-//                        138L,
-//                        137L,
-//                        BigDecimal.valueOf(10000.00)
-//                );
-
-//                Map<String, Object> result = new HashMap<>();
-//                result.put("success", true);
-//                result.put("message", "정산이 완료되었습니다.");
-
                 // API 성공 여부 확인
                 if (result != null && Boolean.TRUE.equals(result.get("success"))) {
                     log.info("정산 결과 - " + result);
