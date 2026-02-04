@@ -215,14 +215,22 @@ public class VroomPayServiceImpl implements VroomPayService {
                 // 정산 완료에 따라 TRANSACTION PAYOUT
                 // 정산 API 호출 결과 body
                 // PaymentOrderVO(id=24, merchantUid=ORDERS_263_2026-02-03T14:38:16.080520900, amount=2000.00, status=COMPLETED, createdAt=2026-02-03 14:38:16, paidAt=2026-02-03 14:57:23, errandsId=263, userId=139, erranderId=140),
-                WalletTransactionVO transactionVO = new WalletTransactionVO();
-                transactionVO.setPaymentId(resBody.getId());
-                transactionVO.setAmount(resBody.getAmount());
-                transactionVO.setTxnType("PAYOUT");
-                transactionVO.setErrandId(resBody.getErrandsId());
-                transactionVO.setErranderId(erranderId);
+                WalletTransactionVO erranderTxVO = new WalletTransactionVO();
+                erranderTxVO.setPaymentId(resBody.getId());
+                erranderTxVO.setAmount(resBody.getAmount());
+                erranderTxVO.setTxnType("PAYOUT");
+                erranderTxVO.setErrandId(resBody.getErrandsId());
+                erranderTxVO.setErranderId(erranderId);
+                insertWalletTransactions(erranderTxVO);
 
-                insertWalletTransactions(transactionVO);
+                // 사용자(심부름 작성자)
+                WalletTransactionVO userTxVO = new WalletTransactionVO();
+                userTxVO.setPaymentId(resBody.getId());
+                userTxVO.setAmount(resBody.getAmount());
+                userTxVO.setTxnType("PAID");
+                userTxVO.setErrandId(resBody.getErrandsId());
+                userTxVO.setUserId(userId);
+                insertWalletTransactions(userTxVO);
 
                 // WALLET_ACCOUNT
                 Long erranderUserId = resBody.getErranderId();
@@ -233,7 +241,7 @@ public class VroomPayServiceImpl implements VroomPayService {
                 notificationService.send(
                         erranderUserId,
                         "PAY",
-                        "심부름값을 받았습니다!(" + amount + "원)",
+                        "심부름값을 받았습니다(" + amount + "원)",
                         "/errander/mypage/pay"
 
                 );
