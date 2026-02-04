@@ -118,7 +118,16 @@
 
 	      c.default_image_url AS categoryDefaultImageUrl,
 	
-	      m.nickname AS ownerNickname
+	      m.nickname AS ownerNickname,
+
+	      (
+	        SELECT cp.file_url
+	        FROM COMPLETION_PROOFS cp
+	        WHERE cp.errands_id = e.errands_id
+	        ORDER BY cp.proof_id DESC
+	        LIMIT 1
+	      ) AS completionProofUrl
+
 	  FROM ERRANDS e
 	  LEFT JOIN LEGAL_DONG ld ON e.dong_code = ld.dong_code
 	  LEFT JOIN MEMBERS m ON e.user_id = m.user_id

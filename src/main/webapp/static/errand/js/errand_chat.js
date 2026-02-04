@@ -1,6 +1,6 @@
 /**
  * errand_chat.js - 심부름 채팅 페이지 전용 스크립트
- * JSP에서 전역 변수로 전달받는 값: roomId, errandsId, currentUserId, userRole, contextPath, errandStatus, reviewExists
+ * JSP에서 전역 변수로 전달받는 값: roomId, errandsId, currentUserId, userRole, contextPath, errandStatus, reviewExists, completionProofUrl
  */
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -41,7 +41,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // 3) 일반 채팅 메시지(TEXT 등)
                 const isMine = (payload.senderUserId === currentUserId);
-                addMessageToUI(payload.content, isMine);
+                
+                if (payload.messageType === 'IMAGE') {
+                    addImageMessageToUI(payload.content, isMine);
+                } else {
+                    addMessageToUI(payload.content, isMine);
+                }
             });
         });
     }
@@ -49,8 +54,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // ========================================
     // 메시지 전송
     // ========================================
-    function sendMessage(messageType = 'TEXT') {
-        const messageText = messageInput.value.trim();
+    function sendMessage(messageType = 'TEXT', content = null) {
+        const messageText = content || messageInput.value.trim();
         if (!messageText) return;
 
         stompClient.send('/app/chat.send', {}, JSON.stringify({
@@ -60,7 +65,9 @@ document.addEventListener('DOMContentLoaded', function() {
             content: messageText
         }));
 
-        messageInput.value = '';
+        if (messageType === 'TEXT') {
+            messageInput.value = '';
+        }
     }
 
     // ========================================
@@ -99,6 +106,53 @@ document.addEventListener('DOMContentLoaded', function() {
         messagesArea.scrollTop = messagesArea.scrollHeight;
     }
 
+    function addImageMessageToUI(imageUrl, isMine) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message ' + (isMine ? 'mine' : 'other');
+
+        const bubble = document.createElement('div');
+        bubble.className = 'message-bubble image-bubble'; // image-bubble 클래스 추가
+
+        // 이미지 태그 생성
+        const img = document.createElement('img');
+        
+        let src = imageUrl;
+        if (!src.startsWith('http') && !src.startsWith(contextPath)) {
+             src = contextPath + src;
+        }
+        
+        img.src = src;
+        img.alt = "첨부 이미지";
+        
+        // 이미지 클릭 시 원본 보기 (선택 사항)
+        img.onclick = function() {
+            window.open(src, '_blank');
+        };
+
+        bubble.appendChild(img);
+
+        const time = document.createElement('div');
+        time.className = 'message-time';
+        time.textContent = new Date().toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit' });
+
+        if (isMine) {
+            messageDiv.appendChild(time);
+            messageDiv.appendChild(bubble);
+        } else {
+            messageDiv.appendChild(bubble);
+            messageDiv.appendChild(time);
+        }
+
+        messagesArea.appendChild(messageDiv);
+        
+        // 이미지가 로드된 후 스크롤 조정
+        img.onload = function() {
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        };
+        // 로드 전에도 일단 스크롤
+        messagesArea.scrollTop = messagesArea.scrollHeight;
+    }
+
     // ========================================
     // 상태 관리
     // ========================================
@@ -134,18 +188,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 actionArea.innerHTML = `<div class="status-wait">⏳ 심부름 중</div>`;
             }
             if (isErrander) {
-                actionArea.innerHTML = `<button class="complete-btn" id="proofBtn" type="button">✔ 거래완료</button>`;
-                bindProofBtn();
+                actionArea.innerHTML = `<button class="complete-btn" id="proofBtn" type="button">📷 인증하기</button>`;
             }
             return;
         }
 
         if (status === 'CONFIRMED2') {
+            // 인증 완료 상태 -> 인증사진 보기 버튼 추가
+            let html = `<button type="button" id="viewProofBtn" class="v-btn v-btn--ghost" style="margin-right:4px;">📷 인증사진 보기</button>`;
+            
             if (isUser) {
-                actionArea.innerHTML = `<button class="review-btn" id="openReviewBtn" type="button" data-reviewed="0">리뷰작성</button>`;
-                bindReviewBtn();
+                html += `<button class="review-btn" id="openReviewBtn" type="button" data-reviewed="0">리뷰작성</button>`;
+                actionArea.innerHTML = html;
+                bindReviewBtn(); // 리뷰 버튼은 별도 로직이 많아 기존 방식 유지
             } else {
-                actionArea.innerHTML = `<div class="status-done">거래 완료</div>`;
+                html += `<div class="status-done" style="margin-left:8px;">거래 완료</div>`;
+                actionArea.innerHTML = html;
             }
             return;
         }
@@ -155,7 +213,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 actionArea.innerHTML =
                     `<button class="accept-btn" id="acceptBtn" type="button">✓ 수락</button>
                      <button class="reject-btn" id="rejectBtn" type="button">✗ 거절</button>`;
-                bindAcceptReject();
             }
             if (isErrander) {
                 actionArea.innerHTML = `<div class="status-wait">사용자 수락 대기중</div>`;
@@ -172,96 +229,138 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ========================================
-    // 수락/거절 버튼 바인딩
+    // 액션 버튼 이벤트 위임 (통합)
     // ========================================
-    function bindAcceptReject() {
+    function bindActionButtons() {
         if (!actionArea) return;
-        if (actionArea.dataset.bound === '1') return;
-        actionArea.dataset.bound = '1';
+        
+        // 중복 바인딩 방지
+        if (actionArea.dataset.eventsBound === 'true') return;
+        actionArea.dataset.eventsBound = 'true';
 
         actionArea.addEventListener('click', function(e) {
-            const btn = e.target.closest('#acceptBtn, #rejectBtn');
-            if (!btn) return;
+            const target = e.target;
 
-            // 수락
-            if (btn.id === 'acceptBtn') {
-                if (!confirm('이 부름이와 심부름을 진행하시겠습니까?')) return;
-
-                fetch(contextPath + '/errand/chat/accept', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'same-origin',
-                    body: JSON.stringify({
-                        errandsId: Number(errandsId),
-                        roomId: Number(roomId)
-                    })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (!data.success) {
-                        alert(data.error || '수락 처리 실패');
-                        return;
-                    }
-                    alert('심부름이 수락되었습니다!');
-                })
-                .catch(err => {
-                    console.error(err);
-                    alert('수락 처리 중 오류');
-                });
+            // 1. 인증하기 (업로드)
+            if (target.closest('#proofBtn')) {
+                openProofModal();
+                return;
             }
 
-            // 거절
-            if (btn.id === 'rejectBtn') {
-                if (!confirm('정말로 이 심부름을 거절하시겠습니까?')) return;
+            // 2. 인증사진 보기
+            if (target.closest('#viewProofBtn')) {
+                openViewProofModal();
+                return;
+            }
 
-                const rawErranderUserId = actionArea.dataset.erranderUserId;
-                const erranderUserId = Number(rawErranderUserId);
+            // 3. 수락
+            if (target.closest('#acceptBtn')) {
+                handleAccept();
+                return;
+            }
 
-                if (!rawErranderUserId || !Number.isFinite(erranderUserId) || erranderUserId <= 0) {
-                    alert('거절 대상 사용자 정보가 없습니다.');
-                    return;
-                }
-
-                fetch(contextPath + '/errand/chat/reject', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'same-origin',
-                    body: JSON.stringify({
-                        errandsId: Number(errandsId),
-                        roomId: Number(roomId),
-                        erranderUserId: erranderUserId
-                    })
-                })
-                .then(res => res.json().catch(() => ({})).then(data => ({res, data})))
-                .then(({res, data}) => {
-                    if (!res.ok || !data.success) {
-                        alert(data.error || '거절 처리 실패');
-                        return;
-                    }
-                    alert('심부름이 거절되었습니다.');
-                })
-                .catch(err => {
-                    console.error(err);
-                    alert('거절 처리 중 오류');
-                });
+            // 4. 거절
+            if (target.closest('#rejectBtn')) {
+                handleReject();
+                return;
             }
         });
     }
 
     // ========================================
-    // 거래완료(인증사진) 버튼 바인딩
+    // 핸들러 함수들
     // ========================================
-    function bindProofBtn() {
-        const btn = document.getElementById('proofBtn');
-        if (!btn) return;
 
-        btn.addEventListener('click', () => {
-            openProofModal();
+    function handleAccept() {
+        if (!confirm('이 부름이와 심부름을 진행하시겠습니까?')) return;
+
+        fetch(contextPath + '/errand/chat/accept', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+                errandsId: Number(errandsId),
+                roomId: Number(roomId)
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (!data.success) {
+                alert(data.error || '수락 처리 실패');
+                return;
+            }
+            alert('심부름이 수락되었습니다!');
+        })
+        .catch(err => {
+            console.error(err);
+            alert('수락 처리 중 오류');
         });
     }
 
+    function handleReject() {
+        if (!confirm('정말로 이 심부름을 거절하시겠습니까?')) return;
+
+        const rawErranderUserId = actionArea.dataset.erranderUserId;
+        const erranderUserId = Number(rawErranderUserId);
+
+        if (!rawErranderUserId || !Number.isFinite(erranderUserId) || erranderUserId <= 0) {
+            alert('거절 대상 사용자 정보가 없습니다.');
+            return;
+        }
+
+        fetch(contextPath + '/errand/chat/reject', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+                errandsId: Number(errandsId),
+                roomId: Number(roomId),
+                erranderUserId: erranderUserId
+            })
+        })
+        .then(res => res.json().catch(() => ({})).then(data => ({res, data})))
+        .then(({res, data}) => {
+            if (!res.ok || !data.success) {
+                alert(data.error || '거절 처리 실패');
+                return;
+            }
+            alert('심부름이 거절되었습니다.');
+        })
+        .catch(err => {
+            console.error(err);
+            alert('거절 처리 중 오류');
+        });
+    }
+
+    function openViewProofModal() {
+        if (!completionProofUrl) {
+            alert('인증 사진 정보를 불러올 수 없습니다.');
+            return;
+        }
+        
+        const modal = document.getElementById('viewProofModal');
+        const overlay = document.getElementById('viewProofOverlay');
+        const closeBtn = document.getElementById('viewProofCloseBtn');
+        const img = document.getElementById('viewProofImg');
+        
+        if (!modal) return;
+
+        let src = completionProofUrl;
+        if (!src.startsWith('http') && !src.startsWith(contextPath)) {
+             src = contextPath + src;
+        }
+        img.src = src;
+        
+        modal.classList.add('is-open');
+        
+        const close = () => modal.classList.remove('is-open');
+        
+        if (overlay) overlay.onclick = close;
+        if (closeBtn) closeBtn.onclick = close;
+    }
+
     // ========================================
-    // 인증사진 모달
+    // 인증사진 모달 (업로드용)
     // ========================================
     function openProofModal(selectedFile) {
         const modal = document.getElementById('proofModal');
@@ -362,12 +461,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 close();
+                
+                // 업로드 성공 시 URL 저장
+                if (data.imageUrl) {
+                    completionProofUrl = data.imageUrl;
+                }
 
+                // UI 갱신: 인증사진 보기 버튼 추가
                 if (actionArea) {
-                    actionArea.innerHTML = `<div class="status-wait">✅ 인증 완료</div>`;
+                    let html = `<button type="button" id="viewProofBtn" class="v-btn v-btn--ghost" style="margin-right:4px;">📷 인증사진 보기</button>`;
+                    html += `<div class="status-done" style="margin-left:8px;">거래 완료</div>`;
+                    actionArea.innerHTML = html;
                 }
 
                 addSystemMessageToUI('부름이가 완료 인증사진을 제출했습니다.');
+                
+                // 이미지 메시지로도 전송 (채팅방에 보이게)
+                if (data.imageUrl) {
+                    sendMessage('IMAGE', data.imageUrl);
+                }
 
             } catch (e) {
                 console.error(e);
@@ -377,7 +489,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ========================================
-    // 리뷰 버튼 바인딩
+    // 리뷰 버튼 바인딩 (별도 처리)
     // ========================================
     function bindReviewBtn() {
         const openBtn = document.getElementById('openReviewBtn');
@@ -521,13 +633,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // WebSocket 연결
     connectStomp();
 
-    // 수락/거절 버튼 바인딩
-    bindAcceptReject();
-
-    // 거래완료 버튼 바인딩 (이미 존재하는 경우)
-    if (document.getElementById('proofBtn')) {
-        bindProofBtn();
-    }
+    // 액션 버튼 이벤트 위임 (한 번만 실행)
+    bindActionButtons();
 
     // 리뷰 버튼 바인딩 (CONFIRMED2/COMPLETED 상태에서)
     const isUser = (userRole === 'USER' || userRole === 'OWNER');

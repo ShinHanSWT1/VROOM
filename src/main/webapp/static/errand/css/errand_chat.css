@@ -474,6 +474,24 @@ body {
     padding: 0 4px;
 }
 
+/* 이미지 메시지 스타일 */
+.image-bubble {
+    padding: 0 !important;
+    overflow: hidden;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.image-bubble img {
+    display: block;
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 12px;
+    cursor: pointer;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
 .image-message {
     max-width: 60%;
 }
@@ -763,4 +781,28 @@ body {
     .send-btn {
         padding: 10px 20px;
     }
+}
+
+/* ========================================
+   인증사진 보기 모달 (큰 화면)
+======================================== */
+#viewProofModal .v-modal__panel {
+    width: min(900px, calc(100vw - 32px)); /* 너비 증가 */
+    max-height: calc(100vh - 40px);        /* 높이 증가 */
+}
+
+#viewProofModal .v-modal__body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f8f9fa; /* 배경색 추가로 이미지 구분 */
+    border-radius: 8px;
+    min-height: 400px;   /* 최소 높이 확보 */
+}
+
+#viewProofImg {
+    max-width: 100%;
+    max-height: 80vh;    /* 이미지 최대 높이 제한 */
+    object-fit: contain; /* 비율 유지하며 전체 표시 */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
