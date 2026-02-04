@@ -161,7 +161,7 @@
         UPDATE ERRANDS
         SET status = 'COMPLETED', updated_at = NOW(), settlement_amount = #{amount}
         WHERE errands_id = #{errandsId}
-          AND status = 'CONFIRMED2'
+          AND status IN ('CONFIRMED2', 'HOLD')
     </update>
 
     <update id="updateErrandAssignmentStatusToCompleted" parameterType="map">

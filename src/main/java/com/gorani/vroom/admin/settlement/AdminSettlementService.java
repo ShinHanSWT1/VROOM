@@ -173,15 +173,15 @@ public class AdminSettlementService {
         } else if ("REJECTED".equals(action)) {
             // [거절] -> CANCELED 처리 (완료율에 반영)
             dbStatus = "CANCELED";
-            // TODO: 거절 시 예치금 환불 로직이 필요하다면 여기에 추가
+            // TODO: 거절 시 예치금 환불 로직
         } else {
             throw new IllegalArgumentException("잘못된 요청입니다.");
         }
 
         // 2. DB 상태 업데이트
-        mapper.updateSettlementStatus(errandId, dbStatus, memo);
+//        mapper.updateSettlementStatus(errandId, dbStatus, memo);
 
         // 3. 상태 변경 이력 기록
-        mapper.insertSettlementStatusHistory(errandId, currentStatus, dbStatus);
+//        mapper.insertSettlementStatusHistory(errandId, currentStatus, dbStatus);
     }
 }
