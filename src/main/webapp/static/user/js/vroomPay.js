@@ -114,22 +114,28 @@ function loadTransactions(page) {
 
 function renderTransactions(transactions) {
   const list = document.getElementById('transactionList');
+  const hiddenTypes = ['HOLD', 'RELEASE'];
+  const visibleTxns = (transactions || []).filter(txn => !hiddenTypes.includes(txn.txnType));
 
-  if (!transactions || transactions.length === 0) {
+  if (!visibleTxns || visibleTxns.length === 0) {
     list.innerHTML = '<div class="history-item"><div class="item-type" style="grid-column:1/-1;text-align:center;">거래 내역이 없습니다.</div></div>';
     return;
   }
 
   let html = '';
-  transactions.forEach(function(txn) {
+  visibleTxns.forEach(function(txn) {
     const typeLabel = getTypeLabel(txn.txnType);
     const amountClass = isPositiveType(txn.txnType) ? 'positive' : 'negative';
     const amountPrefix = isPositiveType(txn.txnType) ? '+' : '-';
-    const memo = txn.memo ? truncateText(txn.memo, 20) : '-';
+    const contentRaw = (txn.errandTitle && String(txn.errandTitle).trim() !== '')
+	  ? txn.errandTitle
+	  : (txn.memo || '-');
+	
+	const content = truncateText(contentRaw, 20);
 
     html += '<div class="history-item">';
     html += '  <div class="item-type">' + typeLabel + '</div>';
-    html += '  <div class="item-content">' + memo + '</div>';
+    html += '  <div class="item-content">' + content + '</div>';
     html += '  <div class="item-date">' + formatDate(txn.createdAt) + '</div>';
     html += '  <div class="item-amount ' + amountClass + '">' + amountPrefix + Number(txn.amount).toLocaleString() + '원</div>';
     html += '</div>';
@@ -145,7 +151,8 @@ function getTypeLabel(txnType) {
     'HOLD': '홀드',
     'RELEASE': '홀드 해제',
     'PAYOUT': '정산',
-    'REFUND': '환불'
+    'REFUND': '환불',
+    'PAID': '지불'
   };
   return labels[txnType] || txnType;
 }
