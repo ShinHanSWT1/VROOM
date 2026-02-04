@@ -177,4 +177,24 @@
         VALUES (#{errandsId}, 'CONFIRMED2', 'COMPLETED', 'ADMIN', NOW())
     </insert>
 
+    <update id="updateErrandStatusCanceled">
+        UPDATE ERRANDS
+        SET status = 'CANCELED', updated_at = NOW(), settlement_amount = 0
+        WHERE errands_id = #{errandsId}
+          AND status IN ('CONFIRMED2', 'HOLD')
+    </update>
+
+    <update id="updateErrandAssignmentStatusToCanceled" parameterType="map">
+        UPDATE ERRAND_ASSIGNMENTS
+        SET status = 'CANCELED'
+        WHERE errands_id = #{errandsId}
+          AND errander_id = #{erranderId}
+          AND status = 'MATCHED'
+    </update>
+
+    <insert id="insertErrandHistoryToCanceledByAdmin" parameterType="map">
+        INSERT INTO ERRAND_STATUS_HISTORY (errands_id, from_status, to_status, changed_by_type, changed_at)
+        VALUES (#{errandsId}, #{fromStatus}, 'CANCELED', 'ADMIN', NOW())
+    </insert>
+
 </mapper>

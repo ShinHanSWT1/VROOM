@@ -1205,7 +1205,7 @@
     function processSettlement(action) {
         const memo = document.getElementById('adminMemo').value;
         const inputAmount = document.getElementById('modalSettlementAmount').value; // 입력된 금액
-        const actionText = (action === 'COMPLETED') ? '확정(지급)' : (action === 'HOLD' ? '보류' : '거절');
+        const actionText = (action === 'COMPLETED') ? '확정(지급)' : (action === 'HOLD' ? '부분정산' : '거절');
 
         // 메모 필수 체크
         if (action !== 'COMPLETED' && !memo) {
@@ -1216,6 +1216,10 @@
         // 금액 유효성 검사 (확정 시에만)
         let finalAmount = 0;
         if (action === 'COMPLETED') {
+
+            finalAmount = parseInt(inputAmount);
+
+        } else if (action === 'HOLD') {
             if (!inputAmount || inputAmount < 0) {
                 alert("유효한 정산 금액을 입력해주세요.");
                 return;

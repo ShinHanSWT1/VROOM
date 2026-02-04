@@ -34,6 +34,10 @@ public interface VroomPayService {
     @Transactional
     Map<String, Object> cancelPayment(Long errandsId);
 
+    // TODO: 사용자 환불 100%
+    @Transactional
+    Map<String, Object> refund(Long errandsId);
+
     // TODO: payment erranderId 업데이트
     Map<String, Object> updatePaymentErranderMatched(Long errandsId, Long erranderId);
 

@@ -170,10 +170,12 @@ public class AdminSettlementService {
         } else if ("HOLD".equals(action)) {
             // [보류]
             dbStatus = "HOLD";
+
         } else if ("REJECTED".equals(action)) {
-            // [거절] -> CANCELED 처리 (완료율에 반영)
             dbStatus = "CANCELED";
-            // TODO: 거절 시 예치금 환불 로직
+
+            vroomPayService.refund(errandId);
+
         } else {
             throw new IllegalArgumentException("잘못된 요청입니다.");
         }

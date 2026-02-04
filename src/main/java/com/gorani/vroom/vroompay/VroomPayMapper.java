@@ -75,5 +75,16 @@ public interface VroomPayMapper {
     int insertErrandHistoryToCompletedByAdmin(
             @Param("errandsId") Long errandsId);
 
+    int updateErrandStatusCanceled(
+            @Param("errandsId") Long errandsId);
+
+    int updateErrandAssignmentStatusToCanceled(
+            @Param("errandsId") Long errandsId,
+            @Param("erranderId") Long erranderId);
+
+    int insertErrandHistoryToCanceledByAdmin(
+            @Param("errandsId") Long errandsId,
+            @Param("fromStatus") String fromStatus);
+
 
 }

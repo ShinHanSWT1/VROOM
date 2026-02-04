@@ -178,9 +178,9 @@ public class VroomPayServiceImpl implements VroomPayService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Map<String, Object> settleErrand(Long errandId, Long userId, Long erranderId, BigDecimal amount) {
         // 정산 완료하기 위해 orderId를 가져와야함
-        log.info("정산 시도 파라미터 - errandId={}, userId={}, erranderId={}", errandId, userId, erranderId);
+        log.info("[부름페이] 정산 시도 파라미터 - errandId={}, userId={}, erranderId={}", errandId, userId, erranderId);
         Long orderId = vroomPayMapper.getPaymentIdForSettlement(errandId, erranderId);
-        log.info("정산 처리 paymentID={}", orderId);
+        log.info("[부름페이] 정산 처리 paymentID={}", orderId);
 
         // 예외 처리: orderId가 없는 경우 처리 필요
         if (orderId == null) {
@@ -201,7 +201,7 @@ public class VroomPayServiceImpl implements VroomPayService {
         try {
             ResponseEntity<PaymentOrderVO> response = restTemplate.exchange(url, HttpMethod.POST, entity, PaymentOrderVO.class);
 
-            log.info("정산 API 호출 결과 - {} ", response);
+            log.info("[부름페이] 정산 API 호출 결과 - {} ", response);
             result.put("success", true);
             result.put("message", "정산이 완료되었습니다.");
 
@@ -318,7 +318,7 @@ public class VroomPayServiceImpl implements VroomPayService {
         try {
             // API 호출
             ResponseEntity<PaymentOrderVO> response = restTemplate.exchange(url, HttpMethod.POST, entity, PaymentOrderVO.class);
-            log.info("주문서 생성 = {}", response);
+            log.info("[부름페이] 주문서 생성 = {}", response);
             result.put("success", true);
             result.put("message", "주문서가 발급되었습니다");
 
@@ -334,7 +334,7 @@ public class VroomPayServiceImpl implements VroomPayService {
             result.put("message", "출금에 실패했습니다: " + e.getMessage());
         }
 
-        log.info("주문서 생성 - orderId={}", result);
+        log.info("[부름페이] 주문서 생성 - orderId={}", result);
         // payment 돈 바로 pending으로 상태 변화
         url = vroomPayApiHoldUrl.replace("{orderId}", result.get("orderId").toString());
         requestBody = new HashMap<>();
@@ -378,7 +378,7 @@ public class VroomPayServiceImpl implements VroomPayService {
 
     }
 
-    // payment 취소로 업데이트
+    // payment (거절/수락) 중 거절로 업데이트
     @Override
     @Transactional
     public Map<String, Object> cancelPayment(Long errandsId) {
@@ -406,7 +406,7 @@ public class VroomPayServiceImpl implements VroomPayService {
                 result.put("orderId", resBody.getId());
 
                 // 정합성을 위해 로컬 payment도 업데이트
-                int res = vroomPayMapper.updatePaymentStatus(orderId, "CANCELED");
+                vroomPayMapper.updatePaymentStatus(orderId, "CANCELED");
 
                 // TRANSACTION RELEASE 추가
                 WalletTransactionVO transactionVO = new WalletTransactionVO();
@@ -418,18 +418,13 @@ public class VroomPayServiceImpl implements VroomPayService {
 
                 insertWalletTransactions(transactionVO);
 
-                // 주문서 재생성
-//                PaymentOrderVO paymentVO = vroomPayMapper.getPaymentById(orderId);  // 이전 주문서
-                PaymentOrderVO newPaymentVO = new PaymentOrderVO();                 // 새 주문서 생성
+                // 새 주문서 생성
+                PaymentOrderVO newPaymentVO = new PaymentOrderVO();
                 newPaymentVO.setErrandsId(resBody.getErrandsId());
                 newPaymentVO.setUserId(resBody.getUserId());
                 newPaymentVO.setMerchantUid("ORDER_" + errandsId + "_" + LocalDateTime.now());
                 newPaymentVO.setAmount(resBody.getAmount());
                 createAndHoldPaymentOrder(newPaymentVO);
-
-                // WALLET
-
-
             }
 
         } catch (Exception e) {
@@ -438,14 +433,90 @@ public class VroomPayServiceImpl implements VroomPayService {
         }
 
         return result;
+    }
 
+    // TODO: 부분 환불
+    // 이때는 payment complete,
+
+
+    // 사용자 환불 100%
+    @Transactional
+    @Override
+    public Map<String, Object> refund(Long errandsId) {
+        // orderId를 구해야함
+        Long orderId = vroomPayMapper.getOrderIdByErrandsId(errandsId);
+
+        String url = vroomPayApiCancelUrl.replace("{orderId}", orderId.toString());
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("x-api-key", vroomPayApiKey);
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(headers);
+
+        Map<String, Object> result = new HashMap<>();
+        try {
+            // API 호출
+            ResponseEntity<PaymentOrderVO> response = restTemplate.exchange(url, HttpMethod.POST, entity, PaymentOrderVO.class);
+
+            log.info("[부름페이] 환불 response={}", response);
+
+            result.put("success", true);
+            result.put("message", "정상 업데이트 되었습니다");
+
+            PaymentOrderVO resBody = response.getBody();
+
+            if (resBody != null) {
+                result.put("data", resBody);
+                result.put("orderId", resBody.getId());
+
+                // 정합성을 위해 로컬 payment도 업데이트
+                vroomPayMapper.updatePaymentStatus(orderId, "CANCELED");
+
+                // TRANSACTION RELEASE 추가
+                WalletTransactionVO transactionVO = new WalletTransactionVO();
+                transactionVO.setPaymentId(resBody.getId());
+                transactionVO.setAmount(resBody.getAmount());
+                transactionVO.setTxnType("REFUND");
+                transactionVO.setErrandId(resBody.getErrandsId());
+                transactionVO.setUserId(resBody.getUserId());
+
+                insertWalletTransactions(transactionVO);
+
+                // 지갑 동기화
+                syncWalletAccount(resBody.getUserId());
+
+                // ERRAND CANCELED
+                vroomPayMapper.updateErrandStatusCanceled(errandsId);
+
+                // ASSIGNMENT CANCELED
+                Long erranderId = vroomPayMapper.getErranderIdByUserId(resBody.getErranderId());
+                vroomPayMapper.updateErrandAssignmentStatusToCanceled(errandsId, erranderId);
+
+                // ERRAND HISTORY (HOLD||CONFIRMED2 -> CANCELED)
+                vroomPayMapper.insertErrandHistoryToCanceledByAdmin(errandsId, "HOLD");
+
+                // 알림
+                notificationService.send(
+                        resBody.getUserId(),
+                        "PAY",
+                        "환불되었습니다",
+                        "/member/vroomPay"
+                );
+            }
+
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", "환불에 실패했습니다: " + e.getMessage());
+        }
+
+        return result;
     }
 
     // payment erranderId 업데이트
     @Override
     @Transactional
     public Map<String, Object> updatePaymentErranderMatched(Long errandsId, Long erranderId) {
-        log.info("심부름({}) 매칭됨: {}", errandsId, erranderId);
+        log.info("[부름페이] 심부름({}) 매칭됨: {}", errandsId, erranderId);
         // orderId를 구해야함
         Long orderId = vroomPayMapper.getOrderIdByErrandsId(errandsId);
         Long erranderUserId = vroomPayMapper.getErranderUserIdByErranderId(erranderId);
@@ -459,7 +530,7 @@ public class VroomPayServiceImpl implements VroomPayService {
         requestBody.put("erranderUserId", erranderUserId);
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
-        log.info("심부름 매칭 entity - {}", entity);
+        log.info("[부름페이] 심부름 매칭 entity - {}", entity);
         Map<String, Object> result = new HashMap<>();
         try {
             // API 호출
@@ -467,7 +538,7 @@ public class VroomPayServiceImpl implements VroomPayService {
             result.put("success", true);
             result.put("message", "정상 업데이트 되었습니다");
 
-            log.info("매칭 후 PAYMENT 업데이트 - {}", response);
+            log.info("[부름페이] 매칭 후 PAYMENT 업데이트 - {}", response);
 
             if (response.getBody() != null) {
                 result.put("data", response.getBody());
@@ -482,7 +553,7 @@ public class VroomPayServiceImpl implements VroomPayService {
             result.put("message", "업데이트 실패했습니다: " + e.getMessage());
         }
 
-        log.info("심부름 매칭 PAYMENT 결과 - {}", result);
+        log.info("[부름페이] 심부름 매칭 PAYMENT 결과 - {}", result);
         return result;
     }
 
@@ -522,7 +593,7 @@ public class VroomPayServiceImpl implements VroomPayService {
     @Transactional
     public int updateWalletAccount(VroomPayVO vroomPayVO) {
         int result = vroomPayMapper.updateWalletAccount(vroomPayVO);
-        log.info("지갑 업데이트: " + vroomPayVO + " / " + result);
+        log.info("[부름페이] 지갑 업데이트: " + vroomPayVO + " / " + result);
 
         return result;
     }
@@ -531,7 +602,7 @@ public class VroomPayServiceImpl implements VroomPayService {
     @Transactional
     public int syncWalletAccount(Long userId) {
         Map<String, Object> data = getAccountStatus(userId);
-        log.info("페이 계좌: " + data);
+        log.info("[부름페이] 페이 계좌: " + data);
 
         if (Boolean.TRUE.equals(data.get("success")) && data.get("account") != null) {
             Map<String, Object> account = (Map<String, Object>) data.get("account");
