@@ -23,20 +23,26 @@
     </insert>
 
     <select id="selectWalletTransactions" resultType="com.gorani.vroom.vroompay.WalletTransactionVO">
-        SELECT id,
-               txn_type    AS txnType,
-               amount,
-               errand_id   AS errandId,
-               memo,
-               payment_id  AS paymentId,
-               user_id     AS userId,
-               errander_id AS erranderId,
-               created_at  AS createdAt
-        FROM WALLET_TRANSACTIONS
-        WHERE user_id = #{userId}
-           OR errander_id = (SELECT errander_id FROM ERRANDER_PROFILES WHERE user_id = #{userId})
-        ORDER BY created_at DESC
-    </select>
+        SELECT wt.id,
+               wt.txn_type    AS txnType,
+               wt.amount,
+               wt.errand_id   AS errandId,
+               wt.memo,
+               wt.payment_id  AS paymentId,
+               wt.user_id     AS userId,
+               wt.errander_id AS erranderId,
+               wt.created_at  AS createdAt,
+               e.title		  AS errandTitle               
+	FROM WALLET_TRANSACTIONS wt
+    LEFT JOIN ERRANDS e
+      ON e.errands_id = wt.errand_id
+    WHERE wt.user_id = #{userId}
+       OR wt.errander_id = (
+            SELECT errander_id
+            FROM ERRANDER_PROFILES
+            WHERE user_id = #{userId}
+       )
+    ORDER BY wt.created_at DESC    </select>
 
     <select id="countWalletTransactions" resultType="int">
         SELECT COUNT(*)
