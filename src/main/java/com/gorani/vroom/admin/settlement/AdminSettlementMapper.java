@@ -28,4 +28,10 @@ public interface AdminSettlementMapper {
             @Param("status") String status,
             @Param("memo") String memo);
 
+    // 상태 변경 이력 추가
+    void insertSettlementStatusHistory(
+            @Param("errandId") Long errandId,
+            @Param("fromStatus") String fromStatus,
+            @Param("toStatus") String toStatus);
+
 }

@@ -131,7 +131,7 @@ public class AdminSettlementService {
         return detail;
     }
 
-    // 정산 처리(일단 보류는 제외한다)
+    // 정산 처리
     // COMPLETE : 부름이 전체 정산, 일부 정산
     // REJECT : 사용자에게 100프로 환불
     @Transactional
@@ -145,13 +145,11 @@ public class AdminSettlementService {
 
         log.info("관리자 정산 처리 - 현재 정보={}", detail);
 
+        String currentStatus = (String) detail.get("status");
         String dbStatus;
         // 정산 확정
         if ("COMPLETED".equals(action)) {
             dbStatus = "COMPLETED";
-
-            // Map에서 꺼낼 때 타입 캐스팅 주의 (BigDecimal 등)
-            //{errandId=26, errandContent=제발여, completedAt=2026-02-04 00:17:55.0, requesterId=2, requesterNickname=군침이사악Dono, proofImageUrl=/uploads/proof/da940e2aa1d846e7b7a672b1baa043da.png, orderAmount=20000.00, erranderUserId=1, erranderNickname=릉부릉부, erranderProfileId=1, requestDate=2026-02-04 00:17:55.0, errandTitle=티엔미미 줄서주세요 진짜 진심으로., settlementAmount=20000.00, status=CONFIRMED2}
 
             Long userId = Long.parseLong(detail.get("requesterId").toString());
             Long erranderId = Long.parseLong(detail.get("erranderProfileId").toString());
@@ -173,14 +171,17 @@ public class AdminSettlementService {
             // [보류]
             dbStatus = "HOLD";
         } else if ("REJECTED".equals(action)) {
-            // [거절] -> 100프로 사용자에게 환불
-            dbStatus = "REJECTED";
+            // [거절] -> CANCELED 처리 (완료율에 반영)
+            dbStatus = "CANCELED";
             // TODO: 거절 시 예치금 환불 로직이 필요하다면 여기에 추가
         } else {
             throw new IllegalArgumentException("잘못된 요청입니다.");
         }
 
         // 2. DB 상태 업데이트
-//        mapper.updateSettlementStatus(errandId, dbStatus, memo);
+        mapper.updateSettlementStatus(errandId, dbStatus, memo);
+
+        // 3. 상태 변경 이력 기록
+        mapper.insertSettlementStatusHistory(errandId, currentStatus, dbStatus);
     }
 }

@@ -210,12 +210,15 @@
     </select>
 
     <update id="updateSettlementStatus" parameterType="map">
-#         UPDATE SETTLEMENTS
-#         SET
-#             status = #{action},
-#             admin_memo = #{memo},
-#             processed_at = NOW()
-#         WHERE settlement_id = #{id}
+        UPDATE ERRANDS
+        SET status = #{status},
+            updated_at = NOW()
+        WHERE errands_id = #{errandId}
     </update>
+
+    <insert id="insertSettlementStatusHistory" parameterType="map">
+        INSERT INTO ERRAND_STATUS_HISTORY (errands_id, from_status, to_status, changed_by_type, changed_at)
+        VALUES (#{errandId}, #{fromStatus}, #{toStatus}, 'ADMIN', NOW())
+    </insert>
 
 </mapper>
