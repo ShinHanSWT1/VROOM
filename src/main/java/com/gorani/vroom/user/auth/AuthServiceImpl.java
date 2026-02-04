@@ -254,7 +254,16 @@ public class AuthServiceImpl implements AuthService {
     public KakaoLoginResult kakaoLogin(String code, HttpSession session) {
 
         // 1️⃣ 카카오 사용자 정보 조회
-        KakaoUserInfo kakaoUser = kakaoOAuthClient.getUserInfo(code);
+        String redirectUri = (String) session.getAttribute("kakaoRedirectUri");
+        if (redirectUri == null) {
+            throw new RuntimeException("카카오 redirectUri 세션값이 없습니다.");
+        }
+
+        KakaoUserInfo kakaoUser =
+                kakaoOAuthClient.getUserInfo(code, redirectUri);
+
+        session.removeAttribute("kakaoRedirectUri");
+
         String snsId = kakaoUser.getId();
 
         // 2️⃣ 기존 회원 조회

@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.bind.annotation.ResponseBody;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 @Slf4j
@@ -210,8 +211,16 @@ public class AuthController {
      * - 카카오 인증 서버로 리다이렉트
      */
     @GetMapping("/auth/kakao/login")
-    public String kakaoLogin() {
-        return "redirect:" + kakaoOAuthClient.getKakaoAuthUrl();
+    public String kakaoLogin(HttpServletRequest request, HttpSession session) {
+
+        // 1) 이번 요청에서 사용할 redirectUri를 동적으로 계산
+        String redirectUri = kakaoOAuthClient.buildRedirectUri(request);
+
+        // 2) authorize 단계에서 쓴 redirectUri를 token 단계에서도 써야 하므로 세션에 저장
+        session.setAttribute("kakaoRedirectUri", redirectUri);
+
+        // 3) 카카오 인증 URL 생성 (redirectUri를 인자로 넘김)
+        return "redirect:" + kakaoOAuthClient.getKakaoAuthUrl(redirectUri);
     }
 
     /**
