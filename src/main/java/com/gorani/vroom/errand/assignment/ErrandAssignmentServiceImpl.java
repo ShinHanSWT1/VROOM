@@ -119,7 +119,7 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
     
     @Override
     @Transactional
-    public void uploadCompleteProof(Long errandsId, Long roomId, Long erranderUserId, MultipartFile proofImage) {
+    public String uploadCompleteProof(Long errandsId, Long roomId, Long erranderUserId, MultipartFile proofImage) {
 
         if (proofImage == null || proofImage.isEmpty()) {
             throw new RuntimeException("업로드 파일이 없습니다.");
@@ -168,6 +168,8 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
         if (hist != 1) {
             throw new RuntimeException("상태 히스토리 저장 실패");
         }
+        
+        return savedPath;
     }
 
     

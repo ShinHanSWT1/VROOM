@@ -25,7 +25,14 @@
                 <a href="${pageContext.request.contextPath}/community" class="nav-item">커뮤니티</a>
                 <c:choose>
                     <c:when test="${not empty sessionScope.loginSess}">
-                        <span class="nav-item nav-user">${sessionScope.loginSess.nickname}님</span>
+                        <c:choose>
+                            <c:when test="${userRole eq 'ERRANDER'}">
+                                <a href="${pageContext.request.contextPath}/errander/mypage/profile" class="nav-item nav-user">${sessionScope.loginSess.nickname}님</a>
+                            </c:when>
+                            <c:otherwise>
+                                <a href="${pageContext.request.contextPath}/member/myInfo" class="nav-item nav-user">${sessionScope.loginSess.nickname}님</a>
+                            </c:otherwise>
+                        </c:choose>
                         <a href="${pageContext.request.contextPath}/auth/logout" class="nav-item">로그아웃</a>
                     </c:when>
                     <c:otherwise>
@@ -175,6 +182,7 @@
 						    </c:when>
 
 				            <c:when test="${errandStatus eq 'CONFIRMED2' or errandStatus eq 'COMPLETED'}">
+				              <button type="button" id="viewProofBtn" class="v-btn v-btn--ghost" style="margin-right:4px;">📷 인증사진 보기</button>
 							  <c:choose>
 							    <c:when test="${reviewed}">
 							      <button type="button" id="openReviewBtn" class="review-btn" data-reviewed="1" disabled>리뷰 완료</button>
@@ -194,11 +202,12 @@
 						    </c:when>
 
 						    <c:when test="${errandStatus eq 'CONFIRMED1'}">
-						      <button class="complete-btn" id="proofBtn" type="button">✔ 거래완료</button>
+						      <button class="complete-btn" id="proofBtn" type="button">📷 인증하기</button>
 						    </c:when>
 
 						    <c:when test="${errandStatus eq 'CONFIRMED2' or errandStatus eq 'COMPLETED'}">
-                              <div class="status-done">거래 완료</div>
+                              <button type="button" id="viewProofBtn" class="v-btn v-btn--ghost">📷 인증사진 보기</button>
+                              <div class="status-done" style="margin-left:8px;">거래 완료</div>
                             </c:when>
 						  </c:choose>
 						</c:when>
@@ -325,6 +334,7 @@
 		const contextPath = '${pageContext.request.contextPath}';
 		const errandStatus = '${errandStatus}';
 		const reviewExists = ('${reviewExists}' === 'true') || ('${param.reviewExists}' === '1');
+		let completionProofUrl = '${chatRoomInfo.completionProofUrl}';
 	</script>
 
 	<!-- 채팅 로직 (외부 JS 파일) -->
@@ -359,6 +369,20 @@
 	    <div class="v-modal__footer">
 	      <button type="button" id="proofCancelBtn" class="v-btn v-btn--ghost">취소</button>
 	      <button type="button" id="proofSubmitBtn" class="v-btn v-btn--primary">업로드</button>
+	    </div>
+	  </div>
+	</div>
+
+	<!-- ===== 인증사진 보기 모달 (공용) ===== -->
+	<div id="viewProofModal" class="v-modal" aria-hidden="true">
+	  <div class="v-modal__overlay" id="viewProofOverlay"></div>
+	  <div class="v-modal__panel" role="dialog" aria-modal="true">
+	    <div class="v-modal__header">
+	      <h3 class="v-modal__title">인증 사진</h3>
+	      <button type="button" id="viewProofCloseBtn" class="v-modal__close">✕</button>
+	    </div>
+	    <div class="v-modal__body" style="text-align:center;">
+	      <img id="viewProofImg" src="" alt="인증 사진" style="max-width:100%; max-height:60vh; border-radius:8px;" />
 	    </div>
 	  </div>
 	</div>
