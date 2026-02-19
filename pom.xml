@@ -16,6 +16,7 @@
         <org.springframework-version>5.2.25.RELEASE</org.springframework-version>
         <org.aspectj-version>1.9.25.1</org.aspectj-version>
         <org.slf4j-version>1.7.36</org.slf4j-version>
+        <spring.version>5.2.25.RELEASE</spring.version>
     </properties>
 
     <dependencies>
@@ -197,6 +198,43 @@
             <artifactId>mockito-junit-jupiter</artifactId>
             <version>5.16.1</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>RELEASE</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-websocket</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-messaging</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+        <!-- Spring Batch Core -->
+        <dependency>
+            <groupId>org.springframework.batch</groupId>
+            <artifactId>spring-batch-core</artifactId>
+            <version>4.3.10</version>
+        </dependency>
+
+        <!-- Spring Batch Infrastructure (보통 core가 가져오지만 명시 추천) -->
+        <dependency>
+            <groupId>org.springframework.batch</groupId>
+            <artifactId>spring-batch-infrastructure</artifactId>
+            <version>4.3.10</version>
+        </dependency>
+
+        <!-- AWS S3 SDK -->
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-s3</artifactId>
+            <version>1.12.529</version>
         </dependency>
     </dependencies>
 

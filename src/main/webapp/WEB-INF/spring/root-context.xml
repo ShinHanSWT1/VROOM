@@ -1,6 +1,74 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
-    <!-- Root Context: defines shared resources visible to all other web components -->
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:tx="http://www.springframework.org/schema/tx"
+	   xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+	<!-- Properties 파일 로드 (db.properties + application.properties) -->
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath:db.properties</value>
+				<value>classpath:application.properties</value>
+			</list>
+		</property>
+	</bean>
+
+	<!-- RestTemplate (UTF-8 인코딩 설정) -->
+	<bean id="restTemplate" class="org.springframework.web.client.RestTemplate">
+		<property name="messageConverters">
+			<list>
+				<bean class="org.springframework.http.converter.StringHttpMessageConverter">
+					<constructor-arg value="UTF-8"/>
+				</bean>
+				<bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"/>
+			</list>
+		</property>
+	</bean>
+
+	<!-- DataSource (HikariCP) -->
+	<bean id="dataSource" class="com.zaxxer.hikari.HikariDataSource">
+		<property name="driverClassName" value="${db.driver}"/>
+		<property name="jdbcUrl" value="${db.url}"/>
+		<property name="username" value="${db.username}"/>
+		<property name="password" value="${db.password}"/>
+
+		<!-- optional -->
+		<property name="maximumPoolSize" value="10"/>
+		<property name="minimumIdle" value="2"/>
+	</bean>
+
+	<!-- MyBatis SqlSessionFactory -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource"/>
+
+		<!-- Mapper XML 경로 -->
+		<property name="mapperLocations" value="classpath*:/com/gorani/vroom/**/*.xml"/>
+
+		<!-- MyBatis 설정 -->
+		<property name="configuration">
+			<bean class="org.apache.ibatis.session.Configuration">
+				<property name="mapUnderscoreToCamelCase" value="true"/>
+			</bean>
+		</property>
+	</bean>
+
+	<!-- Mapper 인터페이스 스캔 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.gorani.vroom"/>
+		<property name="annotationClass" value="org.apache.ibatis.annotations.Mapper"/>
+	</bean>
+
+	<!-- Transaction Manager -->
+	<bean id="transactionManager"
+		  class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+
+	<!-- @Transactional 활성화 -->
+	<tx:annotation-driven transaction-manager="transactionManager"/>
 </beans>

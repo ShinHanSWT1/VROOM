@@ -1,0 +1,227 @@
+/* ========================================
+   Errander Activity Detail Page - 거래 상세
+======================================== */
+
+.mypage-layout {
+    display: flex;
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+}
+
+.mypage-sidebar {
+    width: 200px;
+    flex-shrink: 0;
+}
+
+.mypage-content {
+    flex: 1;
+}
+
+.sidebar-menu {
+    background-color: var(--color-white);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-item {
+    display: block;
+    padding: 1rem 1.5rem;
+    color: var(--color-dark);
+    text-decoration: none;
+    border-bottom: 1px solid var(--color-light-gray);
+    transition: all 0.3s ease;
+}
+
+.sidebar-item:hover {
+    background-color: var(--color-light-gray);
+}
+
+.sidebar-item.active {
+    background: var(--color-secondary);
+    color: var(--color-dark);
+    font-weight: 600;
+}
+
+.page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-dark);
+    margin-bottom: 2rem;
+}
+
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background-color: var(--color-white);
+    border: 1px solid var(--color-light-gray);
+    border-radius: 8px;
+    color: var(--color-dark);
+    text-decoration: none;
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+    background-color: var(--color-light-gray);
+}
+
+.detail-section {
+    background-color: var(--color-white);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1.5rem;
+}
+
+.detail-section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--color-light-gray);
+}
+
+.requester-info {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.requester-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--color-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+}
+
+.requester-details {
+    flex: 1;
+}
+
+.requester-name {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.requester-meta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.875rem;
+    color: var(--color-gray);
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.info-item {
+    padding: 1rem;
+    background-color: var(--color-light-gray);
+    border-radius: 8px;
+}
+
+.info-label {
+    font-size: 0.875rem;
+    color: var(--color-gray);
+    margin-bottom: 0.5rem;
+}
+
+.info-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-dark);
+}
+
+.location-info {
+    padding: 1rem;
+    background-color: var(--color-light-gray);
+    border-radius: 8px;
+}
+
+.payment-info-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.payment-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem;
+    background-color: var(--color-light-gray);
+    border-radius: 8px;
+}
+
+.payment-label {
+    font-weight: 500;
+}
+
+.payment-value {
+    font-weight: 600;
+}
+
+.payment-total {
+    background: var(--color-secondary);
+    color: var(--color-dark);
+    font-size: 1.125rem;
+}
+
+.review-content {
+    padding: 1.5rem;
+    background-color: var(--color-light-gray);
+    border-radius: 8px;
+    line-height: 1.6;
+}
+
+.review-rating {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.rating-stars {
+    color: var(--color-secondary);
+    font-size: 1.25rem;
+}
+
+.rating-score {
+    font-weight: 600;
+    font-size: 1.125rem;
+}
+
+@media (max-width: 768px) {
+    .mypage-layout {
+        flex-direction: column;
+    }
+    
+    .mypage-sidebar {
+        width: 100%;
+    }
+    
+    .sidebar-menu {
+        display: flex;
+        overflow-x: auto;
+    }
+    
+    .sidebar-item {
+        white-space: nowrap;
+        border-bottom: none;
+        border-right: 1px solid var(--color-light-gray);
+    }
+    
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+}

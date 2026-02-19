@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gorani.vroom.errander.activity.ErranderActivityMapper">
+
+    <!-- 일별 수익 합계(COMPLETED) + 진행중 건수(MATCHED/CONFIRMED) -->
+    <select id="getErranderActivities" resultType="com.gorani.vroom.errander.activity.ErranderActivityVO">
+        SELECT
+            DATE_FORMAT(updated_at, '%Y-%m-%d') as earn_date,
+            SUM(CASE WHEN status = 'COMPLETED' THEN reward_amount ELSE 0 END) as daily_earning,
+            SUM(CASE WHEN status IN ('MATCHED', 'CONFIRMED1', 'CONFIRMED2') THEN 1 ELSE 0 END) as in_progress_count
+        FROM ERRANDS
+        WHERE errander_id = #{erranderId}
+          AND status IN ('COMPLETED', 'MATCHED', 'CONFIRMED1', 'CONFIRMED2')
+          AND YEAR(updated_at) = #{year}
+          AND MONTH(updated_at) = #{month}
+        GROUP BY DATE(updated_at)
+        ORDER BY earn_date
+    </select>
+
+    <select id="getErranderDailyDetail"
+            resultType="com.gorani.vroom.errand.post.ErrandListVO">
+        SELECT
+            errands_id,
+            title,
+            reward_amount,
+            status,
+            created_at,
+            updated_at,
+            dong_full_name
+        FROM ERRANDS
+        WHERE errander_id = #{erranderId}
+          AND status IN ('COMPLETED', 'MATCHED', 'CONFIRMED1', 'CONFIRMED2')
+          AND DATE(updated_at) = #{date}
+        ORDER BY updated_at
+    </select>
+</mapper>

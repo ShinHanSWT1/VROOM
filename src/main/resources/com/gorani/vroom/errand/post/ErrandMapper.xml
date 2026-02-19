@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gorani.vroom.errand.post.ErrandMapper">
+
+    <!-- 공통 WHERE: 검색/필터 조건 -->
+    <sql id="ErrandListWhere">
+        <where>
+            AND e.status IN ('WAITING', 'MATCHED')
+
+            <if test="q != null and q != ''">
+                AND (
+                    e.title LIKE CONCAT('%', #{q}, '%')
+                    OR e.description LIKE CONCAT('%', #{q}, '%')
+                )
+            </if>
+
+            <if test="categoryId != null">
+                AND e.category_id = #{categoryId}
+            </if>
+
+            <if test="dongCode != null and dongCode != ''">
+                AND e.dong_code = #{dongCode}
+            </if>
+        </where>
+    </sql>
+
+    <!-- 목록 조회 -->
+    <select id="selectErrandList" parameterType="map" resultType="com.gorani.vroom.errand.post.ErrandListVO">
+
+        SELECT
+            e.errands_id     AS errandsId,
+            e.user_id        AS userId,
+            e.title          AS title,
+            e.reward_amount  AS rewardAmount,
+            e.expense_amount AS expenseAmount,
+            e.desired_at     AS desiredAt,
+            e.created_at     AS createdAt,
+            e.status         AS status,
+            e.category_id    AS categoryId,
+            e.dong_code      AS dongCode,
+            
+            (
+		      SELECT ei.image_url
+		      FROM ERRANDS_IMAGE ei
+		      WHERE ei.errands_id = e.errands_id
+		      ORDER BY ei.sort_order ASC, ei.image_id ASC
+		      LIMIT 1
+		    ) AS imageUrl,
+            
+            c.name         AS categoryName,
+            c.default_image_url AS categoryDefaultImageUrl,
+		    u.nickname     AS writerNickname,
+		    d.full_name    AS dongFullName
+        FROM ERRANDS e
+        LEFT JOIN CATEGORIES c ON c.id = e.category_id
+	    LEFT JOIN MEMBERS u      ON u.user_id = e.user_id
+	    LEFT JOIN LEGAL_DONG d       ON d.dong_code = e.dong_code
+        <include refid="ErrandListWhere"/>
+
+        <choose>
+            <when test="sort == 'price_desc'">
+                ORDER BY e.reward_amount DESC, e.created_at DESC
+            </when>
+            <when test="sort == 'price_asc'">
+                ORDER BY e.reward_amount ASC, e.created_at DESC
+            </when>
+            <when test="sort == 'desired_at'">
+                ORDER BY e.desired_at ASC, e.created_at DESC
+            </when>
+            <otherwise>
+                ORDER BY e.created_at DESC
+            </otherwise>
+        </choose>
+
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- 총 개수 -->
+    <select id="countErrandList" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        FROM ERRANDS e
+        <include refid="ErrandListWhere"/>
+    </select>
+    
+    <select id="selectMainImageUrl"
+	        parameterType="long"
+	        resultType="string">
+	    SELECT image_url
+	    FROM ERRANDS_IMAGE
+	    WHERE errands_id = #{errandsId}
+	    ORDER BY sort_order ASC, image_id ASC
+	    LIMIT 1
+	</select>
+    
+    <!-- 심부름 게시글 상세 조회 -->
+    <select id="selectErrandDetail"
+            parameterType="long"
+            resultType="com.gorani.vroom.errand.post.ErrandDetailVO">
+
+        SELECT
+            e.errands_id     AS errandsId,
+            e.user_id        AS userId,
+            e.title          AS title,
+            e.description    AS description,
+            e.reward_amount  AS rewardAmount,
+            e.expense_amount AS expenseAmount,
+            e.desired_at     AS desiredAt,
+            e.created_at     AS createdAt,
+            m.manner_score    AS mannerScore,
+            e.status         AS status,
+            e.category_id    AS categoryId,
+            e.dong_code      AS dongCode,
+            d.full_name      AS dongFullName,
+        	m.nickname		 AS nickname,
+            (
+              SELECT ei.image_url
+              FROM ERRANDS_IMAGE ei
+              WHERE ei.errands_id = e.errands_id
+              ORDER BY ei.sort_order ASC, ei.image_id ASC
+              LIMIT 1
+            ) AS mainImageUrl
+        FROM ERRANDS e
+        JOIN MEMBERS m
+        	ON m.user_id = e.user_id
+        LEFT JOIN LEGAL_DONG d
+        	ON d.dong_code = e.dong_code
+        WHERE e.errands_id = #{errandsId}
+    </select>
+
+    <!-- 심부름 이미지 리스트 조회 -->
+    <select id="selectErrandImages" parameterType="long" resultType="string">
+        SELECT image_url
+        FROM ERRANDS_IMAGE
+        WHERE errands_id = #{errandsId}
+        ORDER BY sort_order ASC, image_id ASC
+    </select>
+    
+    <select id="selectRelatedErrands" resultType="com.gorani.vroom.errand.post.ErrandListVO">
+	  SELECT
+	      e.errands_id     AS errandsId,
+	      e.title          AS title,
+	      e.reward_amount  AS rewardAmount,
+	      e.created_at     AS createdAt,
+	      e.dong_code      AS dongCode,
+	      d.full_name      AS dongFullName,
+	      e.category_id    AS categoryId,
+	      e.status         AS status,
+	      c.default_image_url AS categoryDefaultImageUrl,
+          (
+            SELECT ei.image_url
+            FROM ERRANDS_IMAGE ei
+            WHERE ei.errands_id = e.errands_id
+            ORDER BY ei.sort_order ASC, ei.image_id ASC
+            LIMIT 1
+          ) AS imageUrl
+	  FROM ERRANDS e
+	  JOIN CATEGORIES c ON c.id = e.category_id
+	  LEFT JOIN LEGAL_DONG d
+	  	ON d.dong_code = e.dong_code
+	  WHERE e.errands_id != #{errandsId}
+	    AND e.dong_code = #{dongCode}
+	    AND e.category_id = #{categoryId}
+	    AND e.status = 'WAITING'
+	  ORDER BY e.created_at DESC
+	  LIMIT #{limit}
+	</select>
+
+	<insert id="insertErrand" parameterType="com.gorani.vroom.errand.post.ErrandCreateVO"
+	        useGeneratedKeys="true" keyProperty="errandsId">
+	    INSERT INTO ERRANDS (
+	    	user_id,
+	        title,
+	        category_id,
+	        reward_amount,
+	        expense_amount,
+	        description,
+	        dong_code,
+	        dong_full_name,
+	        desired_at,
+	        status,
+	        created_at
+	    ) VALUES (
+	    	#{userId},
+	        #{title},
+	        #{categoryId},
+	        #{rewardAmount},
+	        #{expenseAmount},
+	        #{description},
+	        #{dongCode},
+	        #{dongFullName},
+	        COALESCE(#{desiredAt}, NOW()),
+	        'WAITING',
+	        NOW()
+	    )
+	</insert>
+	
+	<select id="selectCategories"
+	        resultType="com.gorani.vroom.errand.post.CategoryVO">
+	    SELECT
+	        id, name
+	    FROM CATEGORIES
+	    ORDER BY id ASC
+	</select>
+	
+	<select id="selectDongs" resultType="map">
+	    SELECT
+	        d.dong_code  AS dongCode,
+	        d.full_name  AS dongFullName
+	    FROM LEGAL_DONG d
+	    ORDER BY d.full_name ASC
+	</select>
+
+	<!-- 심부름 이미지 저장 -->
+	<insert id="insertErrandImage" useGeneratedKeys="true" keyProperty="imageId">
+	    INSERT INTO ERRANDS_IMAGE (
+	        image_url,
+	        sort_order,
+	        errands_id
+	    ) VALUES (
+	        #{imageUrl},
+	        #{sortOrder},
+	        #{errandsId}
+	    )
+	</insert>
+</mapper>

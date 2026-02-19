@@ -1,0 +1,501 @@
+/* ========================================
+   커뮤니티 목록 - Filter Section
+======================================== */
+.filter-section {
+    background-color: var(--color-white);
+    border-bottom: 2px solid var(--color-light-gray);
+    padding: 1.5rem 0;
+}
+
+.filter-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.location-selectors {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.location-select {
+    padding: 0.5rem 1rem;
+    background-color: var(--color-white);
+    color: var(--color-dark);
+    border: 2px solid var(--color-light-gray);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+/* 왼쪽 영역: 초록색 계열 (Primary) */
+.location-select:hover,
+.location-select:focus {
+    border-color: var(--color-primary);
+}
+
+.search-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    max-width: 600px;
+    margin-left: auto;
+}
+
+.search-input {
+    flex: 1;
+    padding: 0.5rem 1rem;
+    border: 2px solid var(--color-light-gray);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+/* 오른쪽 영역: 노란색 계열 (Accent) */
+.search-input:focus {
+    border-color: var(--color-accent);
+}
+
+.search-btn {
+    padding: 0.5rem 1.25rem;
+    background-color: var(--color-accent); /* 노란색 계열 */
+    color: var(--color-white);
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.search-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        120deg,
+        transparent 0%,
+        transparent 30%,
+        rgba(144, 238, 144, 0.4) 45%,
+        rgba(152, 251, 152, 0.6) 50%,
+        rgba(144, 238, 144, 0.4) 55%,
+        transparent 70%,
+        transparent 100%
+    );
+    transition: left 0.5s ease;
+}
+
+.search-btn:hover {
+    background-color: #90EE90; /* 밝은 연두색 */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.search-btn:hover::before {
+    left: 100%;
+}
+
+/* ========================================
+   Main Content
+======================================== */
+.main-content {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+}
+
+/* ========================================
+   Breadcrumb
+======================================== */
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--color-gray);
+}
+
+.breadcrumb a {
+    color: var(--color-gray);
+    text-decoration: none;
+}
+
+.breadcrumb a:hover {
+    color: var(--color-accent);
+}
+
+.breadcrumb-separator {
+    color: var(--color-light-gray);
+}
+
+/* ========================================
+   Page Title & Header
+======================================== */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.page-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-dark);
+    margin-bottom: 0;
+}
+
+/* 글쓰기 버튼 (이미지) */
+.write-btn {
+    display: inline-block;
+    cursor: pointer;
+    border: none;
+    background: none;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.write-btn img {
+    height: 50px;
+    display: block;
+}
+
+.write-btn:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.05);
+}
+
+.category-badge-active {
+    display: inline-block;
+    padding: 0.35rem 1rem;
+    background-color: var(--color-primary); /* 초록색 계열 */
+    color: var(--color-white);
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
+
+/* ========================================
+   Content Grid
+======================================== */
+.content-grid {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 2.5rem;
+}
+
+/* ========================================
+   Category Sidebar
+======================================== */
+.category-sidebar {
+    height: fit-content;
+}
+
+.sidebar-section {
+    margin-bottom: 2rem;
+}
+
+.sidebar-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--color-dark);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.category-list {
+    list-style: none;
+}
+
+.category-item {
+    padding: 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    color: var(--color-dark);
+    font-size: 0.9rem;
+    border-bottom: 1px solid transparent;
+}
+
+.category-item a {
+    display: block;
+    padding: 0.6rem 0.75rem;
+    border-radius: 8px;
+    color: inherit;
+    text-decoration: none;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.category-item:hover a {
+    background-color: var(--color-light-gray);
+    color: var(--color-primary); /* 호버 시 텍스트 초록색 */
+}
+
+/* 왼쪽 영역: 카테고리 활성화 시 초록색 계열 (Primary) */
+.category-item.active a {
+    background-color: transparent;
+    color: var(--color-primary);
+    font-weight: 900;
+}
+
+/* ========================================
+   Post List
+======================================== */
+.post-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.post-card {
+    background-color: var(--color-white);
+    border-radius: 12px;
+    padding: 1rem;
+    border: 1px solid var(--color-light-gray);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.post-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: var(--color-primary); /* 카드 호버는 왼쪽 컨텐츠 느낌으로 초록 */
+}
+
+.post-content-wrapper {
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+}
+
+.post-text-content {
+    flex: 1;
+}
+
+.post-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-dark);
+    margin-bottom: 0.2rem;
+}
+
+.post-description {
+    color: var(--color-gray);
+    font-size: 0.9rem;
+    margin-bottom: 0.4rem;
+    line-height: 1.4;
+    display: -webkit-box;
+    line-clamp: 2;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.post-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.4rem;
+    font-size: 0.8rem;
+    color: var(--color-gray);
+}
+
+.post-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.post-category-badge {
+    display: inline-block;
+    padding: 0;
+    background-color: transparent;
+    color: var(--color-gray);
+    border-radius: 0;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.post-stats {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0;
+    font-size: 0.95rem;
+    color: var(--color-gray);
+}
+
+.post-thumbnail {
+    width: 120px;
+    height: 120px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.post-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.post-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+}
+
+.post-stat.like-btn {
+    background: none;
+    border: none;
+    padding: 0.5rem 0;
+    cursor: pointer;
+    font-size: 0.95rem;
+    color: var(--color-gray);
+    transition: color 0.3s ease;
+}
+
+.post-stat.like-btn:hover {
+    color: var(--color-accent); /* 좋아요는 강조색(노랑/빨강 계열) */
+}
+
+.post-views {
+    font-size: 0.9rem;
+}
+
+.post-image {
+    width: 120px;
+    height: 120px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+/* ========================================
+   Pagination
+======================================== */
+.pagination-container {
+    grid-column: 2;
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 0;
+}
+
+.pagination-btn {
+    padding: 0.5rem 1rem;
+    background-color: var(--color-white);
+    color: var(--color-dark);
+    border: 1px solid var(--color-light-gray);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.pagination-btn.wide-btn {
+    padding: 0.5rem 1.5rem;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background-color: var(--color-light-gray);
+    border-color: var(--color-primary); /* 페이지네이션 호버는 초록 */
+}
+
+.pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.page-numbers {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.page-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-white);
+    color: var(--color-dark);
+    border: 1px solid var(--color-light-gray);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.page-btn:hover {
+    background-color: var(--color-light-gray);
+    border-color: var(--color-primary);
+}
+
+.page-btn.active {
+    background-color: var(--color-primary); /* 페이지 활성화는 초록 */
+    color: var(--color-white);
+    border-color: var(--color-primary);
+    font-weight: 700;
+}
+
+/* ========================================
+   반응형
+======================================== */
+@media (max-width: 768px) {
+    .content-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pagination-container {
+        grid-column: 1;
+    }
+
+    .category-sidebar {
+        display: none;
+    }
+
+    .filter-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-wrapper {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .search-input {
+        flex: 1;
+        width: auto;
+    }
+}

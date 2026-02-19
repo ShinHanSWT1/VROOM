@@ -1,0 +1,608 @@
+/* vroomPay.css - 사용자 부름 페이 전용 스타일 */
+/* 공통 레이아웃은 user-layout.css 참조 */
+
+.pay-info-card {
+  background-color: var(--color-white);
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--color-light-gray);
+  padding: 2.5rem;
+  margin-bottom: 3rem;
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  grid-template-rows: auto auto;
+  gap: 2rem;
+  align-items: center;
+}
+
+/* Row 1 Left: 프로필 */
+.profile-section {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  grid-column: 1 / 2;
+  grid-row: 1 / 2;
+}
+
+.profile-image-container {
+  width: 100px;
+  height: 100px;
+  background: var(--color-secondary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  color: white;
+  font-weight: 700;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
+}
+
+.profile-details {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+}
+
+.profile-nickname {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--color-dark);
+  margin-bottom: 0; /* [수정] 하단 여백 제거 */
+}
+
+/* [삭제] option-btn 스타일은 더 이상 사용하지 않으므로 삭제해도 되지만, 혹시 몰라 남겨둔다면 display: none 처리 */
+.option-btn {
+  display: none;
+}
+
+/* Row 1 Right: 계좌 상태 */
+.account-status-container {
+    grid-column: 2 / 3;
+    grid-row: 1 / 2;
+    width: 100%;
+    padding: 1.5rem;
+    border-radius: 12px;
+    font-weight: 500;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.account-status-container.linked {
+    background-color: #f0f8ff;
+    color: #4682b4;
+    border: 1px solid #add8e6;
+}
+
+.account-status-container.not-linked {
+    background-color: #fff0f0;
+    color: #d9534f;
+    border: 1px solid #f5c6cb;
+}
+
+.account-status-container span {
+    white-space: nowrap;
+}
+
+.account-status-container button {
+    margin-left: 5px;
+    padding: 0.4rem 1rem;
+    border: 1px solid;
+    border-radius: 6px;
+    background-color: white;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+.account-status-container button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.account-status-container button:disabled {
+    opacity: 0.7;
+    cursor: wait;
+    transform: none;
+}
+
+/* Row 2 Left: 매너온도 */
+.temp-container {
+  grid-column: 1 / 2;
+  grid-row: 2 / 3;
+  background-color: #FAFAFA;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  border: 1px solid var(--color-light-gray);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.temp-label {
+  font-weight: 700;
+  color: var(--color-dark);
+  /* [수정] 너비 늘림 (40px -> 70px) */
+  min-width: 70px;
+  white-space: nowrap; /* 줄바꿈 방지 */
+}
+
+.temp-bar {
+  flex-grow: 1;
+  height: 10px;
+  background-color: #E0E0E0;
+  border-radius: 6px;
+  overflow: hidden;
+  /* [수정] 너비 줄임 (200px -> 150px) 또는 제거하여 flex-grow에 맡김 */
+  /* width: 200px; */
+}
+
+.temp-fill {
+  height: 100%;
+  background: #FF6B6B;
+  width: 36.5%;
+}
+
+.temp-value {
+  font-weight: 800;
+  color: var(--color-warm);
+}
+
+/* Row 2 Right: 충전/출금 버튼 */
+.balance-container {
+  grid-column: 2 / 3;
+  grid-row: 2 / 3;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  width: 100%;
+}
+
+.balance-box {
+  display: flex;
+  gap: 0;
+  background-color: var(--color-white);
+  border-radius: 12px;
+  border: 1px solid var(--color-light-gray);
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  width: 100%;
+}
+
+.balance-action-btn {
+  flex: 1;
+  padding: 1rem 0;
+  border: none;
+  background-color: var(--color-white);
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border-right: 1px solid var(--color-light-gray);
+  color: var(--color-dark);
+}
+
+.balance-action-btn:hover {
+  background-color: #f8f9fa;
+  color: var(--color-primary);
+}
+
+.balance-action-btn:disabled {
+    background-color: #f8f9fa;
+    color: #bdc3c7;
+    cursor: not-allowed;
+}
+
+
+.balance-display {
+  flex: 1.5;
+  padding: 0.8rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+  min-width: 120px;
+}
+
+.balance-label {
+  font-size: 0.8rem;
+  color: var(--color-gray);
+  margin-bottom: 0.2rem;
+}
+
+.balance-amount {
+  font-weight: 700;
+  color: var(--color-primary);
+  font-size: 1.1rem;
+}
+
+/* Transaction History */
+.history-section {
+  background-color: var(--color-white);
+  border-radius: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--color-light-gray);
+  overflow: hidden;
+}
+
+.history-header {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid var(--color-light-gray);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.history-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.history-count {
+  color: var(--color-primary);
+}
+
+.history-table-header {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1.5fr 1fr;
+  padding: 1rem 2rem;
+  background-color: #FAFAFA;
+  border-bottom: 1px solid var(--color-light-gray);
+  font-weight: 600;
+  color: var(--color-gray);
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.history-item {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1.5fr 1fr;
+  padding: 1.25rem 2rem;
+  border-bottom: 1px solid var(--color-light-gray);
+  align-items: center;
+  transition: background-color 0.2s;
+  text-align: center;
+}
+
+.history-item:last-child {
+  border-bottom: none;
+}
+
+.history-item:hover {
+  background-color: #F8F9FA;
+}
+
+.item-title {
+  font-weight: 500;
+  color: var(--color-dark);
+  text-align: left;
+}
+
+.item-type {
+  font-weight: 600;
+  color: var(--color-dark);
+}
+
+.item-content {
+  color: var(--color-gray);
+  text-align: center;
+}
+
+.item-date {
+  color: var(--color-gray);
+  font-size: 0.9rem;
+}
+
+.item-author {
+  color: var(--color-gray);
+  font-size: 0.95rem;
+}
+
+.item-amount {
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.item-amount.positive {
+    color: #27ae60;
+}
+
+.item-amount.negative {
+    color: #e74c3c;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+}
+
+.page-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid var(--color-light-gray);
+  background-color: var(--color-white);
+  color: var(--color-dark);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 600;
+}
+
+.page-btn:hover {
+  border-color: var(--color-secondary);
+  color: var(--color-secondary);
+}
+
+.page-btn.active {
+  background: var(--color-primary);
+  color: var(--color-white);
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Modal Styles (Added) */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 2000;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal-overlay.active {
+  display: flex;
+}
+
+.modal-content {
+  background-color: var(--color-white);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  max-width: 500px;
+  width: 90%;
+  padding: 2rem;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--color-light-gray);
+}
+
+.modal-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  color: var(--color-gray);
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.modal-close:hover {
+  background-color: var(--color-light-gray);
+  color: var(--color-dark);
+}
+
+.modal-body {
+  margin-bottom: 1.5rem;
+}
+
+.current-balance {
+  background: var(--color-primary);
+  color: var(--color-white);
+  padding: 1.25rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.current-balance-label {
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  opacity: 0.9;
+}
+
+.current-balance-amount {
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-label {
+  display: block;
+  font-weight: 600;
+  color: var(--color-dark);
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 2px solid var(--color-light-gray);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+  font-weight: 500;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.form-input.error {
+  border-color: #e74c3c;
+}
+
+.form-helper {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--color-gray);
+}
+
+.form-error {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: #e74c3c;
+  font-weight: 500;
+  display: none;
+}
+
+.form-error.active {
+  display: block;
+}
+
+.form-warning {
+  background-color: #fff3cd;
+  border: 1px solid #ffc107;
+  color: #856404;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form-warning::before {
+  content: "⚠️";
+  font-size: 1.2rem;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.modal-btn {
+  padding: 0.875rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.modal-btn-cancel {
+  background-color: var(--color-light-gray);
+  color: var(--color-dark);
+}
+
+.modal-btn-cancel:hover {
+  background-color: #d5d9dc;
+}
+
+.modal-btn-submit {
+  background: var(--color-primary);
+  color: var(--color-white);
+}
+
+.modal-btn-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(107, 142, 35, 0.3);
+}
+
+.modal-btn-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .pay-info-card {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    text-align: center;
+    gap: 1.5rem;
+  }
+
+  .profile-section {
+    grid-column: auto;
+    grid-row: auto;
+    flex-direction: column;
+  }
+
+  .account-status-container {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .temp-container {
+    grid-column: auto;
+    grid-row: auto;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .balance-container {
+    grid-column: auto;
+    grid-row: auto;
+    justify-content: center;
+  }
+
+  .history-table-header,
+  .history-item {
+    padding: 1rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* Responsive - 페이지 고유 반응형은 위 @media (max-width: 900px) 블록에 포함 */

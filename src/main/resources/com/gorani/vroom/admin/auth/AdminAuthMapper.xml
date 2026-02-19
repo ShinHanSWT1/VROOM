@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gorani.vroom.admin.auth.AdminAuthMapper">
+
+    <!-- 로그인 -->
+    <select id="login"
+            parameterType="com.gorani.vroom.admin.auth.AdminVO"
+            resultType="com.gorani.vroom.admin.auth.AdminVO">
+
+        SELECT *
+        FROM ADMINS
+        WHERE login_id = #{loginId}
+          AND password = MD5(#{password})
+    </select>
+
+    <!-- 관리자 마지막 로그인 타임스탬프 업데이트 -->
+    <update id="updateLastLoginAt"
+            parameterType="String">
+        UPDATE ADMINS
+        SET last_login_at = NOW()
+        WHERE login_id = #{loginId}
+    </update>
+
+</mapper>

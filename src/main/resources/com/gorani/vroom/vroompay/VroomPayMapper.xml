@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gorani.vroom.vroompay.VroomPayMapper">
+
+    <insert id="insertWalletTransactions" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO WALLET_TRANSACTIONS (
+            txn_type,
+            amount,
+            errand_id,
+            memo,
+            payment_id,
+            user_id,
+            errander_id
+        ) VALUES (
+            #{txnType},
+            #{amount},
+            #{errandId},
+            #{memo},
+            #{paymentId},
+            #{userId},
+            #{erranderId}
+        )
+    </insert>
+
+    <select id="selectWalletTransactions" resultType="com.gorani.vroom.vroompay.WalletTransactionVO">
+        SELECT wt.id,
+               wt.txn_type    AS txnType,
+               wt.amount,
+               wt.errand_id   AS errandId,
+               wt.memo,
+               wt.payment_id  AS paymentId,
+               wt.user_id     AS userId,
+               wt.errander_id AS erranderId,
+               wt.created_at  AS createdAt,
+               e.title		  AS errandTitle               
+	FROM WALLET_TRANSACTIONS wt
+    LEFT JOIN ERRANDS e
+      ON e.errands_id = wt.errand_id
+    WHERE wt.user_id = #{userId}
+       OR wt.errander_id = (
+            SELECT errander_id
+            FROM ERRANDER_PROFILES
+            WHERE user_id = #{userId}
+       )
+    ORDER BY wt.created_at DESC    </select>
+
+    <select id="countWalletTransactions" resultType="int">
+        SELECT COUNT(*)
+        FROM WALLET_TRANSACTIONS
+        WHERE user_id = #{userId}
+    </select>
+
+    <insert id="insertWalletAccount">
+        INSERT INTO WALLET_ACCOUNTS (
+            user_id,
+            balance,
+            avail_balance,
+            real_account
+        ) VALUES (
+            #{userId},
+            #{balance},
+            #{availBalance},
+            #{realAccount}
+        )
+    </insert>
+
+    <select id="selectWalletAccount" resultType="com.gorani.vroom.vroompay.VroomPayVO">
+        SELECT
+            user_id AS userId,
+            balance,
+            avail_balance AS availBalance,
+            real_account AS realAccount,
+            updated_at AS updatedAt
+        FROM WALLET_ACCOUNTS
+        WHERE user_id = #{userId}
+    </select>
+
+    <update id="updateWalletAccount">
+        UPDATE WALLET_ACCOUNTS
+        SET balance = #{balance},
+            avail_balance = #{availBalance},
+            updated_at = NOW()
+        WHERE user_id = #{userId}
+    </update>
+
+    <select id="selectSettlementTargets"
+            parameterType="map" resultType="com.gorani.vroom.batch.SettlementTargetVO">
+        SELECT ea.id           AS assignmentId,
+               ea.errands_id   AS errandsId,
+               e.user_id       AS userId,
+               ep.errander_id  AS erranderId,
+               e.reward_amount AS amount
+        FROM ERRANDS e
+                 JOIN ERRAND_ASSIGNMENTS ea ON e.errands_id = ea.errands_id
+                 JOIN ERRANDER_PROFILES ep ON ea.errander_id = ep.errander_id
+        WHERE e.status = 'CONFIRMED2'
+          AND ea.status = 'MATCHED'
+          <![CDATA[
+          AND e.updated_at < DATE_SUB(NOW(), INTERVAL #{days} HOUR)
+          ]]>
+        ORDER BY ea.id ASC
+    </select>
+
+    <update id="updateAssignmentStatusToComplete" parameterType="long">
+        UPDATE ERRAND_ASSIGNMENTS
+        SET status = 'COMPLETED'
+        WHERE id = #{assignmentId}
+    </update>
+
+    <select id="getPaymentIdForSettlement" parameterType="map" resultType="long">
+        SELECT p.id
+        FROM PAYMENT_ORDERS p JOIN ERRANDS e ON p.errands_id = e.errands_id
+        WHERE p.errands_id = #{errandsId}
+        AND e.errander_id = #{erranderId}
+        AND p.status = 'PENDING'
+        AND e.status IN ('CONFIRMED2', 'HOLD')
+    </select>
+
+    <insert id="insertPaymentOrder">
+        INSERT INTO PAYMENT_ORDERS (id, amount, errands_id, user_id, status, created_at)
+        VALUES (#{id}, #{amount}, #{errandsId}, #{userId}, #{status}, #{createdAt})
+    </insert>
+
+    <update id="updatePaymentStatus">
+        UPDATE PAYMENT_ORDERS
+        SET status = #{status}
+        WHERE id = #{orderId}
+    </update>
+
+    <select id="getErranderUserIdByErranderId" resultType="long">
+        SELECT m.user_id
+        FROM ERRANDER_PROFILES p JOIN MEMBERS m ON p.user_id = m.user_id
+        WHERE p.errander_id = #{erranderId}
+    </select>
+
+    <select id="getErranderIdByUserId" resultType="long">
+        SELECT p.errander_id
+        FROM ERRANDER_PROFILES p JOIN MEMBERS m ON p.user_id = m.user_id
+        WHERE p.user_id = #{userId}
+    </select>
+
+    <update id="updatePaymentErranderId">
+        UPDATE PAYMENT_ORDERS
+        SET errander_id = #{erranderId}
+        WHERE id = #{orderId}
+    </update>
+
+    <select id="getOrderIdByErrandsId" resultType="long">
+        SELECT id
+        FROM PAYMENT_ORDERS
+        WHERE errands_id = #{errandsId}
+        AND status = 'PENDING'
+    </select>
+
+    <select id="getPaymentById" resultType="com.gorani.vroom.vroompay.PaymentOrderVO">
+        SELECT * FROM PAYMENT_ORDERS WHERE id = #{orderId}
+    </select>
+
+    <update id="completePayment" parameterType="map">
+        UPDATE PAYMENT_ORDERS
+        SET status = 'COMPLETED',
+            paid_at = STR_TO_DATE(#{paidAt}, '%Y-%m-%d %H:%i:%s')
+        WHERE id = #{orderId}
+    </update>
+
+    <update id="updateErrandStatusConfirmed2ToCompleted" parameterType="map">
+        UPDATE ERRANDS
+        SET status = 'COMPLETED', updated_at = NOW(), settlement_amount = #{amount}
+        WHERE errands_id = #{errandsId}
+          AND status IN ('CONFIRMED2', 'HOLD')
+    </update>
+
+    <update id="updateErrandAssignmentStatusToCompleted" parameterType="map">
+        UPDATE ERRAND_ASSIGNMENTS
+        SET status = 'COMPLETED'
+        WHERE errands_id = #{errandsId}
+          AND errander_id = #{erranderId}
+          AND status = 'MATCHED'
+    </update>
+
+    <insert id="insertErrandHistoryToCompletedByAdmin" parameterType="map">
+        INSERT INTO ERRAND_STATUS_HISTORY (errands_id, from_status, to_status, changed_by_type, changed_at)
+        VALUES (#{errandsId}, 'CONFIRMED2', 'COMPLETED', 'ADMIN', NOW())
+    </insert>
+
+    <update id="updateErrandStatusCanceled">
+        UPDATE ERRANDS
+        SET status = 'CANCELED', updated_at = NOW(), settlement_amount = 0
+        WHERE errands_id = #{errandsId}
+          AND status IN ('CONFIRMED2', 'HOLD')
+    </update>
+
+    <update id="updateErrandAssignmentStatusToCanceled" parameterType="map">
+        UPDATE ERRAND_ASSIGNMENTS
+        SET status = 'CANCELED'
+        WHERE errands_id = #{errandsId}
+          AND errander_id = #{erranderId}
+          AND status = 'MATCHED'
+    </update>
+
+    <insert id="insertErrandHistoryToCanceledByAdmin" parameterType="map">
+        INSERT INTO ERRAND_STATUS_HISTORY (errands_id, from_status, to_status, changed_by_type, changed_at)
+        VALUES (#{errandsId}, #{fromStatus}, 'CANCELED', 'ADMIN', NOW())
+    </insert>
+
+</mapper>

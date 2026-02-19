@@ -1,0 +1,131 @@
+/* ========================================
+   공통 변수 및 리셋
+======================================== */
+:root {
+    --color-primary: #6B8E23;
+    --color-secondary: #F2CB05;
+    --color-tertiary: #F2B807;
+    --color-accent: #F2A007;
+    --color-warm: #D97218;
+    --color-dark: #2C3E50;
+    --color-gray: #7F8C8D;
+    --color-light-gray: #ECF0F1;
+    --color-white: #FFFFFF;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif;
+    color: var(--color-dark);
+    line-height: 1.6;
+    background-color: #FAFAFA;
+}
+
+/* ========================================
+   푸터 스타일
+======================================== */
+.footer {
+    background-color: var(--color-dark);
+    color: var(--color-white);
+    padding: 3rem 0;
+}
+
+.footer-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+.footer-info h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.footer-info p {
+    color: var(--color-light-gray);
+}
+
+.footer-links {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.footer-links a {
+    color: var(--color-light-gray);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.footer-links a:hover {
+    color: var(--color-white);
+}
+
+.footer-copyright {
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--color-gray);
+    font-size: 0.9rem;
+}
+
+/* ========================================
+   공통 컨테이너
+======================================== */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+/* ========================================
+   공통 섹션
+======================================== */
+.section {
+    padding: 3rem 0;
+    background-color: #FAFAFA;
+}
+
+.section:nth-child(even) {
+    background-color: var(--color-white);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.section-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--color-dark);
+}
+
+.more-link {
+    color: var(--color-accent);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.more-link:hover {
+    color: var(--color-warm);
+}
+
+/* ========================================
+   반응형
+======================================== */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 1rem;
+    }
+}
