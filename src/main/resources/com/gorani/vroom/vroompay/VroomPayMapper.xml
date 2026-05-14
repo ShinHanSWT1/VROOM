@@ -23,21 +23,26 @@
     </insert>
 
     <select id="selectWalletTransactions" resultType="com.gorani.vroom.vroompay.WalletTransactionVO">
-        SELECT
-            id,
-            txn_type AS txnType,
-            amount,
-            errand_id AS errandId,
-            memo,
-            payment_id AS paymentId,
-            user_id AS userId,
-            errander_id AS erranderId,
-            created_at AS createdAt
-        FROM WALLET_TRANSACTIONS
-        WHERE user_id = #{userId}
-        ORDER BY created_at DESC
-        LIMIT #{offset}, #{limit}
-    </select>
+        SELECT wt.id,
+               wt.txn_type    AS txnType,
+               wt.amount,
+               wt.errand_id   AS errandId,
+               wt.memo,
+               wt.payment_id  AS paymentId,
+               wt.user_id     AS userId,
+               wt.errander_id AS erranderId,
+               wt.created_at  AS createdAt,
+               e.title		  AS errandTitle               
+	FROM WALLET_TRANSACTIONS wt
+    LEFT JOIN ERRANDS e
+      ON e.errands_id = wt.errand_id
+    WHERE wt.user_id = #{userId}
+       OR wt.errander_id = (
+            SELECT errander_id
+            FROM ERRANDER_PROFILES
+            WHERE user_id = #{userId}
+       )
+    ORDER BY wt.created_at DESC    </select>
 
     <select id="countWalletTransactions" resultType="int">
         SELECT COUNT(*)
@@ -91,7 +96,7 @@
         WHERE e.status = 'CONFIRMED2'
           AND ea.status = 'MATCHED'
           <![CDATA[
-          AND e.updated_at < DATE_SUB(NOW(), INTERVAL #{days} DAY)
+          AND e.updated_at < DATE_SUB(NOW(), INTERVAL #{days} HOUR)
           ]]>
         ORDER BY ea.id ASC
     </select>
@@ -162,7 +167,7 @@
         UPDATE ERRANDS
         SET status = 'COMPLETED', updated_at = NOW(), settlement_amount = #{amount}
         WHERE errands_id = #{errandsId}
-          AND status = 'CONFIRMED2'
+          AND status IN ('CONFIRMED2', 'HOLD')
     </update>
 
     <update id="updateErrandAssignmentStatusToCompleted" parameterType="map">
@@ -176,6 +181,26 @@
     <insert id="insertErrandHistoryToCompletedByAdmin" parameterType="map">
         INSERT INTO ERRAND_STATUS_HISTORY (errands_id, from_status, to_status, changed_by_type, changed_at)
         VALUES (#{errandsId}, 'CONFIRMED2', 'COMPLETED', 'ADMIN', NOW())
+    </insert>
+
+    <update id="updateErrandStatusCanceled">
+        UPDATE ERRANDS
+        SET status = 'CANCELED', updated_at = NOW(), settlement_amount = 0
+        WHERE errands_id = #{errandsId}
+          AND status IN ('CONFIRMED2', 'HOLD')
+    </update>
+
+    <update id="updateErrandAssignmentStatusToCanceled" parameterType="map">
+        UPDATE ERRAND_ASSIGNMENTS
+        SET status = 'CANCELED'
+        WHERE errands_id = #{errandsId}
+          AND errander_id = #{erranderId}
+          AND status = 'MATCHED'
+    </update>
+
+    <insert id="insertErrandHistoryToCanceledByAdmin" parameterType="map">
+        INSERT INTO ERRAND_STATUS_HISTORY (errands_id, from_status, to_status, changed_by_type, changed_at)
+        VALUES (#{errandsId}, #{fromStatus}, 'CANCELED', 'ADMIN', NOW())
     </insert>
 
 </mapper>

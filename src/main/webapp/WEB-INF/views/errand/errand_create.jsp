@@ -52,15 +52,19 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">심부름 이미지</label>
-                        <div class="image-upload-area" id="imageUploadArea">
-                            <div class="upload-icon">
-                                <i class="icon-camera"></i>
+                        <label class="form-label">심부름 이미지 <span class="image-limit-text">(최대 5장)</span></label>
+                        <div class="image-upload-wrapper">
+                            <div class="image-preview-container" id="imagePreviewContainer"></div>
+                            <div class="image-upload-area" id="imageUploadArea">
+                                <div class="upload-icon">
+                                    <i class="icon-camera"></i>
+                                </div>
+                                <div class="upload-text">클릭하여 이미지를 업로드하세요</div>
+                                <div class="upload-counter">0/5</div>
                             </div>
-                            <div class="upload-text">클릭하여 이미지를 업로드하세요</div>
-                            <div class="upload-counter">0/10</div>
                         </div>
                         <input type="file" id="imageInput" name="imageFiles" multiple accept="image/*" style="display: none;">
+                        <p class="image-help-text">JPG, PNG 파일 (최대 30MB)</p>
                     </div>
                 </div>
 

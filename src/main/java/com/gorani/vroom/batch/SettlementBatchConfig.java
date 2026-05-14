@@ -30,7 +30,7 @@ import java.util.Map;
 public class SettlementBatchConfig {
 
     private static final int CHUNK_SIZE = 10;
-    private static final int DELAY_DAYS = 1;
+    private static final int DELAY_DAYS = 8;
 
     private final JobBuilderFactory jobBuilderFactory;
     private final StepBuilderFactory stepBuilderFactory;
@@ -83,18 +83,6 @@ public class SettlementBatchConfig {
                         item.getErranderId(),
                         item.getAmount()
                 );
-
-                // -- 테스트 코드
-//                Map<String, Object> result = vroomPayService.settleErrand(
-//                        243L,
-//                        138L,
-//                        137L,
-//                        BigDecimal.valueOf(10000.00)
-//                );
-
-//                Map<String, Object> result = new HashMap<>();
-//                result.put("success", true);
-//                result.put("message", "정산이 완료되었습니다.");
 
                 // API 성공 여부 확인
                 if (result != null && Boolean.TRUE.equals(result.get("success"))) {

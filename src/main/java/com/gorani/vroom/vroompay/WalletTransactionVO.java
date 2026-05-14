@@ -20,5 +20,6 @@ public class WalletTransactionVO {
     private Long paymentId;
     private Long userId;
     private Long erranderId;
+    private String errandTitle;
 
 }

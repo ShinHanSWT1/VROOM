@@ -1,18 +1,9 @@
 package com.gorani.vroom.errand.assignment;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Map;
-import java.util.UUID;
-
-import javax.servlet.http.HttpSession;
-
-import org.springframework.http.ResponseEntity;
 import com.gorani.vroom.user.auth.UserVO;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,7 +13,9 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpSession;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
+@Slf4j
 @Controller
 @RequiredArgsConstructor
 public class ErrandAssignmentController {
@@ -94,14 +87,14 @@ public class ErrandAssignmentController {
 
         try {
             // 모든 로직은 서비스에서
-            errandAssignmentService.uploadCompleteProof(
+            String imageUrl = errandAssignmentService.uploadCompleteProof(
                     errandsId, roomId, erranderId, file
             );
 
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(Map.of("success", true, "imageUrl", imageUrl));
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("완료 인증 업로드 실패: errandsId={}", errandsId, e);
             return ResponseEntity.status(500)
                     .body(Map.of("success", false, "message", e.getMessage()));
         }

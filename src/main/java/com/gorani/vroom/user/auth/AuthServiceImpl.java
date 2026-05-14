@@ -2,6 +2,7 @@ package com.gorani.vroom.user.auth;
 
 import com.gorani.vroom.common.util.MD5Util;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpSession;
@@ -9,6 +10,7 @@ import java.math.BigDecimal;
 import java.io.File;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -23,7 +25,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void signup(UserVO vo, MultipartFile profile, UserVO oauthUser) throws Exception {
 
-        System.out.println("🔥 AuthServiceImpl.signup() 진입");
+        log.debug("AuthServiceImpl.signup() 진입");
 
         // =====================================================
         // ================= 0. 입력값 정규화 ==================
@@ -254,7 +256,16 @@ public class AuthServiceImpl implements AuthService {
     public KakaoLoginResult kakaoLogin(String code, HttpSession session) {
 
         // 1️⃣ 카카오 사용자 정보 조회
-        KakaoUserInfo kakaoUser = kakaoOAuthClient.getUserInfo(code);
+        String redirectUri = (String) session.getAttribute("kakaoRedirectUri");
+        if (redirectUri == null) {
+            throw new RuntimeException("카카오 redirectUri 세션값이 없습니다.");
+        }
+
+        KakaoUserInfo kakaoUser =
+                kakaoOAuthClient.getUserInfo(code, redirectUri);
+
+        session.removeAttribute("kakaoRedirectUri");
+
         String snsId = kakaoUser.getId();
 
         // 2️⃣ 기존 회원 조회
@@ -273,7 +284,7 @@ public class AuthServiceImpl implements AuthService {
         temp.setProvider("SOCIAL");
         temp.setEmail(kakaoUser.getEmail());       // null 가능
         temp.setNickname(kakaoUser.getNickname()); // null 가능
-        System.out.println(temp);
+        log.debug("kakaoLogin 신규 사용자 임시 저장: {}", temp);
         session.setAttribute("oauthSignupUser", temp);
 
         return KakaoLoginResult.NEED_SIGNUP;

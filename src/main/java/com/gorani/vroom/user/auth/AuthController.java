@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.bind.annotation.ResponseBody;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 @Slf4j
@@ -61,7 +62,7 @@ public class AuthController {
                                       @RequestParam(required = false) MultipartFile profile,
                                       HttpSession session) {
 
-        System.out.println("🔥 /auth/signup 컨트롤러 진입");
+        System.out.println("/auth/signup 컨트롤러 진입");
 
         // =================== OAuth 병합용 세션 조회 ===================
         // - 카카오 콜백에서 임시로 담아둔 oauthSignupUser가 있으면 OAuth 가입 흐름
@@ -70,9 +71,9 @@ public class AuthController {
 
         try {
             // =================== 회원가입 처리 (LOCAL / OAuth 공통 진입점) ===================
-            System.out.println("🔥 AuthService.signup() 호출 직전");
+            System.out.println("AuthService.signup() 호출 직전");
             authService.signup(vo, profile, oauthUser);
-            System.out.println("🔥 AuthService.signup() 정상 종료");
+            System.out.println("AuthService.signup() 정상 종료");
 
             // =================== OAuth 임시 세션 정리 ===================
             // - OAuth로 들어온 가입이 성공했다면 임시 데이터는 즉시 제거 (중복 가입 방지)
@@ -86,7 +87,6 @@ public class AuthController {
             );
 
         } catch (IllegalArgumentException e) {
-            e.printStackTrace();
             log.info("catch:" + e.getMessage());
             return Map.of(
                     "success", false,
@@ -95,7 +95,6 @@ public class AuthController {
             );
 
         } catch (Exception e) {
-            e.printStackTrace();
             log.error("회원가입 서버 오류", e);
             return Map.of(
                     "success", false,
@@ -210,8 +209,16 @@ public class AuthController {
      * - 카카오 인증 서버로 리다이렉트
      */
     @GetMapping("/auth/kakao/login")
-    public String kakaoLogin() {
-        return "redirect:" + kakaoOAuthClient.getKakaoAuthUrl();
+    public String kakaoLogin(HttpServletRequest request, HttpSession session) {
+
+        // 1) 이번 요청에서 사용할 redirectUri를 동적으로 계산
+        String redirectUri = kakaoOAuthClient.buildRedirectUri(request);
+
+        // 2) authorize 단계에서 쓴 redirectUri를 token 단계에서도 써야 하므로 세션에 저장
+        session.setAttribute("kakaoRedirectUri", redirectUri);
+
+        // 3) 카카오 인증 URL 생성 (redirectUri를 인자로 넘김)
+        return "redirect:" + kakaoOAuthClient.getKakaoAuthUrl(redirectUri);
     }
 
     /**

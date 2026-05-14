@@ -180,7 +180,8 @@ function getTypeLabel(txnType) {
         'HOLD': '홀드',
         'RELEASE': '홀드 해제',
         'PAYOUT': '정산',
-        'REFUND': '환불'
+        'REFUND': '환불',
+        'PAID': '지불'
     };
     return labels[txnType] || txnType;
 }

@@ -2,6 +2,7 @@ package com.gorani.vroom.vroompay;
 
 import com.gorani.vroom.user.auth.UserVO;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/vroompay")
 @RequiredArgsConstructor
@@ -100,7 +102,7 @@ public class VroomPayApiController {
 
                 vroomPayService.insertWalletAccount(walletAccount);
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("계좌 연결 후 로컬 저장 실패: userId={}", userId, e);
             }
         }
 
@@ -143,7 +145,7 @@ public class VroomPayApiController {
                 // 잔액 업데이트
                 updateLocalBalance(userId, result);
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("충전 후 거래 이력 저장 실패: userId={}", userId, e);
             }
         }
 
@@ -209,7 +211,7 @@ public class VroomPayApiController {
                 // 잔액 업데이트
                 updateLocalBalance(userId, result);
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("출금 후 거래 이력 저장 실패: userId={}", userId, e);
             }
         }
 

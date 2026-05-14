@@ -23,4 +23,7 @@ public class ChatRoomVO {
     private String partnerNickname;  // 상대방 닉네임
     private String partnerProfileImage;
     private java.math.BigDecimal partnerMannerScore;
+    
+    // 인증 사진 URL (추가)
+    private String completionProofUrl;
 }

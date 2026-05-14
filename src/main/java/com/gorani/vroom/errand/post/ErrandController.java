@@ -60,7 +60,7 @@ public class ErrandController {
 		model.addAttribute("dongs", errandService.getDongs());
 		model.addAttribute("totalCount", totalCount);
 		model.addAttribute("currentPage", page);
-		System.out.println("4444444444444444444444444444");
+
 
 		return "errand/errand_list";
 	}
@@ -108,14 +108,14 @@ public class ErrandController {
 	    // 작성자 여부 (ErrandDetailVO.userId = 작성자 id)
 	    Long ownerId = errand.getUserId();
 	    boolean isOwner = (currentUserId != null && ownerId != null && currentUserId.equals(ownerId));
-	    System.out.println("111111111111111111" + ownerId);
+	    System.out.println("errand detail ownerId={}" + ownerId);
 	    // 매칭된 부름이 여부
 	    boolean isMatchedErrander = false;
 	    if (currentUserId != null && !isOwner) {
 	        // 이 게시글에 대해 "현재 유저가 수행자로 매칭되어 있는지"
 	        isMatchedErrander = errandAssignmentService.isMatchedErrander(errandsId, currentUserId);
 	    }
-	    System.out.println("22222222222222222222222" + currentUserId);
+	    System.out.println("errand detail currentUserId={}" + currentUserId);
 	    // 채팅방 존재 여부
 	    boolean hasChatRoom = false;
 	    if (isOwner || isMatchedErrander) {   // currentUserId null이면 위에서 false라서 안전
@@ -125,13 +125,8 @@ public class ErrandController {
 	    // 재입장 가능
 	    boolean canReEnterChat = (isOwner || isMatchedErrander) && hasChatRoom;
 	    
-	    System.out.println("[DETAIL] errandsId=" + errandsId
-	            + " currentUserId=" + currentUserId
-	            + " ownerId=" + ownerId
-	            + " isOwner=" + isOwner
-	            + " isMatchedErrander=" + isMatchedErrander
-	            + " hasChatRoom=" + hasChatRoom
-	            + " canReEnterChat=" + canReEnterChat);
+	    log.debug("[DETAIL] errandsId = {} currentUserId={} ownerId={} isOwner={} isMatchedErrander={} hasChatRoom canReEnterCaht={}",
+				errandsId, currentUserId, ownerId, isOwner, isMatchedErrander, hasChatRoom);
 
 	    model.addAttribute("isOwner", isOwner);
 	    model.addAttribute("isMatchedErrander", isMatchedErrander);

@@ -6,6 +6,7 @@ import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -20,26 +21,34 @@ public class KakaoOAuthClient {
     @Value("${kakao.client-id}")
     private String clientId;
 
-    @Value("${kakao.redirect-uri}")
-    private String redirectUri;
-
     @Value("${kakao.client-secret}")
     private String clientSecret;
 
     // =========================
+    // redirectUri 동적 생성
+    // =========================
+
+    public String buildRedirectUri(HttpServletRequest request) {
+        return request.getScheme() + "://"
+                + request.getServerName() + ":"
+                + request.getServerPort()
+                + "/vroom/auth/kakao/callback";
+    }
+
+    // =========================
     // 1️⃣ 카카오 로그인 URL 생성
     // =========================
-    public String getKakaoAuthUrl() {
+    public String getKakaoAuthUrl(String redirectUri) {
         return "https://kauth.kakao.com/oauth/authorize"
                 + "?response_type=code"
                 + "&client_id=" + clientId
-                + "&redirect_uri=" + redirectUri;
+                + "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8);
     }
 
     // ==================================================
     // 2️⃣ 인가 코드(code) → access_token → 사용자 정보
     // ==================================================
-    public KakaoUserInfo getUserInfo(String code) {
+    public KakaoUserInfo getUserInfo(String code, String redirectUri) {
 
         try {
             // -----------------------------
