@@ -55,8 +55,8 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
 
         // 1) errander profile 조회 (부름이만 존재해야 함)
         Long erranderId = errandAssignmentMapper.selectErranderIdByUserId(erranderUserId);
-        System.out.println("[ASSIGN] erranderUserId=" + erranderUserId);
-        System.out.println("[ASSIGN] erranderId(from profiles)=" + erranderId);
+        log.debug("[ASSIGN] erranderUserId={}", erranderUserId);
+        log.debug("[ASSIGN] erranderId(from profiles)={}", erranderId);
 
         // [가드2] 부름이 프로필 없으면 매칭 시작 불가
         if (erranderId == null) {
@@ -76,11 +76,11 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
 
         // DB에서 status 재조회
         String before = errandAssignmentMapper.selectErrandStatus(errandsId);
-        System.out.println("[ASSIGN] db status before=" + before);
+        log.debug("[ASSIGN] db status before={}", before);
 
         // WAITING->MATCHED 시도
         int updated = errandAssignmentMapper.updateErrandWaitingToMatchedWithErrander(errandsId, erranderId);
-        System.out.println("[ASSIGN] update rows=" + updated);
+        log.debug("[ASSIGN] update rows={}", updated);
 
         // 1) WAITING -> MATCHED
         if (updated == 0) {
@@ -213,7 +213,7 @@ public class ErrandAssignmentServiceImpl implements ErrandAssignmentService {
             throw new IllegalStateException("유효하지 않는 부름이 ID입니다.");
         }
         if (ownerUserId.equals(erranderUserId)) {
-            System.out.println("[ASSIGN][BLOCK] OWNER cannot start chat. errandsId=" + errandsId + ", userId=" + erranderUserId);
+            log.warn("[ASSIGN][BLOCK] OWNER cannot start chat. errandsId={}, userId={}", errandsId, erranderUserId);
             throw new IllegalStateException("작성자는 채팅 시작(매칭)을 할 수 없습니다. 부름이가 채팅을 시작해야 합니다.");
         }
 

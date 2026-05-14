@@ -7,6 +7,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
@@ -24,6 +25,7 @@ import com.gorani.vroom.user.auth.UserVO;
 
 import lombok.RequiredArgsConstructor;
 
+@Slf4j
 @Controller
 @RequestMapping("/errand/chat")
 @RequiredArgsConstructor
@@ -62,7 +64,7 @@ public class ChatController {
         Long errandsId = room.getErrandsId();
         
         String errandStatus = chatService.getErrandStatus(errandsId);
-        System.out.println("[DEBUG] roomId=" + roomId + ", errandsId=" + errandsId + ", errandStatus=" + errandStatus);
+        log.debug("[DEBUG] roomId={}, errandsId={}, errandStatus={}", roomId, errandsId, errandStatus);
         model.addAttribute("errandStatus", errandStatus);
 
         // 3) 채팅방 정보 + 메시지 로딩
@@ -105,8 +107,8 @@ public class ChatController {
         
         String errandStatus = chatService.getErrandStatus(errandsId);
 
-        System.out.println("[CHAT] enter request errandsId=" + errandsId);
-        System.out.println("[CHAT] userId=" + currentUserId);
+        log.debug("[CHAT] enter request errandsId={}", errandsId);
+        log.debug("[CHAT] userId={}", currentUserId);
 
         // 작성자 여부 판단
         Long ownerUserId = chatService.getOwnerUserIdByErrandsId(errandsId);
@@ -150,8 +152,8 @@ public class ChatController {
             // 참가자 아니면: 이미 다른 부름이가 매칭한 방
             return "errand/errand_already_matched";
         }
-        
-        System.out.println("[DEBUG] errandsId=" + errandsId + ", errandStatus=" + errandStatus);
+
+        log.debug("[DEBUG] errandsId={}, errandStatus={}", errandsId, errandStatus);
         model.addAttribute("errandStatus", errandStatus);
 
         // 4) 채팅방 정보 조회 (심부름 정보 포함)
@@ -439,7 +441,7 @@ public class ChatController {
     @ResponseBody
     public java.util.Map<String, Object> completeConfirm(@RequestBody java.util.Map<String, Object> body,
                                                          HttpSession session) {
-    	System.out.println("[HIT] /assign/complete-confirm");
+        log.debug("[HIT] /assign/complete-confirm");
 
         UserVO loginUser = (UserVO) session.getAttribute("loginSess");
         if (loginUser == null) {

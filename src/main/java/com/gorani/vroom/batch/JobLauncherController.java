@@ -1,6 +1,7 @@
 package com.gorani.vroom.batch;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -8,6 +9,7 @@ import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class JobLauncherController {
@@ -27,7 +29,7 @@ public class JobLauncherController {
 
             return "배치 실행 완료! 로그와 DB를 확인하세요.";
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("배치 실행 실패", e);
             return "배치 실행 실패: " + e.getMessage();
         }
     }

@@ -6,6 +6,7 @@ import java.util.List;
 import com.gorani.vroom.notification.NotificationService;
 import com.gorani.vroom.vroompay.PaymentOrderVO;
 import com.gorani.vroom.vroompay.VroomPayService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +17,7 @@ import com.gorani.vroom.errander.profile.ErranderMapper;
 
 import lombok.RequiredArgsConstructor;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatServiceImpl implements ChatService {
@@ -172,15 +174,15 @@ public class ChatServiceImpl implements ChatService {
     	
     	// 0) erranderUserId(user_id) -> erranderId(errander PK) 변환
     	Long erranderId = assignmentMapper.selectErranderIdByUserId(erranderUserId);
-    	System.out.println("[REJECT] erranderUserId=" + erranderUserId + " -> erranderId=" + erranderId);
+        log.debug("[REJECT] erranderUserId={} -> erranderId={}", erranderUserId, erranderId);
     	if (erranderId == null) {
     	    throw new IllegalStateException("부름이 프로필이 없습니다.");
     	}
 
         // 1) ERRAND_ASSIGNMENTS: MATCHED -> CANCELED (이 매칭 레코드 종료)
         int canceled = assignmentMapper.updateAssignmentStatusMatchedToCanceled(errandsId, erranderId);
-        System.out.println("[REJECT] updateAssignmentStatusMatchedToCanceled rows=" + canceled
-                + " (errandsId=" + errandsId + ", erranderId=" + erranderId + ")");
+        log.debug("[REJECT] updateAssignmentStatusMatchedToCanceled rows={} (errandsId={}, erranderId={})",
+                canceled, errandsId, erranderId);
         if (canceled == 0) {
             // 이미 취소됐거나, 이미 다른 부름이로 바뀌었거나, 매칭 상태가 아닌 경우
             throw new IllegalStateException("이미 처리된 요청입니다.");
@@ -188,8 +190,7 @@ public class ChatServiceImpl implements ChatService {
     	
     	// 상태 전환: MATCHED -> WAITING (딱 1번만 성공)
         int updated = assignmentMapper.updateErrandMatchedToWaitingClearErrander(errandsId);
-        System.out.println("[REJECT] updateErrandStatusMatchedToWaiting rows=" + updated
-                + " (errandsId=" + errandsId + ")");
+        log.debug("[REJECT] updateErrandStatusMatchedToWaiting rows={} (errandsId={})", updated, errandsId);
         if (updated == 0) {
             throw new IllegalStateException("이미 처리된 요청입니다.");
         }
@@ -311,7 +312,7 @@ public class ChatServiceImpl implements ChatService {
     @org.springframework.transaction.annotation.Transactional
     public void completeConfirm(Long errandsId, Long ownerUserId) {
         int updated = assignmentMapper.updateErrandStatusConfirmed1ToConfirmed2(errandsId);
-        System.out.println("[DEBUG] CONFIRMED1->CONFIRMED2 updated=" + updated);
+        log.debug("[DEBUG] CONFIRMED1->CONFIRMED2 updated={}", updated);
         
         if (updated == 0) {
             throw new IllegalStateException("이미 처리되었거나 현재 상태가 CONFIRMED1이 아닙니다.");

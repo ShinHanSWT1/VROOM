@@ -388,7 +388,6 @@ public class CommunityPostController {
             } catch (Exception e) {
                 // IOException 뿐만 아니라 AWS SDK 예외도 잡기 위해 Exception으로 변경
                 log.error("이미지 저장 실패 (파일명: {}): {}", image.getOriginalFilename(), e.getMessage());
-                e.printStackTrace(); // 상세 스택 트레이스 출력
             }
         }
 

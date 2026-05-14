@@ -2,6 +2,7 @@ package com.gorani.vroom.errand.assignment;
 
 import com.gorani.vroom.user.auth.UserVO;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,6 +15,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+@Slf4j
 @Controller
 @RequiredArgsConstructor
 public class ErrandAssignmentController {
@@ -92,7 +94,7 @@ public class ErrandAssignmentController {
             return ResponseEntity.ok(Map.of("success", true, "imageUrl", imageUrl));
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("완료 인증 업로드 실패: errandsId={}", errandsId, e);
             return ResponseEntity.status(500)
                     .body(Map.of("success", false, "message", e.getMessage()));
         }
